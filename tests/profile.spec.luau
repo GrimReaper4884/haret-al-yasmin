@@ -6,12 +6,54 @@ return function(t)
 	local Items = t.config("Items")
 	local Economy = t.config("Economy")
 
+	local Units = t.config("Units")
+	local Traits = t.config("Traits")
+	local TD = t.config("TD")
 	local ctx = {
 		schemaVersion = Economy.SCHEMA_VERSION,
 		maxQirsh = Economy.MAX_QIRSH,
+		maxLira = TD.MAX_LIRA,
+		maxStones = TD.MAX_TRAIT_STONES,
 		receiptHistory = 3,
 		items = Items,
+		units = Units,
+		traits = Traits.traits,
+		starterUnit = TD.STARTER_UNIT,
+		season = "s1",
 	}
+
+	t.describe("ProfileSchema v2 (tower defense)", function()
+		t.it("migrates a v1 profile and grants the starter unit", function()
+			local p = ProfileSchema.load({ schemaVersion = 1, qirsh = 10, inventory = {}, equipped = {}, quests = {} }, ctx, 1)
+			t.eq(p.schemaVersion, Economy.SCHEMA_VERSION)
+			t.eq(p.qirsh, 10)
+			t.eq(p.lira, 0)
+			t.truthy(p.units.walad, "starter unit")
+			t.eq(p.loadout[1], "walad")
+			t.eq(p.pass.season, "s1")
+		end)
+		t.it("drops unknown units, bad traits and foreign loadout entries", function()
+			local p = ProfileSchema.load({
+				schemaVersion = 2,
+				units = { zaim = { copies = -3, trait = "nope" }, ghost = { copies = 1 } },
+				loadout = { "zaim", "ghost", "zaim", 5 },
+				lira = 1e12,
+				td = { cleared = { ep1 = "normal", ep2 = "insane" } },
+			}, ctx, 1)
+			t.eq(p.units.ghost, nil)
+			t.eq(p.units.zaim.copies, 0)
+			t.eq(p.units.zaim.trait, "steady")
+			t.eq(#p.loadout, 1)
+			t.eq(p.lira, TD.MAX_LIRA)
+			t.eq(p.td.cleared.ep1, "normal")
+			t.eq(p.td.cleared.ep2, nil)
+		end)
+		t.it("resets the pass on a new season", function()
+			local p = ProfileSchema.load({ schemaVersion = 2, pass = { season = "s0", xp = 500, premium = true } }, ctx, 1)
+			t.eq(p.pass.xp, 0)
+			t.eq(p.pass.premium, false)
+		end)
+	end)
 
 	t.describe("ProfileSchema.load", function()
 		t.it("creates defaults for new players", function()
@@ -22,7 +64,7 @@ return function(t)
 			t.eq(p.stats.firstJoin, 1000)
 		end)
 		t.it("round-trips a valid profile unchanged", function()
-			local p = ProfileSchema.default(5, ctx.schemaVersion)
+			local p = ProfileSchema.default(5, ctx.schemaVersion, ctx)
 			p.qirsh = 10
 			p.inventory.tarboosh_red = 1
 			p.equipped.head = "tarboosh_red"

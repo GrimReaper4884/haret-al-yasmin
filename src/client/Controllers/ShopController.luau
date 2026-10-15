@@ -261,36 +261,60 @@ local function shopRows(snapshot: any, shop: any)
 	end
 end
 
-local function storeRows()
+local function productRow(order: number, key: string, icon: string, desc: string, premium: boolean)
+	local t = LocaleController.t
+	local product = (Products.devProducts :: any)[key]
+	local price = priceOf("product", product.productId)
+	row({
+		order = order,
+		icon = icon,
+		name = t(product.nameKey),
+		desc = desc,
+		buttonText = if price then t("store.robux", { n = price }) else t("store.soon"),
+		enabled = price ~= nil,
+		premium = premium,
+		onClick = function()
+			Net.event(Net.Events.RequestProduct):FireServer(key)
+		end,
+	})
+end
+
+local function storeRows(snapshot: any)
 	local t = LocaleController.t
 	local order = 0
+	-- Lira (summons). Hidden where the region restricts paid random items: lira is then earned only.
+	if not snapshot.restricted then
+		for _, key in Products.liraOrder do
+			local product = (Products.devProducts :: any)[key]
+			order += 1
+			productRow(order, key, "lira", t("hud.lira", { n = product.amount }), false)
+		end
+	end
 	for _, key in Products.storeOrder do
 		local product = (Products.devProducts :: any)[key]
-		local price = priceOf("product", product.productId)
 		order += 1
-		row({
-			order = order,
-			icon = "coins",
-			name = t(product.nameKey),
-			desc = t("hud.currency", { n = product.amount }),
-			buttonText = if price then t("store.robux", { n = price }) else t("store.soon"),
-			enabled = price ~= nil,
-			premium = false,
-			onClick = function()
-				Net.event(Net.Events.RequestProduct):FireServer(key)
-			end,
-		})
+		productRow(order, key, "coins", t("hud.currency", { n = product.amount }), false)
 	end
-	for key, pass in Products.gamePasses :: any do
+	for _, key in Products.extrasOrder do
+		local product = (Products.devProducts :: any)[key]
+		local owned = product.oneTime and snapshot.bundles and snapshot.bundles[product.nameKey] ~= nil
+		if not owned then
+			order += 1
+			productRow(order, key, if product.kind == "stones" then "stone" else "pass", if product.descKey then t(product.descKey) else t(product.nameKey), true)
+		end
+	end
+	for _, key in Products.passOrder do
+		local pass = (Products.gamePasses :: any)[key]
 		local price = priceOf("pass", pass.gamePassId)
+		local owned = pass.perk and snapshot.perks and snapshot.perks[pass.perk] == true
 		order += 1
 		row({
 			order = order,
 			icon = "pass",
 			name = t(pass.nameKey),
 			desc = t(pass.descKey),
-			buttonText = if price then t("store.robux", { n = price }) else t("store.soon"),
-			enabled = price ~= nil,
+			buttonText = if owned then t("shop.owned") elseif price then t("store.robux", { n = price }) else t("store.soon"),
+			enabled = price ~= nil and not owned,
 			premium = true,
 			onClick = function()
 				Net.event(Net.Events.RequestPass):FireServer(key)
@@ -322,7 +346,7 @@ render = function()
 		shopRows(snapshot, shop)
 	else
 		title.Text = LocaleController.t("store.title")
-		storeRows()
+		storeRows(snapshot)
 	end
 	Theme.align(title, LocaleController.isRtl())
 	panel.Visible = true

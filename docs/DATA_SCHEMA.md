@@ -95,3 +95,24 @@ Studio API access is off. The HUD then shows "Test mode: progress will not be sa
 which exercises the full persistence round trip inside one Studio session. Note that `game.JobId` is
 empty in Studio, so session locks cannot tell two Studio sessions apart; test lock contention on a
 published **test** experience.
+
+## Schema v2 (tower-defense update, 2026-10-16)
+
+`SCHEMA_VERSION = 2`. Migration 1 -> 2 is the identity; `ProfileSchema.sanitize` fills the new fields:
+
+| Field | Shape | Notes |
+|-------|-------|-------|
+| `lira` | integer 0..10,000,000 | summon currency |
+| `traitStones` | integer 0..100,000 | trait rerolls |
+| `units` | `{ [unitId]: { copies, trait, at } }` | unknown ids and traits are dropped; the starter unit (`TD.STARTER_UNIT`) is always present |
+| `loadout` | `{ unitId }` | owned, unique, de-duplicated; defaults to the starter |
+| `summons` | `{ total, sinceLegendary, sinceMythic }` | pity counters |
+| `pass` | `{ season, xp, premium, claimedFree{tier->true}, claimedPremium }` | reset when `season ~= SeasonPass.season` |
+| `codes` | `{ [CODE]: at }` | redeemed codes |
+| `bundles` | `{ [productNameKey]: at }` | one-time bundles |
+| `daily` | `{ streak, lastDay }` | UTC day index |
+| `td` | `{ matches, wins, kills, cleared{modeId->difficulty}, bestInfinite }` | unlocks and stats |
+
+Tier keys inside `claimedFree`/`claimedPremium` are strings ("1".."50") so the DataStore JSON stays an
+object. All new tables use string keys only. In Studio, a failed load no longer kicks (flag
+`KICK_IN_STUDIO` in DataService) and the mock store seeds 5,000 lira and 5 trait stones.

@@ -155,6 +155,34 @@ local Dialogue: { [string]: Tree } = {
 			},
 		},
 	},
+
+	barber = {
+		entries = { { node = "greet" } },
+		nodes = {
+			greet = {
+				textKey = "dlg.barber.greet",
+				choices = { { textKey = "dlg.barber.greet.ok" } },
+			},
+		},
+	},
+	qahwaji = {
+		entries = { { node = "greet" } },
+		nodes = {
+			greet = {
+				textKey = "dlg.qahwaji.greet",
+				choices = { { textKey = "dlg.qahwaji.greet.ok" } },
+			},
+		},
+	},
+	natour = {
+		entries = { { node = "greet" } },
+		nodes = {
+			greet = {
+				textKey = "dlg.natour.greet",
+				choices = { { textKey = "dlg.natour.greet.ok" } },
+			},
+		},
+	},
 }
 
 return Dialogue

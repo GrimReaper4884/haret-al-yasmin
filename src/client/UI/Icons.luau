@@ -73,6 +73,14 @@ local drawers: { [string]: (Frame, Color3) -> () } = {
 		rect(h, Palette.wood, 0.5, 0.66, 0.75, 0.4, 0.2)
 		rect(h, Palette.copper, 0.5, 0.42, 0.6, 0.18, 1)
 	end,
+	lira = function(h, _c)
+		rect(h, Color3.fromHex("#C9A13B"), 0.5, 0.5, 0.6, 0.6, 1)
+		rect(h, Color3.fromHex("#E8D07A"), 0.5, 0.5, 0.36, 0.36, 1)
+	end,
+	stone = function(h, _c)
+		rect(h, Color3.fromHex("#7B3FA0"), 0.5, 0.55, 0.5, 0.5, 0.2, 45)
+		rect(h, Color3.fromHex("#B98BD6"), 0.5, 0.5, 0.2, 0.2, 0.2, 45)
+	end,
 	pass = function(h, _c)
 		rect(h, Palette.tile, 0.5, 0.5, 0.78, 0.56, 0.15)
 		rect(h, Color3.fromHex("#C9A13B"), 0.5, 0.5, 0.3, 0.3, 1)

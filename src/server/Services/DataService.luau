@@ -4,10 +4,15 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Economy = require(Shared.Config.Economy)
 local Items = require(Shared.Config.Items)
+local Units = require(Shared.Config.Units)
+local Traits = require(Shared.Config.Traits)
+local SeasonPass = require(Shared.Config.SeasonPass)
+local TD = require(Shared.Config.TD)
 local ProfileSchema = require(Shared.Logic.ProfileSchema)
 local Locale = require(Shared.Util.Locale)
 local Signal = require(Shared.Util.Signal)
@@ -34,8 +39,14 @@ local shuttingDown = false
 local schemaCtx: ProfileSchema.Context = {
 	schemaVersion = Economy.SCHEMA_VERSION,
 	maxQirsh = Economy.MAX_QIRSH,
+	maxLira = TD.MAX_LIRA,
+	maxStones = TD.MAX_TRAIT_STONES,
 	receiptHistory = Economy.RECEIPT_HISTORY,
 	items = Items :: any,
+	units = Units :: any,
+	traits = Traits.traits :: any,
+	starterUnit = TD.STARTER_UNIT,
+	season = SeasonPass.season,
 }
 
 local function keyFor(player: Player): string

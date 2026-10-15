@@ -95,3 +95,52 @@ over adb (screenshots, taps, thumbstick swipes)*
 - **Phone dialogue:** on the phone, the right edge of the dialogue panel slightly overlaps the jump button, and it covers the errand tracker while open.
 - **Analytics:** events log "fired" in Studio; delivery to the Creator Dashboard is unverified.
 - **Unrelated assets in the Toolbox:** the account's Toolbox ("My Models") contains models named after *Bab al-Hara* characters (`tower_abu_issam`, `tower_abu_shehab`, `tower_motaz`, …). They are not used by this project and must not be (see COPYRIGHT_REGISTER §1).
+
+## Tower-defense update (Studio, Play Solo, 2026-10-16)
+
+*Build: branch `feat/vertical-slice`, synced live with Rojo 7.7.1 into the published TEST place (Studio API
+access off → mock store, nothing persists). Driven by computer use. Synthetic mouse clicks never reach the
+running game viewport (keyboard does), so the run used the Studio-only harness in
+`DebugKeysController` / `DebugOverlayController` (docs/TOWER_DEFENSE.md §10).*
+
+### Static checks
+
+| Check | Result |
+|-------|--------|
+| `lune run tests/run` | **103 passed, 0 failed** (sim, towers, waves, rewards/unlocks, summons/pity, loadout/traits, pass, codes, dailies, grants, schema v2, products) |
+| `selene src` | 0 errors, 0 warnings |
+| `luau-lsp analyze` (strict) | 0 type errors |
+| `rojo build` | OK |
+
+### Play tests
+
+| # | Feature | Result |
+|---|---------|--------|
+| 1 | Server boot with the new world | ✅ Lane builds with the rebuilt gate (open leaves, bar leaning by the jamb), nameplates, shop signs, notice board, coffee house, barber, four portals; the watchman Abu Fares, the barber and the coffee-house keeper spawn with prompts; 8 crowd walkers stroll the lane (Explorer: Workspace.Crowd) |
+| 2 | Profile v2 | ✅ Migrated profile loads; starter unit and loadout present; 0 lira / 0 qirsh shown; test badge. **Bug fixed during the run:** the DataStore adapter picked the real store although Studio API access is off (403 on write) and the player was kicked; the probe is now a no-op write and the mock is used |
+| 3 | Lobby HUD | ✅ Lira pill, coin pill, language, wardrobe, bottom menu (Units · Summon · Diary · Codes · Daily) with the Daily badge |
+| 4 | Summon screen | ✅ Active banner name, next-banner timer, two featured 3D previews, lira balance, ×1 (50) / ×10 (500), Rates button; ten-pull deducts 500 and reveals ten cards with rarity colours, NEW / Copy tags; Legendary/Mythic flash path exercised in unit tests only (no Legendary rolled) |
+| 5 | Units screen | ✅ Loadout 6/6 strip, grid sorted by rarity with stars; detail view (stats, trait, reroll, add/remove) exercised by code review only (needs mouse) |
+| 6 | Diary / Daily / Store | ✅ Open and render (levels strip, XP bar, days left, premium/skip buttons; 7-day cards with today highlighted; store rows incl. lira packs, extras, passes marked Coming soon) |
+| 7 | Portal queue | ✅ Teleporting onto the Episode 1 pad joins the party; panel shows mode, players, countdown, difficulty buttons, Leave; the match starts after the countdown |
+| 8 | Match start | ✅ Party teleported to the arena pad; night lighting; MatchStart closes lobby screens (fixed during the run); HUD: cash, wave x/20, countdown, gate bar, Skip (0/1), speed, Leave; unit bar with costs; the watchtower camera opens by default with a Walk toggle |
+| 9 | Placement rules | ✅ Placing at the spawn pad succeeds; placing by the road succeeds; after cash runs out `cannot_afford`; 6 defenders placed via the road-side debug spots |
+| 10 | Waves and combat | ✅ Waves advance (1 → 5 observed), attackers walk the road with health bars, defenders that see stealth kill night thieves (gate stayed 100/100 with a road-side setup), kill cash and wave bonuses increase cash, skip vote starts the wave (+60), "Wave n" banners, boss/gate toasts, "The gate took a hit!" when thieves slipped past a spawn-pad setup (gate 100 → 58 over 6 waves) |
+| 11 | End of match | ✅ Leave pays the loss share, shows the result modal and returns the player to the lane gate; the lost/won paths share `finish()` and are covered by `tests/td.spec.luau` |
+| 12 | Overlay / errors | ✅ No server or client errors in the mirrored log during any run |
+
+### Defects found and fixed during testing
+
+1. Real DataStore chosen with API access off → kick (adapter probe). Also: in Studio a failed load no longer kicks (`KICK_IN_STUDIO`).
+2. Lobby modals stayed open when a match started → `Modal.closeAll()` on MatchStart.
+3. The summon reveal overlay stayed above other screens → overlays close when a modal opens.
+4. Garden trees spawned on the party pad → gardens keep 12 studs from the spawn.
+5. Enemy rigs could be dropped by a position packet overtaking the spawn event → grace period before removal.
+
+### Not tested / open
+
+- Real Robux prompts (no product IDs); PolicyService on a real client; multi-player parties (one client);
+  Hard/Nightmare unlock flow end-to-end; the defeat screen itself (gate never fell against a road-side
+  setup within the time box); touch placement on a phone (needs a device run); audio (all ids 0).
+- Balance: the road-side setup of six Rare/Epic defenders held Episode 1 Normal waves 1–5 without damage;
+  later waves and bosses untested in play.

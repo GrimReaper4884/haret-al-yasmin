@@ -1,77 +1,101 @@
 # Monetization Plan
 
-*Status: v1 · 2026-10-15 · Code: `Config/Products.luau`, `Logic/MonetizationLogic.luau`,
-`server/Services/MonetizationService.luau` · Nothing is live: every product ID is `0` until the owner creates
-it in the Creator Dashboard (RELEASE_CHECKLIST §D).*
+*Status: v2 (tower-defense update) · 2026-10-16 · Code: `Config/Products.luau`, `Config/TD.luau`,
+`Logic/MonetizationLogic.luau`, `Logic/SummonLogic.luau`, `server/Services/MonetizationService.luau`,
+`MetaService.luau` · Nothing is live: every product ID is `0` until the owner creates it in the Creator
+Dashboard (RELEASE_CHECKLIST §D). Genre benchmarks: `docs/research/ROBLOX_TOWER_DEFENSE_GENRE.md`; platform
+rules: `docs/research/ROBLOX_IP_AND_POLICY.md`.*
 
 > Roblox programmes, fees and payout rates change. Check the Creator Hub before each launch decision.
-> Figures below are planning assumptions, not facts.
+> DevEx was US$0.0038 per Robux in late 2025 (minimum 30,000 earned Robux); the creator keeps ~70 % of a
+> Robux sale, so a 799 R$ pass is roughly US$2.1 to us.
 
-## 1. Principles (non-negotiable)
+## 1. Principles
 
-1. **No pay-to-win.** Robux and qirsh buy looks, never quest progress, story access or advantages over others.
-2. **No randomized paid rewards** (no loot boxes, spins or mystery crates).
-3. **No pressure tactics aimed at kids:** no countdown timers on purchases, no "only 2 left", no guilt dialogue from NPCs.
-4. **Everything earnable is earnable for free.** Robux-only items are the exceptions and are clearly labelled "Premium".
-5. **Every Robux grant is server-side and idempotent** (see §5).
+1. **Two currencies, two jobs.** *Qirsh* (earned) buys cosmetics. *Lira* (earned and sold) buys summons.
+2. **Everything is earnable.** Every unit can drop from play-earned lira; the only exceptions are the
+   starter bundle's unit copy (also in the banner pool) and the season's level-50 unit (a Mythic that also
+   drops from banners). No gameplay power is Robux-only.
+3. **Paid random items are disclosed.** The Rates screen lists every outcome's percentage, summing to
+   100 %, live with pity, before any pull. Lira sales are hidden for players whose region restricts paid
+   random items (`PolicyService.ArePaidRandomItemsRestricted`); their earned lira still summons.
+4. **No pressure tactics aimed at kids:** no countdown timers on purchases, no "only 2 left", no guilt
+   dialogue from NPCs. Banners rotate on a fixed hourly clock, nothing is "last chance".
+5. **Every Robux grant is server-side and idempotent** (§5). Fallbacks never let Robux buy nothing.
 
-## 2. Revenue levers available on Roblox, and our plan for each
+## 2. Catalogue (planned prices; real prices come from MarketplaceService)
 
-| # | Lever | How it earns | Plan for Haret Al-Yasmin | Status |
-|---|-------|--------------|--------------------------|--------|
-| 1 | **Developer products** (consumable) | Player pays Robux each time; creator keeps ~70% | Qirsh purses (25 / 99 / 199 R$); premium wardrobe pieces (gold-banded tarboosh 79 R$, wedding qumbaz 129 R$) | ✅ Code ready, IDs needed |
-| 2 | **Game passes** (one-time) | One-time Robux purchase; ~70% to creator | "Lane Patron" (249 R$): gold-banded tarboosh + embroidered shawl. Later: "Family Home" plot upgrade (cosmetic decor slots) | ✅ Code ready, ID needed |
-| 3 | **Premium Payouts** | Roblox pays by Premium subscribers' engagement time (no purchase needed) | Long-lived social play: episodes, daily errands, events. A free monthly cosmetic for Premium members is allowed | 🔜 Automatic once published |
-| 4 | **Paid private servers** | Monthly Robux per private server | Roleplay groups (families, classes, friend circles) host their own lane. Price ~100 R$/month | 🔜 Owner toggles in Game Settings |
-| 5 | **Experience subscriptions** | Monthly recurring Robux | Possible "Lane Membership": monthly cosmetic plus a nameplate colour. Needs care for a young audience; decide after launch data | ⏸ Later, needs approval |
-| 6 | **UGC avatar items** | Selling items in the Avatar Marketplace; in-experience sales also earn an affiliate share | Publish the tarboosh, sherwal and qumbaz as real UGC accessories (needs 3D modelling and UGC programme access), sold through an in-game "try on" mirror | ⏸ Needs art and UGC access |
-| 7 | **Immersive / rewarded ads** | Revenue share from ads shown to eligible (13+) users | Optional portal or billboard in the khan (outside gate). Never shown to under-13s per Roblox rules; no forced ads | ⏸ Evaluate after launch |
-| 8 | **Seasonal cosmetic sets** | Dev products or passes during events | Ramadan lantern set, wedding (zaffeh) set, Eid set: clearly dated, returning yearly (no fake scarcity) | 🔜 With live events |
-| 9 | **Season pass (free + premium track)** | One-time per season | "Lane Diary": free track rewards for everyone; premium track adds cosmetic variants only | ⏸ Needs approval and design |
-| 10 | **Commerce / merch** | Physical goods linked from the experience (where eligible) | Tarboosh plush, cookbook… long-term only | ⏸ Long-term |
+### Developer products (consumable)
 
-## 3. Economy balance (qirsh)
+| Key | Grant | R$ | Notes |
+|-----|-------|----|-------|
+| `lira_100` … `lira_4000` | 100 / 320 / 700 / 1,650 / 4,500 lira | 49 / 129 / 249 / 499 / 1,199 | hidden where paid random items are restricted |
+| `qirsh_pouch/purse/chest` | 100 / 450 / 1,000 qirsh | 25 / 99 / 199 | cosmetics currency |
+| `stones_3`, `stones_10` | trait stones | 99 / 279 | trait rerolls |
+| `pass_premium_s1` | premium Diary track for season s1 | 799 | one per season; buying twice pays 800 lira instead |
+| `pass_skip_10` | +10 Diary levels | 999 | |
+| `starter_pack` | 300 lira + the 'Akeed + red tarboosh | 199 | once per player (`profile.bundles`) |
+| `item_tarboosh_gold`, `item_qumbaz_wedding` | cosmetics | 79 / 129 | |
 
-| Source | Amount |
-|--------|--------|
-| Ka'ak delivery | 50 |
-| Episode 1 | 60 |
-| Each later episode | 60–120 |
-| Planned repeatable jobs (baker's helper, water carrier) | 10–25 per run, ~150/hour |
+### Game passes (permanent)
 
-| Sink | Price |
-|------|-------|
-| Taqiyah 20 · Sash 30 · Red tarboosh 40 · Black tarboosh 60 · Hatta+agal 70 · Sherwal 80 · Sidriyye 90 · Shawl 100 · Abaya 120 · Qumbaz 150 | 760 total |
+| Key | Perk | R$ |
+|-----|------|----|
+| `vip` | −20 % summon cost, +25 % lira from matches, embroidered shawl | 299 |
+| `fast_mode` | 3× match speed when hosting (2× is free for everyone) | 799 |
+| `extra_slot` | 7th loadout slot | 149 |
+| `lane_patron` | gold tarboosh + embroidered shawl (cosmetic support pass) | 249 |
 
-A free player can own the whole qirsh wardrobe after about 5 hours of play. Purses save time but never unlock
-anything a free player cannot reach. A 100 qirsh purse is roughly 40 minutes of jobs.
+### Other levers
+
+Premium Payouts (engagement), paid private servers (~100 R$/month, owner toggle), Immersive Ads later
+(13+ only, needs 2,000 monthly visitors and the questionnaire), UGC accessories later.
+
+## 3. Lira economy
+
+| Source | Lira |
+|--------|------|
+| Episode 1 / 2 / 3 win (Normal) | 80 / 140 / 240 (×1.6 Hard, ×2.4 Nightmare, ×2 first clear) |
+| Loss | 25 % of the win value, scaled by waves reached |
+| Endless | 100 / 230 / 390 / 420 / 450 per 10-wave tier, +5 per tier after 50 |
+| Daily streak (7 days) | 20 + 30 + 0 + 45 + 60 + 0 + 120 = 275 per week |
+| Diary free track | ≈ 1,900 over the season |
+| Launch codes | 100 + 50 + 150 + 40 |
+
+A free player clears Episode 1 on Normal and Hard in the first session (≈ 400 lira ≈ 8 pulls), then earns
+roughly 250–400 lira a day with dailies and two episodes: 5–8 pulls a day, a Legendary at most every 50
+pulls by pity. A 499 R$ pack is ≈ 33 pulls.
+
+| Sink | Lira |
+|------|------|
+| Summon ×1 / ×10 | 50 / 500 (VIP 40 / 400) |
 
 ## 4. Steps for the owner to go live (manual, needs approval)
 
-1. Publish to a **test experience** first (approval required).
-2. Creator Dashboard → the experience → Monetization → create each developer product and game pass with the
-   approved price and an original icon.
-3. Paste each ID into `src/shared/Config/Products.luau` (`productId` / `gamePassId`).
-4. In Studio, test purchases are simulated (no Robux charged): buy each product, rejoin, confirm the grant once.
+1. Publish to the **test experience** first (already done for the slice; republish with this update).
+2. Creator Dashboard → Monetization → create each developer product and game pass with the approved price
+   and an original icon; paste the IDs into `src/shared/Config/Products.luau`.
+3. Maturity & compliance questionnaire: declare **paid random items**; label Mild (stylized daggers, no
+   blood; no tobacco anywhere).
+4. In Studio, test purchases are simulated (no Robux charged): buy each product, rejoin, confirm the grant
+   once; buy the premium pass twice and confirm the second pays lira.
 5. Record each product in RELEASE_CHECKLIST §D.
 
 ## 5. Technical safeguards (implemented)
 
-- **Server-opened prompts:** the client sends only a product key (`RequestProduct`). The server checks that the
-  product exists, that its ID is live, and that the item isn't already owned, then calls `PromptProductPurchase`.
-- **Idempotent receipts:** `ProcessReceipt` → `MonetizationLogic.grantReceipt` records `receipts[PurchaseId]` in the
-  same mutation as the grant. A re-sent receipt returns "already" and grants nothing.
-- **Durable before acknowledged:** `PurchaseGranted` is returned only after `DataService.saveNow` succeeds.
-  Otherwise the answer is `NotProcessedYet` and Roblox retries; the recorded receipt prevents double grants.
-- **Offline buyer:** if the player left or their data isn't loaded, the answer is `NotProcessedYet` and the grant
-  happens on their next session.
-- **Race:** buying an item that is already owned grants `fallbackQirsh` instead, so Robux never buy nothing.
-- **Game passes:** ownership is checked on join and on purchase, and the pass cosmetics are added to the inventory.
-- **Analytics:** IAP economy events and custom events per product key.
-- Unit tests: `tests/monetization.spec.luau`.
+- **Server-opened prompts:** the client sends a product key; the server checks the product exists, its ID is
+  live, the item/pass/bundle isn't already owned, and the region allows lira, then prompts.
+- **Idempotent receipts:** `ProcessReceipt` → `MonetizationLogic.grantReceipt` records the PurchaseId in the
+  same mutation as the grant; a re-sent receipt returns "already".
+- **Durable before acknowledged:** `PurchaseGranted` only after `DataService.saveNow` succeeds.
+- **Fallbacks:** already-owned item → qirsh; second premium pass or second starter bundle → lira.
+- **Game passes:** ownership checked on join and on purchase; perk flags (`vip`, `fast`, `slot`) are read
+  server-side by the summon cost, match rewards, speed cap and loadout size.
+- **Policy:** `PolicyService` per player on join; failure to read the policy is treated as restricted.
+- **Analytics:** IAP economy events for qirsh/lira, custom events per product key, summon and pass events.
+- Unit tests: `tests/monetization.spec.luau`, `tests/meta.spec.luau`.
 
-## 6. KPIs to watch (Creator Dashboard)
+## 6. KPIs to watch
 
-D1/D7 retention, average session length (drives Premium Payouts), payer conversion, ARPPU, purchases per
-product, the funnel from qirsh store opened to purchase, and refunds. Change prices only with Roblox's price
-testing tools and owner approval.
+D1/D7 retention, matches per session, summon count per DAU, payer conversion, ARPPU, lira pack mix,
+premium Diary attach rate, VIP attach rate, refunds, and the share of restricted-region players.

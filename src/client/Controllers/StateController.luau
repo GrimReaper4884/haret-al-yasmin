@@ -11,11 +11,24 @@ local QuestLogic = require(Shared.Logic.QuestLogic)
 
 export type Snapshot = {
 	qirsh: number,
+	lira: number,
+	traitStones: number,
 	inventory: { [string]: number },
 	equipped: { [string]: string },
 	quests: { [string]: { state: string, completions: number, progress: { [string]: boolean }? } },
 	language: string?,
 	persistent: boolean,
+	-- Tower defense
+	units: { [string]: { copies: number, trait: string, at: number } },
+	loadout: { string },
+	loadoutSlots: number?,
+	summons: { total: number, sinceLegendary: number, sinceMythic: number },
+	pass: { season: string, xp: number, premium: boolean, claimedFree: { [string]: boolean }, claimedPremium: { [string]: boolean } },
+	daily: { streak: number, lastDay: number },
+	td: { matches: number, wins: number, kills: number, cleared: { [string]: string }, bestInfinite: number },
+	bundles: { [string]: number },
+	perks: { [string]: boolean }?,
+	restricted: boolean?,
 }
 
 local StateController = {}

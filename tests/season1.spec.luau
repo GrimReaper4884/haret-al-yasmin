@@ -83,14 +83,14 @@ return function(t)
 			p.quests.delivery_kaak = { state = "completed", startedAt = 1, completions = 1 }
 			QuestLogic.accept(p, Q, Quests, Items, 2)
 			QuestLogic.collectClue(p, Q, "clue_thread", Quests)
-			local ctx = { schemaVersion = Economy.SCHEMA_VERSION, maxQirsh = Economy.MAX_QIRSH, receiptHistory = 100, items = Items }
+			local ctx = t.schemaCtx()
 			local loaded = ProfileSchema.load(t.deepCopy(p), ctx, 3)
 			t.eq(loaded.quests[Q].progress.clue_thread, true)
 			t.eq(QuestLogic.cluesFound(loaded, Q), 1)
 		end)
 
 		t.it("sanitize strips malformed progress", function()
-			local ctx = { schemaVersion = 1, maxQirsh = 100, receiptHistory = 10, items = Items }
+			local ctx = t.schemaCtx({ maxQirsh = 100, receiptHistory = 10 })
 			local p = ProfileSchema.load({
 				schemaVersion = 1,
 				quests = {

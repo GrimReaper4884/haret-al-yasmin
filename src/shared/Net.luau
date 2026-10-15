@@ -1,6 +1,6 @@
 --!strict
 -- Remote names and access. The server creates the remotes (Net.serverSetup); clients wait
--- for them (Net.event / Net.func). See docs/SYSTEMS_ARCHITECTURE.md §4.
+-- for them (Net.event / Net.func / Net.unreliable). See docs/SYSTEMS_ARCHITECTURE.md §4.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -20,11 +20,41 @@ Net.Events = {
 	ClueShow = "ClueShow", -- S→C clueId (clue card)
 	RequestProduct = "RequestProduct", -- C→S product key (server validates, then prompts)
 	RequestPass = "RequestPass", -- C→S game pass key
+
+	-- Tower defense: lobby queue
+	QueueState = "QueueState", -- S→C { modeId, players, countdown, difficulty, host } | nil
+	QueueLeave = "QueueLeave", -- C→S
+	QueueSetDifficulty = "QueueSetDifficulty", -- C→S difficulty (host only)
+	-- Tower defense: match
+	MatchStart = "MatchStart", -- S→C { matchId, modeId, arenaId, origin, difficulty, players, totalWaves }
+	MatchState = "MatchState", -- S→C { phase, wave, countdown, gateHp, gateMax, cash, speed, votes }
+	MatchEvents = "MatchEvents", -- S→C { events } (spawn/death/attack/tower…)
+	MatchEnd = "MatchEnd", -- S→C { won, waves, reward }
+	EnemyPositions = "EnemyPositions", -- S→C (unreliable) packed { id, dist, hpFrac } triples
+	VoteSkip = "VoteSkip", -- C→S
+	SetSpeed = "SetSpeed", -- C→S 1 | 2 | 3 (host)
+	LeaveMatch = "LeaveMatch", -- C→S
+	SetTargeting = "SetTargeting", -- C→S towerId, mode
+	DebugCommand = "DebugCommand", -- C→S (Studio only; ignored in production) cmd, arg
+}
+
+Net.Unreliable = {
+	EnemyPositions = true,
 }
 
 Net.Functions = {
 	ShopPurchase = "ShopPurchase", -- C→S itemId → result
 	SetWorn = "SetWorn", -- C→S itemId, wear → result
+	-- Tower defense
+	PlaceTower = "PlaceTower", -- C→S unitId, x, z → { ok, err, towerId }
+	UpgradeTower = "UpgradeTower", -- C→S towerId → { ok, err }
+	SellTower = "SellTower", -- C→S towerId → { ok, err, refund }
+	Summon = "Summon", -- C→S n → { ok, err, results }
+	SetLoadout = "SetLoadout", -- C→S { unitIds } → { ok, err }
+	RerollTrait = "RerollTrait", -- C→S unitId → { ok, err, trait }
+	ClaimPass = "ClaimPass", -- C→S tier, track → { ok, err, granted }
+	RedeemCode = "RedeemCode", -- C→S code → { ok, err, granted }
+	ClaimDaily = "ClaimDaily", -- C→S → { ok, err, granted, day }
 }
 
 local FOLDER_NAME = "Remotes"
@@ -38,7 +68,7 @@ function Net.serverSetup(): Folder
 	local newFolder = Instance.new("Folder")
 	newFolder.Name = FOLDER_NAME
 	for _, name in Net.Events do
-		local r = Instance.new("RemoteEvent")
+		local r: Instance = if Net.Unreliable[name] then Instance.new("UnreliableRemoteEvent") else Instance.new("RemoteEvent")
 		r.Name = name :: string
 		r.Parent = newFolder
 	end
@@ -57,6 +87,10 @@ end
 
 function Net.event(name: string): RemoteEvent
 	return folder():WaitForChild(name) :: RemoteEvent
+end
+
+function Net.unreliable(name: string): UnreliableRemoteEvent
+	return folder():WaitForChild(name) :: UnreliableRemoteEvent
 end
 
 function Net.func(name: string): RemoteFunction

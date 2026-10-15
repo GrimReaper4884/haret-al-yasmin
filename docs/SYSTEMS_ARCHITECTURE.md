@@ -1,6 +1,6 @@
 # Systems Architecture
 
-*Status: living document · Last updated 2026-10-15*
+*Status: living document · Last updated 2026-10-16*
 
 ## 1. Principles
 
@@ -23,9 +23,12 @@ default.project.json
 src/
   shared/      → ReplicatedStorage.Shared
     Config/    Items, Quests, Npcs, Dialogue, Shops, Economy, Strings (pure data, export their own types)
+               TD, Units, Enemies, Waves, Arenas, Modes, Banners, Traits, SeasonPass, Codes, Daily, Audio
                 Palette, CosmeticVisuals (use Roblox datatypes; not loaded by Lune)
     Logic/     ProfileSchema, Wallet, Inventory, QuestLogic, ShopLogic, DialogueLogic, RateLimiter, Validate
-    Util/      Signal, Locale
+               Path, WaveLogic, TdSim, TdTowers, UnitLogic, SummonLogic, PassLogic, CodesLogic, DailyLogic,
+               MatchRewards, Grants, MonetizationLogic
+    Util/      Signal, Locale, CosmeticBuilder, RigBuilder (primitive figures for units/enemies/previews)
     Net.luau   remote names and access
   server/      → ServerScriptService.Server
     Main.server.luau        bootstrap: init → start every service in order
@@ -41,11 +44,21 @@ src/
       QuestService          quest accept/deliver built on QuestLogic
       ShopService           shop sessions, purchase, equip
       AvatarService         attaches equipped cosmetics to characters
-      DebugService          Studio-only BindableFunction (ServerStorage.HaretDebug) for command-bar tests
+      MonetizationService     Robux prompts/receipts, pass perks, PolicyService (paid random items)
+      ArenaService            arena slots at x >= 3000, builds arenas and tower models
+      MatchService            match lifecycle, Heartbeat loop over TdSim, tower remotes, rewards
+      MatchmakingService      portal pads, parties, countdown, difficulty vote
+      MetaService             summons, loadout, traits, season pass, codes, daily
+      CrowdService            ambient neighbours with pathfinding
+      DebugService            Studio-only: HaretDebug hook, log mirror, test seeds
+    World/                    Kit, Props, Props2 (gate, signs, coffee house, barber), Facade, Arena, Zones/*
   client/      → StarterPlayer.StarterPlayerScripts.Client
     Main.client.luau        bootstrap
-    Controllers/            State, Locale, Hud, Dialogue, Shop, NpcLabel, Toast
-    UI/                     Root (ScreenGui + UIScale), Theme, Icons, Create (instance builder)
+    Controllers/            State, Locale, Hud, Dialogue, Shop, NpcLabel, Toast, Wardrobe, Clue, Audio,
+                            LobbyMenu, Summon, Units, Pass, Codes, Daily, Queue, Match, Placement,
+                            EnemyRender, MatchFx, MatchCamera, DebugOverlay*, DebugKeys* (*Studio only)
+    UI/                     Root (ScreenGui + UIScale), Theme, Icons, Create, Modal, UnitCard, ItemPreview,
+                            RewardText
 tests/                      Lune unit tests for src/shared/Logic (not synced into the place)
 ```
 
@@ -83,6 +96,15 @@ Remotes are created by the server in `ReplicatedStorage.Remotes`. Names are defi
 | `SetWorn` | RemoteFunction | C→S | `itemId: string, wear: boolean` | identifier, boolean, owned cosmetic, rate-limited |
 | `SetLanguage` | RemoteEvent | C→S | `"en"`/`"ar"` | whitelist, rate-limited |
 | `Notify` | RemoteEvent | S→C | `{key, args}` | — |
+| `QueueState` / `QueueLeave` / `QueueSetDifficulty` | RemoteEvent | S→C / C→S | party snapshot; —; difficulty | host only for difficulty; unlock checked |
+| `MatchStart` / `MatchState` / `MatchEvents` / `MatchEnd` | RemoteEvent | S→C | match info; HUD snapshot; batched sim events; result + rewards | — |
+| `EnemyPositions` | UnreliableRemoteEvent | S→C | packed `{id, dist, hp%}` triples at 10 Hz | — |
+| `PlaceTower` / `UpgradeTower` / `SellTower` | RemoteFunction | C→S | unitId, x, z / towerId / towerId | in match, in loadout and owned, bounds, road clearance, spacing, caps, cash (TdTowers) |
+| `SetTargeting` / `VoteSkip` / `SetSpeed` / `LeaveMatch` | RemoteEvent | C→S | towerId, mode / — / 1–3 / — | own tower; prep phase; host and pass for 3x |
+| `Summon` | RemoteFunction | C→S | 1 or 10 | lira, odds and pity on the server (SummonLogic) |
+| `SetLoadout` / `RerollTrait` | RemoteFunction | C→S | `{unitIds}` / unitId | owned, unique, slot count (pass); trait stones |
+| `ClaimPass` / `RedeemCode` / `ClaimDaily` | RemoteFunction | C→S | tier, track / code / — | level reached, premium flag; expiry, once; UTC day |
+| `DebugCommand` | RemoteEvent | C→S | cmd, arg | Studio only (no listener in production) |
 
 Dialogue is started by the server-side `ProximityPrompt.Triggered` event, so the client never names the
 NPC it is talking to.
@@ -146,6 +168,18 @@ binary on the dev machine (see known issues in the milestone report).
 - **No player-to-player collisions** (`PlayerCollisionService`, collision group "Players") so crowds can't block
   doors, counters or the gate.
 - Planned shared systems: community goals and votes (Episode 5, MemoryStore), live events, paid private servers.
+
+## 8c. Match simulation
+
+`Logic/TdSim` is a pure fixed-step simulation (20 Hz): enemies advance along a `Logic/Path` polyline,
+defenders pick targets (first/last/strongest/closest) within range, apply damage/splash/slow/stun and
+abilities, the gate loses HP when an enemy reaches the end, and waves end when the queue is empty and
+nothing is alive. `MatchService` steps every live match on Heartbeat (at most 6 ticks per frame, dropping
+time if the server falls behind), batches the step's events into one `MatchEvents` payload per frame, and
+streams positions at 10 Hz over an UnreliableRemoteEvent. Enemies exist on the client only as rendered rigs
+(`EnemyRenderController`) that interpolate toward the last reported distance; defenders are server models
+(`ArenaService.buildTower`) so every client sees them. Arenas live at x >= 3000 (600 studs apart, up to 6)
+and are destroyed when a match ends.
 
 ## 9. Pure-module convention
 

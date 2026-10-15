@@ -5,14 +5,25 @@ type ItemDef = { kind: string, stackMax: number, slot: string? }
 export type Context = {
 	schemaVersion: number,
 	maxQirsh: number,
+	maxLira: number,
+	maxStones: number,
 	receiptHistory: number,
 	items: { [string]: ItemDef },
+	units: { [string]: any },
+	traits: { [string]: any },
+	starterUnit: string,
+	season: string,
 }
 
 local ProfileSchema = {}
 
 -- Migration steps: MIGRATIONS[n] upgrades a version-n profile to version n + 1.
-local MIGRATIONS: { [number]: (any) -> any } = {}
+local MIGRATIONS: { [number]: (any) -> any } = {
+	-- v1 → v2: tower-defense fields. All of them have defaults filled in by sanitize.
+	[1] = function(p: any): any
+		return p
+	end,
+}
 
 local function isFinite(v: any): boolean
 	return type(v) == "number" and v == v and v ~= math.huge and v ~= -math.huge
@@ -22,7 +33,15 @@ local function isPosInt(v: any): boolean
 	return isFinite(v) and v > 0 and math.floor(v) == v
 end
 
-function ProfileSchema.default(now: number, schemaVersion: number): any
+-- ctx (optional) fills the starter unit, loadout and current season so a fresh default is
+-- already a fixed point of sanitize.
+function ProfileSchema.default(now: number, schemaVersion: number, ctx: Context?): any
+	local units: { [string]: any } = {}
+	local loadout: { string } = {}
+	if ctx and ctx.units[ctx.starterUnit] then
+		units[ctx.starterUnit] = { copies = 0, trait = "steady", at = now }
+		loadout = { ctx.starterUnit }
+	end
 	return {
 		schemaVersion = schemaVersion,
 		qirsh = 0,
@@ -32,7 +51,22 @@ function ProfileSchema.default(now: number, schemaVersion: number): any
 		settings = {},
 		stats = { firstJoin = now, lastJoin = now, sessions = 0 },
 		receipts = {},
+		-- Tower defense (schema v2)
+		lira = 0,
+		traitStones = 0,
+		units = units,
+		loadout = loadout,
+		summons = { total = 0, sinceLegendary = 0, sinceMythic = 0 },
+		pass = { season = if ctx then ctx.season else "", xp = 0, premium = false, claimedFree = {}, claimedPremium = {} },
+		codes = {},
+		bundles = {},
+		daily = { streak = 0, lastDay = 0 },
+		td = { matches = 0, wins = 0, kills = 0, cleared = {}, bestInfinite = 0 },
 	}
+end
+
+local function nonNegInt(v: any, default: number): number
+	return if isFinite(v) and v >= 0 then math.floor(v) else default
 end
 
 local function tableOr(v: any): { [any]: any }
@@ -129,6 +163,91 @@ function ProfileSchema.sanitize(p: any, ctx: Context, now: number): any
 	end
 	p.receipts = kept
 
+	-- Tower defense -------------------------------------------------------------------------
+	p.lira = math.clamp(nonNegInt(p.lira, 0), 0, ctx.maxLira)
+	p.traitStones = math.clamp(nonNegInt(p.traitStones, 0), 0, ctx.maxStones)
+
+	local units = tableOr(p.units)
+	for id, rec in pairs(units) do
+		if type(id) ~= "string" or ctx.units[id] == nil or type(rec) ~= "table" then
+			units[id] = nil
+		else
+			rec.copies = nonNegInt(rec.copies, 0)
+			if type(rec.trait) ~= "string" or ctx.traits[rec.trait] == nil then
+				rec.trait = "steady"
+			end
+			rec.at = if isFinite(rec.at) then rec.at else now
+		end
+	end
+	if ctx.units[ctx.starterUnit] and units[ctx.starterUnit] == nil then
+		units[ctx.starterUnit] = { copies = 0, trait = "steady", at = now }
+	end
+	p.units = units
+
+	local loadout = {}
+	local seen = {}
+	for _, id in ipairs(tableOr(p.loadout)) do
+		if type(id) == "string" and units[id] and not seen[id] then
+			seen[id] = true
+			table.insert(loadout, id)
+		end
+	end
+	if #loadout == 0 and units[ctx.starterUnit] then
+		loadout = { ctx.starterUnit }
+	end
+	p.loadout = loadout
+
+	local summons = tableOr(p.summons)
+	summons.total = nonNegInt(summons.total, 0)
+	summons.sinceLegendary = nonNegInt(summons.sinceLegendary, 0)
+	summons.sinceMythic = nonNegInt(summons.sinceMythic, 0)
+	p.summons = summons
+
+	local pass = tableOr(p.pass)
+	if pass.season ~= ctx.season then
+		pass = { season = ctx.season, xp = 0, premium = false, claimedFree = {}, claimedPremium = {} }
+	end
+	pass.xp = nonNegInt(pass.xp, 0)
+	pass.premium = pass.premium == true
+	pass.claimedFree = tableOr(pass.claimedFree)
+	pass.claimedPremium = tableOr(pass.claimedPremium)
+	p.pass = pass
+
+	local codes = tableOr(p.codes)
+	for code, at in pairs(codes) do
+		if type(code) ~= "string" or not isFinite(at) then
+			codes[code] = nil
+		end
+	end
+	p.codes = codes
+
+	local bundles = tableOr(p.bundles)
+	for key, at in pairs(bundles) do
+		if type(key) ~= "string" or not isFinite(at) then
+			bundles[key] = nil
+		end
+	end
+	p.bundles = bundles
+
+	local daily = tableOr(p.daily)
+	daily.streak = nonNegInt(daily.streak, 0)
+	daily.lastDay = nonNegInt(daily.lastDay, 0)
+	p.daily = daily
+
+	local td = tableOr(p.td)
+	td.matches = nonNegInt(td.matches, 0)
+	td.wins = nonNegInt(td.wins, 0)
+	td.kills = nonNegInt(td.kills, 0)
+	td.bestInfinite = nonNegInt(td.bestInfinite, 0)
+	local cleared = tableOr(td.cleared)
+	for mode, diff in pairs(cleared) do
+		if type(mode) ~= "string" or (diff ~= "normal" and diff ~= "hard" and diff ~= "nightmare") then
+			cleared[mode] = nil
+		end
+	end
+	td.cleared = cleared
+	p.td = td
+
 	p.schemaVersion = ctx.schemaVersion
 	return p
 end
@@ -137,7 +256,7 @@ end
 -- Errors: "corrupt" (not a table), "newer_schema" (written by a newer server).
 function ProfileSchema.load(raw: any, ctx: Context, now: number): (any?, string?)
 	if raw == nil then
-		return ProfileSchema.default(now, ctx.schemaVersion), nil
+		return ProfileSchema.default(now, ctx.schemaVersion, ctx), nil
 	end
 	if type(raw) ~= "table" then
 		return nil, "corrupt"

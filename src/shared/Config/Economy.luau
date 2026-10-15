@@ -3,7 +3,7 @@
 -- Pure data: no requires, no Roblox datatypes (loaded by Lune tests).
 
 return {
-	SCHEMA_VERSION = 1,
+	SCHEMA_VERSION = 2,
 	DATASTORE_NAME = "PlayerData_v1",
 	KEY_PREFIX = "u_",
 

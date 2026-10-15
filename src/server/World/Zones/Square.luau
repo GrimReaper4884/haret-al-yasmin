@@ -54,7 +54,7 @@ function Square.build(map: Instance)
 	-- Surrounding façades
 	Facade.build(m, "SquareNW", -40, 0, -24, 24, 20, "X", 1, { lantern = 2 })
 	Facade.build(m, "SquareNE", 24, 0, 40, 24, 21, "X", -1, { jetty = true, lantern = 2 })
-	Facade.build(m, "SquareSW", -40, -26, -24, 0, 21, "X", 1, { door = false, jetty = true })
+	-- SquareSW (x -40..-24, z -26..0) is the coffee house, built in Zones/Extras.
 	Facade.build(m, "SquareSE", 24, -26, 40, 0, 20, "X", -1, { door = false })
 	Facade.build(m, "SouthW", -40, -42, -16, -26, 20, "Z", 1, { doorAt = -26 })
 	Facade.build(m, "SouthE", 16, -42, 40, -26, 22, "Z", 1, { doorAt = 26, jetty = true })

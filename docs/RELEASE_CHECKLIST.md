@@ -30,7 +30,7 @@ products and spending Robux all need explicit approval from the project owner.**
 - [ ] Cultural review by native-speaker consultants (Arabic text, depictions)
 - [ ] Arabic and English strings complete; no missing keys (enforced by unit test)
 - [ ] Experience Guidelines questionnaire (maturity label) completed truthfully
-- [ ] Monetization review: no paid random items, no pay-to-win, prices fair for the target age
+- [ ] Monetization review: paid random items disclosed (Rates screen, questionnaire), lira hidden where restricted, no pay-to-win, prices fair for the target age
 - [ ] Every Robux product approved in writing and listed below
 - [ ] `ProcessReceipt` idempotency tested with duplicate and failed grants
 - [ ] Analytics funnels verified in the Creator Dashboard
@@ -39,11 +39,21 @@ products and spending Robux all need explicit approval from the project owner.**
 - [ ] Moderation: report flow, server-side chat filtering for any displayed player text
 - [ ] Rollback plan: previous place version noted; known-good config tagged in Git
 
-## D. Robux products register (empty — nothing approved)
+## D. Robux products register (planned — nothing approved or created yet)
 
-| Product | Type | Price | Approved by | Date |
-|---------|------|-------|-------------|------|
-| — | — | — | — | — |
+| Product | Type | Planned price | Approved by | Date |
+|---------|------|---------------|-------------|------|
+| lira_100 / lira_300 / lira_650 / lira_1500 / lira_4000 | Developer product | 49 / 129 / 249 / 499 / 1,199 | — | — |
+| qirsh_pouch / qirsh_purse / qirsh_chest | Developer product | 25 / 99 / 199 | — | — |
+| stones_3 / stones_10 | Developer product | 99 / 279 | — | — |
+| pass_premium_s1 | Developer product | 799 | — | — |
+| pass_skip_10 | Developer product | 999 | — | — |
+| starter_pack | Developer product | 199 | — | — |
+| item_tarboosh_gold / item_qumbaz_wedding | Developer product | 79 / 129 | — | — |
+| vip / fast_mode / extra_slot / lane_patron | Game pass | 299 / 799 / 149 / 249 | — | — |
+
+Before creating any of these: declare paid random items in the maturity questionnaire, and confirm the
+Rates screen and the regional restriction behave on a published test place.
 
 ## E. Live settings changes log
 

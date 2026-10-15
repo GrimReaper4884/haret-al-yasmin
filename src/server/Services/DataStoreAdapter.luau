@@ -94,13 +94,21 @@ function DataStoreAdapter.create(name: string): Store
 		warn("[DataService] PERSISTENCE DISABLED (mock store): " .. tostring(ds))
 		return DataStoreAdapter.mock()
 	end
-	-- Probe: Studio without "Enable Studio Access to API Services" raises here.
+	-- Probe with a no-op write: Studio without "Enable Studio Access to API Services" raises
+	-- ("403: Cannot write to DataStore from studio if API access is not enabled" or
+	-- "StudioAccessToApisNotAllowed"); reads can succeed even then, so a read is not enough.
 	local okProbe, probeErr = pcall(function()
-		(ds :: DataStore):GetAsync("__probe")
+		(ds :: DataStore):UpdateAsync("__probe", function()
+			return nil
+		end)
 	end)
-	if not okProbe and string.find(tostring(probeErr), "StudioAccessToApisNotAllowed", 1, true) then
-		warn("[DataService] PERSISTENCE DISABLED (mock store): Studio API access is off")
-		return DataStoreAdapter.mock()
+	if not okProbe then
+		local msg = tostring(probeErr)
+		if string.find(msg, "StudioAccessToApisNotAllowed", 1, true) or string.find(msg, "API access", 1, true) or string.find(msg, "403", 1, true) then
+			warn("[DataService] PERSISTENCE DISABLED (mock store): Studio API access is off")
+			return DataStoreAdapter.mock()
+		end
+		warn("[DataService] DataStore probe failed (using real store, calls will retry): " .. msg)
 	end
 	return real(ds :: DataStore)
 end

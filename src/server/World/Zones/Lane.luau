@@ -10,6 +10,7 @@ local Palette = require(ReplicatedStorage:WaitForChild("Shared").Config.Palette)
 local World = script.Parent.Parent
 local Kit = require(World.Kit)
 local Props = require(World.Props)
+local Props2 = require(World.Props2)
 local Facade = require(World.Facade)
 
 local M = Kit.M
@@ -47,15 +48,9 @@ local function gate(map: Instance)
 		Kit.box(m, "BandE", 6, y, 87.8, 12, y + 0.8, 88, Palette.basalt, M.Basalt).CastShadow = false
 	end
 	Kit.box(m, "Keystone", -0.8, 13.6, 87.4, 0.8, 15.6, 87.8, Palette.tile, M.CeramicTiles)
-	-- Heavy doors standing open against the pillars (DoorW also holds the S1E1 thread clue)
-	Kit.box(m, "DoorW", -6, 0, 86, -5.4, 13, 92, Palette.wood, M.WoodPlanks)
-	Kit.box(m, "DoorE", 5.4, 0, 86, 6, 13, 92, Palette.wood, M.WoodPlanks)
-	for _, y in { 2.5, 10.5 } do
-		Kit.box(m, "BandDW", -5.4, y, 86, -5.3, y + 0.35, 92, Color3.fromHex("#2B2724"), M.Metal).CastShadow = false
-		Kit.box(m, "BandDE", 5.3, y, 86, 5.4, y + 0.35, 92, Color3.fromHex("#2B2724"), M.Metal).CastShadow = false
-	end
-	-- Small wicket door (khokha) cut into the east leaf
-	Kit.box(m, "Wicket", 5.25, 0, 87.6, 5.32, 5, 90.4, Palette.woodDark, M.Wood).CastShadow = false
+	-- The heavy studded leaves stand open against the lane walls by day; the night bar leans by
+	-- the east jamb (Props2.gate; the S1E1 thread clue sits by the west leaf).
+	Props2.gate(m, Kit.faceFrame(Vector3.new(0, 0, 91), Vector3.new(0, 0, 1)), 12, 13, true)
 	Kit.box(m, "OuterWall", -30, 0, 96, 30, 20, 98, Palette.stoneWarm, M.Limestone)
 	Props.lantern(m, Kit.faceFrame(Vector3.new(-9, 11, 88), Vector3.new(0, 0, -1)))
 	Props.lantern(m, Kit.faceFrame(Vector3.new(9, 11, 88), Vector3.new(0, 0, -1)))
@@ -97,7 +92,7 @@ local function lane(map: Instance)
 	Facade.build(m, "WestA", -24, 70, -8, 88, 22, "X", 1, { jetty = true, doorAt = 82, lantern = 76 })
 	Facade.build(m, "WestB", -24, 24, -8, 50, 21, "X", 1, { jetty = true, doorAt = 42 })
 	Facade.build(m, "EastA", 8, 64, 24, 88, 21, "X", -1, { jetty = true, doorAt = 72 })
-	Facade.build(m, "EastB", 8, 24, 24, 48, 23, "X", -1, { doorAt = 40, lantern = 44 })
+	-- EastB (x 8..24, z 24..48) is the barber shop, built in Zones/Extras.
 	sabat(m, 28, 34)
 
 	-- Overhead life: vines and washing lines

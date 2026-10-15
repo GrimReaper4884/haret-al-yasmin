@@ -13,8 +13,40 @@ return function(t)
 
 	local MAX = 1000000
 
+	local Units = t.config("Units")
+	local Traits = t.config("Traits")
+	local SeasonPass = t.config("SeasonPass")
+	local TD = t.config("TD")
+
 	local function profile()
-		return { qirsh = 0, inventory = {}, equipped = {}, quests = {}, receipts = {} }
+		return {
+			qirsh = 0,
+			lira = 0,
+			traitStones = 0,
+			inventory = {},
+			equipped = {},
+			quests = {},
+			receipts = {},
+			units = {},
+			bundles = {},
+			pass = { season = "s1", xp = 0, premium = false, claimedFree = {}, claimedPremium = {} },
+		}
+	end
+
+	local function ctx(now)
+		return {
+			items = Items,
+			units = Units,
+			traits = Traits,
+			rng = function()
+				return 0
+			end,
+			now = now or 1,
+			maxQirsh = MAX,
+			maxLira = TD.MAX_LIRA,
+			maxStones = TD.MAX_TRAIT_STONES,
+			passTiers = SeasonPass.tiers,
+		}
 	end
 
 	t.describe("MonetizationLogic.grantReceipt", function()
@@ -23,23 +55,23 @@ return function(t)
 
 		t.it("grants a qirsh pack once per receipt", function()
 			local p = profile()
-			local ok, _, r = MonetizationLogic.grantReceipt(p, "R1", pouch, Items, MAX, 5)
+			local ok, _, r = MonetizationLogic.grantReceipt(p, "R1", pouch, ctx(5))
 			t.truthy(ok)
 			t.eq(r, "granted")
 			t.eq(p.qirsh, 100)
-			local ok2, _, r2 = MonetizationLogic.grantReceipt(p, "R1", pouch, Items, MAX, 6)
+			local ok2, _, r2 = MonetizationLogic.grantReceipt(p, "R1", pouch, ctx(6))
 			t.truthy(ok2, "a re-sent receipt is acknowledged")
 			t.eq(r2, "already")
 			t.eq(p.qirsh, 100, "but not paid twice")
-			MonetizationLogic.grantReceipt(p, "R2", pouch, Items, MAX, 7)
+			MonetizationLogic.grantReceipt(p, "R2", pouch, ctx(7))
 			t.eq(p.qirsh, 200, "a new receipt pays again")
 		end)
 
 		t.it("grants an item, falls back to qirsh if already owned", function()
 			local p = profile()
-			t.truthy(MonetizationLogic.grantReceipt(p, "A", gold, Items, MAX, 1))
+			t.truthy(MonetizationLogic.grantReceipt(p, "A", gold, ctx(1)))
 			t.eq(p.inventory.tarboosh_gold, 1)
-			local _, _, r = MonetizationLogic.grantReceipt(p, "B", gold, Items, MAX, 2)
+			local _, _, r = MonetizationLogic.grantReceipt(p, "B", gold, ctx(2))
 			t.eq(r, "fallback")
 			t.eq(p.inventory.tarboosh_gold, 1)
 			t.eq(p.qirsh, 300)
@@ -47,10 +79,10 @@ return function(t)
 
 		t.it("rejects bad input without recording the receipt", function()
 			local p = profile()
-			t.eq(MonetizationLogic.grantReceipt(p, "", pouch, Items, MAX, 1), false)
-			t.eq(MonetizationLogic.grantReceipt(p, "X", nil, Items, MAX, 1), false)
-			t.eq(MonetizationLogic.grantReceipt(p, "Y", { kind = "qirsh", amount = -5 }, Items, MAX, 1), false)
-			t.eq(MonetizationLogic.grantReceipt(p, "Z", { kind = "item", item = "nope" }, Items, MAX, 1), false)
+			t.eq(MonetizationLogic.grantReceipt(p, "", pouch, ctx(1)), false)
+			t.eq(MonetizationLogic.grantReceipt(p, "X", nil, ctx(1)), false)
+			t.eq(MonetizationLogic.grantReceipt(p, "Y", { kind = "qirsh", amount = -5 }, ctx(1)), false)
+			t.eq(MonetizationLogic.grantReceipt(p, "Z", { kind = "item", item = "nope" }, ctx(1)), false)
 			t.eq(next(p.receipts), nil)
 			t.eq(p.qirsh, 0)
 		end)
@@ -58,8 +90,40 @@ return function(t)
 		t.it("clamps to the wallet maximum", function()
 			local p = profile()
 			p.qirsh = MAX - 10
-			MonetizationLogic.grantReceipt(p, "C", pouch, Items, MAX, 1)
+			MonetizationLogic.grantReceipt(p, "C", pouch, ctx(1))
 			t.eq(p.qirsh, MAX)
+		end)
+	end)
+
+	t.describe("New product kinds", function()
+		t.it("lira, stones, premium pass, level skip and the starter bundle", function()
+			local p = profile()
+			t.truthy(MonetizationLogic.grantReceipt(p, "L1", Products.devProducts.lira_100, ctx(1)))
+			t.eq(p.lira, 100)
+			t.truthy(MonetizationLogic.grantReceipt(p, "S1", Products.devProducts.stones_3, ctx(1)))
+			t.eq(p.traitStones, 3)
+			local _, _, r = MonetizationLogic.grantReceipt(p, "P1", Products.devProducts.pass_premium_s1, ctx(1))
+			t.eq(r, "granted")
+			t.truthy(p.pass.premium)
+			_, _, r = MonetizationLogic.grantReceipt(p, "P2", Products.devProducts.pass_premium_s1, ctx(1))
+			t.eq(r, "fallback", "second premium purchase pays lira instead")
+			t.eq(p.lira, 900)
+			t.truthy(MonetizationLogic.grantReceipt(p, "K1", Products.devProducts.pass_skip_10, ctx(1)))
+			t.truthy(p.pass.xp >= 1000)
+			_, _, r = MonetizationLogic.grantReceipt(p, "B1", Products.devProducts.starter_pack, ctx(1))
+			t.eq(r, "granted")
+			t.truthy(p.units.qabaday)
+			t.eq(p.inventory.tarboosh_red, 1)
+			t.eq(p.lira, 1200)
+			_, _, r = MonetizationLogic.grantReceipt(p, "B2", Products.devProducts.starter_pack, ctx(1))
+			t.eq(r, "fallback", "the bundle is one-time")
+			t.eq(p.lira, 1500)
+			local ok, err = MonetizationLogic.canPrompt(p, Products.devProducts.starter_pack, 5)
+			t.eq(ok, false)
+			t.eq(err, "already_owned")
+			ok, err = MonetizationLogic.canPrompt(p, Products.devProducts.lira_100, 5, true)
+			t.eq(err, "restricted", "no lira sales where paid random items are restricted")
+			t.truthy(MonetizationLogic.canPrompt(p, Products.devProducts.lira_100, 5, false))
 		end)
 	end)
 
@@ -111,14 +175,31 @@ return function(t)
 			for key, p in Products.devProducts do
 				t.truthy(type(p.productId) == "number" and p.productId >= 0, key .. " id")
 				t.truthy(Strings.en[p.nameKey] and Strings.ar[p.nameKey], key .. " name strings")
-				if p.kind == "qirsh" then
+				if p.kind == "qirsh" or p.kind == "lira" or p.kind == "stones" or p.kind == "passSkip" then
 					t.truthy(p.amount and p.amount > 0, key .. " amount")
-				else
+				elseif p.kind == "item" then
 					t.truthy(Items[p.item] and Items[p.item].product == key, key .. " item back-link")
+				elseif p.kind == "passPremium" then
+					t.truthy(p.season == SeasonPass.season, key .. " season")
+					t.truthy(p.fallbackLira, key .. " fallback")
+				elseif p.kind == "bundle" then
+					t.truthy(type(p.bundle) == "table", key .. " bundle")
+					t.truthy(not p.bundle.unit or Units[p.bundle.unit], key .. " bundle unit")
+					t.truthy(not p.bundle.item or Items[p.bundle.item], key .. " bundle item")
+				else
+					t.truthy(false, key .. " unknown kind " .. tostring(p.kind))
+				end
+				if p.descKey then
+					t.truthy(Strings.en[p.descKey] and Strings.ar[p.descKey], key .. " desc strings")
 				end
 			end
-			for _, key in Products.storeOrder do
-				t.truthy(Products.devProducts[key], "store order " .. key)
+			for _, list in { Products.storeOrder, Products.liraOrder, Products.extrasOrder } do
+				for _, key in list do
+					t.truthy(Products.devProducts[key], "store order " .. key)
+				end
+			end
+			for _, key in Products.passOrder do
+				t.truthy(Products.gamePasses[key], "pass order " .. key)
 			end
 			for key, pass in Products.gamePasses do
 				for _, itemId in pass.items do

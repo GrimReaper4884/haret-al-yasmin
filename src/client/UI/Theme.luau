@@ -21,6 +21,19 @@ Theme.colors = {
 	danger = Palette.fabricRed,
 }
 
+Theme.rarity = {
+	rare = Color3.fromHex("#2E8B87"),
+	epic = Color3.fromHex("#7B3FA0"),
+	legendary = Color3.fromHex("#C9A13B"),
+	mythic = Color3.fromHex("#A4302A"),
+	secret = Color3.fromHex("#1F1B18"),
+}
+Theme.lira = Color3.fromHex("#C9A13B")
+
+function Theme.rarityColor(rarity: string): Color3
+	return Theme.rarity[rarity] or Theme.colors.textMuted
+end
+
 Theme.font = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Medium)
 Theme.fontBold = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.Bold)
 

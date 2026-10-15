@@ -54,6 +54,36 @@ local Npcs: { [string]: NpcDef } = {
 		accent = "#A4302A",
 		headwear = "tarboosh",
 	},
+	barber = {
+		nameKey = "npc.barber.name",
+		roleKey = "npc.barber.role",
+		position = { 14.5, 0.3, 36 },
+		yaw = 90, -- faces the lane (-X), behind the chair
+		skin = "#D2A07A",
+		robe = "#FBF8F1",
+		accent = "#1F1B18",
+		headwear = "tarboosh",
+	},
+	qahwaji = {
+		nameKey = "npc.qahwaji.name",
+		roleKey = "npc.qahwaji.role",
+		position = { -27, 0.3, -13 },
+		yaw = -90, -- faces the square (+X)
+		skin = "#C08A62",
+		robe = "#5E7D3A",
+		accent = "#C9A13B",
+		headwear = "tarboosh",
+	},
+	natour = {
+		nameKey = "npc.natour.name",
+		roleKey = "npc.natour.role",
+		position = { 5.5, 0, 84 },
+		yaw = 90, -- faces the lane (-X), by the wicket
+		skin = "#B97F5A",
+		robe = "#4A2E18",
+		accent = "#B87333",
+		headwear = "cap",
+	},
 }
 
 return Npcs

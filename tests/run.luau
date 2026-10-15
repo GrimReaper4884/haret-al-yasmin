@@ -96,6 +96,27 @@ end
 t.logic = _G.LogicRequire
 t.config = config
 
+-- A full ProfileSchema context (overrides merged in), so specs don't repeat it.
+function t.schemaCtx(over)
+	local Economy, Items, Units, Traits, TD = config("Economy"), config("Items"), config("Units"), config("Traits"), config("TD")
+	local ctx = {
+		schemaVersion = Economy.SCHEMA_VERSION,
+		maxQirsh = Economy.MAX_QIRSH,
+		maxLira = TD.MAX_LIRA,
+		maxStones = TD.MAX_TRAIT_STONES,
+		receiptHistory = Economy.RECEIPT_HISTORY,
+		items = Items,
+		units = Units,
+		traits = Traits.traits,
+		starterUnit = TD.STARTER_UNIT,
+		season = "s1",
+	}
+	for k, v in pairs(over or {}) do
+		ctx[k] = v
+	end
+	return ctx
+end
+
 -- Specs ----------------------------------------------------------------------------------
 
 local specs = {
@@ -104,6 +125,8 @@ local specs = {
 	require("./config.spec"),
 	require("./season1.spec"),
 	require("./monetization.spec"),
+	require("./td.spec"),
+	require("./meta.spec"),
 }
 for _, spec in specs do
 	spec(t)

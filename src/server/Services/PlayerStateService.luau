@@ -1,6 +1,7 @@
 --!strict
 -- Sends each player a snapshot of their own state whenever it changes (coalesced per frame),
--- handles the language preference, and delivers notifications.
+-- handles the language preference, and delivers notifications. Other services can add fields to
+-- the snapshot with PlayerStateService.addExtra (perks, region policy…).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -16,8 +17,9 @@ local PlayerStateService = {}
 local pending: { [Player]: boolean } = {}
 local stateSync: RemoteEvent
 local notify: RemoteEvent
+local extras: { (Player, { [string]: any }) -> () } = {}
 
-local function snapshot(profile: any): { [string]: any }
+local function snapshot(player: Player, profile: any): { [string]: any }
 	local quests = {}
 	for id, rec in profile.quests do
 		quests[id] = {
@@ -26,23 +28,51 @@ local function snapshot(profile: any): { [string]: any }
 			progress = if rec.progress then table.clone(rec.progress) else nil,
 		}
 	end
-	local inventory = table.clone(profile.inventory)
-	local equipped = table.clone(profile.equipped)
-	return {
+	local units = {}
+	for id, rec in profile.units do
+		units[id] = { copies = rec.copies, trait = rec.trait, at = rec.at }
+	end
+	local s = {
 		qirsh = profile.qirsh,
-		inventory = inventory,
-		equipped = equipped,
+		lira = profile.lira,
+		traitStones = profile.traitStones,
+		inventory = table.clone(profile.inventory),
+		equipped = table.clone(profile.equipped),
 		quests = quests,
 		language = profile.settings.language,
 		persistent = DataService.isPersistent(),
+		-- Tower defense
+		units = units,
+		loadout = table.clone(profile.loadout),
+		summons = table.clone(profile.summons),
+		pass = {
+			season = profile.pass.season,
+			xp = profile.pass.xp,
+			premium = profile.pass.premium,
+			claimedFree = table.clone(profile.pass.claimedFree),
+			claimedPremium = table.clone(profile.pass.claimedPremium),
+		},
+		daily = table.clone(profile.daily),
+		td = {
+			matches = profile.td.matches,
+			wins = profile.td.wins,
+			kills = profile.td.kills,
+			cleared = table.clone(profile.td.cleared),
+			bestInfinite = profile.td.bestInfinite,
+		},
+		bundles = table.clone(profile.bundles),
 	}
+	for _, fn in extras do
+		fn(player, s)
+	end
+	return s
 end
 
 local function push(player: Player)
 	pending[player] = nil
 	local profile = DataService.getProfile(player)
 	if profile and player.Parent then
-		stateSync:FireClient(player, snapshot(profile))
+		stateSync:FireClient(player, snapshot(player, profile))
 	end
 end
 
@@ -58,6 +88,11 @@ function PlayerStateService.notify(player: Player, key: string, args: { [string]
 	if player.Parent then
 		notify:FireClient(player, { key = key, args = args })
 	end
+end
+
+-- Registers a function that adds fields to every snapshot of a player.
+function PlayerStateService.addExtra(fn: (Player, { [string]: any }) -> ())
+	table.insert(extras, fn)
 end
 
 function PlayerStateService.start()

@@ -15,27 +15,54 @@ end
 
 local Wallet = sibling("Wallet")
 local Inventory = sibling("Inventory")
+local Grants = sibling("Grants")
+local PassLogic = sibling("PassLogic")
 
 type Profile = {
 	qirsh: number,
+	lira: number,
 	inventory: { [string]: number },
 	receipts: { [string]: number },
+	[string]: any,
 }
-type DevProduct = { kind: string, amount: number?, item: string?, fallbackQirsh: number? }
+type DevProduct = { kind: string, amount: number?, item: string?, fallbackQirsh: number?, fallbackLira: number?, season: string?, bundle: any?, oneTime: boolean? }
 
 export type GrantResult = "granted" | "already" | "fallback"
 
+-- grantCtx: Grants.Context plus `passTiers` (SeasonPass.tiers)
+export type GrantContext = {
+	items: { [string]: any },
+	units: { [string]: any },
+	traits: any,
+	rng: () -> number,
+	now: number,
+	maxQirsh: number,
+	maxLira: number,
+	maxStones: number,
+	passTiers: { any },
+}
+
 local MonetizationLogic = {}
 
+-- Bundles are identified by their nameKey (stable across price changes).
+local function receiptKey(product: any): string
+	return tostring(product.nameKey or product.kind)
+end
+
+local function isAmount(v: any): boolean
+	return type(v) == "number" and v == v and v > 0 and v ~= math.huge and math.floor(v) == v
+end
+
+local function fallback(profile: Profile, product: DevProduct, ctx: GrantContext)
+	if product.fallbackLira then
+		Grants.apply(profile, { lira = product.fallbackLira }, ctx)
+	elseif product.fallbackQirsh then
+		Wallet.add(profile, product.fallbackQirsh, ctx.maxQirsh)
+	end
+end
+
 -- Returns ok, err, result. result "already" means this receipt was granted before.
-function MonetizationLogic.grantReceipt(
-	profile: Profile,
-	receiptId: string,
-	product: DevProduct?,
-	items: { [string]: any },
-	maxQirsh: number,
-	now: number
-): (boolean, string?, GrantResult?)
+function MonetizationLogic.grantReceipt(profile: Profile, receiptId: string, product: DevProduct?, ctx: GrantContext): (boolean, string?, GrantResult?)
 	if type(receiptId) ~= "string" or receiptId == "" then
 		return false, "bad_receipt", nil
 	end
@@ -47,32 +74,63 @@ function MonetizationLogic.grantReceipt(
 	end
 
 	local result: GrantResult = "granted"
-	if product.kind == "qirsh" then
-		local amount = product.amount
-		if type(amount) ~= "number" or amount <= 0 or math.floor(amount) ~= amount then
+	local kind = product.kind
+	if kind == "qirsh" or kind == "lira" or kind == "stones" then
+		if not isAmount(product.amount) then
 			return false, "bad_product", nil
 		end
-		Wallet.add(profile, amount, maxQirsh)
-	elseif product.kind == "item" then
+		if kind == "qirsh" then
+			Wallet.add(profile, product.amount :: number, ctx.maxQirsh)
+		elseif kind == "lira" then
+			Grants.apply(profile, { lira = product.amount }, ctx)
+		else
+			Grants.apply(profile, { traitStones = product.amount }, ctx)
+		end
+	elseif kind == "item" then
 		local itemId = product.item
-		if type(itemId) ~= "string" or items[itemId] == nil then
+		if type(itemId) ~= "string" or ctx.items[itemId] == nil then
 			return false, "bad_product", nil
 		end
 		if Inventory.has(profile, itemId, 1) then
 			-- Bought twice in a race: never take Robux for nothing.
-			Wallet.add(profile, product.fallbackQirsh or 0, maxQirsh)
+			Wallet.add(profile, product.fallbackQirsh or 0, ctx.maxQirsh)
 			result = "fallback"
 		else
-			local ok, err = Inventory.add(profile, itemId, 1, items)
+			local ok, err = Inventory.add(profile, itemId, 1, ctx.items)
 			if not ok then
 				return false, err, nil
+			end
+		end
+	elseif kind == "passPremium" then
+		if profile.pass.season ~= product.season or profile.pass.premium then
+			fallback(profile, product, ctx)
+			result = "fallback"
+		else
+			profile.pass.premium = true
+		end
+	elseif kind == "passSkip" then
+		if not isAmount(product.amount) then
+			return false, "bad_product", nil
+		end
+		PassLogic.addLevels(profile, product.amount :: number, ctx.passTiers)
+	elseif kind == "bundle" then
+		if type(product.bundle) ~= "table" then
+			return false, "bad_product", nil
+		end
+		if product.oneTime and profile.bundles[receiptKey(product)] then
+			fallback(profile, product, ctx)
+			result = "fallback"
+		else
+			Grants.apply(profile, product.bundle, ctx)
+			if product.oneTime then
+				profile.bundles[receiptKey(product)] = ctx.now
 			end
 		end
 	else
 		return false, "bad_product", nil
 	end
 
-	profile.receipts[receiptId] = now
+	profile.receipts[receiptId] = ctx.now
 	return true, nil, result
 end
 
@@ -90,7 +148,8 @@ function MonetizationLogic.grantPassItems(profile: Profile, passItems: { string 
 end
 
 -- Whether the server may open a Robux prompt for this product for this player right now.
-function MonetizationLogic.canPrompt(profile: Profile, product: DevProduct?, productId: number?): (boolean, string?)
+-- restricted = the player's region restricts paid random items (no lira sales).
+function MonetizationLogic.canPrompt(profile: Profile, product: DevProduct?, productId: number?, restricted: boolean?): (boolean, string?)
 	if not product then
 		return false, "unknown_product"
 	end
@@ -98,6 +157,15 @@ function MonetizationLogic.canPrompt(profile: Profile, product: DevProduct?, pro
 		return false, "not_available"
 	end
 	if product.kind == "item" and product.item and Inventory.has(profile, product.item, 1) then
+		return false, "already_owned"
+	end
+	if product.kind == "lira" and restricted then
+		return false, "restricted"
+	end
+	if product.kind == "passPremium" and (profile.pass.premium or profile.pass.season ~= product.season) then
+		return false, "already_owned"
+	end
+	if product.kind == "bundle" and product.oneTime and profile.bundles[receiptKey(product)] then
 		return false, "already_owned"
 	end
 	return true, nil

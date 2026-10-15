@@ -1,6 +1,6 @@
 # World Map
 
-*Status: living document · Last updated 2026-10-15*
+*Status: living document · Last updated 2026-10-16*
 
 Coordinates are in studs. +Y is up, and ground level is Y = 0. The origin is the centre of the fountain
 square. The lane runs along the Z axis from the gate (north, +Z) to Sitt Wardeh's house (south, −Z). The
@@ -72,3 +72,29 @@ Rooftops are out of reach: awnings top out at 11 studs and roofs start at 20 or 
 
 Each future zone is a separate streaming region (`Model.ModelStreamingMode = Atomic` for buildings),
 budgeted at 3,000 parts or fewer.
+
+## Tower-defense update (v3, 2026-10-16)
+
+| Where | Elements (`World/Zones/Extras.luau`, `World/Props2.luau`) |
+|-------|----------|
+| Gate | Rebuilt leaves (`Props2.gate`, open, swinging inward), wicket, knockers, bar hooks, the bar leaning by the east jamb; nameplates "حارة الياسمين" on both faces; the watchman Abu Fares (NPC `natour`) with stool and lantern at (5.5, 84) |
+| Square | Four mode portals: pads at (-19, 2) Ep1, (-19, -8) Ep2, (19, 2) Ep3, (19, -8) Endless, each with a banded arch, lantern and Arabic board; billboards are client-side |
+| Square west (x -40..-24, z -26..0) | The coffee house (replaces SquareSW): open ground floor behind two columns, dikkeh benches, three low tables with tea and backgammon, samovar, cat; NPC `qahwaji` Abu Hamed at (-27, -13) |
+| Lane east (x 8..24, z 24..48) | The barber shop (replaces EastB): chair, mirror, bottle shelves, basin, bench, latticed bay above; NPC `barber` Abu Nidal at (14.5, 36) |
+| Lane west | Notice board at (-8, 5, 74) with the launch codes |
+| Shops | Painted signs over the bakery, tailor and spice shop |
+| Crowd | 8 ambient walkers (`CrowdService`) between gate, shops and square |
+
+### Arenas (`Config/Arenas.luau`, `World/Arena.luau`)
+
+Built on demand at x = 3000 + 600 * (slot - 1) (up to 6). Local coordinates:
+
+| Arena | Road | Bounds | Party spawn |
+|-------|------|--------|-------------|
+| `orchard` (Ep1, Ep2) | (-64,-34) -> (-64,12) -> (-28,12) -> (-28,-18) -> (12,-18) -> (12,20) -> (50,20) -> (50,-26) = gate; 274 studs | x -74..74, z -42..32 | (30, -32) |
+| `siege` (Ep3, Endless) | (-70,24) -> (-40,24) -> (-40,-22) -> (0,-22) -> (0,22) -> (36,22) -> (36,-10) -> (64,-10) = gate; 262 studs | x -80..80, z -36..36 | (60, 20) |
+
+Each arena: grass field with garden plots (trees, low walls, crates, a well) kept 9 studs off the road and 12
+off the spawn pad, a cobbled road with kerbs and a milestone at the start, the quarter wall with the closed,
+barred gate and nameplate at the end, an invisible fence at the bounds. Part count ~600 per arena. Matches
+open in the overhead "watchtower" camera (`MatchCameraController`), with a Walk toggle.

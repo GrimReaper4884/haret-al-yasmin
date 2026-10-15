@@ -1,6 +1,6 @@
 # Haret Al-Yasmin — Game Design Document
 
-*Status: living document · Last updated 2026-10-15 · Owner: lead engineer*
+*Status: living document · Last updated 2026-10-16 · Owner: lead engineer*
 
 ## 1. Pitch
 
@@ -16,6 +16,14 @@ fountain, a wedding to prepare), never from graphic violence.
 for this project. We draw on the *general* history, architecture and daily life of Levantine
 neighborhoods, which are not protected. We never reproduce characters, plots, catch-phrases, music, logos
 or distinctive sets from any TV series (see `COPYRIGHT_REGISTER.md`).
+
+### 1b. The tower-defense update (2026-10-16)
+
+The lane is now the lobby of a cooperative **tower-defense** game: players collect the neighbourhood's
+defenders through summons, and parties of up to four defend the lane gate against waves of thieves,
+gendarmes and rival-lane thugs across three story episodes and an endless mode. Design, balance and
+monetization are in `TOWER_DEFENSE.md` and `MONETIZATION.md`. The roleplay errands remain as the lobby's
+first-session hook and the cosmetics economy.
 
 ## 2. Audience and platform
 
