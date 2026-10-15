@@ -126,6 +126,10 @@ local en: { [string]: string } = {
 	["item.shawl_embroidered.desc"] = "A turquoise shawl with a gold border, embroidered by the women of the lane.",
 
 	-- Store and Robux
+	["hud.wardrobe"] = "Wardrobe",
+	["wardrobe.title"] = "Your wardrobe",
+	["wardrobe.empty"] = "Nothing here yet. Visit Khalil the tailor in the lane.",
+	["wardrobe.errand_item"] = "Errand item",
 	["store.title"] = "Qirsh store",
 	["store.open"] = "+",
 	["store.robux"] = "R$ {n}",
@@ -273,6 +277,10 @@ local ar: { [string]: string } = {
 	["item.shawl_embroidered.name"] = "شال مطرّز",
 	["item.shawl_embroidered.desc"] = "شال فيروزي بحاشية دهبية، طرّزوه نسوان الحارة.",
 
+	["hud.wardrobe"] = "الخزانة",
+	["wardrobe.title"] = "خزانتك",
+	["wardrobe.empty"] = "لسا ما في شي. زور خليل الخيّاط بالحارة.",
+	["wardrobe.errand_item"] = "غرض مشوار",
 	["store.title"] = "سوق القروش",
 	["store.open"] = "+",
 	["store.robux"] = "R$ {n}",

@@ -21,6 +21,7 @@ local Create = require(UI.Create)
 local Theme = require(UI.Theme)
 local Root = require(UI.Root)
 local Icons = require(UI.Icons)
+local ItemPreview = require(UI.ItemPreview)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 
@@ -141,6 +142,7 @@ end
 
 type RowSpec = {
 	order: number,
+	itemId: string?, -- cosmetics get a 3D preview instead of the drawn icon
 	icon: string,
 	iconColor: string?,
 	name: string,
@@ -161,14 +163,19 @@ local function row(spec: RowSpec)
 		Parent = list,
 	}, { Create("UICorner", { CornerRadius = UDim.new(0, 10) }) })
 
-	local iconHolder = Create("Frame", {
-		BackgroundTransparency = 1,
-		Size = UDim2.fromOffset(56, 56),
+	local iconProps = {
+		Size = UDim2.fromOffset(60, 72),
 		AnchorPoint = Vector2.new(if rtl then 1 else 0, 0.5),
-		Position = UDim2.new(if rtl then 1 else 0, if rtl then -8 else 8, 0.5, 0),
+		Position = UDim2.new(if rtl then 1 else 0, if rtl then -6 else 6, 0.5, 0),
 		Parent = r,
-	})
-	Icons.draw(spec.icon, iconHolder, spec.iconColor)
+	}
+	if spec.itemId then
+		ItemPreview.create(spec.itemId, iconProps)
+	else
+		local iconHolder = Create("Frame", iconProps)
+		iconHolder.BackgroundTransparency = 1
+		Icons.draw(spec.icon, iconHolder, spec.iconColor)
+	end
 
 	local name = Theme.label({
 		Text = spec.name,
@@ -215,6 +222,7 @@ local function shopRows(snapshot: any, shop: any)
 		local worn = def.slot ~= nil and snapshot.equipped[def.slot] == itemId
 		local spec: RowSpec = {
 			order = i,
+			itemId = itemId,
 			icon = def.icon,
 			iconColor = def.iconColor,
 			name = t(def.nameKey),

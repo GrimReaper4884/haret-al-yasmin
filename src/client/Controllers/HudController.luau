@@ -14,6 +14,7 @@ local Root = require(UI.Root)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local ShopController = require(script.Parent.ShopController)
+local WardrobeController = require(script.Parent.WardrobeController)
 
 local HudController = {}
 
@@ -24,6 +25,7 @@ local questTitle: TextLabel
 local questObjective: TextLabel
 local questClues: TextLabel
 local langButton: TextButton
+local wardrobeButton: TextButton
 local testBadge: TextLabel
 local lastQirsh: number? = nil
 
@@ -132,6 +134,16 @@ local function build()
 	})
 	langButton.Activated:Connect(LocaleController.toggle)
 
+	wardrobeButton = Theme.button({
+		Name = "Wardrobe",
+		Position = UDim2.new(0.5, 104, 0, 8),
+		Size = UDim2.fromOffset(112, Theme.TOUCH - 4),
+		TextSize = 17,
+		BackgroundColor3 = Theme.colors.quest,
+		Parent = root,
+	})
+	wardrobeButton.Activated:Connect(WardrobeController.toggle)
+
 	-- Shown only when the server runs on the mock store (unpublished place / no API access).
 	testBadge = Theme.label({
 		Name = "TestMode",
@@ -231,6 +243,7 @@ local function render()
 		Theme.align(l, rtl)
 	end
 	langButton.Text = t("hud.language")
+	wardrobeButton.Text = t("hud.wardrobe")
 	testBadge.Visible = snapshot ~= nil and not snapshot.persistent
 	testBadge.Text = t("notify.persistence_disabled")
 end

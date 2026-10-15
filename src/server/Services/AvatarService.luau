@@ -1,85 +1,49 @@
 --!strict
--- Attaches primitive-built cosmetics (Config/CosmeticVisuals) to characters and NPC rigs.
+-- Puts equipped cosmetics on characters and NPC rigs (built by Shared/Util/CosmeticBuilder).
 -- Callers are responsible for ownership checks; this service only renders profile.equipped.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Shared = ReplicatedStorage:WaitForChild("Shared")
-local CosmeticVisuals = require(Shared.Config.CosmeticVisuals)
+local CosmeticBuilder = require(ReplicatedStorage:WaitForChild("Shared").Util.CosmeticBuilder)
 local DataService = require(script.Parent.DataService)
 
 local AvatarService = {}
 
 local FOLDER_PREFIX = "Cosmetic_"
 
--- R6 rigs have fewer, bigger parts; clothes for R15 parts map onto them.
-AvatarService.R6_MAP = {
-	UpperTorso = "Torso",
-	LowerTorso = "Torso",
-	LeftUpperLeg = "Left Leg",
-	LeftLowerLeg = "Left Leg",
-	RightUpperLeg = "Right Leg",
-	RightLowerLeg = "Right Leg",
-	LeftUpperArm = "Left Arm",
-	RightUpperArm = "Right Arm",
-} :: { [string]: string }
-
-local function bodyPart(character: Model, name: string): BasePart?
-	local p = character:FindFirstChild(name) or character:FindFirstChild(AvatarService.R6_MAP[name] or "")
-	return if p and p:IsA("BasePart") then p else nil
-end
-
 -- Builds the visual `visualId` on `character`. Returns the created model, or nil.
 function AvatarService.attach(character: Model, visualId: string, slot: string): Model?
-	local spec = CosmeticVisuals[visualId]
-	if not spec then
-		return nil
-	end
-	local holder = Instance.new("Model")
-	holder.Name = FOLDER_PREFIX .. slot
-	for _, p in spec do
-		local attachName = p.attach or "HeadTop"
-		local base = bodyPart(character, if attachName == "HeadTop" then "Head" else attachName)
-		if base then
-			local x = Instance.new("Part")
-			x.Name = p.name
-			x.Shape = p.shape
-			x.Color = p.color
-			x.Material = p.material
-			if attachName == "HeadTop" then
-				x.Size = p.size or Vector3.one
-				x.CFrame = base.CFrame * CFrame.new(0, base.Size.Y / 2, 0) * (p.offset or CFrame.identity)
-			else
-				local fit = p.fit or Vector3.one
-				x.Size = base.Size * fit + (p.pad or Vector3.zero)
-				local at = (p.at or Vector3.zero) * base.Size
-				local rot = p.rot or Vector3.zero
-				x.CFrame = base.CFrame
-					* CFrame.new(at)
-					* CFrame.Angles(math.rad(rot.X), math.rad(rot.Y), math.rad(rot.Z))
-			end
-			x.Anchored = false
-			x.Massless = true
-			x.CanCollide = false
-			x.CanQuery = false
-			x.CanTouch = false
-			x.CastShadow = false
-			local weld = Instance.new("WeldConstraint")
-			weld.Part0 = base
-			weld.Part1 = x
-			weld.Parent = x
-			x.Parent = holder
-		end
-	end
-	holder.Parent = character
-	return holder
+	return CosmeticBuilder.build(character, visualId, FOLDER_PREFIX .. slot, true)
 end
 
 local function clear(character: Model)
 	for _, child in character:GetChildren() do
 		if child:IsA("Model") and string.sub(child.Name, 1, #FOLDER_PREFIX) == FOLDER_PREFIX then
 			child:Destroy()
+		end
+	end
+end
+
+-- Hats and hair from the player's own avatar would cover period headwear: hide them while a head
+-- cosmetic is worn, restore them when it is taken off.
+local HIDDEN_ATTR = "HaretHidden"
+local function setHeadAccessoriesHidden(character: Model, hidden: boolean)
+	for _, acc in character:GetChildren() do
+		if acc:IsA("Accessory") then
+			local t = acc.AccessoryType
+			if t == Enum.AccessoryType.Hat or t == Enum.AccessoryType.Hair then
+				local handle = acc:FindFirstChild("Handle")
+				if handle and handle:IsA("BasePart") then
+					if hidden and not handle:GetAttribute(HIDDEN_ATTR) then
+						handle:SetAttribute(HIDDEN_ATTR, handle.Transparency)
+						handle.Transparency = 1
+					elseif not hidden and handle:GetAttribute(HIDDEN_ATTR) ~= nil then
+						handle.Transparency = handle:GetAttribute(HIDDEN_ATTR) :: number
+						handle:SetAttribute(HIDDEN_ATTR, nil)
+					end
+				end
+			end
 		end
 	end
 end
@@ -94,10 +58,11 @@ function AvatarService.refresh(player: Player)
 	for slot, itemId in profile.equipped do
 		AvatarService.attach(character, itemId, slot)
 	end
+	setHeadAccessoriesHidden(character, profile.equipped.head ~= nil)
 end
 
 local function onCharacter(player: Player, character: Model)
-	-- Wait until the rig is assembled so the head is in its final position.
+	-- Wait until the rig is assembled so body parts are in their final positions.
 	character:WaitForChild("Head", 10)
 	if not player:HasAppearanceLoaded() then
 		player.CharacterAppearanceLoaded:Wait()
