@@ -34,6 +34,16 @@ local Npcs: { [string]: NpcDef } = {
 		accent = "#FBF8F1",
 		headwear = "scarf",
 	},
+	hajj_rashid = {
+		nameKey = "npc.hajj_rashid.name",
+		roleKey = "npc.hajj_rashid.role",
+		position = { -21.5, 0, 16 },
+		yaw = -90, -- faces the square (+X)
+		skin = "#C08A62",
+		robe = "#5E7D3A",
+		accent = "#E6D5B8",
+		headwear = "cap",
+	},
 	khalil_tailor = {
 		nameKey = "npc.khalil_tailor.name",
 		roleKey = "npc.khalil_tailor.role",

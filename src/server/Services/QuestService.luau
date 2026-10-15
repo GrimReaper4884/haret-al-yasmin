@@ -8,6 +8,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Quests = require(Shared.Config.Quests)
 local Items = require(Shared.Config.Items)
 local Economy = require(Shared.Config.Economy)
+local Clues = require(Shared.Config.Clues)
 local QuestLogic = require(Shared.Logic.QuestLogic)
 local DataService = require(script.Parent.DataService)
 local PlayerStateService = require(script.Parent.PlayerStateService)
@@ -27,6 +28,27 @@ function QuestService.accept(player: Player, questId: string, npcId: string): (b
 		PlayerStateService.notify(player, "notify.quest_accepted", { titleKey = def.titleKey })
 		PlayerStateService.notify(player, "notify.item_received", { itemKey = (Items :: any)[def.item].nameKey })
 		Analytics.funnel(player, Analytics.Funnel.AcceptedQuest)
+	end
+	return ok, err
+end
+
+-- Called by ClueService after its own range check. The clue → quest mapping comes from config.
+function QuestService.collectClue(player: Player, clueId: string): (boolean, string?)
+	local clue = (Clues :: any)[clueId]
+	if not clue then
+		return false, "unknown_clue"
+	end
+	local def = (Quests :: any)[clue.quest]
+	local ok, err, found = DataService.mutate(player, function(profile)
+		return QuestLogic.collectClue(profile, clue.quest, clueId, Quests :: any)
+	end)
+	if ok then
+		PlayerStateService.notify(player, "notify.clue_found", {
+			clueKey = clue.nameKey,
+			n = found,
+			total = #def.clues,
+		})
+		Analytics.custom(player, "ClueFound_" .. clueId)
 	end
 	return ok, err
 end

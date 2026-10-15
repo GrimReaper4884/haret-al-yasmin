@@ -76,6 +76,68 @@ local Dialogue: { [string]: Tree } = {
 		},
 	},
 
+	-- Season 1 · Episode 1 (docs/SEASON_1.md)
+	hajj_rashid = {
+		entries = {
+			{ condition = { quest = "s1e1_wedding_eve", state = "completed" }, node = "after" },
+			{ condition = { quest = "s1e1_wedding_eve", state = "ready" }, node = "report" },
+			{ condition = { quest = "s1e1_wedding_eve", state = "active" }, node = "searching" },
+			{ condition = { quest = "delivery_kaak", state = "completed" }, node = "plea" },
+			{ node = "busy" },
+		},
+		nodes = {
+			busy = {
+				textKey = "dlg.hajj_rashid.busy",
+				choices = { { textKey = "dlg.common.goodbye" } },
+			},
+			plea = {
+				textKey = "dlg.hajj_rashid.plea",
+				choices = {
+					{ textKey = "dlg.hajj_rashid.plea.ask", next = "plea2" },
+					{ textKey = "dlg.common.not_now", action = { type = "close" } },
+				},
+			},
+			plea2 = {
+				textKey = "dlg.hajj_rashid.plea2",
+				choices = {
+					{
+						textKey = "dlg.hajj_rashid.plea2.accept",
+						action = { type = "acceptQuest", quest = "s1e1_wedding_eve" },
+						next = "accepted",
+					},
+					{ textKey = "dlg.hajj_rashid.plea2.decline", action = { type = "close" } },
+				},
+			},
+			accepted = {
+				textKey = "dlg.hajj_rashid.accepted",
+				choices = { { textKey = "dlg.common.on_my_way" } },
+			},
+			searching = {
+				textKey = "dlg.hajj_rashid.searching",
+				choices = { { textKey = "dlg.common.on_my_way" } },
+			},
+			report = {
+				textKey = "dlg.hajj_rashid.report",
+				choices = {
+					{
+						textKey = "dlg.hajj_rashid.report.give",
+						action = { type = "deliverQuest", quest = "s1e1_wedding_eve" },
+						next = "reported",
+					},
+					{ textKey = "dlg.common.one_moment", action = { type = "close" } },
+				},
+			},
+			reported = {
+				textKey = "dlg.hajj_rashid.reported",
+				choices = { { textKey = "dlg.hajj_rashid.reported.ok" } },
+			},
+			after = {
+				textKey = "dlg.hajj_rashid.after",
+				choices = { { textKey = "dlg.common.goodbye" } },
+			},
+		},
+	},
+
 	khalil_tailor = {
 		entries = {
 			{ node = "greet" },

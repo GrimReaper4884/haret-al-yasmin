@@ -6,6 +6,7 @@ local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Quests = require(Shared.Config.Quests)
+local Clues = require(Shared.Config.Clues)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
@@ -20,6 +21,7 @@ local coinPill: Frame
 local questHeader: TextLabel
 local questTitle: TextLabel
 local questObjective: TextLabel
+local questClues: TextLabel
 local langButton: TextButton
 local testBadge: TextLabel
 local lastQirsh: number? = nil
@@ -97,6 +99,16 @@ local function build()
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Parent = tracker,
 	})
+	questClues = Theme.label({
+		LayoutOrder = 4,
+		TextSize = 14,
+		FontFace = Theme.fontBold,
+		TextColor3 = Theme.colors.accent,
+		Size = UDim2.fromScale(1, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		Visible = false,
+		Parent = tracker,
+	})
 
 	langButton = Theme.button({
 		Name = "Language",
@@ -123,22 +135,50 @@ local function build()
 	})
 end
 
--- Picks the errand to show: the first active quest, else the most recently completed one.
+-- Picks the errand to show: an active quest first, else the completed one with the latest episode.
 local function currentQuest(): (string?, string?)
 	local snapshot = StateController.get()
 	if not snapshot then
 		return nil, nil
 	end
-	local completed: string? = nil
+	local best: string? = nil
+	local bestEpisode = -1
 	for id, rec in snapshot.quests do
-		if (Quests :: any)[id] then
+		local def = (Quests :: any)[id]
+		if def then
 			if rec.state == "active" then
-				return id, "active"
+				return id, StateController.questState(id)
 			end
-			completed = id
+			local ep = def.episode or 0
+			if ep > bestEpisode then
+				best, bestEpisode = id, ep
+			end
 		end
 	end
-	return completed, if completed then "completed" else nil
+	return best, if best then "completed" else nil
+end
+
+-- "Clues 2/3" followed by the names of the clues found so far, in config order.
+local function clueJournal(questId: string): string
+	local def = (Quests :: any)[questId]
+	if not def or def.kind ~= "investigate" then
+		return ""
+	end
+	local t = LocaleController.t
+	local found = {}
+	for _, clueId in def.clues do
+		if StateController.clueFound(questId, clueId) then
+			table.insert(found, clueId)
+		end
+	end
+	table.sort(found, function(a, b)
+		return (Clues :: any)[a].order < (Clues :: any)[b].order
+	end)
+	local lines = { t("hud.clues", { n = #found, total = #def.clues }) }
+	for _, clueId in found do
+		table.insert(lines, "- " .. t((Clues :: any)[clueId].nameKey))
+	end
+	return table.concat(lines, "\n")
 end
 
 local function render()
@@ -160,17 +200,21 @@ local function render()
 		lastQirsh = snapshot.qirsh
 	end
 
-	questHeader.Text = t("hud.quest_header")
 	local questId, state = currentQuest()
 	if questId and state then
 		local def = (Quests :: any)[questId]
+		questHeader.Text = if def.episode then t("hud.episode", { n = def.episode }) else t("hud.quest_header")
 		questTitle.Text = t(def.titleKey)
-		questObjective.Text = t(def.objectiveKeys[state])
+		questObjective.Text = t(def.objectiveKeys[state] or def.objectiveKeys.active)
+		questClues.Text = if state == "completed" then "" else clueJournal(questId)
 	else
+		questHeader.Text = t("hud.quest_header")
 		questTitle.Text = t("hud.no_quest")
 		questObjective.Text = ""
+		questClues.Text = ""
 	end
-	for _, l in { questHeader, questTitle, questObjective } do
+	questClues.Visible = questClues.Text ~= ""
+	for _, l in { questHeader, questTitle, questObjective, questClues } do
 		Theme.align(l, rtl)
 	end
 	langButton.Text = t("hud.language")

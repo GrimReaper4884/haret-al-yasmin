@@ -82,6 +82,18 @@ function ProfileSchema.sanitize(p: any, ctx: Context, now: number): any
 			if rec.completedAt ~= nil and not isFinite(rec.completedAt) then
 				rec.completedAt = nil
 			end
+			-- Objective progress (investigations): { [objectiveId]: true }
+			if rec.progress ~= nil then
+				if type(rec.progress) ~= "table" then
+					rec.progress = nil
+				else
+					for k, v in pairs(rec.progress) do
+						if type(k) ~= "string" or v ~= true then
+							rec.progress[k] = nil
+						end
+					end
+				end
+			end
 		end
 	end
 	p.quests = quests

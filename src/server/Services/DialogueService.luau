@@ -55,7 +55,7 @@ function DialogueService.open(player: Player, npcId: string)
 		return
 	end
 	ShopService.close(player)
-	local nodeId = DialogueLogic.entryNode(tree, profile)
+	local nodeId = DialogueLogic.entryNode(tree, profile, Quests)
 	if not nodeId then
 		return
 	end

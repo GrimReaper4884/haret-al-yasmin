@@ -8,6 +8,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Npcs = require(Shared.Config.Npcs)
 local Quests = require(Shared.Config.Quests)
+local Items = require(Shared.Config.Items)
+local QuestLogic = require(Shared.Logic.QuestLogic)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
@@ -21,17 +23,23 @@ local TAG = "Npc"
 type Label = { model: Model, npcId: string, name: TextLabel, marker: TextLabel, prompt: ProximityPrompt? }
 local labels: { [Model]: Label } = {}
 
+-- "?" when this NPC can take a turn-in now, "!" when they have unlocked work to offer.
 local function markerFor(npcId: string): string
+	local snapshot = StateController.get()
+	if not snapshot then
+		return ""
+	end
+	local offer = false
 	for questId, q in Quests :: any do
 		local state = StateController.questState(questId)
-		if q.giver == npcId and state == "none" then
-			return "!"
-		end
-		if q.target == npcId and state == "active" then
+		if q.target == npcId and state == "ready" then
 			return "?"
 		end
+		if q.giver == npcId and state == "none" and QuestLogic.canAccept(snapshot :: any, questId, Quests :: any, Items) then
+			offer = true
+		end
 	end
-	return ""
+	return if offer then "!" else ""
 end
 
 local function update(l: Label)

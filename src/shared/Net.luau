@@ -17,6 +17,7 @@ Net.Events = {
 	ShopClose = "ShopClose", -- C→S
 	SetLanguage = "SetLanguage", -- C→S "en" | "ar"
 	Notify = "Notify", -- S→C { key, args }
+	ClueShow = "ClueShow", -- S→C clueId (clue card)
 }
 
 Net.Functions = {

@@ -16,6 +16,7 @@ local AvatarService = require(Services.AvatarService)
 local PlayerStateService = require(Services.PlayerStateService)
 local ShopService = require(Services.ShopService)
 local DialogueService = require(Services.DialogueService)
+local ClueService = require(Services.ClueService)
 local DebugService = require(Services.DebugService)
 
 DataService.init()
@@ -25,6 +26,7 @@ AvatarService.start()
 PlayerStateService.start()
 ShopService.start()
 DialogueService.start()
+ClueService.start()
 DataService.start()
 DebugService.start() -- Studio only
 

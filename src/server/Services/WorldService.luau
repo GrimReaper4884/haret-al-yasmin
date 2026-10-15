@@ -271,12 +271,33 @@ local function buildSquare(map: Instance)
 	bench(m, CFrame.new(14, 0, 8) * CFrame.Angles(0, math.rad(90), 0))
 	bench(m, CFrame.new(-14, 0, -12) * CFrame.Angles(0, math.rad(90), 0))
 	bench(m, CFrame.new(14, 0, -12) * CFrame.Angles(0, math.rad(90), 0))
-	tree(m, Vector3.new(-19, 0, 18), Palette.copper)
+	tree(m, Vector3.new(-15, 0, 21), Palette.copper) -- clear of Hajj Rashid's shopfront
 	tree(m, Vector3.new(19, 0, 18), Palette.copper)
 	tree(m, Vector3.new(-19, 0, -20), nil)
 	tree(m, Vector3.new(19, 0, -20), nil)
 	lantern(m, Vector3.new(-23.2, 11, 0))
 	lantern(m, Vector3.new(23.2, 11, 0))
+end
+
+-- Hajj Rashid's spice shop on the west side of the square (Season 1 · Episode 1).
+local function buildSpiceShop(map: Instance)
+	local m = model(map, "SpiceShop")
+	local awning = part(m, { name = "Awning", size = Vector3.new(5, 0.3, 18), cf = CFrame.new(-22, 10.5, 13) * CFrame.Angles(0, 0, math.rad(16)), color = Palette.vine, material = M.Fabric })
+	awning.CastShadow = true
+	-- Sacks of spice along the wall (cumin, sumac, turmeric, za'atar)
+	local spices = { Color3.fromHex("#B5832F"), Color3.fromHex("#8E2B2B"), Color3.fromHex("#D9A421"), Color3.fromHex("#6F7D3A") }
+	for i, c in spices do
+		local z = 17 + i * 1.6
+		part(m, { name = "Sack", size = Vector3.new(1.8, 1.4, 1.4), cf = CFrame.new(-23, 0.9, z) * CYL_UP, color = Palette.stoneWarm, material = M.Fabric, shape = Enum.PartType.Cylinder })
+		part(m, { name = "Spice", size = Vector3.new(0.2, 1.25, 1.25), cf = CFrame.new(-23, 1.85, z) * CYL_UP, color = c, material = M.Sand, shape = Enum.PartType.Cylinder, collide = false })
+	end
+	-- The chest the necklace was taken from (copper bands)
+	box(m, "Chest", -23.8, 0, 6.6, -22.2, 1.6, 8.6, Palette.woodDark, M.Wood)
+	box(m, "ChestBand", -23.85, 0.6, 6.55, -22.15, 0.85, 8.65, Palette.copper, M.Metal)
+	box(m, "ChestLid", -23.9, 1.6, 6.5, -22.1, 1.8, 8.7, Palette.wood, M.WoodPlanks)
+	-- Brass scale on a low table
+	box(m, "Table", -23.6, 0, 11, -22.2, 2.4, 13, Palette.wood, M.WoodPlanks)
+	part(m, { name = "ScalePan", size = Vector3.new(0.1, 1, 1), cf = CFrame.new(-22.9, 2.5, 12) * CYL_UP, color = Palette.copper, material = M.Metal, shape = Enum.PartType.Cylinder, collide = false })
 end
 
 local function buildHouse(map: Instance)
@@ -332,6 +353,7 @@ function WorldService.build()
 	buildBakery(map)
 	buildTailor(map)
 	buildSquare(map)
+	buildSpiceShop(map)
 	buildHouse(map)
 	buildBounds(map)
 	map.Parent = Workspace

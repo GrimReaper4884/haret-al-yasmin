@@ -8,6 +8,7 @@ return function(t)
 	local Npcs = t.config("Npcs")
 	local Dialogue = t.config("Dialogue")
 	local Strings = t.config("Strings")
+	local Clues = t.config("Clues")
 
 	local function hasString(key)
 		for _, lang in Strings.languages do
@@ -65,11 +66,25 @@ return function(t)
 			for id, q in Quests do
 				t.truthy(Npcs[q.giver], id .. " giver")
 				t.truthy(Npcs[q.target], id .. " target")
-				t.truthy(Items[q.item] and Items[q.item].kind == "quest", id .. " item")
+				if (q.kind or "delivery") == "delivery" then
+					t.truthy(Items[q.item] and Items[q.item].kind == "quest", id .. " item")
+				end
+				if q.objectiveKeys.ready then
+					checkKey(q.objectiveKeys.ready, id)
+				end
 				t.truthy(q.reward.qirsh >= 0 and q.reward.qirsh % 1 == 0, id .. " reward")
 				checkKey(q.titleKey, id)
 				checkKey(q.objectiveKeys.active, id)
 				checkKey(q.objectiveKeys.completed, id)
+			end
+		end)
+	end)
+
+	t.describe("Clues", function()
+		t.it("have strings", function()
+			for id, c in Clues do
+				checkKey(c.nameKey, id)
+				checkKey(c.textKey, id)
 			end
 		end)
 	end)
@@ -102,6 +117,8 @@ return function(t)
 					t.truthy(tree.nodes[e.node], npcId .. " entry → " .. e.node)
 					if e.condition then
 						t.truthy(Quests[e.condition.quest], npcId .. " condition quest")
+						local valid = { none = true, active = true, ready = true, completed = true }
+						t.truthy(valid[e.condition.state], npcId .. " condition state " .. tostring(e.condition.state))
 					end
 				end
 				for nodeId, node in tree.nodes do

@@ -20,7 +20,11 @@ local notify: RemoteEvent
 local function snapshot(profile: any): { [string]: any }
 	local quests = {}
 	for id, rec in profile.quests do
-		quests[id] = { state = rec.state, completions = rec.completions }
+		quests[id] = {
+			state = rec.state,
+			completions = rec.completions,
+			progress = if rec.progress then table.clone(rec.progress) else nil,
+		}
 	end
 	local inventory = table.clone(profile.inventory)
 	local equipped = table.clone(profile.equipped)
