@@ -22,11 +22,11 @@
 default.project.json
 src/
   shared/      → ReplicatedStorage.Shared
-    Config/    Items, Quests, Npcs, Dialogue, Shops, Economy, Strings, Palette
+    Config/    Items, Quests, Npcs, Dialogue, Shops, Economy, Strings (pure data, export their own types)
+                Palette, CosmeticVisuals (use Roblox datatypes; not loaded by Lune)
     Logic/     ProfileSchema, Wallet, Inventory, QuestLogic, ShopLogic, DialogueLogic, RateLimiter, Validate
     Util/      Signal, Locale
     Net.luau   remote names and access
-    Types.luau shared type definitions
   server/      → ServerScriptService.Server
     Main.server.luau        bootstrap: init → start every service in order
     Services/
@@ -44,7 +44,7 @@ src/
   client/      → StarterPlayer.StarterPlayerScripts.Client
     Main.client.luau        bootstrap
     Controllers/            State, Locale, Hud, Dialogue, Shop, NpcLabel, Toast
-    UI/                     Theme, Create (instance builder)
+    UI/                     Root (ScreenGui + UIScale), Theme, Create (instance builder)
 tests/                      Lune unit tests for src/shared/Logic (not synced into the place)
 ```
 
@@ -79,7 +79,7 @@ Remotes are created by the server in `ReplicatedStorage.Remotes`. Names are defi
 | `ShopShow` | RemoteEvent | S→C | `shopId` | — |
 | `ShopClose` | RemoteEvent | C→S | — | rate-limited |
 | `ShopPurchase` | RemoteFunction | C→S | `itemId: string` | string ≤ 64 chars, shop session open, in range, item sold by that shop, price from config, rate-limited |
-| `EquipItem` | RemoteFunction | C→S | `itemId: string?` | owned cosmetic, rate-limited |
+| `SetWorn` | RemoteFunction | C→S | `itemId: string, wear: boolean` | identifier, boolean, owned cosmetic, rate-limited |
 | `SetLanguage` | RemoteEvent | C→S | `"en"`/`"ar"` | whitelist, rate-limited |
 | `Notify` | RemoteEvent | S→C | `{key, args}` | — |
 
@@ -103,7 +103,7 @@ NPC it is talking to.
 ## 6. Persistence
 
 See `DATA_SCHEMA.md`. Summary: one key per user (`u_<UserId>`) in the DataStore `PlayerData_v1`, with
-session locking stored next to the data and refreshed on every autosave (every 120 s when dirty). The final
+session locking stored next to the data and refreshed on every autosave (every 120 s, always, so the lock stays fresh). The final
 save releases the lock on leave and on `BindToClose`. Writes retry with exponential backoff. The schema is
 versioned and migrated on load.
 
@@ -132,3 +132,21 @@ back to an in-memory mock and logs `PERSISTENCE DISABLED (mock store)`. Nothing 
 
 StyLua formats code. It is pinned in `rokit.toml`, but Windows Application Control currently blocks the
 binary on the dev machine (see known issues in the milestone report).
+
+## 9. Pure-module convention
+
+`src/shared/Logic/*` and the pure `Config` modules must not use Roblox globals (`game`, `Instance`,
+`Vector3`, `task`, …). Logic modules that depend on siblings resolve them with a local `sibling()`
+helper: in Roblox it requires `script.Parent[name]`; in Lune the test runner installs
+`_G.LogicRequire`. That is the only `_G` use in the codebase, and it is allow-listed for Selene inline.
+
+## 10. Commands
+
+```bash
+rokit install                        # toolchain pinned in rokit.toml
+lune run tests/run                   # unit tests
+selene src                           # lint
+rojo sourcemap -o sourcemap.json && luau-lsp analyze --platform=roblox --sourcemap=sourcemap.json --definitions=types/globalTypes.d.luau src
+rojo serve                           # live sync into Studio (Rojo plugin)
+rojo build -o build/HaretAlYasmin.rbxl
+```

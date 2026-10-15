@@ -70,7 +70,7 @@ type QuestRecord = {
 1. **Load:** `UpdateAsync`. If the record has a lock from another `JobId` refreshed less than
    `LOCK_STALE_SECONDS` (600 s) ago, return without writing and retry after 6 s, up to 5 times. Otherwise
    take the lock (ours, `at = now`) and return the data.
-2. **Autosave** every 120 s when dirty, and always refreshing the lock: `UpdateAsync` checks that the lock is
+2. **Autosave** every 120 s for every loaded player (it always runs, because it refreshes the lock): `UpdateAsync` checks that the lock is
    still ours. If it is not, the save is aborted and the player is kicked (another server owns them).
 3. **Release:** the save on `PlayerRemoving` or `BindToClose` writes the data and sets `lock = nil`.
 4. **Retries:** every DataStore call retries 5 times with backoff (1, 2, 4, 8 s, capped). A load that fails
@@ -78,7 +78,7 @@ type QuestRecord = {
 
 ## 6. Budget
 
-Per player per session: 1 load + about 1 save per 2 minutes + 1 release. Well within
+Per player per session: 1 load + 1 save every 2 minutes + 1 release. Well within
 `60 + numPlayers × 10` requests per minute.
 
 ## 7. Data that is *not* stored
@@ -86,3 +86,12 @@ Per player per session: 1 load + about 1 save per 2 minutes + 1 release. Well wi
 - Chat or any free text from players.
 - Dialogue progress mid-conversation (sessions are transient).
 - Position (players always spawn at the gate in the slice).
+
+## 8. Studio and mock mode
+
+`DataStoreAdapter.create` uses an in-memory mock when the place is unpublished (`PlaceId == 0`) or
+Studio API access is off. The HUD then shows "Test mode: progress will not be saved." The mock supports
+`failNext(n)` for testing retries. `DataService.debug.reload(player)` saves, releases and reloads a profile,
+which exercises the full persistence round trip inside one Studio session. Note that `game.JobId` is
+empty in Studio, so session locks cannot tell two Studio sessions apart; test lock contention on a
+published **test** experience.

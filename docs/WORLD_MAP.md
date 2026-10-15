@@ -41,8 +41,9 @@ default WalkSpeed. That is short enough for a first quest and long enough to sho
 
 ## Boundaries
 
-Invisible collision walls (`Transparency = 1`, `CanCollide = true`, `CanQuery = false`) surround the
-playable area at a height of 40 studs. Rooftops are not reachable in the slice.
+The building blocks themselves enclose the play space. Two invisible walls (`Transparency = 1`,
+`CanQuery = false`) close the gaps beside the gate, where the lane floor is wider than the buildings.
+Rooftops are out of reach: awnings top out at 11 studs and roofs start at 20 or more.
 
 ## Future zones
 

@@ -12,3 +12,4 @@ roblox.d.luau
 .vscode/settings.local.json
 .DS_Store
 Thumbs.db
+build/
