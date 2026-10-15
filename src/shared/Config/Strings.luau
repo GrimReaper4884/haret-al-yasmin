@@ -334,6 +334,10 @@ local en: { [string]: string } = {
 	["units.stones"] = "{n} trait stones",
 	["units.empty"] = "Summon defenders to fill your lane.",
 	["units.loadout_full"] = "Loadout is full.",
+	["units.rates"] = "Rates",
+	["units.rates_title"] = "Trait reroll rates (this defender)",
+	["units.rates_current"] = "(current)",
+	["units.rates_note"] = "If a reroll lands on the current trait it is rolled once more; these rates already include that. Shown rounded; they add up to 100%.",
 
 	-- Summon screen
 	["summon.title"] = "Summon",
@@ -767,6 +771,10 @@ local ar: { [string]: string } = {
 	["units.stones"] = "{n} حجر صفات",
 	["units.empty"] = "استدعي رجال لتملّي حارتك.",
 	["units.loadout_full"] = "التشكيلة مليانة.",
+	["units.rates"] = "النسب",
+	["units.rates_title"] = "نسب تغيير الصفة (لهالرجل)",
+	["units.rates_current"] = "(الحالية)",
+	["units.rates_note"] = "إذا طلعت نفس الصفة الحالية، بتنسحب مرة تانية؛ هالنسب محسوبة على هالأساس. النسب مقرّبة للعرض ومجموعها 100%.",
 
 	-- Summon screen
 	["summon.title"] = "استدعاء",

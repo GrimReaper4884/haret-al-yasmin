@@ -111,6 +111,10 @@ function PassController.render()
 	premiumButton.Text = if snapshot.pass.premium then t("pass.premium") .. " ✓" else t("pass.buy_premium")
 	premiumButton.AutoButtonColor = not snapshot.pass.premium
 	skipButton.Text = t("pass.skip")
+	-- Both pay lira/stones for Robux: not sold where paid random items are restricted
+	-- (MonetizationLogic.fundsRandomItems; the server refuses the prompt too).
+	premiumButton.Visible = snapshot.pass.premium or not snapshot.restricted
+	skipButton.Visible = not snapshot.restricted
 	for _, c in strip:GetChildren() do
 		if c:IsA("Frame") then
 			c:Destroy()

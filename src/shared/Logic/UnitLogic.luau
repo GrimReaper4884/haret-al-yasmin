@@ -122,4 +122,26 @@ function UnitLogic.rerollTrait(profile: any, unitId: string, cost: number, trait
 	return true, nil, t
 end
 
+-- Exact odds of one rerollTrait from `current` (paid random item: shown before the reroll), in
+-- `order`, as percentages summing to 100. Same weights as the roll, and includes the nudge:
+-- P(t) = p(t) · (1 + p(current)) for t ≠ current, P(current) = p(current)².
+function UnitLogic.rerollOdds(traits: any, order: { string }, current: string?): { { trait: string, percent: number } }
+	local total = 0
+	for _, id in order do
+		total += traits[id].weight
+	end
+	local pc = 0
+	for _, id in order do
+		if id == current then
+			pc = traits[id].weight / total
+		end
+	end
+	local out = {}
+	for _, id in order do
+		local p = traits[id].weight / total
+		table.insert(out, { trait = id, percent = 100 * (if id == current then p * p else p * (1 + pc)) })
+	end
+	return out
+end
+
 return UnitLogic

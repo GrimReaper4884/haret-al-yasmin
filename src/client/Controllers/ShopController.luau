@@ -16,6 +16,7 @@ local Items = require(Shared.Config.Items)
 local Shops = require(Shared.Config.Shops)
 local Products = require(Shared.Config.Products)
 local Economy = require(Shared.Config.Economy)
+local MonetizationLogic = require(Shared.Logic.MonetizationLogic)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
@@ -282,7 +283,9 @@ end
 local function storeRows(snapshot: any)
 	local t = LocaleController.t
 	local order = 0
-	-- Lira (summons). Hidden where the region restricts paid random items: lira is then earned only.
+	-- Lira (summons), trait stones and anything else that funds paid random items are hidden where
+	-- the region restricts them (MonetizationLogic.fundsRandomItems): lira and stones are then
+	-- earned only.
 	if not snapshot.restricted then
 		for _, key in Products.liraOrder do
 			local product = (Products.devProducts :: any)[key]
@@ -298,7 +301,8 @@ local function storeRows(snapshot: any)
 	for _, key in Products.extrasOrder do
 		local product = (Products.devProducts :: any)[key]
 		local owned = product.oneTime and snapshot.bundles and snapshot.bundles[product.nameKey] ~= nil
-		if not owned then
+		local hidden = snapshot.restricted and MonetizationLogic.fundsRandomItems(product)
+		if not owned and not hidden then
 			order += 1
 			productRow(order, key, if product.kind == "stones" then "stone" else "pass", if product.descKey then t(product.descKey) else t(product.nameKey), true)
 		end

@@ -4,8 +4,11 @@
 --    policy for lira).
 --  * ProcessReceipt grants through MonetizationLogic (idempotent by PurchaseId), saves, and only
 --    then answers PurchaseGranted. Any failure answers NotProcessedYet so Roblox retries later.
---  * Game passes grant their cosmetics and perk flags (vip / fast / slot) while owned.
---  * PolicyService: players whose region restricts paid random items cannot buy lira.
+--  * Game passes grant their cosmetics and perk flags (vip / fast / slot): checked on join, and
+--    applied straight away for the session when PromptGamePassPurchaseFinished reports a purchase.
+--  * PolicyService: players whose region restricts paid random items cannot buy anything that
+--    funds them: lira, trait stones, the starter pack, premium Diary, Diary skips
+--    (MonetizationLogic.fundsRandomItems).
 
 local MarketplaceService = game:GetService("MarketplaceService")
 local PolicyService = game:GetService("PolicyService")
@@ -119,7 +122,8 @@ local function processReceipt(info: { [string]: any }): Enum.ProductPurchaseDeci
 	end
 	if result ~= "already" then
 		if result == "fallback" then
-			PlayerStateService.notify(player, "notify.lira_added", { n = product.fallbackLira or product.fallbackQirsh or 0 })
+			local currency, amount = MonetizationLogic.fallbackPayout(product)
+			PlayerStateService.notify(player, if currency == "lira" then "notify.lira_added" else "notify.qirsh_added", { n = amount })
 		else
 			notifyGrant(player, product)
 		end
@@ -131,32 +135,44 @@ local function processReceipt(info: { [string]: any }): Enum.ProductPurchaseDeci
 	return Enum.ProductPurchaseDecision.PurchaseGranted
 end
 
-local function grantPasses(player: Player, onlyPassId: number?)
+-- Sets the pass's perk flag for this session and grants its cosmetics (once).
+local function applyPass(player: Player, pass: any)
 	local owned = perks[player] or {}
 	perks[player] = owned
+	if pass.perk then
+		owned[pass.perk] = true
+	end
+	local changed = DataService.mutate(player, function(profile)
+		return MonetizationLogic.grantPassItems(profile, pass.items, Items :: any)
+	end)
+	if changed then
+		PlayerStateService.notify(player, "notify.pass_unlocked", { passKey = pass.nameKey })
+		AvatarService.refresh(player)
+	end
+end
+
+local function perksChanged(player: Player)
+	MonetizationService.PerksChanged:Fire(player)
+	PlayerStateService.schedule(player)
+end
+
+-- Join-time ownership check. Flags are never revoked mid-session (a pass bought this session may
+-- not show in UserOwnsGamePassAsync yet).
+local function grantOwnedPasses(player: Player)
+	perks[player] = perks[player] or {}
 	for key, pass in Products.gamePasses :: any do
-		if pass.gamePassId > 0 and (onlyPassId == nil or onlyPassId == pass.gamePassId) then
+		if pass.gamePassId > 0 then
 			local okOwn, owns = pcall(function()
 				return MarketplaceService:UserOwnsGamePassAsync(player.UserId, pass.gamePassId)
 			end)
 			if okOwn and owns then
-				if pass.perk then
-					owned[pass.perk] = true
-				end
-				local changed = DataService.mutate(player, function(profile)
-					return MonetizationLogic.grantPassItems(profile, pass.items, Items :: any)
-				end)
-				if changed then
-					PlayerStateService.notify(player, "notify.pass_unlocked", { passKey = pass.nameKey })
-					AvatarService.refresh(player)
-				end
+				applyPass(player, pass)
 			elseif not okOwn then
 				warn("[Monetization] pass check failed for " .. key)
 			end
 		end
 	end
-	MonetizationService.PerksChanged:Fire(player)
-	PlayerStateService.schedule(player)
+	perksChanged(player)
 end
 
 -- Perk flags for other services: vip / fast / slot.
@@ -236,13 +252,17 @@ function MonetizationService.start()
 	end)
 
 	MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player: Player, passId: number, purchased: boolean)
-		if purchased and byPassId[passId] then
-			grantPasses(player, passId)
+		-- Trust the purchase for this session: UserOwnsGamePassAsync is cached and can lag a fresh
+		-- purchase (and never reflects a Studio test purchase). The next join re-checks ownership.
+		local key = byPassId[passId]
+		if purchased and key and player.Parent then
+			applyPass(player, (Products.gamePasses :: any)[key])
+			perksChanged(player)
 		end
 	end)
 
 	DataService.ProfileLoaded:Connect(function(player: Player)
-		task.spawn(grantPasses, player, nil)
+		task.spawn(grantOwnedPasses, player)
 		task.spawn(loadPolicy, player)
 	end)
 	Players.PlayerRemoving:Connect(function(player: Player)

@@ -28,6 +28,10 @@ local loadoutRow: Frame
 local loadoutLabel: TextLabel
 local grid: ScrollingFrame
 local detail: Frame
+local ratesPanel: Frame
+local ratesTitle: TextLabel
+local ratesText: TextLabel
+local ratesNote: TextLabel
 local selected: string? = nil
 local busy = false
 
@@ -52,6 +56,48 @@ local function build()
 	grid = Modal.scroller(gridHolder)
 	Create("UIGridLayout", { CellSize = UDim2.fromOffset(96, 124), CellPadding = UDim2.fromOffset(8, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = grid })
 	detail = Create("Frame", { BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 12, Visible = false, Parent = body })
+	-- Trait reroll rates (paid random item: trait stones are sold for Robux). Covers the detail view.
+	ratesPanel = Theme.panel({ Name = "TraitRates", Size = UDim2.fromScale(1, 1), ZIndex = 14, Visible = false, Parent = body })
+	Create("UIPadding", { PaddingTop = UDim.new(0, 8), PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12), PaddingBottom = UDim.new(0, 8), Parent = ratesPanel })
+	ratesTitle = Theme.label({ TextSize = 16, FontFace = Theme.fontBold, Size = UDim2.new(1, -48, 0, 22), ZIndex = 15, Parent = ratesPanel })
+	ratesText = Theme.label({ TextSize = 14, Position = UDim2.fromOffset(0, 26), Size = UDim2.new(1, 0, 0, 148), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 15, Parent = ratesPanel })
+	ratesNote = Theme.label({ TextSize = 12, TextColor3 = Theme.colors.textMuted, AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(1, 0, 0, 44), TextYAlignment = Enum.TextYAlignment.Bottom, ZIndex = 15, Parent = ratesPanel })
+	local close = Theme.button({ Text = "X", TextSize = 16, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromOffset(40, 40), BackgroundColor3 = Theme.colors.danger, ZIndex = 15, Parent = ratesPanel })
+	close.Activated:Connect(function()
+		ratesPanel.Visible = false
+	end)
+end
+
+-- Enough decimals that the rarest outcome never reads as 0 % (e.g. 0.0025 %).
+local function fmtPercent(p: number): string
+	local decimals = if p >= 1 then 2 elseif p >= 0.1 then 3 else 4
+	return string.format("%." .. decimals .. "f%%", p)
+end
+
+-- Fills the rates panel for the selected unit (odds depend on its current trait: see
+-- UnitLogic.rerollOdds). Same weights the server rolls with.
+local function renderRates(snapshot: any)
+	local t = LocaleController.t
+	local rtl = LocaleController.isRtl()
+	local owned = selected and snapshot.units[selected]
+	if not owned then
+		ratesPanel.Visible = false
+		return
+	end
+	local lines = {}
+	for _, o in UnitLogic.rerollOdds(Traits.traits, Traits.order, owned.trait) do
+		local name = t(Traits.traits[o.trait].nameKey)
+		if o.trait == owned.trait then
+			name ..= " " .. t("units.rates_current")
+		end
+		table.insert(lines, name .. ": " .. fmtPercent(o.percent))
+	end
+	ratesTitle.Text = t("units.rates_title")
+	ratesText.Text = table.concat(lines, "\n")
+	ratesNote.Text = t("units.rates_note")
+	for _, l in { ratesTitle, ratesText, ratesNote } do
+		Theme.align(l, rtl)
+	end
 end
 
 local function statLine(t: any, def: any, owned: any): string
@@ -129,6 +175,23 @@ local function renderDetail(snapshot: any)
 	for _, l in { name, rarity, desc, stats, traitLine } do
 		Theme.align(l, rtl)
 	end
+	-- Rates first: the reroll is a paid random item.
+	local rates = Theme.button({
+		Text = t("units.rates"),
+		TextSize = 13,
+		Position = UDim2.new(0.5, if rtl then -160 else 0, 0, 130),
+		Size = UDim2.fromOffset(120, 32),
+		BackgroundColor3 = Theme.colors.quest,
+		ZIndex = 13,
+		Parent = detail,
+	})
+	rates.Activated:Connect(function()
+		renderRates(snapshot)
+		ratesPanel.Visible = true
+	end)
+	if ratesPanel.Visible then
+		renderRates(snapshot) -- the trait may have just changed
+	end
 
 	local inLoadout = table.find(snapshot.loadout, unitId) ~= nil
 	local slots = snapshot.loadoutSlots or TD.LOADOUT_SLOTS
@@ -198,6 +261,7 @@ function UnitsController.render()
 	end
 	selected = nil
 	detail.Visible = false
+	ratesPanel.Visible = false
 	grid.Visible = true
 	loadoutRow.Visible = true
 	loadoutLabel.Visible = true
