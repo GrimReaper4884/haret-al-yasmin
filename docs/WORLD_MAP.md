@@ -39,6 +39,21 @@ authoritative layout is in code, in `src/server/Services/WorldService.luau`. Kee
 The delivery route from Abu Nadim to Sitt Wardeh is about 100 studs, roughly 6 seconds of walking at the
 default WalkSpeed. That is short enough for a first quest and long enough to show off the map.
 
+## Set dressing (v2, 2026-10-15)
+
+Built in `src/server/World/` (Kit → Props → Facade → Zones). Signature elements:
+
+| Where | Elements |
+|-------|----------|
+| Lane | **Sabat** (covered room bridging the lane) at z 28–34; latticed mashrabiya bays on corbels; arched doors with ablaq voussoirs, iron bands and knockers; grilled windows with pots on sills; central basalt gutter; stone kerbs; grapevine trellises (z 46, 76); washing lines (z 59, 84); crates, cat, copper pot |
+| Gate | Ablaq voussoir arch, banded pillars, iron-banded leaves, wicket door, twin lanterns |
+| Bakery / tailor / spice shop | Bread racks and stacked ka'ak, domed oven with firewood and flour sacks, peel; hanging cloth lengths, tarboosh moulds, dressed dummy; heaped spice sacks, jars, brass scale |
+| Square | Octagonal tiled fountain with falling streams; orange and pomegranate trees; cushioned benches; pigeons; copper jugs |
+| Courtyard house | Striped ablaq paving, tiled pool with jet, lemon and orange trees, climbing jasmine, liwan with diwan, tray and birdcage |
+| Skyline (no collision) | Neighbouring roofs, three domes, a banded minaret, cypresses, softened by the Atmosphere haze |
+
+Part count: **1,267** (budget 6,000).
+
 ## Boundaries
 
 The building blocks themselves enclose the play space. Two invisible walls (`Transparency = 1`,

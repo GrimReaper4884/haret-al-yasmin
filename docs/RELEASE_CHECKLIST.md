@@ -49,4 +49,4 @@ products and spending Robux all need explicit approval from the project owner.**
 
 | Date | Setting | Old → New | Approved by |
 |------|---------|-----------|-------------|
-| — | — | — | — |
+| 2026-10-15 | New experience "Haret Al-Yasmin (TEST)" (place 120389740593436, game 10771112137) | — → **Private**; devices Computer/Phone/Tablet/VR; Team Create off; AI data sharing off | Owner (chat, 2026-10-15) |
