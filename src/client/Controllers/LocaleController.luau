@@ -44,15 +44,21 @@ function LocaleController.toggle()
 	Net.event(Net.Events.SetLanguage):FireServer(nextLang)
 end
 
+local function adopt(snapshot: any)
+	if adoptedSaved or snapshot == nil then
+		return
+	end
+	adoptedSaved = true
+	if snapshot.language then
+		set(snapshot.language)
+	end
+end
+
 function LocaleController.start()
-	StateController.Changed:Connect(function(snapshot)
-		if not adoptedSaved then
-			adoptedSaved = true
-			if snapshot.language then
-				set(snapshot.language)
-			end
-		end
-	end)
+	-- The first snapshot can arrive before this controller starts (queued remote events are
+	-- delivered as soon as StateController connects), so adopt whatever is already there.
+	adopt(StateController.get())
+	StateController.Changed:Connect(adopt)
 end
 
 return LocaleController

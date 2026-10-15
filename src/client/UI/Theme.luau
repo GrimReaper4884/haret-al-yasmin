@@ -33,7 +33,7 @@ function Theme.panel(props: { [string]: any }): Frame
 		Create("UIStroke", { Color = Theme.colors.panelStroke, Thickness = 2, Transparency = 0.2 }),
 	})
 	f.BackgroundColor3 = Theme.colors.panel
-	f.BackgroundTransparency = 0.06
+	f.BackgroundTransparency = if props.ZIndex and props.ZIndex >= 10 then 0 else 0.06
 	f.BorderSizePixel = 0
 	return f
 end

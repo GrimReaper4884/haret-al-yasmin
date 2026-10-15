@@ -27,7 +27,7 @@ local LocaleController = require(script.Parent.LocaleController)
 
 local ShopController = {}
 
-local LIST_HEIGHT = 262 -- px at UIScale 1; fits a landscape phone with header and padding
+local LIST_HEIGHT = 220 -- px at UIScale 1; fits a landscape phone with header and padding
 
 local panel: Frame
 local title: TextLabel
@@ -43,7 +43,8 @@ local function build()
 	panel = Theme.panel({
 		Name = "Shop",
 		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.52),
+		Position = UDim2.fromScale(0.5, 0.5),
+		ZIndex = 10, -- modals draw above the HUD (tracker, coin pill)
 		Size = UDim2.fromScale(0.9, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Visible = false,

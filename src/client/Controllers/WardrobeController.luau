@@ -32,7 +32,8 @@ local function build()
 	panel = Theme.panel({
 		Name = "Wardrobe",
 		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.52),
+		Position = UDim2.fromScale(0.5, 0.5),
+		ZIndex = 10, -- modals draw above the HUD (tracker, coin pill)
 		Size = UDim2.fromScale(0.92, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Visible = false,
@@ -77,7 +78,7 @@ local function build()
 		LayoutOrder = 2,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		Size = UDim2.new(1, 0, 0, 262),
+		Size = UDim2.new(1, 0, 0, 220),
 		CanvasSize = UDim2.new(),
 		AutomaticCanvasSize = Enum.AutomaticSize.Y,
 		ScrollingDirection = Enum.ScrollingDirection.Y,

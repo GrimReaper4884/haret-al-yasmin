@@ -71,6 +71,23 @@ computer use; the Studio MCP server exposed no tools) · Place: unpublished `Pla
 **Not testable yet:** actual Robux purchase flows. They need real product and pass IDs on a published
 experience. Studio simulates purchases once IDs exist.
 
+## Real device: Samsung Galaxy S23 (Android), private test experience
+
+*2026-10-16 · Roblox app signed in as GrimReaper9248 (Early tester, friend of the owner account) · driven
+over adb (screenshots, taps, thumbstick swipes)*
+
+| Check | Result |
+|-------|--------|
+| Join private test place | ✅ After adding the account as an **Early tester** (Playtest access alone gives error 524 outside Studio) |
+| Look on phone | ✅ The lane, gate, awnings, laundry, sabat and fountain render with lighting and haze; smooth movement |
+| Touch controls | ✅ Thumbstick walking; NPC tap-prompt ("Abu Nadim · Talk") with a large hit area |
+| HUD layout | ✅ Coin pill, "+", language and Wardrobe buttons clear of the Roblox menu, thumbstick and jump |
+| Dialogue | ✅ Large readable panel, full-width choices; accept gives toasts and tracker update |
+| **Real DataStore persistence** | ✅ Errand still active after force-closing the app and rejoining (real DataStores, not the mock) |
+| Arabic on device | ✅ Shaped, RTL tracker and HUD |
+| **Bug: modals overflowed the phone screen** | Fixed: the wardrobe and shop list heights now fit 390 px; modals are opaque, centred, and draw above the HUD (ZIndex 10). Re-verified on the device |
+| **Bug: saved language not applied on join** | Fixed: the first snapshot could arrive before LocaleController subscribed. It now adopts the existing snapshot at start. Re-verified: rejoined directly in Arabic |
+
 ## Not tested / open issues
 
 - **Real DataStores:** everything above ran on the in-memory mock (the place is unpublished). Session-lock contention between two servers needs a published **test** experience (`game.JobId` is empty in Studio).
