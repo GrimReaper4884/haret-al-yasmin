@@ -26,7 +26,9 @@ function QuestService.accept(player: Player, questId: string, npcId: string): (b
 	end)
 	if ok then
 		PlayerStateService.notify(player, "notify.quest_accepted", { titleKey = def.titleKey })
-		PlayerStateService.notify(player, "notify.item_received", { itemKey = (Items :: any)[def.item].nameKey })
+		if def.item then -- investigations grant no item
+			PlayerStateService.notify(player, "notify.item_received", { itemKey = (Items :: any)[def.item].nameKey })
+		end
 		Analytics.funnel(player, Analytics.Funnel.AcceptedQuest)
 	end
 	return ok, err

@@ -41,6 +41,20 @@ computer use; the Studio MCP server exposed no tools) · Place: unpublished `Pla
 5. The shop icon emoji 🎩 rendered as a purple top hat; there is now a primitive-drawn tarboosh icon (`UI/Icons.luau`).
 6. The "test mode" toast was easy to miss (it lasted 3 s at join), so it is now a persistent HUD badge while the mock store is active.
 
+## Season 1 · Episode 1 "Wedding Eve" (Studio, Play Solo)
+
+| Check | Result |
+|-------|--------|
+| Locked before the ka'ak errand | ✅ Hajj Rashid answers "busy"; no "!" marker |
+| Unlock and marker | ✅ After the delivery, "!" appears over Hajj Rashid |
+| Accept | ✅ Toast, HUD "Season 1 · Episode 1 / Clues 0/3"; clue prompts and outlines appear only now |
+| Clues ×3 (hold-to-inspect) | ✅ Each shows a clue card, a "Clue found (n/3)" toast and a journal line; the prompt disappears once found |
+| Ready and turn-in | ✅ Objective switches to "Bring what you found…"; "?" marker; reward +60; "Episode 1 complete" |
+| Persistence mid-episode | ✅ `reload` keeps `progress.clue_slipper`, quest active, language |
+| Arabic | ✅ Clue card, journal and HUD re-render in Arabic |
+| **Bug found and fixed** | Accepting an investigation errored (the "item received" toast assumed an item), so the dialogue didn't advance. The quest itself was saved correctly. Fixed in `QuestService.accept` and re-verified |
+| **Layout fixed** | A square tree hid Hajj Rashid; moved |
+
 ## Not tested / open issues
 
 - **Real DataStores:** everything above ran on the in-memory mock (the place is unpublished). Session-lock contention between two servers needs a published **test** experience (`game.JobId` is empty in Studio).
