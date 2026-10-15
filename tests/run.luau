@@ -103,6 +103,7 @@ local specs = {
 	require("./profile.spec"),
 	require("./config.spec"),
 	require("./season1.spec"),
+	require("./monetization.spec"),
 }
 for _, spec in specs do
 	spec(t)

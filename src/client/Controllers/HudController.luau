@@ -13,6 +13,7 @@ local Theme = require(UI.Theme)
 local Root = require(UI.Root)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
+local ShopController = require(script.Parent.ShopController)
 
 local HudController = {}
 
@@ -35,7 +36,7 @@ local function build()
 		Name = "Coins",
 		AnchorPoint = Vector2.new(1, 0),
 		Position = UDim2.new(0.5, -4, 0, 8),
-		Size = UDim2.fromOffset(150, Theme.TOUCH - 4),
+		Size = UDim2.fromOffset(176, Theme.TOUCH - 4),
 		Parent = root,
 	})
 	Theme.label({
@@ -54,10 +55,22 @@ local function build()
 		FontFace = Theme.fontBold,
 		TextSize = 20,
 		TextXAlignment = Enum.TextXAlignment.Left,
-		Size = UDim2.new(1, -46, 1, 0),
+		Size = UDim2.new(1, -84, 1, 0),
 		Position = UDim2.fromOffset(42, 0),
 		Parent = coinPill,
 	})
+	-- "+" opens the coin store (Robux purses and passes).
+	local storeButton = Theme.button({
+		Name = "Store",
+		Text = "+",
+		TextSize = 22,
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.new(1, -5, 0.5, 0),
+		Size = UDim2.fromOffset(34, 34),
+		BackgroundColor3 = Theme.colors.accent,
+		Parent = coinPill,
+	})
+	storeButton.Activated:Connect(ShopController.openStore)
 
 	local tracker = Theme.panel({
 		Name = "Errand",

@@ -55,6 +55,22 @@ computer use; the Studio MCP server exposed no tools) · Place: unpublished `Pla
 | **Bug found and fixed** | Accepting an investigation errored (the "item received" toast assumed an item), so the dialogue didn't advance. The quest itself was saved correctly. Fixed in `QuestService.accept` and re-verified |
 | **Layout fixed** | A square tree hid Hajj Rashid; moved |
 
+## Shared world, wardrobe and store (Studio)
+
+| Check | Result |
+|-------|--------|
+| **Multiplayer:** local server + 2 clients | ✅ Both players are in one lane and see each other; they overlap without colliding (collision group); each has their own balance (Player1 160, Player2 0) and quest state |
+| **Cosmetic replication** | ✅ Player1 bought and wore the red tarboosh; Player2's client shows it on Player1's head |
+| **Wardrobe:** black tarboosh, sidriyye, indigo sherwal, red sash | ✅ Bought (1000 → 740, exact prices), worn together; they fit the R15 body (screenshot checked front and back) |
+| **Shop UI** | ✅ Scrolling catalogue of 13 items, drawn icons, qirsh prices, Premium rows |
+| **Coin store ("+")** | ✅ Opens; packs and pass show "Coming soon" (no product IDs yet) |
+| **Store abuse** | ✅ `RequestProduct('qirsh_pouch')` gets "This isn't available yet."; table / "../x" keys silently ignored; `RequestPass` likewise |
+| **Streaming** | ✅ Enabled; NPC labels, prompts and clue spots still work (persistent models) |
+| Unit tests | 61 passing (receipt idempotency, race fallback, prompt rules, pass grants, catalogue integrity) |
+
+**Not testable yet:** actual Robux purchase flows. They need real product and pass IDs on a published
+experience. Studio simulates purchases once IDs exist.
+
 ## Not tested / open issues
 
 - **Real DataStores:** everything above ran on the in-memory mock (the place is unpublished). Session-lock contention between two servers needs a published **test** experience (`game.JobId` is empty in Studio).

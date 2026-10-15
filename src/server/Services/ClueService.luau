@@ -85,6 +85,7 @@ local function spawnClue(folder: Instance, clueId: string, def: any)
 		end
 	end)
 
+	m.ModelStreamingMode = Enum.ModelStreamingMode.Persistent
 	m:SetAttribute("ClueId", clueId)
 	CollectionService:AddTag(m, ClueService.TAG)
 	m.Parent = folder

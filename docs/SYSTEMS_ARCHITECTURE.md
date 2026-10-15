@@ -134,6 +134,19 @@ back to an in-memory mock and logs `PERSISTENCE DISABLED (mock store)`. Nothing 
 StyLua formats code. It is pinned in `rokit.toml`, but Windows Application Control currently blocks the
 binary on the dev machine (see known issues in the milestone report).
 
+## 8b. Shared world (many players, one lane)
+
+- Every server hosts one shared lane; all players see each other, each other's cosmetics and the same NPCs.
+  Recommended **max players: 30** per server (set at publish; it's a live setting and needs approval). Roblox
+  opens new servers automatically when one fills up.
+- **Per-player state** (quests, clues, dialogue sessions, shop sessions, wallet) is isolated server-side.
+  Two players can run the same episode side by side without interfering.
+- **Streaming** is enabled (`Workspace.StreamingEnabled`, min radius 96, target 320) so the map can grow. NPCs
+  and clue spots are `ModelStreamingMode = Persistent` because client UI depends on them.
+- **No player-to-player collisions** (`PlayerCollisionService`, collision group "Players") so crowds can't block
+  doors, counters or the gate.
+- Planned shared systems: community goals and votes (Episode 5, MemoryStore), live events, paid private servers.
+
 ## 9. Pure-module convention
 
 `src/shared/Logic/*` and the pure `Config` modules must not use Roblox globals (`game`, `Instance`,

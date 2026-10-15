@@ -18,6 +18,8 @@ Net.Events = {
 	SetLanguage = "SetLanguage", -- C→S "en" | "ar"
 	Notify = "Notify", -- S→C { key, args }
 	ClueShow = "ClueShow", -- S→C clueId (clue card)
+	RequestProduct = "RequestProduct", -- C→S product key (server validates, then prompts)
+	RequestPass = "RequestPass", -- C→S game pass key
 }
 
 Net.Functions = {

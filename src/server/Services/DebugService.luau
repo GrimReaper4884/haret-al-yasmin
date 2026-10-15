@@ -7,13 +7,18 @@
 --   print(D:Invoke("peek"))          -- what the (mock) store holds
 --   print(D:Invoke("reload"))        -- save + release + load again
 --   print(D:Invoke("failNext", 3))   -- next 3 store calls fail (mock only)
+--   print(D:Invoke("qirsh", 500))    -- grant test qirsh (Studio only)
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
 local DataService = require(script.Parent.DataService)
+local Wallet = require(ReplicatedStorage:WaitForChild("Shared").Logic.Wallet)
+local Economy = require(ReplicatedStorage:WaitForChild("Shared").Config.Economy)
 
 local DebugService = {}
 
@@ -38,6 +43,11 @@ function DebugService.start()
 		elseif cmd == "save" then
 			DataService.debug.saveNow(player)
 			return true
+		elseif cmd == "qirsh" then
+			local amount = math.clamp(math.floor(tonumber(arg) or 0), 0, 100000)
+			return DataService.mutate(player, function(profile)
+				return Wallet.add(profile, amount, Economy.MAX_QIRSH)
+			end)
 		elseif cmd == "failNext" then
 			DataService.debug.store():failNext(tonumber(arg) or 1)
 			return true

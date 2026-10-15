@@ -53,7 +53,11 @@ return function(t)
 				checkKey(def.descKey, id)
 				t.truthy(def.stackMax >= 1, id .. " stackMax")
 				if def.kind == "cosmetic" then
-					t.truthy(type(def.price) == "number" and def.price >= 0 and def.price % 1 == 0, id .. " price")
+					if def.price ~= nil then
+						t.truthy(type(def.price) == "number" and def.price >= 0 and def.price % 1 == 0, id .. " price")
+					else
+						t.truthy(type(def.product) == "string", id .. " has a qirsh price or a Robux product")
+					end
 					t.truthy(type(def.slot) == "string", id .. " slot")
 					t.eq(def.stackMax, 1, id .. " cosmetics are unique")
 				end
@@ -95,7 +99,7 @@ return function(t)
 				t.truthy(Npcs[s.npc], id .. " npc")
 				checkKey(s.titleKey, id)
 				for _, itemId in s.items do
-					t.truthy(Items[itemId] and Items[itemId].price, id .. " sells " .. itemId)
+					t.truthy(Items[itemId] and (Items[itemId].price or Items[itemId].product), id .. " sells " .. itemId)
 				end
 			end
 		end)

@@ -13,35 +13,64 @@ local AvatarService = {}
 
 local FOLDER_PREFIX = "Cosmetic_"
 
--- Builds the visual `visualId` on `character`'s head. Returns the created model, or nil.
+-- R6 rigs have fewer, bigger parts; clothes for R15 parts map onto them.
+AvatarService.R6_MAP = {
+	UpperTorso = "Torso",
+	LowerTorso = "Torso",
+	LeftUpperLeg = "Left Leg",
+	LeftLowerLeg = "Left Leg",
+	RightUpperLeg = "Right Leg",
+	RightLowerLeg = "Right Leg",
+	LeftUpperArm = "Left Arm",
+	RightUpperArm = "Right Arm",
+} :: { [string]: string }
+
+local function bodyPart(character: Model, name: string): BasePart?
+	local p = character:FindFirstChild(name) or character:FindFirstChild(AvatarService.R6_MAP[name] or "")
+	return if p and p:IsA("BasePart") then p else nil
+end
+
+-- Builds the visual `visualId` on `character`. Returns the created model, or nil.
 function AvatarService.attach(character: Model, visualId: string, slot: string): Model?
 	local spec = CosmeticVisuals[visualId]
-	local head = character:FindFirstChild("Head")
-	if not spec or not head or not head:IsA("BasePart") then
+	if not spec then
 		return nil
 	end
 	local holder = Instance.new("Model")
 	holder.Name = FOLDER_PREFIX .. slot
-	local top = head.CFrame * CFrame.new(0, head.Size.Y / 2, 0)
 	for _, p in spec do
-		local x = Instance.new("Part")
-		x.Name = p.name
-		x.Shape = p.shape
-		x.Size = p.size
-		x.Color = p.color
-		x.Material = p.material
-		x.CFrame = top * p.offset
-		x.Anchored = false
-		x.Massless = true
-		x.CanCollide = false
-		x.CanQuery = false
-		x.CanTouch = false
-		x.CastShadow = false
-		local weld = Instance.new("WeldConstraint")
-		weld.Part0 = head
-		weld.Part1 = x
-		weld.Parent = x
-		x.Parent = holder
+		local attachName = p.attach or "HeadTop"
+		local base = bodyPart(character, if attachName == "HeadTop" then "Head" else attachName)
+		if base then
+			local x = Instance.new("Part")
+			x.Name = p.name
+			x.Shape = p.shape
+			x.Color = p.color
+			x.Material = p.material
+			if attachName == "HeadTop" then
+				x.Size = p.size or Vector3.one
+				x.CFrame = base.CFrame * CFrame.new(0, base.Size.Y / 2, 0) * (p.offset or CFrame.identity)
+			else
+				local fit = p.fit or Vector3.one
+				x.Size = base.Size * fit + (p.pad or Vector3.zero)
+				local at = (p.at or Vector3.zero) * base.Size
+				local rot = p.rot or Vector3.zero
+				x.CFrame = base.CFrame
+					* CFrame.new(at)
+					* CFrame.Angles(math.rad(rot.X), math.rad(rot.Y), math.rad(rot.Z))
+			end
+			x.Anchored = false
+			x.Massless = true
+			x.CanCollide = false
+			x.CanQuery = false
+			x.CanTouch = false
+			x.CastShadow = false
+			local weld = Instance.new("WeldConstraint")
+			weld.Part0 = base
+			weld.Part1 = x
+			weld.Parent = x
+			x.Parent = holder
+		end
 	end
 	holder.Parent = character
 	return holder

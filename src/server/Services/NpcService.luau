@@ -77,6 +77,7 @@ local function spawnNpc(folder: Instance, npcId: string, def: any)
 	local pos = def.position
 	local hipToGround = humanoid.HipHeight + root.Size.Y / 2
 	m:PivotTo(CFrame.new(pos[1], pos[2] + hipToGround, pos[3]) * CFrame.Angles(0, math.rad(def.yaw), 0))
+	m.ModelStreamingMode = Enum.ModelStreamingMode.Persistent
 	m:SetAttribute("NpcId", npcId)
 	CollectionService:AddTag(m, NpcService.TAG)
 

@@ -115,16 +115,17 @@ local function tryLoad(player: Player): (any?, string?)
 	return loaded, reason
 end
 
-local function save(player: Player, release: boolean)
+-- Returns true when the data was written (lock still ours).
+local function save(player: Player, release: boolean): boolean
 	local entry = entries[player]
 	if not entry or not entry.loaded or entry.released then
-		return
+		return false
 	end
 	while entry.saving do
 		task.wait(0.1)
 	end
 	if entry.released then
-		return
+		return false
 	end
 	if release then
 		entry.released = true -- no further saves after the final one starts
@@ -164,6 +165,7 @@ local function save(player: Player, release: boolean)
 	else
 		warn("[DataService] giving up saving " .. key .. " after retries")
 	end
+	return ok and not lost
 end
 
 local function onPlayerAdded(player: Player)
@@ -280,6 +282,12 @@ function DataService.mutate(player: Player, fn: (profile: any) -> (boolean, ...a
 		DataService.ProfileChanged:Fire(player)
 	end
 	return table.unpack(results, 1, results.n)
+end
+
+-- Saves immediately (keeps the session). Used after Robux grants so a receipt is only
+-- acknowledged once the grant is durable.
+function DataService.saveNow(player: Player): boolean
+	return save(player, false)
 end
 
 ------------------------------------------------------------------------------------------
