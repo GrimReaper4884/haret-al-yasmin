@@ -9,7 +9,7 @@ export type ItemDef = {
 	stackMax: number,
 	price: number?, -- qirsh; cosmetics only
 	slot: string?, -- cosmetics only
-	icon: string, -- unicode glyph used by the slice UI
+	icon: string, -- UI/Icons drawer name
 }
 
 local Items: { [string]: ItemDef } = {
@@ -18,7 +18,7 @@ local Items: { [string]: ItemDef } = {
 		nameKey = "item.basket_kaak.name",
 		descKey = "item.basket_kaak.desc",
 		stackMax = 1,
-		icon = "🧺",
+		icon = "basket",
 	},
 	tarboosh_red = {
 		kind = "cosmetic",
@@ -27,7 +27,7 @@ local Items: { [string]: ItemDef } = {
 		stackMax = 1,
 		price = 40,
 		slot = "head",
-		icon = "🎩",
+		icon = "tarboosh",
 	},
 }
 

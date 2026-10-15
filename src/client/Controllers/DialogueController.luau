@@ -63,7 +63,7 @@ local function build()
 	})
 	closeButton = Theme.button({
 		Name = "Close",
-		Text = "✕",
+		Text = "X",
 		TextSize = 18,
 		Size = UDim2.fromOffset(Theme.TOUCH - 8, Theme.TOUCH - 8),
 		BackgroundColor3 = Theme.colors.danger,

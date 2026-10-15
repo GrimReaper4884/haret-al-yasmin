@@ -15,6 +15,7 @@ local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
 local Root = require(UI.Root)
+local Icons = require(UI.Icons)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 
@@ -59,7 +60,7 @@ local function build()
 		Parent = header,
 	})
 	local close = Theme.button({
-		Text = "✕",
+		Text = "X",
 		TextSize = 18,
 		AnchorPoint = Vector2.new(1, 0),
 		Position = UDim2.fromScale(1, 0),
@@ -110,15 +111,14 @@ local function itemRow(order: number, itemId: string, snapshot: any)
 		Parent = list,
 	}, { Create("UICorner", { CornerRadius = UDim.new(0, 10) }) })
 
-	local icon = Theme.label({
-		Text = def.icon,
-		TextSize = 34,
+	local iconHolder = Create("Frame", {
+		BackgroundTransparency = 1,
 		Size = UDim2.fromOffset(56, 56),
 		AnchorPoint = Vector2.new(if rtl then 1 else 0, 0.5),
 		Position = UDim2.new(if rtl then 1 else 0, if rtl then -8 else 8, 0.5, 0),
 		Parent = row,
 	})
-	icon.TextXAlignment = Enum.TextXAlignment.Center
+	Icons.draw(def.icon, iconHolder)
 
 	local textX = if rtl then 0 else 70
 	local name = Theme.label({

@@ -41,10 +41,11 @@ src/
       QuestService          quest accept/deliver built on QuestLogic
       ShopService           shop sessions, purchase, equip
       AvatarService         attaches equipped cosmetics to characters
+      DebugService          Studio-only BindableFunction (ServerStorage.HaretDebug) for command-bar tests
   client/      → StarterPlayer.StarterPlayerScripts.Client
     Main.client.luau        bootstrap
     Controllers/            State, Locale, Hud, Dialogue, Shop, NpcLabel, Toast
-    UI/                     Root (ScreenGui + UIScale), Theme, Create (instance builder)
+    UI/                     Root (ScreenGui + UIScale), Theme, Icons, Create (instance builder)
 tests/                      Lune unit tests for src/shared/Logic (not synced into the place)
 ```
 
@@ -126,7 +127,7 @@ back to an in-memory mock and logs `PERSISTENCE DISABLED (mock store)`. Nothing 
 | Static | `selene src` | Lints, global usage |
 | Static | `luau-lsp analyze` (strict) with a Rojo sourcemap and Roblox definitions | Type errors |
 | Unit | `lune run tests/run` | All `Logic/*` and config integrity (every quest, item, shop and dialogue reference resolves) |
-| Integration | Studio Play (server + client) via Studio MCP | Prompt → dialogue → accept → deliver → reward → buy → equip, plus remote abuse attempts |
+| Integration | Studio Play (server + client), via Studio MCP or computer use; server inspection through `ServerStorage.HaretDebug` (the command bar is a separate VM) | Prompt → dialogue → accept → deliver → reward → buy → equip, plus remote abuse attempts |
 | Persistence | Studio with API access on a **test** experience, or a published test place | Leave/rejoin, double join, forced save failure |
 | Device | Studio device emulator (phone, tablet) and a real phone before release | Layout, safe areas, touch targets, frame rate |
 

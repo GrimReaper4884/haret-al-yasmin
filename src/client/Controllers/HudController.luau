@@ -21,14 +21,18 @@ local questHeader: TextLabel
 local questTitle: TextLabel
 local questObjective: TextLabel
 local langButton: TextButton
+local testBadge: TextLabel
 local lastQirsh: number? = nil
 
 local function build()
 	local root = Root.get()
 
+	-- Layout: Roblox owns the top-left (menu + chat window) and top-right (player list), so the
+	-- coin pill and language toggle sit top-centre and the errand tracker sits on the right edge.
 	coinPill = Theme.panel({
 		Name = "Coins",
-		Position = UDim2.fromOffset(12, 8),
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(0.5, -4, 0, 8),
 		Size = UDim2.fromOffset(150, Theme.TOUCH - 4),
 		Parent = root,
 	})
@@ -55,7 +59,8 @@ local function build()
 
 	local tracker = Theme.panel({
 		Name = "Errand",
-		Position = UDim2.fromOffset(12, 60),
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.new(1, -12, 0.45, 0),
 		Size = UDim2.fromOffset(250, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Parent = root,
@@ -95,13 +100,27 @@ local function build()
 
 	langButton = Theme.button({
 		Name = "Language",
-		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.new(1, -12, 0, 8),
+		Position = UDim2.new(0.5, 4, 0, 8),
 		Size = UDim2.fromOffset(96, Theme.TOUCH - 4),
 		TextSize = 18,
 		Parent = root,
 	})
 	langButton.Activated:Connect(LocaleController.toggle)
+
+	-- Shown only when the server runs on the mock store (unpublished place / no API access).
+	testBadge = Theme.label({
+		Name = "TestMode",
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.new(0.5, 0, 0, Theme.TOUCH + 10),
+		Size = UDim2.fromOffset(320, 18),
+		TextSize = 13,
+		FontFace = Theme.fontBold,
+		TextColor3 = Theme.colors.danger,
+		TextStrokeColor3 = Theme.colors.panel,
+		TextStrokeTransparency = 0.2,
+		Visible = false,
+		Parent = root,
+	})
 end
 
 -- Picks the errand to show: the first active quest, else the most recently completed one.
@@ -155,6 +174,8 @@ local function render()
 		Theme.align(l, rtl)
 	end
 	langButton.Text = t("hud.language")
+	testBadge.Visible = snapshot ~= nil and not snapshot.persistent
+	testBadge.Text = t("notify.persistence_disabled")
 end
 
 function HudController.start()

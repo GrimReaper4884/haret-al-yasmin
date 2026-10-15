@@ -63,9 +63,6 @@ function PlayerStateService.start()
 	DataService.ProfileLoaded:Connect(function(player: Player)
 		PlayerStateService.schedule(player)
 		Analytics.funnel(player, Analytics.Funnel.Spawned)
-		if not DataService.isPersistent() then
-			PlayerStateService.notify(player, "notify.persistence_disabled")
-		end
 	end)
 	DataService.ProfileChanged:Connect(PlayerStateService.schedule)
 

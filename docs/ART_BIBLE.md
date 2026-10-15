@@ -59,6 +59,10 @@ Use built-in Roblox materials only, so there are no texture uploads and no extra
 - Minimum touch target of 48×48 px. Layouts are authored in offsets for a phone in landscape (~844×390),
   and a single `UIScale` on the root ScreenGui adapts them (clamped to 0.8–1.5). Panels use Scale widths
   with `UISizeConstraint` maxima. Respect `ScreenGui.ScreenInsets = CoreUISafeInsets`.
+- HUD placement: Roblox owns the top-left (menu, chat window) and top-right (player list). Coins and the
+  language toggle sit top-centre, toasts below them, the errand tracker on the right edge at 45% height,
+  dialogue bottom-centre, the shop centred.
+- Icons are drawn from UI primitives (`src/client/UI/Icons.luau`); avoid emoji (they render inconsistently).
 - Arabic mode: text right-aligned, the dialogue speaker label on the right, and button rows reversed.
 
 ## 7. Lighting

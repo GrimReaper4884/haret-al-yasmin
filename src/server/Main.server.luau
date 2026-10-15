@@ -16,6 +16,7 @@ local AvatarService = require(Services.AvatarService)
 local PlayerStateService = require(Services.PlayerStateService)
 local ShopService = require(Services.ShopService)
 local DialogueService = require(Services.DialogueService)
+local DebugService = require(Services.DebugService)
 
 DataService.init()
 WorldService.build()
@@ -25,5 +26,6 @@ PlayerStateService.start()
 ShopService.start()
 DialogueService.start()
 DataService.start()
+DebugService.start() -- Studio only
 
 print("[HaretAlYasmin] server ready")

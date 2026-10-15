@@ -41,6 +41,7 @@ We do not use any of the following:
 | C-008 | UI icons (coin, quest) | 2D | Unicode glyphs and primitives | n/a | — | Self-assessed OK |
 | C-009 | Fonts | Font | Roblox built-in | Roblox ToS | — | Approved (platform) |
 | C-010 | Materials | Texture | Roblox built-in | Roblox ToS | — | Approved (platform) |
+| C-011 | Toolbox "My Models" items named after *Bab al-Hara* characters (tower_abu_issam, tower_motaz, …) | 3D | Pre-existing in the account, not part of this project | Unknown | Names derive from a TV series | **Excluded — do not use** |
 
 ## 4. Process
 

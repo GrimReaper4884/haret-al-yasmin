@@ -336,10 +336,15 @@ function WorldService.build()
 	buildBounds(map)
 	map.Parent = Workspace
 
-	-- Remove the default baseplate if a template left one.
+	-- Remove the template's baseplate and spawn so players only spawn at the gate.
 	local baseplate = Workspace:FindFirstChild("Baseplate")
 	if baseplate then
 		baseplate:Destroy()
+	end
+	for _, child in Workspace:GetChildren() do
+		if child:IsA("SpawnLocation") then
+			child:Destroy()
+		end
 	end
 end
 
