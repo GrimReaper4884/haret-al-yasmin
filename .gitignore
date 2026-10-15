@@ -1,0 +1,14 @@
+# Build outputs
+*.rbxl
+*.rbxlx
+*.rbxm
+*.rbxmx
+!assets/**/*.rbxm
+!assets/**/*.rbxmx
+sourcemap.json
+roblox.yml
+roblox.d.luau
+# Editor / OS
+.vscode/settings.local.json
+.DS_Store
+Thumbs.db

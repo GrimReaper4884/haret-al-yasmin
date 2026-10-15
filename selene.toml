@@ -1,0 +1,6 @@
+std = "roblox"
+exclude = ["tests/*", "types/*"]
+
+[lints]
+global_usage = "deny"
+shadowing = "warn"
