@@ -7,6 +7,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
@@ -14,6 +15,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared.Net)
 local TD = require(Shared.Config.TD)
 local Units = require(Shared.Config.Units)
+local Looks = require(Shared.Config.CharacterLooks)
 local Arenas = require(Shared.Config.Arenas)
 local Traits = require(Shared.Config.Traits)
 local Path = require(Shared.Logic.Path)
@@ -60,6 +62,7 @@ local slots: { Slot } = {}
 local slotKey = ""
 local ghostLight: Highlight? = nil
 
+local pickSlot: (unitId: string, price: number, frame: Frame) -> ()
 local placing: string? = nil
 local ghost: Model? = nil
 local ring: Part? = nil
@@ -72,14 +75,14 @@ local busy = false
 
 local function build()
 	local root = Root.get()
-	bar = Create("Frame", { Name = "UnitBar", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -8), Size = UDim2.fromOffset(7 * 74, 92), BackgroundTransparency = 1, Visible = false, ZIndex = 3, Parent = root })
+	bar = Create("Frame", { Name = "UnitBar", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -8), Size = UDim2.fromOffset(7 * 74, 92), BackgroundTransparency = 1, Active = true, Visible = false, ZIndex = 3, Parent = root })
 	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, VerticalAlignment = Enum.VerticalAlignment.Bottom, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = bar })
 	placeHint = Theme.display({ Name = "PlaceHint", TextSize = 16, AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -150), Size = UDim2.new(0.8, 0, 0, 22), Visible = false, ZIndex = 3, Parent = root })
 	placeHint.TextXAlignment = Enum.TextXAlignment.Center
 	cancelButton = Theme.button({ Name = "CancelPlace", Text = "X", TextSize = 22, AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0.5, 7 * 74 / 2 + 8, 1, -24), Size = UDim2.fromOffset(52, 52), BackgroundColor3 = Theme.colors.danger, Visible = false, ZIndex = 4, Parent = root })
 
 	-- Tower panel: left edge, away from the bar (docs/research/ROBLOX_TD_UI_PATTERNS.md §1).
-	towerPanel = Theme.panel({ Name = "TowerPanel", AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 6), Size = UDim2.fromOffset(232, 0), AutomaticSize = Enum.AutomaticSize.Y, Visible = false, ZIndex = 4, Parent = root })
+	towerPanel = Theme.panel({ Name = "TowerPanel", AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 6), Size = UDim2.fromOffset(232, 0), AutomaticSize = Enum.AutomaticSize.Y, Active = true, Visible = false, ZIndex = 4, Parent = root })
 	Create("UIPadding", { PaddingTop = UDim.new(0, 10), PaddingBottom = UDim.new(0, 10), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), Parent = towerPanel })
 	Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = towerPanel })
 	local header = Create("Frame", { LayoutOrder = 1, Size = UDim2.new(1, 0, 0, 56), BackgroundTransparency = 1, ZIndex = 4, Parent = towerPanel })
@@ -186,6 +189,19 @@ function PlacementController.begin(unitId: string)
 	hl.OutlineColor = Color3.new(1, 1, 1)
 	hl.Parent = ghost
 	ghostLight = hl
+	-- Imported figures show their T-pose bind pose unless a clip plays; the ghost isn't in a
+	-- towers folder (RigAnimController), so play its idle here.
+	local look = (Looks :: any)[unitId]
+	local animator = (ghost :: Model):FindFirstChildWhichIsA("Animator", true)
+	if animator and look and look.anims and look.anims.idle then
+		local anim = Instance.new("Animation")
+		anim.AnimationId = "rbxassetid://" .. tostring(look.anims.idle)
+		pcall(function()
+			local t = (animator :: Animator):LoadAnimation(anim)
+			t.Looped = true
+			t:Play(0)
+		end)
+	end
 	cancelButton.Visible = true
 	for _, slot in slots do
 		local on = slot.unitId == unitId
@@ -205,7 +221,8 @@ local function groundHit(screen: Vector2): (Vector3?, Instance?)
 	if not camera then
 		return nil, nil
 	end
-	local unitRay = camera:ViewportPointToRay(screen.X, screen.Y)
+	-- InputObject / TouchTap positions exclude the top-bar inset, so use the Screen variant
+	local unitRay = camera:ScreenPointToRay(screen.X, screen.Y)
 	local params = RaycastParams.new()
 	params.FilterType = Enum.RaycastFilterType.Exclude
 	local exclude = { Players.LocalPlayer.Character :: Instance?, ghost, ring, selectedRing }
@@ -227,24 +244,51 @@ local function groundHit(screen: Vector2): (Vector3?, Instance?)
 	return nil, nil
 end
 
-local function valid(x: number, z: number): boolean
+local function valid(x: number, z: number): (boolean, string?)
 	local info = MatchController.info()
 	if not info or not arenaPath then
-		return false
+		return false, nil
 	end
 	local b = Arenas[info.arenaId].bounds
 	if x < b[1] or x > b[3] or z < b[2] or z > b[4] then
-		return false
+		return false, "out_of_bounds"
 	end
 	if Path.distanceTo(arenaPath, x, z) < TD.PATH_HALF_WIDTH then
-		return false
+		return false, "on_path"
 	end
 	for _, t in towers do
 		if (t.x - x) ^ 2 + (t.z - z) ^ 2 < TD.TOWER_SPACING * TD.TOWER_SPACING then
-			return false
+			return false, "too_close"
 		end
 	end
-	return true
+	return true, nil
+end
+
+-- The defender drawn under a screen point: distance from the point to each defender's on-screen
+-- body (feet to head), so a click on a torso or head works from the low walking camera too. Rig
+-- parts are not queryable, so a raycast alone only finds the ground behind them.
+local PICK_PX = 34
+local PICK_HEIGHT = 5
+local function towerAtScreen(screen: Vector2): number?
+	local camera = Workspace.CurrentCamera
+	if not camera or not origin then
+		return nil
+	end
+	local best, bestD = nil, PICK_PX
+	for tid, rec in towers do
+		local feet = camera:WorldToScreenPoint((origin * CFrame.new(rec.x, 0, rec.z)).Position)
+		local head = camera:WorldToScreenPoint((origin * CFrame.new(rec.x, PICK_HEIGHT, rec.z)).Position)
+		if feet.Z > 0 and head.Z > 0 then
+			local a, b = Vector2.new(feet.X, feet.Y), Vector2.new(head.X, head.Y)
+			local ab = b - a
+			local k = if ab:Dot(ab) > 0 then math.clamp((screen - a):Dot(ab) / ab:Dot(ab), 0, 1) else 0
+			local d = (screen - (a + ab * k)).Magnitude
+			if d < bestD then
+				best, bestD = tid, d
+			end
+		end
+	end
+	return best
 end
 
 local lastScreen: Vector2? = nil
@@ -356,6 +400,9 @@ local function renderTowerPanel()
 		table.insert(lines, statLine(t("match.stat_damage", { n = "" }), round(st.damage, 0), nx and round(nx.damage, 0)))
 		table.insert(lines, statLine(t("match.stat_range", { n = "" }), round(st.range, 1), nx and round(nx.range, 1)))
 		table.insert(lines, statLine(t("match.stat_cooldown", { n = "" }), round(st.cooldown, 2), nx and round(nx.cooldown, 2), "s"))
+		-- Stealth enemies walk past defenders that can't see them; say so up front
+		local seesColor = if st.hitsStealth then "#8FE07A" else "#FF8A7A"
+		table.insert(lines, string.format('<font color="%s">%s</font>', seesColor, t(if st.hitsStealth then "match.sees_stealth" else "match.no_stealth")))
 	end
 	if st.income then
 		table.insert(lines, statLine(t("match.stat_income", { n = "" }), st.income, nx and nx.income))
@@ -416,15 +463,30 @@ local function tap(screen: Vector2)
 	if not origin then
 		return
 	end
+	local onTower = towerAtScreen(screen)
 	if placing then
 		local hit = groundHit(screen)
+		local ok, why = false, nil
 		if hit then
 			local l = origin:PointToObjectSpace(hit)
-			if valid(l.X, l.Z) then
+			ok, why = valid(l.X, l.Z)
+			if ok then
 				call(Net.Functions.PlaceTower, placing, hit.X, hit.Z)
 				clearGhost()
+				return
 			end
 		end
+		if onTower then
+			-- Clicking one of the defenders while placing: stop placing and open its panel.
+			clearGhost()
+			selectTower(onTower)
+		elseif why and ERR_KEYS[why] then
+			ToastController.show(ERR_KEYS[why])
+		end
+		return
+	end
+	if onTower then
+		selectTower(onTower)
 		return
 	end
 	-- Pick the defender nearest the tapped ground point (fingers are fat; models are thin).
@@ -473,6 +535,44 @@ local function refreshBar()
 	end
 end
 
+-- A hotbar slot was clicked or its number key pressed: start (or stop) placing that unit.
+pickSlot = function(unitId: string, price: number, frame: Frame)
+	local state = MatchController.state()
+	if state and state.cash < price then
+		Juice.shake(frame)
+		ToastController.show("match.err.cannot_afford")
+		return
+	end
+	if placing == unitId then
+		clearGhost()
+	else
+		clearSelection()
+		PlacementController.begin(unitId)
+	end
+end
+
+-- 1-9 (and the keypad) pick hotbar slots; Q cancels placing / closes the defender panel.
+local NUMBER_KEYS: { [Enum.KeyCode]: number } = {
+	[Enum.KeyCode.One] = 1,
+	[Enum.KeyCode.Two] = 2,
+	[Enum.KeyCode.Three] = 3,
+	[Enum.KeyCode.Four] = 4,
+	[Enum.KeyCode.Five] = 5,
+	[Enum.KeyCode.Six] = 6,
+	[Enum.KeyCode.Seven] = 7,
+	[Enum.KeyCode.Eight] = 8,
+	[Enum.KeyCode.Nine] = 9,
+	[Enum.KeyCode.KeypadOne] = 1,
+	[Enum.KeyCode.KeypadTwo] = 2,
+	[Enum.KeyCode.KeypadThree] = 3,
+	[Enum.KeyCode.KeypadFour] = 4,
+	[Enum.KeyCode.KeypadFive] = 5,
+	[Enum.KeyCode.KeypadSix] = 6,
+	[Enum.KeyCode.KeypadSeven] = 7,
+	[Enum.KeyCode.KeypadEight] = 8,
+	[Enum.KeyCode.KeypadNine] = 9,
+}
+
 local function slotFor(i: number, unitId: string): Slot
 	local def = (Units :: any)[unitId]
 	local color = Theme.rarityColor(def.rarity)
@@ -497,20 +597,15 @@ local function slotFor(i: number, unitId: string): Slot
 		local badge = Create("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(1, -9, 0, 9), Size = UDim2.fromOffset(18, 18), Rotation = 45, BackgroundColor3 = Theme.lira, BorderSizePixel = 0, ZIndex = 7, Parent = frame }, { Create("UICorner", { CornerRadius = UDim.new(0, 4) }) })
 		Theme.border(badge, 2)
 	end
+	if UserInputService.KeyboardEnabled and i <= 9 then
+		-- Number key that picks this slot (bottom-left; the count is top-left, the ultimate badge top-right)
+		local key = Theme.display({ Text = tostring(i), TextSize = 13, AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0, 5, 1, -22), Size = UDim2.fromOffset(14, 14), ZIndex = 7, Parent = frame })
+		key.TextXAlignment = Enum.TextXAlignment.Left
+	end
 	local hit = Create("TextButton", { Text = "", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 8, Parent = frame })
 	Juice.press(hit)
 	hit.Activated:Connect(function()
-		local state = MatchController.state()
-		if state and state.cash < price then
-			Juice.shake(frame)
-			ToastController.show("match.err.cannot_afford")
-			return
-		end
-		if placing == unitId then
-			clearGhost()
-		else
-			PlacementController.begin(unitId)
-		end
+		pickSlot(unitId, price, frame)
 	end)
 	holder.Parent = bar
 	return { frame = frame, cost = cost, count = count, dim = dim, stroke = stroke, unitId = unitId, price = price }
@@ -719,6 +814,20 @@ function PlacementController.start()
 		end
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			tap(Vector2.new(input.Position.X, input.Position.Y))
+		elseif input.UserInputType == Enum.UserInputType.Keyboard then
+			local n = NUMBER_KEYS[input.KeyCode]
+			local slot = n and slots[n]
+			if slot then
+				if not lastScreen then
+					local m = UserInputService:GetMouseLocation()
+					local inset = GuiService:GetGuiInset()
+					lastScreen = m - inset
+				end
+				pickSlot(slot.unitId, slot.price, slot.frame)
+			elseif input.KeyCode == Enum.KeyCode.Q then
+				clearGhost()
+				clearSelection()
+			end
 		elseif input.UserInputType == Enum.UserInputType.Touch then
 			lastScreen = Vector2.new(input.Position.X, input.Position.Y)
 		end

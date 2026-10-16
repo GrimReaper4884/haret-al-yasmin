@@ -5,6 +5,7 @@
 -- skipped. Logs the part count so the mobile budget (docs/ART_BIBLE.md §9) stays visible.
 
 local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Palette = require(ReplicatedStorage:WaitForChild("Shared").Config.Palette)
@@ -36,8 +37,37 @@ local function bounds(map: Instance)
 	end
 end
 
+-- Lobby safety net (players reported climbing the façades and falling out of the map). Anyone in
+-- the lobby area who is on the roofs or has dropped below the ground goes back to the gate spawn.
+-- Arenas sit far out at x >= 3000, so they are never checked here.
+local LOBBY_HALF_EXTENT = 400
+local ROOF_Y = 17 -- root height; the highest walkable lobby floor is the ground (awnings ~10-12)
+local FLOOR_Y = -12
+local function watchBounds()
+	while true do
+		task.wait(0.5)
+		local map = Workspace:FindFirstChild("Map")
+		local spawn = map and map:FindFirstChild("GateSpawn", true) :: BasePart?
+		if spawn then
+			for _, player in Players:GetPlayers() do
+				local character = player.Character
+				local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+				if root then
+					local p = root.Position
+					local inLobby = math.abs(p.X) < LOBBY_HALF_EXTENT and math.abs(p.Z) < LOBBY_HALF_EXTENT
+					if inLobby and (p.Y > ROOF_Y or p.Y < FLOOR_Y) then
+						root.AssemblyLinearVelocity = Vector3.zero
+						character:PivotTo(spawn.CFrame * CFrame.new(0, 3.5, 0))
+					end
+				end
+			end
+		end
+	end
+end
+
 function WorldService.build()
 	Atmosphere.apply()
+	task.spawn(watchBounds)
 	if Workspace:FindFirstChild("Map") then
 		return
 	end

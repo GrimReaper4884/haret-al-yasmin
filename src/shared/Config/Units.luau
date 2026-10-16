@@ -79,6 +79,7 @@ local Units: { [string]: UnitDef } = {
 		rarity = "rare",
 		role = "ranged",
 		maxPlaced = 8,
+		hitsStealth = true, -- the starter must be able to stop Episode 1's night thieves
 		levels = {
 			L(120, 4, 14, 1.0),
 			L(90, 6, 15, 0.95),

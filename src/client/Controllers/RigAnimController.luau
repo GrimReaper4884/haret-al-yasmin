@@ -31,6 +31,7 @@ type Rec = {
 	yaw: number, -- current waist yaw (radians)
 	targetYaw: number,
 	tracks: { [string]: AnimationTrack }?,
+	retryAt: number?, -- imported figure whose Animator hadn't arrived yet: try loading again then
 }
 
 local recs: { [Model]: Rec } = {}
@@ -100,9 +101,26 @@ local function loadTracks(model: Model): { [string]: AnimationTrack }?
 	return tracks
 end
 
+local function playLoop(rec: Rec, isTower: boolean)
+	local tracks = rec.tracks
+	if tracks then
+		local loop = if isTower then tracks.Idle else (tracks.Walk or tracks.Idle)
+		if loop then
+			loop:Play()
+		end
+	end
+end
+
 local function track(model: Model, isTower: boolean): Rec
 	local existing = recs[model]
 	if existing then
+		-- With streaming, parts of an imported figure can arrive after its root; until its clips
+		-- load it shows the raw T-pose, so keep trying instead of giving up on the first look.
+		if existing.retryAt and os.clock() >= existing.retryAt then
+			existing.tracks = loadTracks(model)
+			existing.retryAt = if existing.tracks then nil else os.clock() + 1
+			playLoop(existing, isTower)
+		end
 		return existing
 	end
 	local unitId = model:GetAttribute("UnitId")
@@ -117,17 +135,14 @@ local function track(model: Model, isTower: boolean): Rec
 		targetYaw = 0,
 		tracks = loadTracks(model),
 	}
+	if not rec.tracks and model:GetAttribute("Imported") then
+		rec.retryAt = os.clock() + 1
+	end
 	recs[model] = rec
 	model.Destroying:Connect(function()
 		recs[model] = nil
 	end)
-	local tracks = rec.tracks
-	if tracks then
-		local loop = if isTower then tracks.Idle else (tracks.Walk or tracks.Idle)
-		if loop then
-			loop:Play()
-		end
-	end
+	playLoop(rec, isTower)
 	return rec
 end
 

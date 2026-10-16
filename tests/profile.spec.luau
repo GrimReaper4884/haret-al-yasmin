@@ -19,15 +19,28 @@ return function(t)
 		units = Units,
 		traits = Traits.traits,
 		starterUnit = TD.STARTER_UNIT,
+		starterLira = TD.STARTER_LIRA,
 		season = "s1",
 	}
 
 	t.describe("ProfileSchema v2 (tower defense)", function()
+		t.it("pays the welcome lira exactly once, enough for a first summon", function()
+			t.truthy(TD.STARTER_LIRA >= TD.SUMMON_COST, "a new player can afford a summon")
+			local fresh = ProfileSchema.load(nil, ctx, 1)
+			t.eq(fresh.lira, TD.STARTER_LIRA)
+			-- a player saved before the gift existed (spent down to 20) gets it on next load, once
+			local old = ProfileSchema.load({ schemaVersion = Economy.SCHEMA_VERSION, lira = 20 }, ctx, 1)
+			t.eq(old.lira, 20 + TD.STARTER_LIRA)
+			local again = ProfileSchema.load(old, ctx, 2)
+			t.eq(again.lira, 20 + TD.STARTER_LIRA)
+			old.lira = 0
+			t.eq(ProfileSchema.sanitize(old, ctx, 3).lira, 0)
+		end)
 		t.it("migrates a v1 profile and grants the starter unit", function()
 			local p = ProfileSchema.load({ schemaVersion = 1, qirsh = 10, inventory = {}, equipped = {}, quests = {} }, ctx, 1)
 			t.eq(p.schemaVersion, Economy.SCHEMA_VERSION)
 			t.eq(p.qirsh, 10)
-			t.eq(p.lira, 0)
+			t.eq(p.lira, TD.STARTER_LIRA)
 			t.truthy(p.units.walad, "starter unit")
 			t.eq(p.loadout[1], "walad")
 			t.eq(p.pass.season, "s1")

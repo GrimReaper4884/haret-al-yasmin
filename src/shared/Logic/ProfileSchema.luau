@@ -12,6 +12,7 @@ export type Context = {
 	units: { [string]: any },
 	traits: { [string]: any },
 	starterUnit: string,
+	starterLira: number?,
 	season: string,
 }
 
@@ -65,7 +66,8 @@ function ProfileSchema.default(now: number, schemaVersion: number, ctx: Context?
 		stats = { firstJoin = now, lastJoin = now, sessions = 0 },
 		receipts = {},
 		-- Tower defense (schema v2)
-		lira = 0,
+		lira = if ctx then ctx.starterLira or 0 else 0,
+		welcomeLira = if ctx then true else nil, -- the starter lira gift has been paid
 		traitStones = 0,
 		units = units,
 		loadout = loadout,
@@ -179,6 +181,11 @@ function ProfileSchema.sanitize(p: any, ctx: Context, now: number): any
 
 	-- Tower defense -------------------------------------------------------------------------
 	p.lira = math.clamp(nonNegInt(p.lira, 0), 0, ctx.maxLira)
+	-- One-time welcome lira so a new player can summon at once (players saved before the gift get it too)
+	if p.welcomeLira ~= true then
+		p.lira = math.clamp(p.lira + (ctx.starterLira or 0), 0, ctx.maxLira)
+		p.welcomeLira = true
+	end
 	p.traitStones = math.clamp(nonNegInt(p.traitStones, 0), 0, ctx.maxStones)
 
 	local units = tableOr(p.units)

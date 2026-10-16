@@ -46,6 +46,7 @@ local schemaCtx: ProfileSchema.Context = {
 	units = Units :: any,
 	traits = Traits.traits :: any,
 	starterUnit = TD.STARTER_UNIT,
+	starterLira = TD.STARTER_LIRA,
 	season = SeasonPass.season,
 }
 

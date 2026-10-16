@@ -124,6 +124,45 @@ local function queueEvent(match: Match, e: any)
 	table.insert(match.eventBuffer, e)
 end
 
+-- Records `player`'s skip vote for this countdown; when every player has voted the next wave
+-- starts now and everyone gets the skip bonus. Returns false if the vote doesn't count.
+local function castSkipVote(match: Match, player: Player): boolean
+	if match.ended or match.state.phase ~= "prep" or match.votes[player] then
+		return false
+	end
+	match.votes[player] = true
+	queueEvent(match, { type = "voteSkip", name = player.Name })
+	local all = true
+	for p in match.players do
+		if not match.votes[p] then
+			all = false
+		end
+	end
+	if all then
+		for _, ps in match.state.players do
+			ps.cash += TD.SKIP_BONUS
+		end
+		TdSim.skipCountdown(match.state)
+	end
+	return true
+end
+
+-- Auto skip (setting): vote for every player who has it on, in the countdowns between waves only;
+-- the setup before wave 1 is left alone so there is time to place defenders.
+local function autoSkipVotes(match: Match): boolean
+	if match.ended or match.state.phase ~= "prep" or match.state.wave <= 1 then
+		return false
+	end
+	local any = false
+	for p in match.players do
+		local profile = DataService.getProfile(p)
+		if profile and Settings.get(profile.settings, "autoSkip") and castSkipVote(match, p) then
+			any = true
+		end
+	end
+	return any
+end
+
 local function flushEvents(match: Match)
 	if #match.eventBuffer == 0 then
 		return
@@ -135,15 +174,30 @@ local function flushEvents(match: Match)
 	end
 end
 
+-- Unreliable events over ~900 bytes are dropped whole, which froze every enemy model in big
+-- waves while towers kept hitting their real positions. Send at most POSITIONS_PER_PACKET
+-- enemies per packet; each packet starts with the send number so the client can tell when a
+-- whole round has arrived.
+local POSITIONS_PER_PACKET = 24
+local positionSeq = 0
 local function sendPositions(match: Match)
-	local packed = {}
+	positionSeq += 1
+	local packets = {}
+	local packed = { positionSeq }
 	for _, e in match.state.enemies do
+		if #packed > POSITIONS_PER_PACKET * 3 then
+			table.insert(packets, packed)
+			packed = { positionSeq }
+		end
 		table.insert(packed, e.id)
 		table.insert(packed, math.floor(e.dist * 10 + 0.5) / 10)
 		table.insert(packed, math.floor(math.clamp(e.hp / e.maxHp, 0, 1) * 100))
 	end
+	table.insert(packets, packed)
 	for p in match.players do
-		evPositions:FireClient(p, packed)
+		for _, packet in packets do
+			evPositions:FireClient(p, packet)
+		end
 	end
 end
 
@@ -509,6 +563,7 @@ local function stepMatch(match: Match, dt: number)
 	match.accum += dt * match.speed
 	local steps = 0
 	local changed = false
+	local autoSkip = false
 	while match.accum >= TD.TICK and steps < MAX_STEPS_PER_FRAME do
 		match.accum -= TD.TICK
 		steps += 1
@@ -522,6 +577,9 @@ local function stepMatch(match: Match, dt: number)
 			elseif t == "waveEnd" or t == "reached" then
 				changed = true
 				queueEvent(match, e)
+				if t == "waveEnd" then
+					autoSkip = true
+				end
 			elseif t == "death" then
 				local owner = match.byKey[e.owner]
 				e.owner = if owner then owner.Name else nil
@@ -542,6 +600,9 @@ local function stepMatch(match: Match, dt: number)
 	end
 	if match.accum > TD.TICK * MAX_STEPS_PER_FRAME then
 		match.accum = 0 -- the server fell behind; drop time instead of spiralling
+	end
+	if autoSkip and autoSkipVotes(match) then
+		changed = true
 	end
 	flushEvents(match)
 	local now = os.clock()
@@ -598,32 +659,18 @@ function MatchService.start()
 			if ps then
 				ps.autoAbility = Settings.get(profile.settings, "autoUlt")
 			end
+			-- Turning auto skip on during a countdown votes straight away
+			if autoSkipVotes(match) then
+				pushState(match)
+			end
 		end
 	end)
 
 	RemoteGuard.event(Net.Events.VoteSkip, RemoteGuard.STRICT, function(player: Player)
 		local match = byPlayer[player]
-		if not match or match.ended or match.state.phase ~= "prep" then
-			return
+		if match and castSkipVote(match, player) then
+			pushState(match)
 		end
-		if match.votes[player] then
-			return
-		end
-		match.votes[player] = true
-		queueEvent(match, { type = "voteSkip", name = player.Name })
-		local all = true
-		for p in match.players do
-			if not match.votes[p] then
-				all = false
-			end
-		end
-		if all then
-			for _, ps in match.state.players do
-				ps.cash += TD.SKIP_BONUS
-			end
-			TdSim.skipCountdown(match.state)
-		end
-		pushState(match)
 	end)
 
 	RemoteGuard.event(Net.Events.SetSpeed, RemoteGuard.STRICT, function(player: Player, speed: any)

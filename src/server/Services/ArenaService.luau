@@ -89,6 +89,9 @@ function ArenaService.buildTower(slot: Slot, tower: any, ownerName: string): Mod
 		end
 	end
 	local model = RigBuilder.cached(nil, "Tower_" .. tower.id, unit.visual, tower.unitId)
+	-- Stream the figure in whole: an imported rig whose root arrived before its skinned mesh and
+	-- Animator was left un-animated in its T-pose bind pose (player report "models bugging out").
+	model.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
 	local at = slot.origin * CFrame.new(tower.x, 0, tower.z)
 	local look = slot.origin * CFrame.new(bx, 0, bz)
 	model:PivotTo(CFrame.lookAt(at.Position, look.Position))

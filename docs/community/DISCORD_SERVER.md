@@ -117,7 +117,9 @@ Two pieces, both using the same bot:
 
 **1. `discord-feedback` MCP server (already wired in `.mcp.json`).** Any Claude Code session opened in
 this repo — the desktop app, a scheduled task, or the CLI — gets tools to list/read feedback posts, set
-staff tags, reply in feedback threads, post in staff channels and edit #known-issues. It is a small
+staff tags, reply in feedback threads, post in staff channels and edit #known-issues. `post_public` /
+`edit_public` post the developer's own announcements, patch notes and codes (mentions off unless
+`ping` is set, which pings only the opt-in Pings role; `publish` pushes to following servers). It is a small
 stdlib-Python server in this repo (`tools/discord/feedback_mcp.py`), so nothing third-party sees the token.
 Community MCP servers exist ([barryyip0625/mcp-discord](https://mcpservers.org/servers/barryyip0625/mcp-discord),
 [IQAIcom/mcp-discord](https://glama.ai/mcp/servers/@IQAIcom/mcp-discord)) but are broader (delete,

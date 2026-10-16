@@ -62,6 +62,7 @@ return {
 
 	-- Collection
 	STARTER_UNIT = "walad", -- every new player owns this
+	STARTER_LIRA = 500, -- one-time welcome gift (one ×10 summon); also reaches players who joined before it existed
 	STAR_COPIES = { 1, 2, 4, 7, 11 }, -- extra copies needed for star 1..5 (cumulative)
 	STAR_BONUS = 0.05, -- +5% damage per star
 	MAX_LIRA = 10000000,

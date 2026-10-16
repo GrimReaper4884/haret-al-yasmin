@@ -9,6 +9,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Units = require(Shared.Config.Units)
 local Palette = require(Shared.Config.Palette)
 local RigBuilder = require(Shared.Util.RigBuilder)
+local Looks = require(Shared.Config.CharacterLooks)
 local Create = require(script.Parent.Create)
 local Theme = require(script.Parent.Theme)
 local Juice = require(script.Parent.Juice)
@@ -26,6 +27,63 @@ export type Options = {
 	zindex: number?,
 }
 
+-- Imported (Meshy) figures sit in their T-pose bind pose unless a clip plays, and an Animator only
+-- runs inside a WorldModel in a ViewportFrame. Moves the rig into one and plays its idle: looping on
+-- showcase (spinning) cards, frozen on the idle's first pose elsewhere so a grid of portraits
+-- costs nothing per frame. Primitive figures are posed by their build and are left alone.
+local function posePreview(vp: ViewportFrame, rig: Model, unitId: string, loop: boolean)
+	local look = (Looks :: any)[unitId]
+	local idle = look and look.anims and look.anims.idle
+	if not rig:GetAttribute("Imported") or not idle then
+		return
+	end
+	local animator = rig:FindFirstChildWhichIsA("Animator", true)
+	if not animator then
+		return
+	end
+	local world = Instance.new("WorldModel")
+	world.Parent = vp
+	rig.Parent = world
+	local anim = Instance.new("Animation")
+	anim.AnimationId = "rbxassetid://" .. tostring(idle)
+	local ok, track = pcall(function()
+		local t = (animator :: Animator):LoadAnimation(anim)
+		t.Looped = loop
+		t:Play(0)
+		if not loop then
+			t:AdjustSpeed(0)
+		end
+		return t
+	end)
+	local hips = rig:FindFirstChild("Hips", true)
+	if not ok or not track or not (hips and hips:IsA("Bone")) then
+		return
+	end
+	-- The idle clips turn the hips (~137° on the Meshy rigs), so a posed figure would show its back.
+	-- Once the clip has loaded and posed, turn the whole figure back by the hips' yaw change.
+	task.spawn(function()
+		local deadline = os.clock() + 8
+		while (track :: AnimationTrack).Length == 0 and os.clock() < deadline and rig.Parent do
+			task.wait(0.1)
+		end
+		RunService.RenderStepped:Wait()
+		RunService.RenderStepped:Wait()
+		if not rig.Parent or (track :: AnimationTrack).Length == 0 then
+			return
+		end
+		-- The world-space turn the clip applies to the hips, measured on world forward (independent of
+		-- how the bone's own axes point)
+		local bone = hips :: Bone
+		local turn = bone.TransformedWorldCFrame.Rotation * bone.WorldCFrame.Rotation:Inverse()
+		local a = Vector3.new(0, 0, -1)
+		local b = turn:VectorToWorldSpace(a)
+		local yaw = math.atan2(a.Z * b.X - a.X * b.Z, a.X * b.X + a.Z * b.Z)
+		if math.abs(yaw) > math.rad(5) then
+			rig:PivotTo(rig:GetPivot() * CFrame.Angles(0, -yaw, 0))
+		end
+	end)
+end
+
 -- A viewport showing the unit rig (feet at y 0, facing the camera).
 function UnitCard.preview(unitId: string, props: { [string]: any }, spin: boolean?): ViewportFrame
 	local def = (Units :: any)[unitId]
@@ -41,6 +99,7 @@ function UnitCard.preview(unitId: string, props: { [string]: any }, spin: boolea
 	end
 	-- Cloned from a per-unit template: grids re-render often.
 	local rig = RigBuilder.cached(vp, unitId, def.visual, unitId)
+	posePreview(vp, rig, unitId, spin == true)
 	local s = def.visual.scale or 1
 	local camera = Instance.new("Camera")
 	camera.FieldOfView = 35

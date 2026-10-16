@@ -21,10 +21,8 @@ export type Placement = {
 
 local Placements: { lobby: { Placement }, arenas: { [string]: { Placement } } } = {
 	lobby = {
-		-- Wall lanterns down Jasmine Lane (the lane runs x -8..8, façades beyond)
-		{ prop = "lantern_post", at = { -7.2, 44 }, height = 9, yaw = 90 }, -- bracket arm (+Z at yaw 0) over the lane
-		{ prop = "lantern_post", at = { 7.2, 58 }, height = 9, yaw = -90 },
-		{ prop = "lantern_post", at = { -7.2, 72 }, height = 9, yaw = 90 },
+		-- No free-standing lantern posts in Jasmine Lane: the lane is only 16 studs wide and players
+		-- reported the posts standing in the market. The lane uses wall lanterns (Zones/Lane facades).
 		-- Abu Hatem's coffee-house corner, square west by the coffee house
 		{ prop = "coffee_house", at = { -21, -8 }, height = 7, yaw = 90, solid = true },
 	},

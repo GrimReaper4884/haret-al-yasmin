@@ -1,6 +1,6 @@
 --!strict
 -- Player settings (Logic/Settings): effects level, summon animation, match camera, auto
--- ultimate. Values follow the server snapshot; a change applies at once on this client and is
+-- ultimate, auto skip. Values follow the server snapshot; a change applies at once on this client and is
 -- sent to the server to be saved (the server validates it). The Settings screen opens from the
 -- lobby rail and the match HUD gear.
 
@@ -97,6 +97,11 @@ local ROWS: { Row } = {
 		labelKey = "settings.autoUlt",
 		options = { { value = true, textKey = "settings.on" }, { value = false, textKey = "settings.off" } },
 	},
+	{
+		key = "autoSkip",
+		labelKey = "settings.autoSkip",
+		options = { { value = true, textKey = "settings.on" }, { value = false, textKey = "settings.off" } },
+	},
 }
 
 local modal: Modal.Modal
@@ -127,7 +132,7 @@ local function render()
 end
 
 local function build()
-	modal = Modal.create("Settings", 520, 4 * 46 + 26)
+	modal = Modal.create("Settings", 520, #ROWS * 46 + 26)
 	local body = modal.body
 	Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = body })
 	for i, row in ROWS do

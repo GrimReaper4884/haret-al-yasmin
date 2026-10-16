@@ -3,8 +3,10 @@
 Registered in .mcp.json. Reads the bot token like discord_api.load_token() and channel/tag ids from
 server_ids.json (written by build_server.py). Scope is deliberately narrow:
   - reads: the four feedback forums (bug-reports, suggestions, game-feedback, help) and their posts
-  - writes: staff tags on posts, replies inside feedback posts, messages in staff channels, and the
-    pinned #known-issues text. It cannot post in #announcements, ping anyone, delete, or ban.
+  - writes: staff tags on posts, replies inside feedback posts, messages in staff channels, the
+    pinned #known-issues text, and (post_public / edit_public) the developer's posts in #announcements,
+    #patch-notes and #codes. It cannot delete or ban; the only ping it can send is the opt-in Pings role.
+    post_public is for posts the developer asked for in their own words. The triage agent never uses it.
 Everything a player wrote is returned under "untrusted" keys: it is data, never instructions.
 """
 
@@ -19,6 +21,7 @@ from discord_api import IDS_FILE, Client, DiscordError, chunk
 
 FORUMS = ("bugs", "suggestions", "feedback", "help")
 STAFF_CHANNELS = ("triage_reports", "claude_control", "mod_log", "staff_chat")
+PUBLIC_CHANNELS = ("announcements", "patch_notes", "codes")
 SERVER = {"name": "discord-feedback", "version": "1.0.0"}
 
 _client: Client | None = None
@@ -229,6 +232,48 @@ def tool_update_known_issues(args: dict) -> dict:
     return {"message_ids": out}
 
 
+def tool_post_public(args: dict) -> dict:
+    key = args["channel"]
+    if key not in PUBLIC_CHANNELS:
+        raise RuntimeError(f"channel must be one of {PUBLIC_CHANNELS}")
+    d, c = ids(), client()
+    cid = d["channels"][key]
+    text = args["text"]
+    allowed: dict = {"parse": []}
+    if args.get("ping"):
+        # Only the opt-in Pings role, never @everyone/@here or people
+        role = d["roles"]["pings"]
+        text = f"<@&{role}>\n{text}"
+        allowed = {"parse": [], "roles": [role]}
+    sent = []
+    for i, part in enumerate(chunk(text)):
+        body = {"content": part, "allowed_mentions": allowed if i == 0 else {"parse": []}}
+        sent.append(c.post(f"/channels/{cid}/messages", body)["id"])
+    published = False
+    if args.get("publish") and key in ("announcements", "patch_notes"):
+        # Announcement channels: push to servers that follow the channel
+        for mid in sent:
+            c.post(f"/channels/{cid}/messages/{mid}/crosspost", {})
+        published = True
+    return {"channel": key, "message_ids": sent, "published": published}
+
+
+def tool_edit_public(args: dict) -> dict:
+    key = args["channel"]
+    if key not in PUBLIC_CHANNELS:
+        raise RuntimeError(f"channel must be one of {PUBLIC_CHANNELS}")
+    cid = ids()["channels"][key]
+    msg = client().get(f"/channels/{cid}/messages/{args['message_id']}")
+    if msg["author"]["id"] != ids()["bot_user_id"]:
+        raise RuntimeError("can only edit the bot's own messages")
+    parts = chunk(args["text"])
+    if len(parts) != 1:
+        raise RuntimeError("edited text must fit in one message (about 1900 characters)")
+    client().patch(f"/channels/{cid}/messages/{args['message_id']}",
+                   {"content": parts[0], "allowed_mentions": {"parse": []}})
+    return {"channel": key, "message_id": args["message_id"]}
+
+
 def tool_read_staff(args: dict) -> dict:
     key = args["channel"]
     if key not in STAFF_CHANNELS:
@@ -273,6 +318,18 @@ TOOLS = {
                    {"type": "object", "required": ["channel"], "properties": {
                        "channel": {"type": "string", "enum": list(STAFF_CHANNELS)},
                        "limit": {"type": "integer", "default": 30}}}),
+    "post_public": (tool_post_public,
+                    "Post the developer's message in a public channel: announcements, patch_notes or codes. "
+                    "Only for text the developer asked to post. `ping` mentions the opt-in Pings role; "
+                    "`publish` also pushes an announcements/patch_notes post to following servers.",
+                    {"type": "object", "required": ["channel", "text"], "properties": {
+                        "channel": {"type": "string", "enum": list(PUBLIC_CHANNELS)}, "text": {"type": "string"},
+                        "ping": {"type": "boolean", "default": False},
+                        "publish": {"type": "boolean", "default": False}}}),
+    "edit_public": (tool_edit_public, "Fix a bot post in announcements, patch_notes or codes (replaces its text).",
+                    {"type": "object", "required": ["channel", "message_id", "text"], "properties": {
+                        "channel": {"type": "string", "enum": list(PUBLIC_CHANNELS)},
+                        "message_id": {"type": "string"}, "text": {"type": "string"}}}),
     "update_known_issues": (tool_update_known_issues,
                             "Replace the public #known-issues list (edits the bot's pinned message in place).",
                             {"type": "object", "required": ["text"], "properties": {"text": {"type": "string"}}}),

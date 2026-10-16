@@ -88,6 +88,10 @@ function ToastController.start()
 		Size = UDim2.fromScale(0.6, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundTransparency = 1,
+		-- Above every screen (modals and the store are 10, the summon flash 30), so a toast fired as
+		-- a screen opens (e.g. "Not enough lira" opening the store) is never hidden; the Studio log
+		-- overlay stays on top at 50.
+		ZIndex = 40,
 		Parent = Root.get(),
 	})
 	Create("UIListLayout", {

@@ -66,6 +66,14 @@ local function spawn(e: any)
 	local model = RigBuilder.cached(folder, "Enemy_" .. e.id, def.visual, e.enemyId)
 	local rec: Enemy = { model = model, enemyId = e.enemyId, dist = 0, target = 0, speed = def.speed, hp = 1, bar = nil, bob = math.random() * 6, boss = def.boss == true, bornAt = os.clock(), missing = 0 }
 	rec.bar = healthBar(model, rec.boss)
+	if def.stealth then
+		-- Stealth enemies are drawn see-through: only defenders that "see hidden thieves" can hit them
+		for _, d in model:GetDescendants() do
+			if d:IsA("BasePart") and d.Name ~= "Root" then
+				d.Transparency = math.max(d.Transparency, 0.55)
+			end
+		end
+	end
 	enemies[e.id] = rec
 	local x, z, ux, uz = Path.position(arenaPath :: Path.Path, 0)
 	model:PivotTo(origin * CFrame.lookAt(Vector3.new(x, 0, z), Vector3.new(x + ux, 0, z + uz)))
@@ -76,9 +84,12 @@ local function poof(model: Model)
 		model:Destroy()
 		return
 	end
+	-- Shrinking a skinned mesh doesn't move its bones, so imported figures would stretch; fade only
+	local skinned = model:FindFirstChildWhichIsA("Bone", true) ~= nil
 	for _, d in model:GetDescendants() do
 		if d:IsA("BasePart") and d.Name ~= "Root" then
-			TweenService:Create(d, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Transparency = 1, Size = d.Size * 0.3 }):Play()
+			local goal = if skinned then { Transparency = 1 } else { Transparency = 1, Size = d.Size * 0.3 }
+			TweenService:Create(d, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.In), goal):Play()
 		end
 	end
 	task.delay(0.4, function()
@@ -205,25 +216,14 @@ local function onEvents(events: { any })
 	end
 end
 
-local function onPositions(packed: { number })
-	if type(packed) ~= "table" then
-		return
-	end
-	local seen = {}
-	for i = 1, #packed - 2, 3 do
-		local id, dist, hp = packed[i], packed[i + 1], packed[i + 2]
-		local rec = enemies[id]
-		if rec then
-			rec.target = dist
-			rec.hp = hp / 100
-			seen[id] = true
-			if rec.bar then
-				rec.bar.Size = UDim2.fromScale(rec.hp, 1)
-			end
-		end
-	end
-	-- Anything the server stops reporting is gone (a missed event). The unreliable stream can
-	-- overtake a fresh spawn event, so only give up after several packets and a short grace.
+-- A round of positions arrives as several packets sharing one send number (MatchService
+-- caps packet size). The round's enemies are collected and checked once the next round starts.
+local roundSeq = -1
+local roundSeen: { [number]: boolean } = {}
+
+-- Anything the server stops reporting is gone (a missed event). The unreliable stream can
+-- overtake a fresh spawn event, so only give up after several rounds and a short grace.
+local function sweep(seen: { [number]: boolean })
 	local now = os.clock()
 	for id, rec in enemies do
 		if seen[id] then
@@ -232,6 +232,35 @@ local function onPositions(packed: { number })
 			rec.missing += 1
 			if rec.missing >= 4 then
 				remove(id, false)
+			end
+		end
+	end
+end
+
+local function onPositions(packed: { number })
+	if type(packed) ~= "table" or type(packed[1]) ~= "number" then
+		return
+	end
+	local seq = packed[1]
+	if seq < roundSeq and roundSeq - seq < 1000 then
+		return -- a late packet from an older round
+	end
+	if seq ~= roundSeq then
+		if roundSeq >= 0 then
+			sweep(roundSeen)
+		end
+		roundSeq = seq
+		roundSeen = {}
+	end
+	for i = 2, #packed - 2, 3 do
+		local id, dist, hp = packed[i], packed[i + 1], packed[i + 2]
+		local rec = enemies[id]
+		if rec then
+			rec.target = dist
+			rec.hp = hp / 100
+			roundSeen[id] = true
+			if rec.bar then
+				rec.bar.Size = UDim2.fromScale(rec.hp, 1)
 			end
 		end
 	end
@@ -254,8 +283,10 @@ local function step(dt: number)
 	local cframes: { CFrame } = {}
 	for _, rec in enemies do
 		-- Move toward the last reported distance, a little faster than the enemy so we catch up.
-		local maxStep = rec.speed * speedMul * 1.35 * dt
 		local delta = rec.target - rec.dist
+		-- Wave speed-ups aren't in rec.speed, so a model that has fallen well behind closes the gap
+		-- proportionally instead of trailing the real enemy for the rest of its walk.
+		local maxStep = math.max(rec.speed * speedMul * 1.35, delta * 3) * dt
 		if delta > 0 then
 			rec.dist += math.min(delta, maxStep)
 		elseif delta < -2 then

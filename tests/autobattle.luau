@@ -32,6 +32,11 @@ local AutoBattle = {}
 
 -- Loadouts. `plan` = towers in placement order (unit ids may repeat up to maxPlaced).
 AutoBattle.POLICIES = {
+	starter = {
+		label = "New player: starter unit only + upgrades",
+		plan = { "walad", "walad", "walad", "walad", "walad", "walad", "walad", "walad" },
+		upgrades = true,
+	},
 	re6 = {
 		label = "6 Rare/Epic, no upgrades",
 		plan = { "walad", "hallaq", "natour", "qabaday", "haddad", "mukhtar" },

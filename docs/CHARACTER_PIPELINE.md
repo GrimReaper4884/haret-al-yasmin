@@ -86,8 +86,9 @@ prompt, and never feed a photo of an actor (docs/COPYRIGHT_REGISTER.md).
   `"pose": false, "rig": false`). **21 imported characters in total.** Meshy's T-pose step dropped
   most hand props (hammer, sword/shield, rifle). Still primitive: bandits, thugs, riders, sappers,
   the sergeant and the commandant.
-- Prop facing checked in Studio: lane lanterns hang over the lane (their bracket arm points +Z at
-  yaw 0, so west-side posts use yaw 90 and east-side −90); the arena barber shop faces the road.
+- Prop facing checked in Studio: the arena barber shop faces the road. `lantern_post` is a
+  free-standing stone pillar (arm along the mesh's X axis per its vertices), so it is only used in
+  the open arenas; Jasmine Lane uses wall lanterns instead (players reported posts in the market).
 - To tune: whether Meshy walk clips carry root motion (enemies slide along the road in code), and card previews show imported characters in
   their T-pose bind pose (needs a `WorldModel` to play the idle in a viewport).
 - Studio-driving lessons: paste paths from a clipboard you set yourself (typing raced with stale

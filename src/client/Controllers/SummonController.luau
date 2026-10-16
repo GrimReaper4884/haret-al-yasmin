@@ -28,6 +28,7 @@ local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
 local ShopController = require(script.Parent.ShopController)
+local ToastController = require(script.Parent.ToastController)
 local AudioController = require(script.Parent.AudioController)
 local SettingsController = require(script.Parent.SettingsController)
 
@@ -264,10 +265,15 @@ local function doSummon(n: number)
 		if ok and type(result) == "table" and result.ok and result.results then
 			SummonController.showResults(result.results)
 		elseif ok and type(result) == "table" and result.err == "no_lira" then
+			ToastController.show("summon.no_lira")
 			local snapshot = StateController.get()
 			if snapshot and not snapshot.restricted then
+				-- The store is not a Modal; close this screen so it isn't drawn on top of the store
+				modal.setVisible(false)
 				ShopController.openStore()
 			end
+		elseif not ok or type(result) ~= "table" or result.err ~= "rate_limited" then
+			warn("[Summon] failed", ok, if type(result) == "table" then result.err else result)
 		end
 	end)
 end
@@ -324,6 +330,13 @@ render = function()
 	liraLabel.Text = t("hud.lira", { n = snapshot.lira }) .. (if snapshot.restricted then "  ·  " .. t("summon.restricted") else "")
 	oneButton.Text = t("summon.one", { n = c1 })
 	tenButton.Text = t("summon.ten", { n = c10 })
+	-- Greyed when short of lira; still clickable so the tap explains why and offers the store
+	oneButton.BackgroundColor3 = if snapshot.lira >= c1
+		then Theme.colors.button
+		else Theme.colors.buttonDisabled
+	tenButton.BackgroundColor3 = if snapshot.lira >= c10
+		then Theme.rarity.legendary
+		else Theme.colors.buttonDisabled
 	ratesButton.Text = t("summon.rates")
 	Theme.align(bannerLabel, rtl)
 	Theme.align(modal.title, rtl)

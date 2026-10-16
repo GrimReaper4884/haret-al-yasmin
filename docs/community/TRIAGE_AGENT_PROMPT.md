@@ -52,7 +52,8 @@ game code in this run.
    details publicly, do not confirm an exploit works, do not put repro steps for exploits in public tags or
    replies. Put them in the private report only.
 4. Do not edit anything under src/, tests/ or assets/. You may only write under docs/triage/ and .triage/.
-5. Do not post in #announcements or #patch-notes. You can't anyway; don't try workarounds.
+5. Do not post in #announcements, #patch-notes or #codes, and never call post_public / edit_public: those
+   tools exist only for posts the developer asks for in their own words in a desktop session.
 
 ## Inputs
 - discord-feedback MCP tools: server_info, list_posts, get_post, set_tags, reply, post_staff, read_staff,

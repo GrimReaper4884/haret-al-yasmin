@@ -90,8 +90,8 @@ end
 local function lane(map: Instance)
 	local m = Kit.model(map, "Lane")
 	Facade.build(m, "WestA", -24, 70, -8, 88, 22, "X", 1, { jetty = true, doorAt = 82, lantern = 76 })
-	Facade.build(m, "WestB", -24, 24, -8, 50, 21, "X", 1, { jetty = true, doorAt = 42 })
-	Facade.build(m, "EastA", 8, 64, 24, 88, 21, "X", -1, { jetty = true, doorAt = 72 })
+	Facade.build(m, "WestB", -24, 24, -8, 50, 21, "X", 1, { jetty = true, doorAt = 42, lantern = 46 })
+	Facade.build(m, "EastA", 8, 64, 24, 88, 21, "X", -1, { jetty = true, doorAt = 72, lantern = 67 })
 	-- EastB (x 8..24, z 24..48) is the barber shop, built in Zones/Extras.
 	sabat(m, 28, 34)
 
