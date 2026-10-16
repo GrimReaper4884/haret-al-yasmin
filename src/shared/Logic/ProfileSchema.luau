@@ -15,6 +15,19 @@ export type Context = {
 	season: string,
 }
 
+local function sibling(name: string): any
+	-- selene: allow(global_usage) -- test hook installed by tests/run.luau (Lune)
+	local testRequire = (_G :: any).LogicRequire
+	if testRequire then
+		return testRequire(name)
+	end
+	local dynamicRequire: any = require
+	return dynamicRequire((script :: any).Parent[name])
+end
+
+local Settings = sibling("Settings")
+local EventLogic = sibling("EventLogic")
+
 local ProfileSchema = {}
 
 -- Migration steps: MIGRATIONS[n] upgrades a version-n profile to version n + 1.
@@ -60,6 +73,7 @@ function ProfileSchema.default(now: number, schemaVersion: number, ctx: Context?
 		pass = { season = if ctx then ctx.season else "", xp = 0, premium = false, claimedFree = {}, claimedPremium = {} },
 		codes = {},
 		bundles = {},
+		events = {}, -- Logic/EventLogic: { [eventId] = { currency, bought } }
 		daily = { streak = 0, lastDay = 0 },
 		td = { matches = 0, wins = 0, kills = 0, cleared = {}, bestInfinite = 0 },
 	}
@@ -137,7 +151,7 @@ function ProfileSchema.sanitize(p: any, ctx: Context, now: number): any
 	if settings.language ~= "en" and settings.language ~= "ar" then
 		settings.language = nil
 	end
-	p.settings = settings
+	p.settings = Settings.sanitize(settings)
 
 	-- Stats
 	local stats = tableOr(p.stats)
@@ -228,6 +242,7 @@ function ProfileSchema.sanitize(p: any, ctx: Context, now: number): any
 		end
 	end
 	p.bundles = bundles
+	p.events = EventLogic.sanitize(p.events)
 
 	local daily = tableOr(p.daily)
 	daily.streak = nonNegInt(daily.streak, 0)

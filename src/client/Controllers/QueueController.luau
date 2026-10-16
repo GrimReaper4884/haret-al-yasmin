@@ -1,26 +1,20 @@
 --!strict
--- Portals: localized billboards over the mode pads (name, lock state, party count) and the party
--- panel while the player stands on one (players, countdown, difficulty picker for the host, Leave).
+-- The party bar while the player is in a lobby party (made from the Play panel): mode, players,
+-- countdown, the host's difficulty picker and Start now, and Leave.
 
-local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared.Net)
 local TD = require(Shared.Config.TD)
 local Modes = require(Shared.Config.Modes)
-local MatchRewards = require(Shared.Logic.MatchRewards)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
 local Root = require(UI.Root)
-local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 
 local QueueController = {}
-
-type Label = { pad: BasePart, modeId: string, name: TextLabel, sub: TextLabel }
-local labels: { [BasePart]: Label } = {}
 
 local panel: Frame
 local title: TextLabel
@@ -30,62 +24,8 @@ local diffRow: Frame
 local diffButtons: { [string]: TextButton } = {}
 local hostNote: TextLabel
 local leaveButton: TextButton
+local startButton: TextButton
 local current: any = nil
-
-local function updateLabel(l: Label)
-	local t = LocaleController.t
-	local mode = (Modes :: any)[l.modeId]
-	local snapshot = StateController.get()
-	l.name.Text = t(mode.nameKey)
-	local count = l.pad:GetAttribute("Count") or 0
-	local locked = false
-	if snapshot then
-		local ok = MatchRewards.canPlay(snapshot, l.modeId, Modes :: any, "normal", TD)
-		locked = not ok
-	end
-	if locked and mode.requires then
-		l.sub.Text = t("mode.locked", { mode = t((Modes :: any)[mode.requires].nameKey) })
-		l.sub.TextColor3 = Theme.colors.danger
-	else
-		l.sub.Text = t("queue.players", { n = count, max = TD.MAX_PLAYERS }) .. "\n" .. t(mode.descKey)
-		l.sub.TextColor3 = Theme.colors.buttonText
-	end
-end
-
-local function attach(pad: Instance)
-	if not pad:IsA("BasePart") or labels[pad] then
-		return
-	end
-	local modeId = pad:GetAttribute("ModeId")
-	if type(modeId) ~= "string" then
-		return
-	end
-	local gui = Create("BillboardGui", {
-		Name = "PortalLabel",
-		Adornee = pad,
-		Size = UDim2.fromOffset(240, 90),
-		StudsOffset = Vector3.new(0, 12, 0),
-		MaxDistance = 80,
-		LightInfluence = 0,
-		Parent = pad,
-	})
-	local name = Theme.label({ TextSize = 18, FontFace = Theme.fontBold, TextColor3 = Theme.colors.buttonText, TextStrokeTransparency = 0.3, Size = UDim2.new(1, 0, 0, 24), Parent = gui })
-	name.TextXAlignment = Enum.TextXAlignment.Center
-	local sub = Theme.label({ TextSize = 13, TextColor3 = Theme.colors.buttonText, TextStrokeTransparency = 0.3, Position = UDim2.fromOffset(0, 26), Size = UDim2.new(1, 0, 0, 60), TextYAlignment = Enum.TextYAlignment.Top, Parent = gui })
-	sub.TextXAlignment = Enum.TextXAlignment.Center
-	local l: Label = { pad = pad, modeId = modeId, name = name, sub = sub }
-	labels[pad] = l
-	updateLabel(l)
-	pad:GetAttributeChangedSignal("Count"):Connect(function()
-		updateLabel(l)
-	end)
-end
-
-local function updateAll()
-	for _, l in labels do
-		updateLabel(l)
-	end
-end
 
 local function build()
 	panel = Theme.panel({
@@ -113,7 +53,13 @@ local function build()
 		end)
 	end
 	hostNote = Theme.label({ LayoutOrder = 5, TextSize = 12, TextColor3 = Theme.colors.textMuted, Size = UDim2.new(1, 0, 0, 16), ZIndex = 5, Parent = panel })
-	leaveButton = Theme.button({ LayoutOrder = 6, TextSize = 14, Size = UDim2.new(1, 0, 0, Theme.TOUCH - 8), BackgroundColor3 = Theme.colors.danger, ZIndex = 5, Parent = panel })
+	local actions = Create("Frame", { LayoutOrder = 6, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, Theme.TOUCH - 8), ZIndex = 5, Parent = panel })
+	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = actions })
+	startButton = Theme.button({ LayoutOrder = 1, TextSize = 14, Size = UDim2.new(0.5, -3, 1, 0), BackgroundColor3 = Theme.colors.confirm, ZIndex = 5, Parent = actions })
+	startButton.Activated:Connect(function()
+		Net.event(Net.Events.PartyStart):FireServer()
+	end)
+	leaveButton = Theme.button({ LayoutOrder = 2, TextSize = 14, Size = UDim2.new(0.5, -3, 1, 0), BackgroundColor3 = Theme.colors.danger, ZIndex = 5, Parent = actions })
 	leaveButton.Activated:Connect(function()
 		Net.event(Net.Events.QueueLeave):FireServer()
 	end)
@@ -140,6 +86,9 @@ local function render()
 	end
 	hostNote.Text = if isHost then "" else t("queue.host")
 	leaveButton.Text = t("queue.leave")
+	startButton.Text = t("play.start_now")
+	startButton.Visible = isHost
+	leaveButton.Size = if isHost then UDim2.new(0.5, -3, 1, 0) else UDim2.fromScale(1, 1)
 	for _, l in { title, players, countdown, hostNote } do
 		Theme.align(l, rtl)
 	end
@@ -152,20 +101,7 @@ function QueueController.start()
 		current = payload
 		render()
 	end)
-	for _, pad in CollectionService:GetTagged("Portal") do
-		task.spawn(attach, pad)
-	end
-	CollectionService:GetInstanceAddedSignal("Portal"):Connect(function(pad)
-		task.spawn(attach, pad)
-	end)
-	CollectionService:GetInstanceRemovedSignal("Portal"):Connect(function(pad)
-		labels[pad :: BasePart] = nil
-	end)
-	StateController.Changed:Connect(updateAll)
-	LocaleController.Changed:Connect(function()
-		updateAll()
-		render()
-	end)
+	LocaleController.Changed:Connect(render)
 end
 
 return QueueController

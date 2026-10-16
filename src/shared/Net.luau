@@ -16,15 +16,18 @@ Net.Events = {
 	ShopShow = "ShopShow", -- S→C shopId
 	ShopClose = "ShopClose", -- C→S
 	SetLanguage = "SetLanguage", -- C→S "en" | "ar"
+	SetSetting = "SetSetting", -- C→S key, value (Logic/Settings validates)
 	Notify = "Notify", -- S→C { key, args }
 	ClueShow = "ClueShow", -- S→C clueId (clue card)
 	RequestProduct = "RequestProduct", -- C→S product key (server validates, then prompts)
 	RequestPass = "RequestPass", -- C→S game pass key
 
 	-- Tower defense: lobby queue
-	QueueState = "QueueState", -- S→C { modeId, players, countdown, difficulty, host } | nil
+	QueueState = "QueueState", -- S→C { partyId, modeId, players, countdown, difficulty, host, max } | nil
 	QueueLeave = "QueueLeave", -- C→S
 	QueueSetDifficulty = "QueueSetDifficulty", -- C→S difficulty (host only)
+	PartyStart = "PartyStart", -- C→S (host only) start the countdown's last seconds now
+	PartyList = "PartyList", -- S→C { { id, modeId, difficulty, host, count, max, countdown } }
 	-- Tower defense: match
 	MatchStart = "MatchStart", -- S→C { matchId, modeId, arenaId, origin, difficulty, players, totalWaves }
 	MatchState = "MatchState", -- S→C { phase, wave, countdown, gateHp, gateMax, cash, speed, votes }
@@ -35,6 +38,7 @@ Net.Events = {
 	SetSpeed = "SetSpeed", -- C→S 1 | 2 | 3 (host)
 	LeaveMatch = "LeaveMatch", -- C→S
 	SetTargeting = "SetTargeting", -- C→S towerId, mode
+	UseAbility = "UseAbility", -- C→S towerId (the defender's ultimate)
 	DebugCommand = "DebugCommand", -- C→S (Studio only; ignored in production) cmd, arg
 }
 
@@ -55,6 +59,10 @@ Net.Functions = {
 	ClaimPass = "ClaimPass", -- C→S tier, track → { ok, err, granted }
 	RedeemCode = "RedeemCode", -- C→S code → { ok, err, granted }
 	ClaimDaily = "ClaimDaily", -- C→S → { ok, err, granted, day }
+	PartyCreate = "PartyCreate", -- C→S modeId, difficulty → { ok, err }
+	PartyJoin = "PartyJoin", -- C→S partyId → { ok, err }
+	PartyReplay = "PartyReplay", -- C→S "replay" | "next" → { ok, err }
+	EventBuy = "EventBuy", -- C→S eventId, shop key → { ok, err, granted }
 }
 
 local FOLDER_NAME = "Remotes"

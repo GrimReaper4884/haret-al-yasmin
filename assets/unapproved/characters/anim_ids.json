@@ -1,0 +1,100 @@
+{
+  "umm_hara": {
+    "model": "AbuIssam",
+    "idle": 106025561358804,
+    "attack": 140700990361989
+  },
+  "hallaq": {
+    "model": "Issam",
+    "idle": 134713688366558,
+    "attack": 128007614982036
+  },
+  "qabaday": {
+    "model": "Motaz",
+    "idle": 100329174869234,
+    "attack": 72491953659647
+  },
+  "zaim_akbar": {
+    "model": "AbuShehab",
+    "idle": 106622979715660,
+    "attack": 134238214440993
+  },
+  "zaim": {
+    "model": "AbuSaleh",
+    "idle": 130775978082816,
+    "attack": 111473861813662
+  },
+  "qahwaji": {
+    "model": "AbuHatem",
+    "idle": 99420630175988,
+    "attack": 137357629317314
+  },
+  "mukhtar": {
+    "model": "AbuBadr",
+    "idle": 118604731409520,
+    "attack": 87931164204170
+  },
+  "saqqa": {
+    "model": "Fawzia",
+    "idle": 75588436156960,
+    "attack": 100793540778597
+  },
+  "khayyat": {
+    "model": "AbuGhalib",
+    "idle": 103539550283275,
+    "attack": 124855699529232
+  },
+  "farran": {
+    "model": "AbuBashir",
+    "idle": 104394597256841,
+    "attack": 84495088331540
+  },
+  "natour": {
+    "model": "AbuFares",
+    "idle": 90495332802964,
+    "attack": 98400283326592
+  },
+  "spy": {
+    "model": "Nims",
+    "walk": 118280743752950
+  },
+  "chief_thief": {
+    "model": "Idaashari",
+    "walk": 120072524188528
+  },
+  "rival_zaim": {
+    "model": "AbuNar",
+    "walk": 100088303835625
+  },
+  "haddad": {
+    "model": "AbuKhater",
+    "idle": 79270488835196,
+    "attack": 108770696471593
+  },
+  "walad": {
+    "model": "LaneBoy",
+    "idle": 112157925514712,
+    "attack": 107319959392835
+  },
+  "pahlawan": {
+    "model": "Strongman",
+    "idle": 76414942150002,
+    "attack": 80908186732109
+  },
+  "arada": {
+    "model": "Arada",
+    "idle": 91839698856951,
+    "attack": 91462204733625
+  },
+  "gendarme": {
+    "model": "Gendarme",
+    "walk": 127807283756558
+  },
+  "thief": {
+    "model": "Thief",
+    "walk": 138865475842481
+  },
+  "qitt": {
+    "model": "Cat"
+  }
+}

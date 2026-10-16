@@ -66,7 +66,64 @@ Legend: **[V]** verified against a primary source · **[S]** secondary/press · 
 
 ## 4. Trademark and names
 
-**Is "باب الحارة" / "Bab al-Hara" registered?** Not confirmed. Searches found no WIPO/SAIP/EUIPO record either way, though MBC Group holds "many trademark registrations in Europe and… the Middle East" and runs a Licensing & Merchandising unit, and its MBC Game Studio (2025) now makes games ([WIPO D2012-2305](https://www.wipo.int/amc/en/domains/decisions/text/2012/d2012-2305.html), [Game Developer](https://www.gamedeveloper.com/business/saudi-owned-media-conglomerate-mbc-expands-into-the-game-industry)) **[U — run a WIPO Global Brand Database / SAIP / TMview search for "باب الحارة" and "Bab Al Hara", classes 9, 41]**. Even unregistered, a 20-year, pan-Arab famous title enjoys passing-off/well-known-mark protection in most MENA jurisdictions and the US; a Roblox trademark notice only needs a registration *somewhere*.
+### 4.1 Trademark screening, 2026-10-16
+
+Screening only, not a clearance opinion. Claude ran it from Claude Code (TMview JSON API, the browser pane for
+Madrid Monitor and USPTO, web search). Raw TMview output was kept outside the repo.
+
+| Database | Reached? | Link |
+|---|---|---|
+| **TMview** (EUIPO/TMDN; ~75 offices incl. EG, JO, MA, TN, TR, EU, UK, US, CA, DE, AU, CN) | Yes | [bab al hara](https://www.tmdn.org/tmview/#/tmview/results?page=1&pageSize=30&criteria=C&basicSearch=bab%20al%20hara) · [باب الحارة](https://www.tmdn.org/tmview/#/tmview/results?page=1&pageSize=30&criteria=C&basicSearch=%D8%A8%D8%A7%D8%A8%20%D8%A7%D9%84%D8%AD%D8%A7%D8%B1%D8%A9) · [haret al yasmin](https://www.tmdn.org/tmview/#/tmview/results?page=1&pageSize=30&criteria=C&basicSearch=haret%20al%20yasmin) · [حارة الياسمين](https://www.tmdn.org/tmview/#/tmview/results?page=1&pageSize=30&criteria=C&basicSearch=%D8%AD%D8%A7%D8%B1%D8%A9%20%D8%A7%D9%84%D9%8A%D8%A7%D8%B3%D9%85%D9%8A%D9%86) |
+| **WIPO Madrid Monitor** | Yes | [Madrid Monitor](https://www3.wipo.int/madrid/monitor/en/) |
+| **USPTO** | Yes | [Trademark search](https://tmsearch.uspto.gov/search/search-results) |
+| **WIPO Global Brand Database** | **No**: every page opens with a proof-of-work CAPTCHA, which Claude does not bypass | [quick search](https://branddb.wipo.int/en/quicksearch?by=brandName&v=bab%20al%20hara) |
+| **SAIP** (Saudi Arabia) | **No**: connection refused from here (likely geo-restricted) | [SAIP IP search](https://ipsearch.saip.gov.sa) via [saip.gov.sa](https://www.saip.gov.sa/en/resources/tools-and-research/ip-search-engine) |
+| UAE Ministry of Economy | No: UAE Pass login, reportedly a fee | [eServices](https://eservices.moec.gov.ae/eservices/) |
+
+Saudi Arabia and the UAE do not appear to be in TMview (a control search for a large Saudi brand returned no SA/AE
+records) **[U]**, so the two most likely jurisdictions for MBC are **not yet searched**.
+
+**"Bab al-Hara" / "باب الحارة".** Registered, but **only by unrelated parties for food, restaurants, paper and
+retail**. Examples: EG 283735 *BAB ALHARA باب الحارة* (class 16, Lana Tex, reg. 2014); several EG registrations of
+*باب الحارة* by an individual in classes 16, 31, 32, 35, 43 (2021–2026); JO JOT1119543/5 *باب الحارة العربي*
+(29, 30); MA 140912 *BAB ALHARA* (16, 35); TR 2014-41670 and 2016-20199 (food); EU 017896556 / UK00917896556
+*Bab-Al-Hara* (cheese, class 29) **[V, TMview]**. Many more are expired (DE, CA, NO, IL, AU). **No owner linked
+to the show** (MBC, MBC IP FZ-LLC, Maysaloun, Qabanid, Bassam al-Mulla) and **no hit in classes 9, 41, 28 or
+25** in any database reached. Madrid Monitor: no documents for "bab al hara" or for holders "Middle East
+Broadcasting" / "MBC FZ" **[V]**. MBC's IP company does file abroad: TMview lists **MBC IP FZ-LLC** as owner of
+*SHAHID* in classes 9/16/35/38/41/42 in MA, TN, EU, UK and TR **[V, reported by the search run; not re-checked]**,
+which makes the absence of a Bab al-Hara filing in those offices meaningful, though not conclusive.
+
+Title ownership is disputed in Syria: Maysaloun (Bassam al-Mulla) said it bought the series, characters and
+name from writer Marwan Qawooq; Qabanid claimed a later waiver for parts 8–10; no outcome found
+([Arabic Post, 2015](https://arabicpost.net/فن-ومشاهير/2015/12/30/مصير-ما-تبقى-من-أجزاء-باب-الحارة-مجهول/),
+[Sayidaty](https://www.sayidaty.net/node/372146)) **[S]**. Unlicensed-looking fan apps use the name on Google Play
+today (*تحدي باب الحارة*, Apptriva, 5K+; *من سيربح المليون - باب الحارة*, 50K+, with IAP) **[V]**: enforcement
+against games looks light, which is not permission. No Roblox experience uses the title (omni-search) **[V]**.
+Earlier context: MBC holds "many trademark registrations in Europe and… the Middle East" and runs MBC Game Studio
+([WIPO D2012-2305](https://www.wipo.int/amc/en/domains/decisions/text/2012/d2012-2305.html),
+[Game Developer](https://www.gamedeveloper.com/business/saudi-owned-media-conglomerate-mbc-expands-into-the-game-industry)).
+Even unregistered, a famous 13-season pan-Arab title has passing-off / well-known-mark protection in most MENA
+jurisdictions, and a Roblox trademark notice only needs a registration *somewhere*.
+
+**"Haret Al-Yasmin" / "حارة الياسمين".** **No record** in TMview for *haret al yasmin, harat al yasmin, haret el
+yasmine, hara al yasmin, حارة الياسمين*; none in Madrid Monitor or USPTO combining the words **[V]**. Nearby:
+*JASMINE LANE* (US 88322148, ArtSkills, class 14 jewellery/craft) and *茉莉巷 JASMINE LANE* (CN, restaurants,
+classes 29–33/35/43): not in 9/41/28, so "Jasmine Lane" is usable as an English subtitle. *Hara Defense*: no mark.
+No series, film, game, app or Roblox experience of that name found **[V/S]**.
+
+**Assessment.** Title risk **Low** at screening level. Exposure comes from *association* (art, names, music,
+store text evoking the show), not from the title. Still open, owner/lawyer only:
+
+1. SAIP search from a browser that can reach `ipsearch.saip.gov.sa`: باب الحارة, Bab Al Hara, حارة الياسمين,
+   Haret Al Yasmin; owner "MBC IP FZ-LLC" / "Middle East Broadcasting".
+2. WIPO Global Brand Database by hand (CAPTCHA), same terms, classes 9/28/41.
+3. UAE MoE trademark inquiry (UAE Pass).
+4. Syria and Lebanon have no known online search: a local agent if the game will be marketed there.
+5. Before public monetized launch in MENA: a paid clearance search and a short KSA/UAE IP-lawyer opinion on the
+   "inspired by" wording; consider filing *Haret Al-Yasmin / حارة الياسمين* in classes 9 and 41 in KSA and UAE.
+
+### 4.2 Using the series title
 
 **What Roblox does with a series title in an experience name.** Nothing proactive for most titles, but a trademark notice gets the experience removed (appeal by email, no counter-notice), and for repeat big-brand cases Roblox has filtered the word platform-wide (Pokémon/Mario **[U]**). Titles that merely *describe* a genre survive; titles that *are* someone's brand get renamed (Skyblock → Islands).
 
@@ -102,4 +159,4 @@ Target: **Minimal or Mild** label → eligible for Roblox Kids (5–8) and Selec
 4. Labelled "Rates" panel (% summing to 100 %), live pity maths, `ArePaidRandomItemsRestricted` gate, questionnaire descriptor.
 5. No tobacco/argileh/alcohol; stylized weapons, no realistic blood → Mild label.
 6. Passes + Dev Products (70 %), season pass as Subscription, ads at ≥ 2k MAU; plan on $0.0038/R$.
-7. WIPO/SAIP search for "باب الحارة" before marketing; per-asset entry in COPYRIGHT_REGISTER.
+7. Trademark screening done 2026-10-16 (§4.1): title clear at screening level; SAIP, WIPO GBD and UAE searches and a lawyer opinion still owed by the owner before public launch; per-asset entry in COPYRIGHT_REGISTER.

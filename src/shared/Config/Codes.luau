@@ -8,6 +8,8 @@ export type CodeDef = {
 	qirsh: number?,
 	traitStones: number?,
 	unit: string?, -- grants one copy
+	allUnits: boolean?, -- grants every defender in Config/Units the player doesn't own yet
+	onlyUserIds: { number }?, -- if set, only these Roblox user ids can redeem; others get unknown_code
 	expiresAt: number?,
 }
 
@@ -20,6 +22,9 @@ local Codes: { [string]: CodeDef } = {
 	QITT = { unit = "qitt", expiresAt = 1798675200 },
 	-- Season 1 pass preview
 	DIARY = { traitStones = 1, lira = 40, expiresAt = 1764460800 },
+	-- Testers: every defender. Hand out privately, never post publicly (expires 2026-11-17).
+	-- To lock it to named testers, add onlyUserIds = { 12345, ... }.
+	HARATESTERWRCF5G = { allUnits = true, expiresAt = 1794873600 },
 }
 
 return Codes

@@ -172,6 +172,38 @@ return function(t)
 			t.eq(p.units.walad.trait, "legend", "second roll after a repeat")
 			t.eq(UnitLogic.rerollTrait(p, "nope", 1, Traits.traits, Traits.order, seq({ 0 })), false)
 		end)
+		t.it("displayed reroll odds list every trait, sum to 100 and match the real roll exactly", function()
+			-- Every trait weight is a multiple of 0.5 out of 100, so a 200-step grid of rng midpoints
+			-- for both draws enumerates the roll exactly.
+			local N = 200
+			for _, current in { "steady", "legend", "keen" } do
+				local odds = UnitLogic.rerollOdds(Traits.traits, Traits.order, current)
+				t.eq(#odds, #Traits.order, "every trait listed")
+				local sum = 0
+				for _, o in odds do
+					sum += o.percent
+				end
+				t.truthy(math.abs(sum - 100) < 1e-9, "sums to 100 from " .. current)
+				local counts = {}
+				local p = profile()
+				p.traitStones = N * N
+				p.units.walad = { copies = 0, trait = current, at = 0 }
+				for i = 1, N do
+					for j = 1, N do
+						p.units.walad.trait = current
+						local _, _, got = UnitLogic.rerollTrait(p, "walad", 1, Traits.traits, Traits.order, seq({ (i - 0.5) / N, (j - 0.5) / N }))
+						counts[got] = (counts[got] or 0) + 1
+					end
+				end
+				for _, o in odds do
+					local actual = 100 * (counts[o.trait] or 0) / (N * N)
+					t.truthy(math.abs(actual - o.percent) < 1e-9, string.format("%s from %s: shown %.4f, real %.4f", o.trait, current, o.percent, actual))
+				end
+			end
+			local fresh = UnitLogic.rerollOdds(Traits.traits, Traits.order, nil)
+			t.eq(fresh[1].trait, "steady")
+			t.truthy(math.abs(fresh[1].percent - 30) < 1e-9, "no current trait = plain weights")
+		end)
 	end)
 
 	t.describe("PassLogic", function()
@@ -242,10 +274,30 @@ return function(t)
 			t.truthy(CodesLogic.redeem(p, "QITT", Codes, c))
 			t.truthy(p.units.qitt, "secret unit from a code")
 		end)
+		t.it("an allUnits code grants every missing defender once, and respects onlyUserIds", function()
+			local p = profile()
+			p.units.walad = { copies = 2, trait = "steady", at = 0 }
+			local c = ctx(seq({ 0.5 }), 1000)
+			local codes = { ALL = { allUnits = true }, MINE = { allUnits = true, onlyUserIds = { 42 } } }
+			local ok, err, granted = CodesLogic.redeem(p, "all", codes, c)
+			t.truthy(ok, err)
+			local total = 0
+			for id in Units do
+				total += 1
+				t.truthy(p.units[id], id .. " owned")
+			end
+			t.eq(#granted.units, total - 1)
+			t.eq(p.units.walad.copies, 2)
+			t.eq(p.units.qitt.copies, 0)
+			ok, err = CodesLogic.redeem(profile(), "MINE", codes, c)
+			t.eq(err, "unknown_code")
+			c.userId = 42
+			t.truthy(CodesLogic.redeem(profile(), "MINE", codes, c))
+		end)
 		t.it("every code grants something real", function()
 			for code, def in Codes do
 				t.truthy(string.match(code, "^[%u%d_]+$"), code .. " upper-case")
-				t.truthy(def.lira or def.qirsh or def.traitStones or def.unit, code .. " grants")
+				t.truthy(def.lira or def.qirsh or def.traitStones or def.unit or def.allUnits, code .. " grants")
 				if def.unit then
 					t.truthy(Units[def.unit], code .. " unit")
 				end

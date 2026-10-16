@@ -23,7 +23,7 @@ local function groupSpawns(out: { Spawn }, entry: PoolEntry, wave: number, hpMul
 	end
 end
 
-local function finish(spawns: { Spawn }, boss: string?, hpMul: number, speedMul: number): Wave
+local function finish(spawns: { Spawn }, boss: string?, bossHpMul: number, speedMul: number): Wave
 	table.sort(spawns, function(a, b)
 		return a.at < b.at
 	end)
@@ -33,25 +33,59 @@ local function finish(spawns: { Spawn }, boss: string?, hpMul: number, speedMul:
 	end
 	if boss then
 		local last = if #spawns > 0 then spawns[#spawns].at else 0
-		table.insert(spawns, { at = last + 4, enemy = boss, hpMul = hpMul, speedMul = speedMul, boss = true })
+		table.insert(spawns, { at = last + 4, enemy = boss, hpMul = bossHpMul, speedMul = speedMul, boss = true })
 	end
 	return { spawns = spawns, boss = boss, count = #spawns }
 end
 
--- Story episode wave. difficulty = { hp, speed } multipliers.
-function WaveLogic.story(episode: any, wave: number, difficulty: { hp: number, speed: number }): Wave
-	local hpMul = difficulty.hp * (1 + episode.hpPerWave * (wave - 1))
+export type Difficulty = { hp: number, speed: number, growth: number?, endless: number?, boss: number? }
+
+-- Party-size scaling: hp = HP multiplier of every regular enemy, boss = the boss's (it meets
+-- every defender on the road, so it scales less), cash = share of the start cash and wave bonus
+-- each player gets.
+export type PartyScale = { hp: number, boss: number, cash: number }
+
+local function partyAt(list: { number }?, players: number): number
+	if not list or #list == 0 then
+		return 1
+	end
+	return list[math.clamp(math.floor(players), 1, #list)]
+end
+
+-- Scaling for a match of `players` players (clamped to the tables). td = Config/TD
+-- (PARTY_HP, PARTY_BOSS_HP, PARTY_CASH); a missing table means no scaling.
+function WaveLogic.partyScale(td: any, players: number): PartyScale
+	return {
+		hp = partyAt(td.PARTY_HP, players),
+		boss = partyAt(td.PARTY_BOSS_HP, players),
+		cash = partyAt(td.PARTY_CASH, players),
+	}
+end
+
+-- Story episode wave. difficulty = { hp, speed } multipliers; growth (default 1) scales the
+-- per-wave HP growth, so harder difficulties stay playable early and bite late; boss (default 1)
+-- multiplies the boss's HP on top; party (default: solo) is the party-size scaling
+-- (WaveLogic.partyScale): party.hp on regular enemies, party.boss on the boss instead.
+function WaveLogic.story(episode: any, wave: number, difficulty: Difficulty, party: PartyScale?): Wave
+	local base = difficulty.hp * (1 + episode.hpPerWave * (difficulty.growth or 1) * (wave - 1))
+	local hpMul = base * (if party then party.hp else 1)
 	local speedMul = math.min(difficulty.speed, MAX_SPEED_MUL)
 	local spawns: { Spawn } = {}
 	for _, entry in episode.pool do
 		groupSpawns(spawns, entry, wave, hpMul, speedMul)
 	end
-	return finish(spawns, episode.bosses[wave], hpMul, speedMul)
+	return finish(spawns, episode.bosses[wave], base * (difficulty.boss or 1) * (if party then party.boss else 1), speedMul)
 end
 
--- Endless wave.
-function WaveLogic.infinite(cfg: any, wave: number, difficulty: { hp: number, speed: number }): Wave
-	local hpMul = difficulty.hp * (1 + cfg.hpPerWave * wave + cfg.hpPerWaveSq * wave * wave)
+-- Endless wave. The curve is already quadratic, so difficulty uses its own (milder) growth
+-- multiplier `endless` here (default 1). party: as in WaveLogic.story.
+function WaveLogic.infinite(cfg: any, wave: number, difficulty: Difficulty, party: PartyScale?): Wave
+	local base = difficulty.hp * (1 + (difficulty.endless or 1) * (cfg.hpPerWave * wave + cfg.hpPerWaveSq * wave * wave))
+	-- Past `lateFrom` HP also compounds, so even a maxed team meets a wall (≈ wave 100 on Normal).
+	if cfg.lateFrom and cfg.lateGrowth and wave > cfg.lateFrom then
+		base *= (1 + cfg.lateGrowth) ^ (wave - cfg.lateFrom)
+	end
+	local hpMul = base * (if party then party.hp else 1)
 	local speedMul = math.min(difficulty.speed * (1 + cfg.speedPerWave * wave), MAX_SPEED_MUL)
 	local spawns: { Spawn } = {}
 	for _, entry in cfg.pool do
@@ -62,7 +96,7 @@ function WaveLogic.infinite(cfg: any, wave: number, difficulty: { hp: number, sp
 		local idx = (wave // cfg.bossEvery - 1) % #cfg.bossCycle + 1
 		boss = cfg.bossCycle[idx]
 	end
-	return finish(spawns, boss, hpMul, speedMul)
+	return finish(spawns, boss, base * (difficulty.boss or 1) * (if party then party.boss else 1), speedMul)
 end
 
 return WaveLogic

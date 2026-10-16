@@ -17,6 +17,7 @@ export type Snapshot = {
 	equipped: { [string]: string },
 	quests: { [string]: { state: string, completions: number, progress: { [string]: boolean }? } },
 	language: string?,
+	settings: { [string]: any }?,
 	persistent: boolean,
 	-- Tower defense
 	units: { [string]: { copies: number, trait: string, at: number } },
@@ -27,6 +28,7 @@ export type Snapshot = {
 	daily: { streak: number, lastDay: number },
 	td: { matches: number, wins: number, kills: number, cleared: { [string]: string }, bestInfinite: number },
 	bundles: { [string]: number },
+	events: { [string]: { currency: number, bought: { [string]: number } } }?,
 	perks: { [string]: boolean }?,
 	restricted: boolean?,
 }

@@ -1,0 +1,17 @@
+{
+  "id": "thief",
+  "tasks": {
+    "concept": "01a14688-7051-73ce-a3f3-49636065039c",
+    "mesh": "01a14689-868b-73d0-8b10-bc5d33edbd15",
+    "rig": "01a1468a-b387-7379-926d-b575a30ce17e",
+    "anim_idle": "01a1468a-fdd2-740c-b3f2-972b3efa79e9",
+    "anim_attack": "01a1468b-215e-7572-a622-8a919c0e321a"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3
+  }
+}

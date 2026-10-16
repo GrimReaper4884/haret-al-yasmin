@@ -1,0 +1,17 @@
+{
+  "id": "pahlawan",
+  "tasks": {
+    "concept": "01a14688-700e-77b6-b925-1c2d3bbb488c",
+    "mesh": "01a14689-862a-732a-851d-4cab8c487f9a",
+    "rig": "01a1468b-fcbf-7514-a784-81319cb5fea0",
+    "anim_idle": "01a1468c-48e7-72a4-803f-046bc4266459",
+    "anim_attack": "01a1468c-6c7f-74ac-99fa-536c2089d1c6"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3
+  }
+}

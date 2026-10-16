@@ -24,10 +24,12 @@ local Create = require(UI.Create)
 local Theme = require(UI.Theme)
 local Root = require(UI.Root)
 local UnitCard = require(UI.UnitCard)
+local Juice = require(UI.Juice)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local MatchController = require(script.Parent.MatchController)
 local ToastController = require(script.Parent.ToastController)
+local SettingsController = require(script.Parent.SettingsController)
 
 local PlacementController = {}
 
@@ -35,38 +37,82 @@ local TARGETING = { "first", "last", "strong", "close" }
 
 local bar: Frame
 local placeHint: TextLabel
+local cancelButton: TextButton
 local towerPanel: Frame
+local towerPortrait: Frame
 local towerTitle: TextLabel
+local towerLevel: TextLabel
+local towerOwner: TextLabel
 local towerStats: TextLabel
 local upgradeButton: TextButton
 local sellButton: TextButton
 local targetButton: TextButton
+local closeButton: TextButton
+local ultRow: Frame
+local ultButton: TextButton
+local ultFill: Frame
+local autoButton: TextButton
+
+-- One slot per loadout unit, built once per match/loadout (a 3D portrait each), then only
+-- re-tinted as cash changes.
+type Slot = { frame: Frame, cost: TextLabel, count: TextLabel, dim: Frame, stroke: UIStroke, unitId: string, price: number }
+local slots: { Slot } = {}
+local slotKey = ""
+local ghostLight: Highlight? = nil
 
 local placing: string? = nil
 local ghost: Model? = nil
 local ring: Part? = nil
 local selected: number? = nil
 local selectedRing: Part? = nil
-local towers: { [number]: { unitId: string, level: number, owner: string, x: number, z: number, range: number, targeting: string } } = {}
+local towers: { [number]: { unitId: string, level: number, owner: string, x: number, z: number, range: number, targeting: string, readyAt: number } } = {}
 local arenaPath: Path.Path? = nil
 local origin: CFrame? = nil
 local busy = false
 
 local function build()
 	local root = Root.get()
-	bar = Create("Frame", { Name = "UnitBar", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -8), Size = UDim2.fromOffset(7 * 78, 92), BackgroundTransparency = 1, Visible = false, ZIndex = 3, Parent = root })
-	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = bar })
-	placeHint = Theme.label({ Name = "PlaceHint", TextSize = 15, FontFace = Theme.fontBold, TextColor3 = Theme.colors.buttonText, TextStrokeTransparency = 0.3, AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -104), Size = UDim2.new(0.8, 0, 0, 22), Visible = false, ZIndex = 3, Parent = root })
+	bar = Create("Frame", { Name = "UnitBar", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -8), Size = UDim2.fromOffset(7 * 74, 92), BackgroundTransparency = 1, Visible = false, ZIndex = 3, Parent = root })
+	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, VerticalAlignment = Enum.VerticalAlignment.Bottom, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = bar })
+	placeHint = Theme.display({ Name = "PlaceHint", TextSize = 16, AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -150), Size = UDim2.new(0.8, 0, 0, 22), Visible = false, ZIndex = 3, Parent = root })
 	placeHint.TextXAlignment = Enum.TextXAlignment.Center
+	cancelButton = Theme.button({ Name = "CancelPlace", Text = "X", TextSize = 22, AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0.5, 7 * 74 / 2 + 8, 1, -24), Size = UDim2.fromOffset(52, 52), BackgroundColor3 = Theme.colors.danger, Visible = false, ZIndex = 4, Parent = root })
 
-	towerPanel = Theme.panel({ Name = "TowerPanel", AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 0), Size = UDim2.fromOffset(200, 0), AutomaticSize = Enum.AutomaticSize.Y, Visible = false, ZIndex = 4, Parent = root })
-	Create("UIPadding", { PaddingTop = UDim.new(0, 8), PaddingBottom = UDim.new(0, 8), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), Parent = towerPanel })
+	-- Tower panel: left edge, away from the bar (docs/research/ROBLOX_TD_UI_PATTERNS.md §1).
+	towerPanel = Theme.panel({ Name = "TowerPanel", AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 6), Size = UDim2.fromOffset(232, 0), AutomaticSize = Enum.AutomaticSize.Y, Visible = false, ZIndex = 4, Parent = root })
+	Create("UIPadding", { PaddingTop = UDim.new(0, 10), PaddingBottom = UDim.new(0, 10), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), Parent = towerPanel })
 	Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = towerPanel })
-	towerTitle = Theme.label({ LayoutOrder = 1, TextSize = 15, FontFace = Theme.fontBold, Size = UDim2.new(1, 0, 0, 20), ZIndex = 4, Parent = towerPanel })
-	towerStats = Theme.label({ LayoutOrder = 2, TextSize = 12, TextColor3 = Theme.colors.textMuted, Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, ZIndex = 4, Parent = towerPanel })
-	upgradeButton = Theme.button({ LayoutOrder = 3, TextSize = 13, Size = UDim2.new(1, 0, 0, 40), ZIndex = 4, Parent = towerPanel })
-	targetButton = Theme.button({ LayoutOrder = 4, TextSize = 13, Size = UDim2.new(1, 0, 0, 36), BackgroundColor3 = Theme.colors.quest, ZIndex = 4, Parent = towerPanel })
-	sellButton = Theme.button({ LayoutOrder = 5, TextSize = 13, Size = UDim2.new(1, 0, 0, 36), BackgroundColor3 = Theme.colors.danger, ZIndex = 4, Parent = towerPanel })
+	local header = Create("Frame", { LayoutOrder = 1, Size = UDim2.new(1, 0, 0, 56), BackgroundTransparency = 1, ZIndex = 4, Parent = towerPanel })
+	towerPortrait = Create("Frame", { Size = UDim2.fromOffset(56, 56), BackgroundTransparency = 1, ZIndex = 4, Parent = header })
+	towerTitle = Theme.display({ TextSize = 16, Position = UDim2.fromOffset(62, 0), Size = UDim2.new(1, -90, 0, 36), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 5, Parent = header })
+	towerTitle.TextXAlignment = Enum.TextXAlignment.Left
+	towerLevel = Theme.display({ TextSize = 14, TextColor3 = Color3.fromHex("#FFD970"), Position = UDim2.fromOffset(62, 38), Size = UDim2.new(1, -62, 0, 18), ZIndex = 5, Parent = header })
+	towerLevel.TextXAlignment = Enum.TextXAlignment.Left
+	closeButton = Theme.button({ Text = "X", TextSize = 16, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, 4, 0, -4), Size = UDim2.fromOffset(32, 32), BackgroundColor3 = Theme.colors.danger, ZIndex = 6, Parent = header })
+	local cp = closeButton:FindFirstChildOfClass("UIPadding")
+	if cp then
+		cp:Destroy()
+	end
+	towerOwner = Theme.label({ LayoutOrder = 2, TextSize = 12, FontFace = Theme.fontBold, TextColor3 = Theme.colors.textMuted, Size = UDim2.new(1, 0, 0, 14), Visible = false, ZIndex = 4, Parent = towerPanel })
+	towerStats = Theme.label({ LayoutOrder = 3, TextSize = 14, FontFace = Theme.fontBold, RichText = true, Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, LineHeight = 1.15, ZIndex = 4, Parent = towerPanel })
+	upgradeButton = Theme.button({ LayoutOrder = 4, TextSize = 17, Size = UDim2.new(1, 0, 0, 46), BackgroundColor3 = Theme.colors.confirm, ZIndex = 4, Parent = towerPanel })
+	local row = Create("Frame", { LayoutOrder = 5, Size = UDim2.new(1, 0, 0, 40), BackgroundTransparency = 1, ZIndex = 4, Parent = towerPanel })
+	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6), Parent = row })
+	targetButton = Theme.button({ TextSize = 13, Size = UDim2.new(0.5, -3, 1, 0), BackgroundColor3 = Theme.colors.quest, ZIndex = 4, Parent = row })
+	sellButton = Theme.button({ TextSize = 13, Size = UDim2.new(0.5, -3, 1, 0), BackgroundColor3 = Theme.colors.danger, ZIndex = 4, Parent = row })
+	-- Ultimate: the button fills back up as the cooldown recovers; Auto fires it when ready.
+	ultRow = Create("Frame", { LayoutOrder = 6, Size = UDim2.new(1, 0, 0, 44), BackgroundTransparency = 1, ZIndex = 4, Parent = towerPanel })
+	ultButton = Theme.button({ TextSize = 14, Size = UDim2.new(1, -62, 1, 0), BackgroundColor3 = Theme.lira, ClipsDescendants = true, ZIndex = 4, Parent = ultRow })
+	ultFill = Create("Frame", { Name = "Cooldown", AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromScale(0, 1), BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.45, BorderSizePixel = 0, ZIndex = 4, Parent = ultButton })
+	autoButton = Theme.button({ TextSize = 12, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(0, 56, 1, 0), ZIndex = 4, Parent = ultRow })
+	for _, b in { targetButton, sellButton, ultButton, autoButton } do
+		local pad = b:FindFirstChildOfClass("UIPadding")
+		if pad then
+			pad.PaddingLeft = UDim.new(0, 4)
+			pad.PaddingRight = UDim.new(0, 4)
+		end
+		b.TextWrapped = true
+	end
 end
 
 local function clearGhost()
@@ -78,8 +124,15 @@ local function clearGhost()
 		ring:Destroy()
 		ring = nil
 	end
+	ghostLight = nil
 	placing = nil
 	placeHint.Visible = false
+	cancelButton.Visible = false
+	for _, slot in slots do
+		slot.stroke.Color = Theme.colors.outline
+		slot.stroke.Thickness = 2.5
+		slot.frame.Position = UDim2.fromOffset(0, 0)
+	end
 end
 
 local function clearSelection()
@@ -125,8 +178,21 @@ function PlacementController.begin(unitId: string)
 		return
 	end
 	placing = unitId
-	ghost = RigBuilder.build(Workspace, "Ghost", def.visual)
-	RigBuilder.setTransparency(ghost :: Model, 0.5)
+	ghost = RigBuilder.build(Workspace, "Ghost", def.visual, unitId)
+	RigBuilder.setTransparency(ghost :: Model, 0.35)
+	local hl = Instance.new("Highlight")
+	hl.FillTransparency = 0.55
+	hl.OutlineTransparency = 0
+	hl.OutlineColor = Color3.new(1, 1, 1)
+	hl.Parent = ghost
+	ghostLight = hl
+	cancelButton.Visible = true
+	for _, slot in slots do
+		local on = slot.unitId == unitId
+		slot.stroke.Color = if on then Theme.colors.gold else Theme.colors.outline
+		slot.stroke.Thickness = if on then 3.5 else 2.5
+		slot.frame.Position = UDim2.fromOffset(0, if on then -8 else 0)
+	end
 	local st = myStats(unitId, 1)
 	ring = makeRing(st.range, Theme.colors.quest)
 	placeHint.Visible = true
@@ -199,10 +265,9 @@ local function updateGhost()
 		ring.CFrame = CFrame.new(pos + Vector3.new(0, 0.1, 0)) * CFrame.Angles(0, 0, math.rad(90))
 		ring.Color = if ok then Theme.colors.quest else Theme.colors.danger
 	end
-	for _, d in (ghost :: Model):GetDescendants() do
-		if d:IsA("BasePart") and d.Name ~= "Root" then
-			d.Color = if ok then Color3.fromRGB(120, 220, 140) else Color3.fromRGB(230, 90, 80)
-		end
+	local hl = ghostLight
+	if hl then
+		hl.FillColor = if ok then Color3.fromRGB(110, 230, 130) else Color3.fromRGB(235, 80, 70)
 	end
 end
 
@@ -235,6 +300,25 @@ local function call(fnName: string, ...: any)
 	end)
 end
 
+local GAIN = "#3E9A2E"
+
+-- "12 → 18" with the gain in green when there is a next level.
+local function statLine(label: string, now: number, nxt: number?, suffix: string?): string
+	local sfx = suffix or ""
+	local line = label .. "  <b>" .. now .. sfx .. "</b>"
+	if nxt and nxt ~= now then
+		line ..= '  <font color="' .. GAIN .. '">→ ' .. nxt .. sfx .. "</font>"
+	end
+	return line
+end
+
+local function round(n: number, places: number): number
+	local k = 10 ^ places
+	return math.floor(n * k + 0.5) / k
+end
+
+local portraitFor: string? = nil
+
 local function renderTowerPanel()
 	local id = selected
 	local t = LocaleController.t
@@ -245,29 +329,52 @@ local function renderTowerPanel()
 	end
 	local def = (Units :: any)[rec.unitId]
 	local mine = rec.owner == Players.LocalPlayer.Name
-	towerTitle.Text = t(def.nameKey) .. " · " .. t("match.level", { n = rec.level }) .. (if mine then "" else "\n" .. rec.owner)
+	local rarityColor = Theme.rarityColor(def.rarity)
+	if portraitFor ~= rec.unitId then
+		portraitFor = rec.unitId
+		for _, c in towerPortrait:GetChildren() do
+			c:Destroy()
+		end
+		local vp = UnitCard.preview(rec.unitId, { Size = UDim2.fromScale(1, 1), ZIndex = 5 }, false)
+		vp.BackgroundColor3 = rarityColor
+		vp.BackgroundTransparency = 0.2
+		Theme.border(vp, 2.5)
+		vp.Parent = towerPortrait
+	end
+	towerTitle.Text = t(def.nameKey)
+	towerTitle.TextColor3 = rarityColor:Lerp(Color3.new(1, 1, 1), 0.35)
+	local maxLevel = #def.levels
+	towerLevel.Text = t("match.level", { n = rec.level }) .. " / " .. maxLevel .. "  " .. string.rep("●", rec.level) .. string.rep("○", maxLevel - rec.level)
+	towerOwner.Visible = not mine
+	towerOwner.Text = rec.owner
+
 	local st = myStats(rec.unitId, rec.level)
+	local nextLevel = def.levels[rec.level + 1]
+	local nx = if nextLevel then myStats(rec.unitId, rec.level + 1) else nil
 	local lines = {}
 	if st.damage > 0 then
-		table.insert(lines, t("match.stat_damage", { n = math.floor(st.damage + 0.5) }))
-		table.insert(lines, t("match.stat_range", { n = math.floor(st.range * 10 + 0.5) / 10 }))
-		table.insert(lines, t("match.stat_cooldown", { n = math.floor(st.cooldown * 100 + 0.5) / 100 }))
+		table.insert(lines, statLine(t("match.stat_damage", { n = "" }), round(st.damage, 0), nx and round(nx.damage, 0)))
+		table.insert(lines, statLine(t("match.stat_range", { n = "" }), round(st.range, 1), nx and round(nx.range, 1)))
+		table.insert(lines, statLine(t("match.stat_cooldown", { n = "" }), round(st.cooldown, 2), nx and round(nx.cooldown, 2), "s"))
 	end
 	if st.income then
-		table.insert(lines, t("match.stat_income", { n = st.income }))
+		table.insert(lines, statLine(t("match.stat_income", { n = "" }), st.income, nx and nx.income))
 	end
 	if st.buff then
-		table.insert(lines, t("match.stat_buff", { n = math.floor((st.buff - 1) * 100 + 0.5) }))
+		table.insert(lines, statLine(t("match.stat_buff", { n = "" }), round((st.buff - 1) * 100, 0), nx and nx.buff and round((nx.buff - 1) * 100, 0), "%"))
 	end
 	if st.heal then
-		table.insert(lines, t("match.stat_heal", { n = st.heal }))
+		table.insert(lines, statLine(t("match.stat_heal", { n = "" }), st.heal, nx and nx.heal))
 	end
 	towerStats.Text = table.concat(lines, "\n")
-	local nextLevel = def.levels[rec.level + 1]
+
+	local state = MatchController.state()
+	local cash = if state then state.cash else 0
+	local afford = nextLevel ~= nil and cash >= nextLevel.cost
 	upgradeButton.Text = if nextLevel then t("match.upgrade", { n = nextLevel.cost }) else t("match.max_level")
 	upgradeButton.Visible = mine
-	upgradeButton.AutoButtonColor = nextLevel ~= nil
-	upgradeButton.BackgroundColor3 = if nextLevel then Theme.colors.button else Theme.colors.buttonDisabled
+	upgradeButton.BackgroundColor3 = if afford then Theme.colors.confirm else Theme.colors.buttonDisabled
+	upgradeButton.TextColor3 = if nextLevel and not afford then Color3.fromHex("#FFD0C8") else Color3.new(1, 1, 1)
 	targetButton.Text = t("match.target", { mode = t("target." .. rec.targeting) })
 	targetButton.Visible = mine and st.damage > 0
 	local invested = def.levels[1].cost
@@ -276,7 +383,18 @@ local function renderTowerPanel()
 	end
 	sellButton.Text = t("match.sell", { n = math.floor(invested * TD.SELL_REFUND) })
 	sellButton.Visible = mine
-	towerPanel.Visible = true
+	local ab = def.ability
+	ultRow.Visible = mine and ab ~= nil
+	if ab then
+		local auto = SettingsController.get("autoUlt") == true
+		ultButton.Text = t("ult." .. rec.unitId)
+		autoButton.Text = t("match.ult_auto") .. "\n" .. (if auto then t("settings.on") else t("settings.off"))
+		autoButton.BackgroundColor3 = if auto then Theme.colors.confirm else Theme.colors.buttonDisabled
+	end
+	if not towerPanel.Visible then
+		towerPanel.Visible = true
+		Juice.pop(towerPanel, 0.85)
+	end
 end
 
 local function selectTower(id: number)
@@ -309,54 +427,125 @@ local function tap(screen: Vector2)
 		end
 		return
 	end
-	local _, inst = groundHit(screen)
+	-- Pick the defender nearest the tapped ground point (fingers are fat; models are thin).
+	local hit, inst = groundHit(screen)
 	local model = inst and inst:FindFirstAncestorOfClass("Model")
-	local id = model and model:GetAttribute("TowerId")
-	if type(id) == "number" and towers[id] then
-		selectTower(id)
+	local direct = model and model:GetAttribute("TowerId")
+	if type(direct) == "number" and towers[direct] then
+		selectTower(direct)
+		return
+	end
+	local best, bestD = nil, 3.5 * 3.5
+	if hit then
+		local l = origin:PointToObjectSpace(hit)
+		for tid, rec in towers do
+			local d = (rec.x - l.X) ^ 2 + (rec.z - l.Z) ^ 2
+			if d < bestD then
+				best, bestD = tid, d
+			end
+		end
+	end
+	if best then
+		selectTower(best)
 	else
 		clearSelection()
 	end
 end
 
-local function renderBar()
-	for _, c in bar:GetChildren() do
-		if c:IsA("Frame") then
-			c:Destroy()
+-- Re-tints slots for the current cash and how many of each unit I have placed.
+local function refreshBar()
+	local state = MatchController.state()
+	local cash = if state then state.cash else 0
+	local me = Players.LocalPlayer.Name
+	for _, slot in slots do
+		local afford = cash >= slot.price
+		slot.cost.TextColor3 = if afford then Color3.fromHex("#FFD970") else Color3.fromHex("#FF6B5E")
+		slot.dim.Visible = not afford
+		local placed = 0
+		for _, rec in towers do
+			if rec.owner == me and rec.unitId == slot.unitId then
+				placed += 1
+			end
 		end
+		local def = (Units :: any)[slot.unitId]
+		slot.count.Text = placed .. "/" .. def.maxPlaced
+		slot.count.TextColor3 = if placed >= def.maxPlaced then Color3.fromHex("#FF6B5E") else Color3.new(1, 1, 1)
 	end
+end
+
+local function slotFor(i: number, unitId: string): Slot
+	local def = (Units :: any)[unitId]
+	local color = Theme.rarityColor(def.rarity)
+	local price = def.levels[1].cost
+	local holder = Create("Frame", { LayoutOrder = i, Size = UDim2.fromOffset(68, 84), BackgroundTransparency = 1, ZIndex = 3 })
+	local frame = Create("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = color, BorderSizePixel = 0, ZIndex = 3, Parent = holder }, { Create("UICorner", { CornerRadius = UDim.new(0, 12) }) })
+	Create("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.new(0.45, 0.45, 0.45)), Parent = frame })
+	local stroke = Theme.border(frame, 2.5)
+	local vp = UnitCard.preview(unitId, { Position = UDim2.fromOffset(3, 3), Size = UDim2.new(1, -6, 1, -24), ZIndex = 4 }, false)
+	vp.BackgroundTransparency = 1
+	vp.Parent = frame
+	local dim = Create("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.5, BorderSizePixel = 0, Visible = false, ZIndex = 6, Parent = frame }, { Create("UICorner", { CornerRadius = UDim.new(0, 12) }) })
+	local cost = Theme.display({ Text = "$" .. price, TextSize = 16, AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -2), Size = UDim2.new(1, 0, 0, 20), ZIndex = 7, Parent = frame })
+	cost.TextXAlignment = Enum.TextXAlignment.Center
+	local count = Theme.display({ Text = "", TextSize = 12, Position = UDim2.fromOffset(5, 3), Size = UDim2.fromOffset(40, 14), ZIndex = 7, Parent = frame })
+	count.TextXAlignment = Enum.TextXAlignment.Left
+	if def.rarity == "legendary" or def.rarity == "mythic" or def.rarity == "secret" then
+		Juice.shine(frame, 3)
+	end
+	if def.ability then
+		-- Gold badge: this defender has an ultimate.
+		local badge = Create("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(1, -9, 0, 9), Size = UDim2.fromOffset(18, 18), Rotation = 45, BackgroundColor3 = Theme.lira, BorderSizePixel = 0, ZIndex = 7, Parent = frame }, { Create("UICorner", { CornerRadius = UDim.new(0, 4) }) })
+		Theme.border(badge, 2)
+	end
+	local hit = Create("TextButton", { Text = "", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 8, Parent = frame })
+	Juice.press(hit)
+	hit.Activated:Connect(function()
+		local state = MatchController.state()
+		if state and state.cash < price then
+			Juice.shake(frame)
+			ToastController.show("match.err.cannot_afford")
+			return
+		end
+		if placing == unitId then
+			clearGhost()
+		else
+			PlacementController.begin(unitId)
+		end
+	end)
+	holder.Parent = bar
+	return { frame = frame, cost = cost, count = count, dim = dim, stroke = stroke, unitId = unitId, price = price }
+end
+
+local function renderBar()
 	local snapshot = StateController.get()
 	local info = MatchController.info()
 	if not snapshot or not info then
 		bar.Visible = false
 		return
 	end
-	local t = LocaleController.t
-	local state = MatchController.state()
-	for i, unitId in snapshot.loadout do
-		local def = (Units :: any)[unitId]
-		if def then
-			local cost = def.levels[1].cost
-			local afford = state ~= nil and state.cash >= cost
-			local card = UnitCard.create(unitId, { LayoutOrder = i, Size = UDim2.fromOffset(72, 92) }, { name = t(def.nameKey), sub = "$" .. cost, dim = not afford, zindex = 3 })
-			card.Parent = bar
-			local hit = Create("TextButton", { Text = "", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 5, Parent = card })
-			hit.Activated:Connect(function()
-				if placing == unitId then
-					clearGhost()
-				else
-					PlacementController.begin(unitId)
-				end
-			end)
+	local key = table.concat(snapshot.loadout, ",")
+	if key ~= slotKey or #slots == 0 then
+		slotKey = key
+		for _, c in bar:GetChildren() do
+			if c:IsA("Frame") then
+				c:Destroy()
+			end
+		end
+		slots = {}
+		for i, unitId in snapshot.loadout do
+			if (Units :: any)[unitId] then
+				table.insert(slots, slotFor(i, unitId))
+			end
 		end
 	end
+	refreshBar()
 	bar.Visible = true
 end
 
 local function onEvents(events: { any })
 	for _, e in events do
 		if e.type == "towerPlaced" then
-			towers[e.id] = { unitId = e.unitId, level = e.level, owner = e.owner, x = e.x, z = e.z, range = e.range, targeting = "first" }
+			towers[e.id] = { unitId = e.unitId, level = e.level, owner = e.owner, x = e.x, z = e.z, range = e.range, targeting = "first", readyAt = 0 }
 		elseif e.type == "towerUpgraded" and towers[e.id] then
 			towers[e.id].level = e.level
 			towers[e.id].range = e.range
@@ -368,12 +557,24 @@ local function onEvents(events: { any })
 			if selected == e.id then
 				clearSelection()
 			end
+		elseif e.type == "attack" and e.ability and towers[e.tower] then
+			-- Game time runs at the match speed; the cooldown on screen is in real seconds.
+			local rec = towers[e.tower]
+			local def = (Units :: any)[rec.unitId]
+			local state = MatchController.state()
+			local speed = if state and state.speed then state.speed else 1
+			if def and def.ability then
+				rec.readyAt = os.clock() + def.ability.cooldown / speed
+			end
 		elseif e.type == "towerTargeting" and towers[e.id] then
 			towers[e.id].targeting = e.mode
 			if selected == e.id then
 				renderTowerPanel()
 			end
 		end
+	end
+	if #slots > 0 then
+		refreshBar()
 	end
 end
 
@@ -387,6 +588,62 @@ function PlacementController.start()
 	sellButton.Activated:Connect(function()
 		if selected then
 			call(Net.Functions.SellTower, selected)
+		end
+	end)
+	ultButton.Activated:Connect(function()
+		local rec = selected and towers[selected]
+		if not rec then
+			return
+		end
+		if os.clock() < rec.readyAt then
+			Juice.shake(ultButton)
+			return
+		end
+		Net.event(Net.Events.UseAbility):FireServer(selected)
+		Juice.punch(ultButton)
+	end)
+	autoButton.Activated:Connect(function()
+		SettingsController.set("autoUlt", not (SettingsController.get("autoUlt") == true))
+	end)
+	SettingsController.Changed:Connect(function(key: string)
+		if key == "autoUlt" and selected then
+			renderTowerPanel()
+		end
+	end)
+	-- Hold Upgrade to keep buying levels (one every 0.3 s after a short delay).
+	local holding = 0
+	upgradeButton.InputBegan:Connect(function(input: InputObject)
+		if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
+			return
+		end
+		holding += 1
+		local token = holding
+		task.delay(0.45, function()
+			while holding == token and selected and towerPanel.Visible do
+				call(Net.Functions.UpgradeTower, selected)
+				task.wait(0.3)
+			end
+		end)
+	end)
+	upgradeButton.InputEnded:Connect(function(input: InputObject)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			holding += 1
+		end
+	end)
+	-- Ultimate cooldown fill (cheap: one frame size, ten times a second, only while visible).
+	task.spawn(function()
+		while true do
+			task.wait(0.1)
+			local rec = selected and towers[selected]
+			if rec and ultRow.Visible then
+				local def = (Units :: any)[rec.unitId]
+				local state = MatchController.state()
+				local speed = if state and state.speed then state.speed else 1
+				local total = if def and def.ability then def.ability.cooldown / speed else 1
+				local left = math.max(0, rec.readyAt - os.clock())
+				ultFill.Size = UDim2.fromScale(math.clamp(left / total, 0, 1), 1)
+				ultButton.BackgroundColor3 = if left <= 0 then Theme.lira else Theme.colors.buttonDisabled
+			end
 		end
 	end)
 	targetButton.Activated:Connect(function()
@@ -405,10 +662,22 @@ function PlacementController.start()
 		origin = CFrame.new(info.origin)
 		clearGhost()
 		clearSelection()
+		slotKey = ""
 		renderBar()
 	end)
 	MatchController.Updated:Connect(function()
-		renderBar()
+		if #slots == 0 then
+			renderBar()
+		else
+			refreshBar()
+		end
+		if selected then
+			renderTowerPanel()
+		end
+	end)
+	cancelButton.Activated:Connect(clearGhost)
+	closeButton.Activated:Connect(function()
+		clearSelection()
 	end)
 	MatchController.Events:Connect(onEvents)
 	MatchController.Ended:Connect(function()

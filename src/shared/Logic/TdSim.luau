@@ -25,6 +25,8 @@ export type Enemy = {
 	slowMul: number,
 	slowUntil: number,
 	stunUntil: number,
+	stunSince: number, -- start of the current unbroken chain of stuns
+	stunImmuneUntil: number,
 	armor: number,
 	stealth: boolean,
 	reward: number,
@@ -43,12 +45,14 @@ export type Tower = {
 	stats: any, -- UnitLogic.Stats
 	nextAt: number,
 	abilityAt: number,
+	abilityQueued: boolean?, -- the owner tapped the ultimate; fires on the next attack once ready
 	targeting: string, -- "first" | "last" | "strong" | "close"
 	invested: number,
 	kills: number,
 }
 
-export type PlayerState = { cash: number, kills: number, spent: number }
+-- autoAbility: ultimates fire as soon as they are ready (nil counts as on).
+export type PlayerState = { cash: number, kills: number, spent: number, autoAbility: boolean? }
 
 export type Event = { type: string, [string]: any }
 
@@ -77,6 +81,8 @@ export type State = {
 		waveBonusPerWave: number,
 		rewardMul: number,
 		enemies: { [string]: any },
+		stunChainMax: number?, -- longest unbroken chain of stuns an enemy can be held in (nil = no cap) …
+		stunImmunity: number?, -- … after which it ignores stuns for this long
 	},
 	buildWave: (number) -> any, -- wave number → WaveLogic.Wave
 }
@@ -151,6 +157,8 @@ local function spawnDue(state: State, events: { Event })
 				slowMul = 1,
 				slowUntil = 0,
 				stunUntil = 0,
+				stunSince = 0,
+				stunImmuneUntil = 0,
 				armor = def.armor or 0,
 				stealth = def.stealth == true,
 				reward = def.reward,
@@ -232,8 +240,20 @@ local function hit(state: State, t: Tower, e: Enemy, damage: number, events: { E
 		e.slowMul = math.min(e.slowMul, t.stats.slow)
 		e.slowUntil = math.max(e.slowUntil, state.time + t.stats.slowFor)
 	end
-	if t.stats.stun then
+	-- Stuns chain, but a chain is capped (then the enemy shrugs stuns off for a moment), so a stack
+	-- of stunners (a party of Blacksmiths and Strongmen) cannot pin a wave at the spawn forever. A
+	-- chain only resets once the enemy has been free for the immunity time (re-stuns landing on the
+	-- tick a stun ends would otherwise start a fresh chain every time).
+	if t.stats.stun and state.time >= e.stunImmuneUntil then
+		if state.time >= e.stunUntil + (state.cfg.stunImmunity or 0) then
+			e.stunSince = state.time
+		end
 		e.stunUntil = math.max(e.stunUntil, state.time + t.stats.stun)
+		local cap = state.cfg.stunChainMax
+		if cap and e.stunUntil - e.stunSince >= cap then
+			e.stunUntil = e.stunSince + cap
+			e.stunImmuneUntil = e.stunUntil + (state.cfg.stunImmunity or 0)
+		end
 	end
 	if e.hp <= 0 then
 		e.alive = false
@@ -270,7 +290,10 @@ local function towersAct(state: State, events: { Event })
 				local damage = st.damage * buffFor(state, t)
 				local ability = false
 				local ab = st.ability
-				if ab and state.time >= t.abilityAt then
+				local owner = state.players[t.owner]
+				local wants = t.abilityQueued == true or owner == nil or owner.autoAbility ~= false
+				if ab and wants and state.time >= t.abilityAt then
+					t.abilityQueued = false
 					if ab.kind == "shabriyeh" then
 						damage *= ab.multiplier
 						ability = true
@@ -306,7 +329,7 @@ end
 
 local function endWave(state: State, events: { Event })
 	state.wavesCleared = state.wave
-	local bonus = state.cfg.waveBonusBase + state.cfg.waveBonusPerWave * state.wave
+	local bonus = math.floor(state.cfg.waveBonusBase + state.cfg.waveBonusPerWave * state.wave + 0.5)
 	for _, p in state.players do
 		p.cash += bonus
 	end

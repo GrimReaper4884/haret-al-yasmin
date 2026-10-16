@@ -2,7 +2,6 @@
 -- Always-on HUD: coin pill, errand tracker and language toggle.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Quests = require(Shared.Config.Quests)
@@ -11,6 +10,7 @@ local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
 local Root = require(UI.Root)
+local Juice = require(UI.Juice)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local ShopController = require(script.Parent.ShopController)
@@ -34,44 +34,30 @@ local function build()
 
 	-- Layout: Roblox owns the top-left (menu + chat window) and top-right (player list), so the
 	-- coin pill and language toggle sit top-centre and the errand tracker sits on the right edge.
-	coinPill = Theme.panel({
+	coinPill, coinLabel = Theme.pill({
 		Name = "Coins",
 		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.new(0.5, -4, 0, 8),
-		Size = UDim2.fromOffset(176, Theme.TOUCH - 4),
+		Position = UDim2.new(0.5, -6, 0, 10),
+		Size = UDim2.fromOffset(170, 36),
 		Parent = root,
-	})
-	Theme.label({
-		Name = "Icon",
-		Text = "◉",
-		TextColor3 = Theme.colors.accent,
-		FontFace = Theme.fontBold,
-		TextSize = 24,
-		Size = UDim2.new(0, 36, 1, 0),
-		Position = UDim2.fromOffset(6, 0),
-		Parent = coinPill,
-	})
-	coinLabel = Theme.label({
-		Name = "Amount",
-		Text = "…",
-		FontFace = Theme.fontBold,
-		TextSize = 20,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		Size = UDim2.new(1, -84, 1, 0),
-		Position = UDim2.fromOffset(42, 0),
-		Parent = coinPill,
-	})
+	}, Theme.colors.gold)
+	coinLabel.TextColor3 = Color3.fromHex("#FFD970")
+	coinLabel.Size = UDim2.new(1, -66, 1, 0)
 	-- "+" opens the coin store (Robux purses and passes).
 	local storeButton = Theme.button({
 		Name = "Store",
 		Text = "+",
 		TextSize = 22,
 		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, -5, 0.5, 0),
-		Size = UDim2.fromOffset(34, 34),
-		BackgroundColor3 = Theme.colors.accent,
+		Position = UDim2.new(1, 4, 0.5, 0),
+		Size = UDim2.fromOffset(38, 38),
+		BackgroundColor3 = Theme.colors.confirm,
 		Parent = coinPill,
 	})
+	local sp = storeButton:FindFirstChildOfClass("UIPadding")
+	if sp then
+		sp:Destroy()
+	end
 	storeButton.Activated:Connect(ShopController.openStore)
 
 	local tracker = Theme.panel({
@@ -127,7 +113,7 @@ local function build()
 
 	langButton = Theme.button({
 		Name = "Language",
-		Position = UDim2.new(0.5, 4, 0, 8),
+		Position = UDim2.new(0.5, 6, 0, 6),
 		Size = UDim2.fromOffset(96, Theme.TOUCH - 4),
 		TextSize = 18,
 		Parent = root,
@@ -136,7 +122,7 @@ local function build()
 
 	wardrobeButton = Theme.button({
 		Name = "Wardrobe",
-		Position = UDim2.new(0.5, 104, 0, 8),
+		Position = UDim2.new(0.5, 108, 0, 6),
 		Size = UDim2.fromOffset(112, Theme.TOUCH - 4),
 		TextSize = 17,
 		BackgroundColor3 = Theme.colors.quest,
@@ -212,15 +198,15 @@ local function render()
 	local snapshot = StateController.get()
 
 	if snapshot then
-		coinLabel.Text = t("hud.currency", { n = snapshot.qirsh })
+		local function fmt(n: number): string
+			return t("hud.currency", { n = n })
+		end
 		if lastQirsh and snapshot.qirsh ~= lastQirsh then
-			-- Small pulse so earning/spending is noticed.
-			local stroke = coinPill:FindFirstChildOfClass("UIStroke")
-			if stroke then
-				stroke.Color = Theme.colors.accent
-				stroke.Thickness = 4
-				TweenService:Create(stroke, TweenInfo.new(0.6), { Thickness = 2, Color = Theme.colors.panelStroke }):Play()
-			end
+			-- Count up and punch so earning/spending is noticed.
+			Juice.count(coinLabel, lastQirsh, snapshot.qirsh, fmt)
+			Juice.punch(coinPill, 0.1)
+		else
+			coinLabel.Text = fmt(snapshot.qirsh)
 		end
 		lastQirsh = snapshot.qirsh
 	end

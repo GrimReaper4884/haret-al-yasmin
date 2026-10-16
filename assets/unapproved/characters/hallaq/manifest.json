@@ -1,0 +1,17 @@
+{
+  "id": "hallaq",
+  "tasks": {
+    "concept": "01a1420d-b237-70e4-9641-ba8135f56a07",
+    "mesh": "01a14212-38d6-71bc-baac-e3f46a44bda4",
+    "rig": "01a14215-1667-745f-8bdd-c2ccf8e3fff4",
+    "anim_idle": "01a14215-6195-70be-9ff2-653796d6f420",
+    "anim_attack": "01a14215-82d6-77ee-bfc5-62e211dc3fda"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "qahwaji",
+  "tasks": {
+    "concept": "01a1420e-0864-737b-bbfe-7a7bcb53fa5a",
+    "mesh": "01a14214-779d-779a-b24c-2a36b78afd7b",
+    "rig": "01a14215-d317-7773-88cc-1bbd096173ba",
+    "anim_idle": "01a14216-1e7c-76bc-be30-c685b9d737c0",
+    "anim_attack": "01a14216-742d-724d-8b12-1f43611fac22"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3
+  }
+}

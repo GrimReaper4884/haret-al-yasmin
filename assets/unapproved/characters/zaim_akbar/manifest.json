@@ -1,0 +1,17 @@
+{
+  "id": "zaim_akbar",
+  "tasks": {
+    "concept": "01a1420d-b242-77f9-81e8-f7beb7ad399d",
+    "mesh": "01a14212-38d1-76d9-a2e7-997f16a5c137",
+    "rig": "01a14214-6188-76f9-b8c3-1475aacb5ebc",
+    "anim_idle": "01a14214-ac20-7369-85ff-ab58a72bc819",
+    "anim_attack": "01a14214-cf18-76c9-af41-2e38fcbd4fef"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3
+  }
+}

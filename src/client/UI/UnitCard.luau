@@ -11,6 +11,8 @@ local Palette = require(Shared.Config.Palette)
 local RigBuilder = require(Shared.Util.RigBuilder)
 local Create = require(script.Parent.Create)
 local Theme = require(script.Parent.Theme)
+local Juice = require(script.Parent.Juice)
+local Fx = require(script.Parent.Fx)
 
 local UnitCard = {}
 
@@ -37,15 +39,16 @@ function UnitCard.preview(unitId: string, props: { [string]: any }, spin: boolea
 	if not def then
 		return vp
 	end
-	local rig = RigBuilder.build(vp, unitId, def.visual)
+	-- Cloned from a per-unit template: grids re-render often.
+	local rig = RigBuilder.cached(vp, unitId, def.visual, unitId)
 	local s = def.visual.scale or 1
 	local camera = Instance.new("Camera")
 	camera.FieldOfView = 35
 	camera.Parent = vp
 	vp.CurrentCamera = camera
 	local isCat = def.visual.weapon == "cat"
-	local height = if isCat then 1.2 * s else 3.1 * s
-	local dist = if isCat then 6 * s else 11.5 * s
+	local height = if isCat then 1.2 * s else 3.0 * s
+	local dist = if isCat then 6 * s else 9.6 * s
 	local function place(yawDeg: number)
 		local yaw = math.rad(yawDeg)
 		local target = Vector3.new(0, height, 0)
@@ -53,7 +56,7 @@ function UnitCard.preview(unitId: string, props: { [string]: any }, spin: boolea
 		camera.CFrame = CFrame.lookAt(eye, target)
 	end
 	place(20)
-	if spin then
+	if spin and Fx.any() then
 		local yaw = 20
 		local conn: RBXScriptConnection
 		conn = RunService.RenderStepped:Connect(function(dt: number)
@@ -74,12 +77,20 @@ function UnitCard.create(unitId: string, props: { [string]: any }, opts: Options
 	local rarity = if def then def.rarity else "rare"
 	local color = Theme.rarityColor(rarity)
 	local z = o.zindex or 11
-	local card = Create("Frame", props, { Create("UICorner", { CornerRadius = UDim.new(0, 10) }) })
+	local card = Create("Frame", props, { Create("UICorner", { CornerRadius = UDim.new(0, 12) }) })
 	card.BackgroundColor3 = color
-	card.BackgroundTransparency = if o.dim then 0.85 else 0.72
+	card.BackgroundTransparency = if o.dim then 0.55 else 0
 	card.BorderSizePixel = 0
 	card.ZIndex = z
-	Create("UIStroke", { Color = if o.selected then Theme.colors.accent else color, Thickness = if o.selected then 3 else 1.5, Transparency = 0.1, Parent = card })
+	-- Rarity gradient (bright top, deep bottom) + thick dark border; gold border when selected.
+	Create("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.new(0.42, 0.42, 0.42)), Parent = card })
+	local border = Theme.border(card, if o.selected then 3.5 else 2.5)
+	if o.selected then
+		border.Color = Theme.colors.gold
+	end
+	if not o.dim and (rarity == "legendary" or rarity == "mythic" or rarity == "secret") then
+		Juice.shine(card, 2.6)
+	end
 
 	local hasText = o.name ~= nil
 	local vp = UnitCard.preview(unitId, {
@@ -87,25 +98,16 @@ function UnitCard.create(unitId: string, props: { [string]: any }, opts: Options
 		Size = UDim2.new(1, -8, if hasText then 0.62 else 1, if hasText then 0 else -8),
 		ZIndex = z,
 	}, o.spin)
+	vp.BackgroundTransparency = 1
 	vp.Parent = card
 	if o.dim then
 		vp.ImageTransparency = 0.5
 	end
-	-- Rarity ribbon
-	Create("Frame", {
-		BackgroundColor3 = color,
-		BorderSizePixel = 0,
-		Position = UDim2.fromOffset(4, 4),
-		Size = UDim2.new(1, -8, 0, 4),
-		ZIndex = z + 1,
-		Parent = card,
-	})
 	if o.stars and o.stars > 0 then
-		local stars = Theme.label({
+		local stars = Theme.display({
 			Text = string.rep("★", o.stars),
-			TextSize = 12,
-			TextColor3 = Theme.lira,
-			TextStrokeTransparency = 0.4,
+			TextSize = 13,
+			TextColor3 = Color3.fromHex("#FFD970"),
 			AnchorPoint = Vector2.new(1, 0),
 			Position = UDim2.new(1, -6, 0, 8),
 			Size = UDim2.fromOffset(60, 14),
@@ -115,10 +117,9 @@ function UnitCard.create(unitId: string, props: { [string]: any }, opts: Options
 		stars.TextXAlignment = Enum.TextXAlignment.Right
 	end
 	if hasText then
-		local name = Theme.label({
+		local name = Theme.display({
 			Text = o.name :: string,
 			TextSize = 12,
-			FontFace = Theme.fontBold,
 			Position = UDim2.new(0, 4, 0.62, 2),
 			Size = UDim2.new(1, -8, 0, 30),
 			ZIndex = z + 1,
@@ -127,11 +128,10 @@ function UnitCard.create(unitId: string, props: { [string]: any }, opts: Options
 		name.TextXAlignment = Enum.TextXAlignment.Center
 		name.TextYAlignment = Enum.TextYAlignment.Top
 		if o.sub then
-			local sub = Theme.label({
+			local sub = Theme.display({
 				Text = o.sub,
-				TextSize = 12,
-				FontFace = Theme.fontBold,
-				TextColor3 = Theme.colors.accent,
+				TextSize = 13,
+				TextColor3 = Color3.fromHex("#FFD970"),
 				AnchorPoint = Vector2.new(0.5, 1),
 				Position = UDim2.new(0.5, 0, 1, -4),
 				Size = UDim2.new(1, -8, 0, 16),

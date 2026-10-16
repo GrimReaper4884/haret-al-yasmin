@@ -3,6 +3,7 @@
 -- reward. Every handler validates input, reads the live profile and writes through
 -- DataService.mutate with the pure Logic modules.
 
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -20,6 +21,8 @@ local SummonLogic = require(Shared.Logic.SummonLogic)
 local UnitLogic = require(Shared.Logic.UnitLogic)
 local PassLogic = require(Shared.Logic.PassLogic)
 local CodesLogic = require(Shared.Logic.CodesLogic)
+local EventLogic = require(Shared.Logic.EventLogic)
+local Events = require(Shared.Config.Events)
 local DailyLogic = require(Shared.Logic.DailyLogic)
 local Validate = require(Shared.Logic.Validate)
 local DataService = require(script.Parent.DataService)
@@ -84,10 +87,27 @@ local function summon(player: Player, n: any): { [string]: any }
 	end
 	Analytics.sink(player, cost, profile.lira, "summon_x" .. n)
 	Analytics.custom(player, "Summon_x" .. n)
+	local announce = {}
 	for _, r in results :: { any } do
 		if r.rarity == "mythic" or r.rarity == "legendary" then
 			Analytics.custom(player, "Summon_" .. r.rarity .. "_" .. r.unitId)
 		end
+		if (r.rarity == "mythic" or r.rarity == "secret") and #announce < 2 then
+			table.insert(announce, r)
+		end
+	end
+	-- A server-wide line for Mythic and better, after the summoner's own reveal has played.
+	if #announce > 0 then
+		task.delay(3, function()
+			for _, r in announce do
+				local def = (Units :: any)[r.unitId]
+				for _, other in Players:GetPlayers() do
+					if other ~= player then
+						PlayerStateService.notify(other, "notify.global_pull", { name = player.DisplayName, rarityKey = "rarity." .. r.rarity, unitKey = def.nameKey })
+					end
+				end
+			end
+		end)
 	end
 	return { ok = true, results = results, cost = cost }
 end
@@ -142,7 +162,9 @@ local function redeemCode(player: Player, code: any): { [string]: any }
 		return { ok = false, err = "bad_code" }
 	end
 	local ok, err, granted = DataService.mutate(player, function(p)
-		return CodesLogic.redeem(p, code, Codes :: any, grantCtx())
+		local c = grantCtx()
+		c.userId = player.UserId
+		return CodesLogic.redeem(p, code, Codes :: any, c)
 	end)
 	if not ok then
 		return { ok = false, err = err }
@@ -163,6 +185,21 @@ local function claimDaily(player: Player): { [string]: any }
 	return { ok = true, granted = granted, day = day }
 end
 
+-- Buys one entry from a running event's shop with that event's currency (Logic/EventLogic).
+local function eventBuy(player: Player, eventId: any, key: any): { [string]: any }
+	if not Validate.isIdentifier(eventId) or not Validate.isShortString(key, 40) then
+		return { ok = false, err = "bad_request" }
+	end
+	local ok, err, granted = DataService.mutate(player, function(p)
+		return EventLogic.buy(p, Events :: any, eventId, key, os.time(), grantCtx())
+	end)
+	if not ok then
+		return { ok = false, err = err }
+	end
+	Analytics.custom(player, "EventBuy_" .. eventId .. "_" .. key)
+	return { ok = true, granted = granted }
+end
+
 function MetaService.start()
 	RemoteGuard.func(Net.Functions.Summon, RemoteGuard.STRICT, summon)
 	RemoteGuard.func(Net.Functions.SetLoadout, RemoteGuard.DEFAULT, setLoadout)
@@ -170,6 +207,7 @@ function MetaService.start()
 	RemoteGuard.func(Net.Functions.ClaimPass, RemoteGuard.DEFAULT, claimPass)
 	RemoteGuard.func(Net.Functions.RedeemCode, RemoteGuard.STRICT, redeemCode)
 	RemoteGuard.func(Net.Functions.ClaimDaily, RemoteGuard.STRICT, claimDaily)
+	RemoteGuard.func(Net.Functions.EventBuy, RemoteGuard.STRICT, eventBuy)
 
 	-- Loadout slots can grow with a pass bought mid-session; the client reads them from the snapshot.
 	PlayerStateService.addExtra(function(player: Player, s: { [string]: any })

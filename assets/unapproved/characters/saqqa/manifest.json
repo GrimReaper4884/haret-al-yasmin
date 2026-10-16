@@ -1,0 +1,17 @@
+{
+  "id": "saqqa",
+  "tasks": {
+    "concept": "01a1420e-08a8-734e-b879-23930b275c86",
+    "mesh": "01a14214-d42f-71e7-8693-9cd5cd20be93",
+    "rig": "01a14216-1650-716c-a1a3-63feec284963",
+    "anim_idle": "01a14216-6042-771c-9970-477ebc2bd2bc",
+    "anim_attack": "01a14216-9bea-7697-9f0c-7a4eb60c6bc2"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "khayyat",
+  "tasks": {
+    "concept": "01a1420e-08f3-7523-951e-82fb69f09038",
+    "mesh": "01a14214-f589-7536-9779-a5fa12342c30",
+    "rig": "01a14216-54ad-758f-92e5-f37c61c20f1f",
+    "anim_idle": "01a14216-a701-7079-9d54-5ebc811b7b9f",
+    "anim_attack": "01a14216-fce2-701d-9a07-80fb97de5dc5"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3
+  }
+}

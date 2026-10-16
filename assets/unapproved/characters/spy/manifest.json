@@ -1,0 +1,17 @@
+{
+  "id": "spy",
+  "tasks": {
+    "concept": "01a1420e-4461-71f7-abe4-8321d07c3bbf",
+    "mesh": "01a14216-f6d5-7018-9836-559c9afd78c6",
+    "rig": "01a14218-ecd4-73f7-8073-21dfecaaff97",
+    "anim_idle": "01a14219-39aa-7225-b950-03a625422315",
+    "anim_attack": "01a14219-5cae-744c-b7c9-559c6ef011cf"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 0,
+    "anim_attack": 3
+  }
+}

@@ -13,3 +13,13 @@ roblox.d.luau
 .DS_Store
 Thumbs.db
 build/
+
+# Meshy downloads (large binaries; only approved, imported .rbxm files are committed)
+assets/unapproved/**/*.glb
+assets/unapproved/**/*.fbx
+
+# Discord triage agent run state (cursor, scratch); reports + ledger in docs/triage are committed
+.triage/
+assets/unapproved/**/*.png
+__pycache__/
+assets/unapproved/**/*.fbm/

@@ -1,8 +1,9 @@
 --!strict
 -- Summon screen: the active banner and its featured defenders, the player's lira, ×1 / ×10
 -- buttons, a Rates panel with every outcome's percentage (shown before any purchase, pity
--- included), and the reveal: cards flip in one by one; a Legendary or Mythic triggers the
--- shabriyeh flash. All rolls happen on the server; this screen only shows the results.
+-- included), and the reveal: the lantern build-up (UI/SummonSequence; skippable, and off with
+-- Settings → Summon animation), then the cards (one big card, or ×10 flipping in); a Legendary or
+-- Mythic triggers the shabriyeh flash. All rolls happen on the server; this only shows results.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -20,11 +21,15 @@ local Theme = require(UI.Theme)
 local Root = require(UI.Root)
 local Modal = require(UI.Modal)
 local UnitCard = require(UI.UnitCard)
+local SummonSequence = require(UI.SummonSequence)
+local Juice = require(UI.Juice)
+local Fx = require(UI.Fx)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
 local ShopController = require(script.Parent.ShopController)
 local AudioController = require(script.Parent.AudioController)
+local SettingsController = require(script.Parent.SettingsController)
 
 local SummonController = {}
 
@@ -128,40 +133,121 @@ function SummonController.shabriyehFlash(text: string)
 	end)
 end
 
-function SummonController.showResults(results: { any })
+local function card(r: any, i: number, size: Vector2, hero: boolean): Frame
 	local t = LocaleController.t
+	local def = (Units :: any)[r.unitId]
+	local c = UnitCard.create(r.unitId, { LayoutOrder = i }, {
+		name = t(def.nameKey),
+		-- New units carry the stamp, so the line under them names the rarity instead.
+		sub = if hero or r.result == "new" then t("rarity." .. r.rarity) else t("summon.copy"),
+		zindex = 21,
+		spin = hero,
+	})
+	c.Size = UDim2.fromOffset(size.X, size.Y)
+	if r.result == "new" then
+		-- "New in your diary!" stamp across the top corner.
+		local stamp = Theme.display({
+			Text = t("summon.new_stamp"),
+			TextSize = if hero then 18 else 12,
+			TextColor3 = Color3.fromHex("#FFD970"),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0),
+			Size = UDim2.new(1.1, 0, 0, if hero then 26 else 18),
+			Rotation = -6,
+			BackgroundColor3 = Theme.colors.danger,
+			BackgroundTransparency = 0,
+			ZIndex = 25,
+			Parent = c,
+		})
+		stamp.TextXAlignment = Enum.TextXAlignment.Center
+		Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = stamp })
+		Theme.border(stamp, 2)
+	end
+	return c
+end
+
+-- Shows the cards: one big turning card for a single pull, a 5 × 2 grid that flips in for ×10
+-- (tap to show the rest at once). Legendary or better cards punch in with the flash.
+local function showCards(results: { any })
+	local t = LocaleController.t
+	revealAgain.Visible = true
+	if #results == 1 then
+		revealGrid.Size = UDim2.fromOffset(200, 280)
+		local grid = revealGrid:FindFirstChildOfClass("UIGridLayout") :: UIGridLayout
+		grid.CellSize = UDim2.fromOffset(190, 270)
+		local c = card(results[1], 1, Vector2.new(190, 270), true)
+		c.Parent = revealGrid
+		Juice.pop(c, 0.4)
+		if SummonSequence.rank(results[1].rarity) >= 3 then
+			SummonController.shabriyehFlash(t("match.shabriyeh"))
+		end
+		return
+	end
+	revealGrid.Size = UDim2.fromOffset(5 * 110, 2 * 150)
+	local grid = revealGrid:FindFirstChildOfClass("UIGridLayout") :: UIGridLayout
+	grid.CellSize = UDim2.fromOffset(100, 140)
+	local cards = {}
+	for i, r in results do
+		local c = card(r, i, Vector2.new(100, 140), false)
+		c.Visible = false
+		c.Parent = revealGrid
+		cards[i] = c
+	end
+	local skipped = false
+	local skip = Create("TextButton", { Text = "", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 26, Parent = reveal })
+	skip.Activated:Connect(function()
+		skipped = true
+	end)
+	task.spawn(function()
+		local best = 0
+		for i, r in results do
+			local c = cards[i]
+			c.Visible = true
+			local rank = SummonSequence.rank(r.rarity)
+			if skipped then
+				continue
+			end
+			Juice.pop(c, 0.3)
+			if rank >= 3 then
+				best = math.max(best, rank)
+				SummonController.shabriyehFlash(t("match.shabriyeh"))
+				task.wait(0.55)
+			else
+				AudioController.sting("summon_reveal")
+				task.wait(0.12)
+			end
+		end
+		skip:Destroy()
+		if best >= 3 then
+			AudioController.sting("summon_legendary")
+		end
+	end)
+end
+
+function SummonController.showResults(results: { any })
 	for _, c in revealGrid:GetChildren() do
 		if c:IsA("Frame") then
 			c:Destroy()
 		end
 	end
 	reveal.Visible = true
-	revealAgain.Text = t("summon.again")
-	local best = ""
-	task.spawn(function()
-		for i, r in results do
-			local def = (Units :: any)[r.unitId]
-			local card = UnitCard.create(r.unitId, { LayoutOrder = i }, {
-				name = t(def.nameKey),
-				sub = if r.result == "new" then t("summon.new") else t("summon.copy"),
-				zindex = 21,
-			})
-			card.Parent = revealGrid
-			card.Size = UDim2.fromOffset(0, 0)
-			TweenService:Create(card, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(100, 140) }):Play()
-			if r.rarity == "legendary" or r.rarity == "mythic" then
-				best = r.rarity
-				SummonController.shabriyehFlash(t("match.shabriyeh"))
-				task.wait(0.6)
-			else
-				AudioController.sting("summon_reveal")
-				task.wait(0.18)
-			end
+	revealAgain.Text = LocaleController.t("summon.again")
+	revealAgain.Visible = false
+	local best = "rare"
+	for _, r in results do
+		if SummonSequence.rank(r.rarity) > SummonSequence.rank(best) then
+			best = r.rarity
 		end
-		if best ~= "" then
-			AudioController.sting("summon_legendary")
-		end
-	end)
+	end
+	if SettingsController.get("skipSummon") == true or not Fx.any() then
+		showCards(results)
+		return
+	end
+	revealGrid.Visible = false
+	SummonSequence.play(reveal, best, function()
+		revealGrid.Visible = true
+		showCards(results)
+	end, AudioController.sting)
 end
 
 local function doSummon(n: number)
@@ -229,8 +315,8 @@ render = function()
 	end
 	for i, unitId in { banner.featuredLegendary, banner.featuredMythic } do
 		local def = (Units :: any)[unitId]
-		local card = UnitCard.create(unitId, { LayoutOrder = i, Size = UDim2.fromOffset(104, 146) }, { name = t(def.nameKey), sub = t("summon.featured"), spin = i == 2 })
-		card.Parent = featured
+		local fcard = UnitCard.create(unitId, { LayoutOrder = i, Size = UDim2.fromOffset(104, 146) }, { name = t(def.nameKey), sub = t("summon.featured"), spin = i == 2 })
+		fcard.Parent = featured
 	end
 	local vip: boolean = snapshot.perks ~= nil and (snapshot.perks :: any).vip == true
 	local c1 = SummonLogic.cost(1, TD.SUMMON_COST, TD.SUMMON_TEN_COST, TD.VIP_SUMMON_DISCOUNT, vip)

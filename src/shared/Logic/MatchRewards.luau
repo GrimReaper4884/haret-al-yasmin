@@ -40,6 +40,11 @@ function MatchRewards.compute(modeId: string, mode: any, difficulty: string, out
 				xp *= 2
 			end
 		end
+	elseif mode.kind == "event" and mode.rewards then
+		local share = if outcome.won then 1 else td.LOSS_SHARE * (outcome.wavesCleared / math.max(1, outcome.totalWaves or 1))
+		lira = mode.rewards.lira * share
+		qirsh = mode.rewards.qirsh * share
+		xp = mode.rewards.xp * share
 	else
 		lira = infiniteLira(outcome.wavesCleared, td) * diff.reward
 		qirsh = td.INFINITE_QIRSH_PER_WAVE * outcome.wavesCleared * diff.reward

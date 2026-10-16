@@ -35,6 +35,10 @@ function CodesLogic.redeem(profile: any, code: any, codes: { [string]: any }, ct
 	if not def then
 		return false, "unknown_code", nil
 	end
+	if def.onlyUserIds and not table.find(def.onlyUserIds, ctx.userId) then
+		-- Same answer as a typo, so a leaked code doesn't reveal that it exists.
+		return false, "unknown_code", nil
+	end
 	if def.expiresAt and ctx.now > def.expiresAt then
 		return false, "expired", nil
 	end

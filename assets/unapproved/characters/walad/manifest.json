@@ -1,0 +1,17 @@
+{
+  "id": "walad",
+  "tasks": {
+    "concept": "01a14688-6fe7-77ae-92c1-01c1ee97fe10",
+    "mesh": "01a14689-8694-7061-8a35-d1b7f8e1de66",
+    "rig": "01a1468a-b41c-723d-ae77-079b9f5389c4",
+    "anim_idle": "01a1468a-fff1-7131-bc65-6c9f73d949b3",
+    "anim_attack": "01a1468b-227f-7412-ade3-0755f9d68294"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3
+  }
+}

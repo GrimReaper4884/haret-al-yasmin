@@ -53,11 +53,24 @@ local function isAmount(v: any): boolean
 	return type(v) == "number" and v == v and v > 0 and v ~= math.huge and math.floor(v) == v
 end
 
+-- What a "fallback" grant pays (an already-owned item, pass or bundle): currency and amount.
+-- Items always fall back to qirsh; passes and bundles prefer lira. The toast uses the same answer.
+function MonetizationLogic.fallbackPayout(product: DevProduct): (string, number)
+	if product.kind ~= "item" and product.fallbackLira then
+		return "lira", product.fallbackLira
+	end
+	return "qirsh", product.fallbackQirsh or 0
+end
+
 local function fallback(profile: Profile, product: DevProduct, ctx: GrantContext)
-	if product.fallbackLira then
-		Grants.apply(profile, { lira = product.fallbackLira }, ctx)
-	elseif product.fallbackQirsh then
-		Wallet.add(profile, product.fallbackQirsh, ctx.maxQirsh)
+	local currency, amount = MonetizationLogic.fallbackPayout(product)
+	if amount <= 0 then
+		return
+	end
+	if currency == "lira" then
+		Grants.apply(profile, { lira = amount }, ctx)
+	else
+		Wallet.add(profile, amount, ctx.maxQirsh)
 	end
 end
 
@@ -93,7 +106,7 @@ function MonetizationLogic.grantReceipt(profile: Profile, receiptId: string, pro
 		end
 		if Inventory.has(profile, itemId, 1) then
 			-- Bought twice in a race: never take Robux for nothing.
-			Wallet.add(profile, product.fallbackQirsh or 0, ctx.maxQirsh)
+			fallback(profile, product, ctx)
 			result = "fallback"
 		else
 			local ok, err = Inventory.add(profile, itemId, 1, ctx.items)
@@ -147,8 +160,24 @@ function MonetizationLogic.grantPassItems(profile: Profile, passItems: { string 
 	return #granted > 0, granted
 end
 
+-- Whether a product turns Robux into something spent on paid random items: lira (summons) or
+-- trait stones (trait rerolls), directly, in a bundle, on the premium Diary track, through
+-- skipped Diary levels (the free track pays lira), or as a fallback payout. None of these is sold
+-- where PolicyService.ArePaidRandomItemsRestricted (docs/research/ROBLOX_IP_AND_POLICY.md §3).
+function MonetizationLogic.fundsRandomItems(product: DevProduct): boolean
+	local kind = product.kind
+	if kind == "lira" or kind == "stones" or kind == "passPremium" or kind == "passSkip" then
+		return true
+	end
+	local bundle = product.bundle
+	if kind == "bundle" and type(bundle) == "table" and ((bundle.lira or 0) > 0 or (bundle.traitStones or 0) > 0) then
+		return true
+	end
+	return (MonetizationLogic.fallbackPayout(product)) == "lira"
+end
+
 -- Whether the server may open a Robux prompt for this product for this player right now.
--- restricted = the player's region restricts paid random items (no lira sales).
+-- restricted = the player's region restricts paid random items (see fundsRandomItems).
 function MonetizationLogic.canPrompt(profile: Profile, product: DevProduct?, productId: number?, restricted: boolean?): (boolean, string?)
 	if not product then
 		return false, "unknown_product"
@@ -159,7 +188,7 @@ function MonetizationLogic.canPrompt(profile: Profile, product: DevProduct?, pro
 	if product.kind == "item" and product.item and Inventory.has(profile, product.item, 1) then
 		return false, "already_owned"
 	end
-	if product.kind == "lira" and restricted then
+	if restricted and MonetizationLogic.fundsRandomItems(product) then
 		return false, "restricted"
 	end
 	if product.kind == "passPremium" and (profile.pass.premium or profile.pass.season ~= product.season) then

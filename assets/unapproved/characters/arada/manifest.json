@@ -1,0 +1,17 @@
+{
+  "id": "arada",
+  "tasks": {
+    "concept": "01a14688-701e-73ae-967c-c22c870002dd",
+    "mesh": "01a14689-86f4-76eb-9701-079bb1cdaa8d",
+    "rig": "01a1468a-7bb2-729e-9ebb-7a7786c36b86",
+    "anim_idle": "01a1468a-c8e7-77e9-a731-8a1e8c567f70",
+    "anim_attack": "01a1468a-eb82-75fd-b075-34ddd7b399e7"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3
+  }
+}

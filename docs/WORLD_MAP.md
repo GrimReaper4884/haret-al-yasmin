@@ -79,8 +79,8 @@ budgeted at 3,000 parts or fewer.
 |-------|----------|
 | Gate | Rebuilt leaves (`Props2.gate`, open, swinging inward), wicket, knockers, bar hooks, the bar leaning by the east jamb; nameplates "حارة الياسمين" on both faces; the watchman Abu Fares (NPC `natour`) with stool and lantern at (5.5, 84) |
 | Square | Four mode portals: pads at (-19, 2) Ep1, (-19, -8) Ep2, (19, 2) Ep3, (19, -8) Endless, each with a banded arch, lantern and Arabic board; billboards are client-side |
-| Square west (x -40..-24, z -26..0) | The coffee house (replaces SquareSW): open ground floor behind two columns, dikkeh benches, three low tables with tea and backgammon, samovar, cat; NPC `qahwaji` Abu Hamed at (-27, -13) |
-| Lane east (x 8..24, z 24..48) | The barber shop (replaces EastB): chair, mirror, bottle shelves, basin, bench, latticed bay above; NPC `barber` Abu Nidal at (14.5, 36) |
+| Square west (x -40..-24, z -26..0) | The coffee house (replaces SquareSW): open ground floor behind two columns, dikkeh benches, three low tables with tea and backgammon, samovar, cat; NPC `qahwaji` Abu Hatem at (-27, -13) |
+| Lane east (x 8..24, z 24..48) | The barber shop (replaces EastB): chair, mirror, bottle shelves, basin, bench, latticed bay above; NPC `barber` Abu Issam at (14.5, 36) |
 | Lane west | Notice board at (-8, 5, 74) with the launch codes |
 | Shops | Painted signs over the bakery, tailor and spice shop |
 | Crowd | 8 ambient walkers (`CrowdService`) between gate, shops and square |

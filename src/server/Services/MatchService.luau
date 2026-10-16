@@ -26,6 +26,9 @@ local UnitLogic = require(Shared.Logic.UnitLogic)
 local MatchRewards = require(Shared.Logic.MatchRewards)
 local Grants = require(Shared.Logic.Grants)
 local Validate = require(Shared.Logic.Validate)
+local Settings = require(Shared.Logic.Settings)
+local EventLogic = require(Shared.Logic.EventLogic)
+local Events = require(Shared.Config.Events)
 local Signal = require(Shared.Util.Signal)
 local DataService = require(script.Parent.DataService)
 local PlayerStateService = require(script.Parent.PlayerStateService)
@@ -161,7 +164,14 @@ local function rewardPlayer(match: Match, player: Player, outcome: any): any
 	local key = match.players[player]
 	local ps = match.state.players[key]
 	local reward = MatchRewards.compute(match.modeId, match.mode, match.difficulty, outcome, profile, vip, TD, math.random)
+	-- Event modes also pay the event's currency while the event runs.
+	local eventId = if match.mode.kind == "event" then EventLogic.forMode(Events, match.modeId, os.time()) else nil
+	local eventDef = if eventId then Events[eventId] else nil
+	local eventGain = 0
 	DataService.mutate(player, function(p)
+		if eventId and eventDef then
+			eventGain = EventLogic.addCurrency(p, eventId, eventDef, EventLogic.matchCurrency(eventDef, outcome.won, outcome.wavesCleared))
+		end
 		MatchRewards.record(p, match.modeId, match.mode, match.difficulty, outcome, if ps then ps.kills else 0, TD)
 		Grants.apply(p, { lira = reward.lira, qirsh = reward.qirsh, xp = reward.xp, traitStones = reward.traitStones }, {
 			maxQirsh = Economy.MAX_QIRSH,
@@ -177,6 +187,10 @@ local function rewardPlayer(match: Match, player: Player, outcome: any): any
 	end)
 	Analytics.custom(player, (if outcome.won then "MatchWon_" else "MatchLost_") .. match.modeId .. "_" .. match.difficulty, outcome.wavesCleared)
 	PlayerStateService.notify(player, "notify.match_rewards", { lira = reward.lira, qirsh = reward.qirsh, xp = reward.xp })
+	if eventGain > 0 and eventDef then
+		(reward :: any).eventCurrency = eventGain;
+		(reward :: any).eventCurrencyKey = eventDef.currencyKey
+	end
 	return reward
 end
 
@@ -270,20 +284,24 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 	for _, p in party do
 		table.insert(keys, keyOf(p))
 	end
-	local episode = if mode.kind == "story" then Waves.episodes[mode.episode] else nil
+	local episode = if mode.kind == "story" then Waves.episodes[mode.episode] elseif mode.kind == "event" then (Waves :: any).events[mode.event] else nil
 	local total = if episode then episode.waves else nil
 	local arena = Arenas[mode.arena]
-	local state = TdSim.new(arena.path, keys, TD.START_CASH, diff.gate, total, TD.PREP_SECONDS, {
+	-- Bigger parties face tougher enemies (and may split the cash), so 4 players aren't 4× stronger.
+	local scale = WaveLogic.partyScale(TD, #keys)
+	local state = TdSim.new(arena.path, keys, math.floor(TD.START_CASH * scale.cash + 0.5), diff.gate, total, TD.PREP_SECONDS, {
 		between = TD.BETWEEN_WAVES,
-		waveBonusBase = TD.WAVE_BONUS_BASE,
-		waveBonusPerWave = TD.WAVE_BONUS_PER_WAVE,
+		waveBonusBase = TD.WAVE_BONUS_BASE * scale.cash,
+		waveBonusPerWave = TD.WAVE_BONUS_PER_WAVE * scale.cash,
 		rewardMul = diff.reward,
 		enemies = Enemies :: any,
+		stunChainMax = TD.STUN_CHAIN_MAX,
+		stunImmunity = TD.STUN_IMMUNITY,
 	}, function(wave: number)
 		if episode then
-			return WaveLogic.story(episode, wave, diff)
+			return WaveLogic.story(episode, wave, diff, scale)
 		end
-		return WaveLogic.infinite(Waves.infinite, wave, diff)
+		return WaveLogic.infinite(Waves.infinite, wave, diff, scale)
 	end)
 
 	local match: Match = {
@@ -309,6 +327,11 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 	matches[match.id] = match
 	local names = {}
 	for k, p in party do
+		local profile = DataService.getProfile(p)
+		local ps = state.players[keyOf(p)]
+		if ps and profile then
+			ps.autoAbility = Settings.get(profile.settings, "autoUlt")
+		end
 		match.players[p] = keyOf(p)
 		match.byKey[keyOf(p)] = p
 		table.insert(match.order, p)
@@ -549,6 +572,31 @@ function MatchService.start()
 		if match and not match.ended then
 			if TdTowers.setTargeting(match.state, match.players[player], towerId, mode) then
 				queueEvent(match, { type = "towerTargeting", id = towerId, mode = mode })
+			end
+		end
+	end)
+
+	-- The owner taps a defender's ultimate (validated by TdTowers.useAbility: owner, ability,
+	-- cooldown, match still running).
+	RemoteGuard.event(Net.Events.UseAbility, RemoteGuard.DEFAULT, function(player: Player, towerId: any)
+		local match = byPlayer[player]
+		if not match or match.ended or not Validate.isPositiveInteger(towerId) then
+			return
+		end
+		local ok, err = TdTowers.useAbility(match.state, match.players[player], towerId)
+		if not ok and err == "not_ready" then
+			PlayerStateService.notify(player, "match.err.ult_not_ready")
+		end
+	end)
+
+	-- Auto ultimate follows the player's setting, live (the HUD toggle writes the setting).
+	DataService.ProfileChanged:Connect(function(player: Player)
+		local match = byPlayer[player]
+		local profile = DataService.getProfile(player)
+		if match and profile then
+			local ps = match.state.players[match.players[player]]
+			if ps then
+				ps.autoAbility = Settings.get(profile.settings, "autoUlt")
 			end
 		end
 	end)

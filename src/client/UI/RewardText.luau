@@ -28,5 +28,8 @@ return function(t: (string, { [string]: any }?) -> string, reward: any): string
 	if reward.unit and (Units :: any)[reward.unit] then
 		table.insert(parts, t("pass.reward.unit", { unit = t((Units :: any)[reward.unit].nameKey) }))
 	end
+	if type(reward.units) == "table" then
+		table.insert(parts, t("reward.units", { n = #reward.units }))
+	end
 	return table.concat(parts, " · ")
 end

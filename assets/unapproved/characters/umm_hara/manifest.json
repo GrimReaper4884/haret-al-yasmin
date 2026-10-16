@@ -1,0 +1,17 @@
+{
+  "id": "umm_hara",
+  "tasks": {
+    "concept": "01a1420d-b23b-713b-a588-5c23fab08ff7",
+    "mesh": "01a14212-38d8-7756-b16a-3d4475e5ead5",
+    "rig": "01a14213-e4e0-761a-98ca-767c5d158edd",
+    "anim_idle": "01a14214-2e69-7392-8ad9-75514a081cbc",
+    "anim_attack": "01a14214-4fa0-71b3-96ed-20a43ea53f5c"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3
+  }
+}

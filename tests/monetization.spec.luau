@@ -138,6 +138,45 @@ return function(t)
 			t.eq(ok, false)
 			t.eq(err, "already_owned")
 		end)
+		t.it("restricted regions can't buy anything that funds paid random items", function()
+			local p = profile()
+			local d = Products.devProducts
+			for _, key in { "lira_100", "lira_4000", "stones_3", "stones_10", "starter_pack", "pass_premium_s1", "pass_skip_10" } do
+				local ok, err = MonetizationLogic.canPrompt(p, d[key], 5, true)
+				t.eq(ok, false, key .. " restricted")
+				t.eq(err, "restricted", key)
+				t.truthy(MonetizationLogic.canPrompt(p, d[key], 5, false), key .. " allowed elsewhere")
+			end
+			for _, key in { "qirsh_pouch", "qirsh_chest", "item_tarboosh_gold", "item_qumbaz_wedding" } do
+				t.truthy(MonetizationLogic.canPrompt(p, d[key], 5, true), key .. " is not random-item currency")
+			end
+			-- Every product that can pay lira or trait stones is gated (catalogue-wide).
+			for key, prod in d do
+				local paysRandom = prod.kind == "lira" or prod.kind == "stones" or prod.fallbackLira ~= nil
+					or (prod.bundle ~= nil and ((prod.bundle.lira or 0) > 0 or (prod.bundle.traitStones or 0) > 0))
+				if paysRandom then
+					t.truthy(MonetizationLogic.fundsRandomItems(prod), key .. " is gated")
+				end
+			end
+		end)
+		t.it("fallback payout matches what grantReceipt pays (and the toast)", function()
+			local d = Products.devProducts
+			local cur, n = MonetizationLogic.fallbackPayout(d.item_tarboosh_gold)
+			t.eq(cur, "qirsh")
+			t.eq(n, 300)
+			cur, n = MonetizationLogic.fallbackPayout(d.pass_premium_s1)
+			t.eq(cur, "lira")
+			t.eq(n, 800)
+			cur, n = MonetizationLogic.fallbackPayout(d.starter_pack)
+			t.eq(cur, "lira")
+			t.eq(n, 300)
+			local p = profile()
+			p.inventory.qumbaz_wedding = 1
+			local _, _, r = MonetizationLogic.grantReceipt(p, "Q1", d.item_qumbaz_wedding, ctx(1))
+			t.eq(r, "fallback")
+			t.eq(p.qirsh, 500)
+			t.eq(p.lira, 0, "an item fallback never pays lira")
+		end)
 		t.it("pass items are granted once", function()
 			local p = profile()
 			local changed, granted = MonetizationLogic.grantPassItems(p, { "tarboosh_gold", "shawl_embroidered" }, Items)

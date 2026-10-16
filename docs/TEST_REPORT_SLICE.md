@@ -140,7 +140,269 @@ running game viewport (keyboard does), so the run used the Studio-only harness i
 ### Not tested / open
 
 - Real Robux prompts (no product IDs); PolicyService on a real client; multi-player parties (one client);
-  Hard/Nightmare unlock flow end-to-end; the defeat screen itself (gate never fell against a road-side
-  setup within the time box); touch placement on a phone (needs a device run); audio (all ids 0).
-- Balance: the road-side setup of six Rare/Epic defenders held Episode 1 Normal waves 1–5 without damage;
-  later waves and bosses untested in play.
+  Hard/Nightmare unlock flow end-to-end; touch placement on a phone (needs a device run); audio (all ids 0).
+  The defeat screen and boss waves are covered in the next section.
+- Balance: superseded by the auto-battler pass below.
+
+## Balance pass: auto-battler harness (2026-10-16)
+
+*Harness: `tests/autobattle.luau` (a scripted player on the real `TdSim`/`TdTowers`/`WaveLogic` at 20 Hz) and
+`tests/balance.luau` (report). Tuned numbers and the design targets: `TOWER_DEFENSE.md` §5. Single player, no
+selling, greedy placement; loadout codes are defined there.*
+
+### Static checks
+
+| Check | Result |
+|-------|--------|
+| `lune run tests/run` | **108 passed, 0 failed** (+5: difficulty growth/boss/endless-wall unit test, and four "Balance (auto-battler)" tests asserting the targets below) |
+| `lune run tests/balance` | 96 runs (4 modes × 3 difficulties × 8 loadouts) in ≈ 8 s |
+| `selene src` | 0 errors, 1 warning (unused `RunService` in `DataService.luau`, not part of this pass) |
+| `luau-lsp analyze` (strict) | 0 type errors |
+
+### Outcome matrix
+
+| Mode | Diff. | re6 | re4up | re6up | re10up | leg6 | leg10up | myth12up | whale |
+|------|-------|------|------|------|------|------|------|------|------|
+| ep1 | normal | lost w14 | WIN 100/100 | WIN 100/100 | WIN 100/100 | lost w19 | WIN 100/100 | WIN 100/100 | WIN 100/100 |
+| ep1 | hard | lost w10 | lost w19 | lost w14 | WIN 13/60 | lost w11 | WIN 57/60 | WIN 54/60 | WIN 60/60 |
+| ep1 | nightmare | lost w9 | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | WIN 32/35 | WIN 35/35 |
+| ep2 | normal | lost w11 | lost w20 | WIN 68/100 | WIN 84/100 | lost w15 | WIN 90/100 | WIN 80/100 | WIN 96/100 |
+| ep2 | hard | lost w9 | lost w10 | lost w9 | lost w10 | lost w10 | WIN 40/60 | WIN 33/60 | WIN 50/60 |
+| ep2 | nightmare | lost w7 | lost w7 | lost w7 | lost w8 | lost w8 | lost w10 | WIN 3/35 | WIN 22/35 |
+| ep3 | normal | lost w11 | lost w15 | lost w17 | lost w20 | lost w14 | WIN 94/100 | WIN 83/100 | WIN 96/100 |
+| ep3 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w20 | WIN 26/60 | WIN 56/60 |
+| ep3 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w10 | lost w15 | WIN 29/35 |
+| infinite | normal | died w12 | died w16 | died w14 | died w16 | died w13 | died w60 | died w79 | died w93 |
+| infinite | hard | died w10 | died w10 | died w10 | died w12 | died w10 | died w19 | died w30 | died w82 |
+| infinite | nightmare | died w9 | died w10 | died w10 | died w10 | died w10 | died w50 | died w60 | died w60 |
+
+Before the pass (old config, same harness): ep1 Normal wave 1 was all stealth thieves, so the starter Lane Boy
+could not hit anything; Hard and Nightmare were lost by waves 5–10 by every loadout (500 start cash against
+×1.6 / ×2.6 HP from wave 1); ep2/ep3 Normal were lost by waves 8–12 even by Mythic teams; and a Mythic team
+lasted 100+ waves in Endless.
+
+### Wave by wave (one representative run per mode)
+
+Columns: enemies spawned, boss (`!N%` = it reached the gate with N % HP), attackers that reached the gate,
+gate HP lost, gate HP after the wave, unspent cash, towers, sum of tower levels, and who leaked. Every run can
+be reproduced with `lune run tests/balance <mode> <difficulty> <loadout>`; the Endless table keeps waves 1–3,
+every fifth wave, the boss waves and the last wave.
+
+**ep1 · normal · re6 (6 Rare/Epic, no upgrades) → lost w14**
+
+```text
+  wave  enemies  boss               leaked  gateLost  gateHp   cash  towers  levels  result leaked by
+     1        3  -                       0         0     100    192       3       3  ok
+     2        4  -                       0         0     100    398       3       3  ok
+     3        5  -                       0         0     100    188       4       4  ok
+     4        5  -                       0         0     100    448       4       4  ok
+     5        9  -                       0         0     100    258       5       5  ok
+     6       11  -                       0         0     100    634       5       5  ok
+     7       15  -                       0         0     100    600       6       6  ok
+     8       18  -                       2         2      98   1098       6       6  ok     gendarme×1 thug×1
+     9       19  -                       3         3      95   1606       6       6  ok     gendarme×1 thug×2
+    10       23  sergeant!48%            7        46      49   2134       6       6  ok     gendarme×2 sergeant×1 thief×1 thug×3
+    11       23  -                       6         6      43   2696       6       6  ok     gendarme×2 thief×1 thug×3
+    12       27  -                      13        14      29   3238       6       6  ok     bandit×1 gendarme×5 thief×3 thug×4
+    13       31  -                      20        22       7   3752       6       6  ok     bandit×2 gendarme×7 thief×5 thug×6
+    14       32  -                       7         7       0   3900       6       6  LOST   thief×7
+```
+
+**ep1 · normal · re6up (6 Rare/Epic + upgrades) → WIN 100/100**
+
+```text
+  wave  enemies  boss               leaked  gateLost  gateHp   cash  towers  levels  result leaked by
+     1        3  -                       0         0     100    192       3       3  ok
+     2        4  -                       0         0     100    398       3       3  ok
+     3        5  -                       0         0     100    188       4       4  ok
+     4        5  -                       0         0     100    448       4       4  ok
+     5        9  -                       0         0     100    258       5       5  ok
+     6       11  -                       0         0     100    634       5       5  ok
+     7       15  -                       0         0     100    300       6       7  ok
+     8       18  -                       0         0     100    334       6       8  ok
+     9       19  -                       0         0     100    900       6       8  ok
+    10       23  sergeant                0         0     100    934       6       9  ok
+    11       23  -                       0         0     100    402       6      10  ok
+    12       27  -                       0         0     100   1168       6      10  ok
+    13       31  -                       0         0     100   2032       6      10  ok
+    14       32  -                       0         0     100    618       6      13  ok
+    15       36  -                       0         0     100   1112       6      14  ok
+    16       38  -                       0         0     100    462       6      17  ok
+    17       42  -                       0         0     100   1250       6      18  ok
+    18       45  -                       0         0     100   1576       6      19  ok
+    19       47  -                       0         0     100   1494       6      20  ok
+    20       51  chief_thief             0         0     100   1150       6      21  ok
+```
+
+**ep1 · hard · re10up (10 Rare/Epic + upgrades) → WIN 13/60**
+
+```text
+  wave  enemies  boss               leaked  gateLost  gateHp   cash  towers  levels  result leaked by
+     1        3  -                       0         0      60    216       3       3  ok
+     2        4  -                       1         1      59    432       3       3  ok     gendarme×1
+     3        5  -                       0         0      59    262       4       4  ok
+     4        5  -                       0         0      59    282       5       5  ok
+     5        9  -                       0         0      59    681       5       5  ok
+     6       11  -                       0         0      59    621       6       6  ok
+     7       15  -                       3         3      56    633       7       7  ok     gendarme×2 thug×1
+     8       18  -                       2         2      54    353      10      10  ok     gendarme×1 thug×1
+     9       19  -                       0         0      54    449      10      14  ok
+    10       23  sergeant!11%            2        41      13    736      10      15  ok     sergeant×1 thug×1
+    11       23  -                       0         0      13    570      10      20  ok
+    12       27  -                       0         0      13    778      10      21  ok
+    13       31  -                       0         0      13    730      10      22  ok
+    14       32  -                       0         0      13   1921      10      22  ok
+    15       36  -                       0         0      13    956      10      24  ok
+    16       38  -                       0         0      13   1552      10      25  ok
+    17       42  -                       0         0      13   1892      10      26  ok
+    18       45  -                       0         0      13    908      10      29  ok
+    19       47  -                       0         0      13   1031      10      32  ok
+    20       51  chief_thief             0         0      13   1762      10      35  ok
+```
+
+**ep1 · nightmare · myth12up (12 Mythic/Legendary + upgrades) → WIN 32/35**
+
+```text
+  wave  enemies  boss               leaked  gateLost  gateHp   cash  towers  levels  result leaked by
+     1        3  -                       0         0      35    272       2       2  ok
+     2        4  -                       0         0      35    278       3       3  ok
+     3        5  -                       0         0      35    618       3       3  ok
+     4        5  -                       0         0      35    978       3       3  ok
+     5        9  -                       0         0      35    679       4       4  ok
+     6       11  -                       1         1      34   1234       4       4  ok     thief×1
+     7       15  -                       2         2      32    425       5       5  ok     thief×1 thug×1
+     8       18  -                       0         0      32   1334       5       5  ok
+     9       19  -                       0         0      32    592       7       7  ok
+    10       23  sergeant                0         0      32   1316       8       8  ok
+    11       23  -                       0         0      32    814      10      10  ok
+    12       27  -                       0         0      32    490      12      13  ok
+    13       31  -                       0         0      32    654      12      14  ok
+    14       32  -                       0         0      32   2267      12      14  ok
+    15       36  -                       0         0      32   1638      12      16  ok
+    16       38  -                       0         0      32    542      12      17  ok
+    17       42  -                       0         0      32   2054      12      18  ok
+    18       45  -                       0         0      32   4302      12      18  ok
+    19       47  -                       0         0      32   1221      12      20  ok
+    20       51  chief_thief             0         0      32   2994      12      21  ok
+```
+
+**ep2 · normal · re10up (10 Rare/Epic + upgrades) → WIN 84/100**
+
+```text
+  wave  enemies  boss               leaked  gateLost  gateHp   cash  towers  levels  result leaked by
+     1        4  -                       0         0     100    206       3       3  ok
+     2        5  -                       0         0     100    426       3       3  ok
+     3        8  -                       1         1      99    260       4       4  ok     gendarme×1
+     4        9  -                       1         1      98    298       5       5  ok     thug×1
+     5       13  -                       4         4      94    636       5       5  ok     gendarme×2 thug×2
+     6       16  -                       4         4      90    522       6       6  ok     gendarme×2 thug×2
+     7       18  -                       5         5      85    462       7       7  ok     gendarme×2 thug×3
+     8       21  -                       0         0      85    334       9       9  ok
+     9       22  -                       0         0      85    506      10      11  ok
+    10       27  sergeant                0         0      85    956      10      12  ok
+    11       29  -                       0         0      85    974      10      13  ok
+    12       31  -                       0         0      85    656      10      14  ok
+    13       34  -                       1         1      84   1584      10      14  ok     thug×1
+    14       37  -                       0         0      84    561      10      24  ok
+    15       39  -                       0         0      84   1664      10      24  ok
+    16       44  -                       0         0      84   1100      10      25  ok
+    17       46  -                       0         0      84   1592      10      26  ok
+    18       52  -                       0         0      84   1857      10      27  ok
+    19       52  -                       0         0      84    722      10      30  ok
+    20       58  chief_thief             0         0      84   1065      10      33  ok
+    21       61  -                       0         0      84   1191      10      36  ok
+    22       64  -                       0         0      84    981      10      40  ok
+    23       68  -                       0         0      84    684      10      42  ok
+    24       70  -                       0         0      84    689      10      43  ok
+    25       73  -                       0         0      84   1230      10      45  ok
+    26       78  -                       0         0      84   1274      10      48  ok
+    27       81  -                       0         0      84   1034      10      50  ok
+    28       86  -                       0         0      84   1787      10      54  ok
+    29       86  -                       0         0      84   4260      10      54  ok
+    30       91  rival_zaim              0         0      84   7341      10      54  ok
+```
+
+**ep3 · normal · leg10up (10 with Legendaries + upgrades) → WIN 94/100**
+
+```text
+  wave  enemies  boss               leaked  gateLost  gateHp   cash  towers  levels  result leaked by
+     1        4  -                       1         1      99    372       2       2  ok     gendarme×1
+     2        5  -                       0         0      99    312       3       3  ok
+     3        6  -                       0         0      99    566       3       3  ok
+     4        9  -                       5         5      94    812       3       3  ok     gendarme×3 thug×2
+     5       11  -                       0         0      94    400       4       4  ok
+     6       12  -                       0         0      94    372       5       5  ok
+     7       13  -                       0         0      94    836       5       5  ok
+     8       16  -                       0         0      94    546       6       6  ok
+     9       18  -                       0         0      94    662       7       7  ok
+    10       21  sergeant                0         0      94    752       8       8  ok
+    11       23  -                       0         0      94    678       9       9  ok
+    12       27  -                       0         0      94    580      10      11  ok
+    13       30  -                       0         0      94   1086      10      12  ok
+    14       33  -                       0         0      94   1378      10      13  ok
+    15       37  -                       0         0      94   1351      10      14  ok
+    16       39  -                       0         0      94    738      10      15  ok
+    17       42  -                       0         0      94   1442      10      17  ok
+    18       46  -                       0         0      94   2987      10      17  ok
+    19       48  -                       0         0      94    588      10      20  ok
+    20       54  chief_thief             0         0      94   1753      10      21  ok
+    21       55  -                       0         0      94    604      10      24  ok
+    22       64  -                       0         0      94    764      10      25  ok
+    23       67  -                       0         0      94   2925      10      25  ok
+    24       71  -                       0         0      94    884      10      27  ok
+    25       75  -                       0         0      94   1224      10      29  ok
+    26       79  -                       0         0      94   1595      10      31  ok
+    27       83  -                       0         0      94   2245      10      32  ok
+    28       88  -                       0         0      94   2148      10      33  ok
+    29       90  -                       0         0      94   2764      10      34  ok
+    30       91  rival_zaim              0         0      94   2474      10      37  ok
+    31       90  -                       0         0      94   1953      10      39  ok
+    32       90  -                       0         0      94   1037      10      42  ok
+    33       90  -                       0         0      94   1813      10      44  ok
+    34       90  -                       0         0      94    827      10      50  ok
+    35       90  -                       0         0      94   1111      10      57  ok
+    36       90  -                       0         0      94   3927      10      57  ok
+    37       90  -                       0         0      94   6753      10      57  ok
+    38       90  -                       0         0      94   9597      10      57  ok
+    39       90  -                       0         0      94  12438      10      57  ok
+    40       91  colonel                 0         0      94  16499      10      57  ok
+```
+
+**infinite · normal · myth12up (12 Mythic/Legendary + upgrades) → died w79**
+
+```text
+  wave  enemies  boss               leaked  gateLost  gateHp   cash  towers  levels  result leaked by
+     1        4  -                       0         0     100    226       2       2  ok
+     2        5  -                       0         0     100    166       3       3  ok
+     3        6  -                       0         0     100    420       3       3  ok
+     5       11  -                       4         4      96    210       4       4  ok     gendarme×4
+    10       25  sergeant                0         0      89   1504       5       5  ok
+    15       43  -                       0         0      89    502      12      13  ok
+    20       64  chief_thief             0         0      89   1166      12      18  ok
+    25       87  -                       0         0      85   1249      12      33  ok
+    30       91  rival_zaim              0         0      85   1501      12      40  ok
+    35       90  -                       0         0      85   1342      12      49  ok
+    40       91  colonel                 0         0      85   3229      12      57  ok
+    45       90  -                       0         0      85   6223      12      68  ok
+    50       91  sergeant                0         0      85  21214      12      68  ok
+    55       90  -                       0         0      85  36528      12      68  ok
+    60       91  chief_thief             0         0      85  52616      12      68  ok
+    65       90  -                       0         0      85  68907      12      68  ok
+    70       91  rival_zaim              3         6      75  85977      12      68  ok     spy×3
+    75       90  -                       6        10      32  102601      12      68  ok     spy×4 thief×2
+    79       90  -                       1         1       0  114087      12      68  LOST   thief×1
+```
+
+### Studio play (Episode 1 Normal, keyboard harness)
+
+| # | Check | Result |
+|---|-------|--------|
+| 1 | Tuned config live | ✅ Restarted Play with Rojo connected. Start cash 600 (placing the Blacksmith for 520 left $80); wave 1 is three gendarmes, no stealth opener |
+| 2 | Waves 1–9 | ✅ Run 1: four Rare/Epic defenders at the road-side spots (B: Blacksmith, 'Akeed, Baker, Barber; the Mukhtar was refused for cash), +5000 debug cash, **no upgrades**, 2× speed, skip votes (K): gate 100 through wave 7, 94 after wave 8, 89 during wave 9 (thugs slipping through) |
+| 3 | Boss render | ✅ The wave-10 Sergeant carries the wide **red** boss health bar (regular attackers: small teal bars). Run 2, measured from the command bar during wave 10: the Sergeant's rig is **8.54 studs** tall against 5.89 for gendarmes/thieves and 6.48 for thugs, i.e. ×1.45, its `visual.scale` |
+| 4 | Boss gate damage | ✅ Run 1's un-upgraded team let the Sergeant through: gate 77 → 37 (its new 40 gate damage), the "no upgrades breaks at wave 10" outcome the harness predicts |
+| 5 | Defeat | ✅ Run 1: `G` (gate 1 HP) on wave 11 → gate 0/100, back in the lane after the result timer with the loss share (+10 lira, +15 qirsh). Run 1b, to see the modal: `G` then one leaked wave-1 gendarme → **"The gate has fallen…"** with Waves held 0, Rewards +0 lira · +0 qirsh · +0 XP and *Back to the lane* |
+| 6 | Errors | ✅ No server or client errors in the mirrored log |
+
+Not covered here: Hard/Nightmare and Episodes 2–3 in Studio (harness only), the win screen in Studio,
+multi-player parties (enemy HP does not scale with party size yet), touch placement on a phone.

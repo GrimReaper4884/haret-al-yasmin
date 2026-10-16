@@ -47,14 +47,24 @@ Use built-in Roblox materials only, so there are no texture uploads and no extra
 
 - NPCs use Roblox R15 humanoids built from `HumanoidDescription` with body colors and simple
   primitive-built garments (tarboosh, headscarf, apron, sash). No marketplace clothing for now.
+- Defenders and attackers are stylized jointed figures (big head, chunky hands, readable from the
+  overhead match camera), or imported Meshy characters once approved. See
+  `docs/CHARACTER_PIPELINE.md`; per-id looks live in `src/shared/Config/CharacterLooks.luau`.
 - Clothing reads as early-20th-century Levantine: long robes (*qumbaz*), sashes, waistcoats, headscarves,
   tarboosh. Avoid exaggerated or comic ethnic features: dignity first.
 
 ## 6. UI style
 
-- Rounded panels (`UICorner` 12 px) in `plaster` at 0.06 transparency with a 2 px `woodDark` stroke.
-- Text: `GothamMedium`/`BuilderSans` for Latin; Roblox falls back automatically to a font that supports
-  Arabic.
+- Genre conventions in the lane's palette (research: `docs/research/ROBLOX_TD_UI_PATTERNS.md`).
+  Helpers in `src/client/UI/Theme.luau` and `Juice.luau`.
+- Rounded panels (`UICorner` 12 px) in `plaster` with a 3 px `woodDark` stroke and a faint
+  top-light gradient.
+- Buttons: lighter-top gradient, 2.5 px dark border, white `FredokaOne` text with a dark outline,
+  press squash (0.92) and springy release. Green = confirm/upgrade, red = sell/close, gold = premium.
+- Numbers and titles: `FredokaOne` with a dark outline (`Theme.display`); body text `BuilderSans`.
+  Roblox falls back automatically to a font that supports Arabic.
+- Rarity colours: rare blue `#3A8FD6`, epic purple `#9B4FD1`, legendary gold `#E8B23A`,
+  mythic red `#E0433A`, secret black. Legendary and above get a sweeping shine.
 - Accents in `copper` (currency) and `tile` (quests).
 - Minimum touch target of 48×48 px. Layouts are authored in offsets for a phone in landscape (~844×390),
   and a single `UIScale` on the root ScreenGui adapts them (clamped to 0.8–1.5). Panels use Scale widths

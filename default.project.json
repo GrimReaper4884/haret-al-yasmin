@@ -5,6 +5,12 @@
     "ReplicatedStorage": {
       "Shared": {
         "$path": "src/shared"
+      },
+      "CharacterModels": {
+        "$path": "assets/production/CharacterModels"
+      },
+      "PropModels": {
+        "$path": "assets/production/PropModels"
       }
     },
     "ServerScriptService": {

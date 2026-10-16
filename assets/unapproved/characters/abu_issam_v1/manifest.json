@@ -1,0 +1,32 @@
+{
+  "id": "abu_issam_v1",
+  "tasks": {
+    "concept": "01a141f0-9877-721b-a665-03c92c2004a7",
+    "mesh": "01a141f1-2ad0-72bc-bf39-63e8e016f98b",
+    "rig": "01a141f2-93bd-77f0-97ec-efee267bba3e",
+    "anim_attack": "01a141f2-df83-7260-8d9e-6dad3feefc06",
+    "anim_idle": "01a141f3-2696-72d3-9c90-fb57433a3169"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_attack": 3,
+    "anim_idle": 3
+  },
+  "history": [
+    {
+      "step": "preview",
+      "task": "01a141ee-811a-75af-9348-194a6bef5072",
+      "credits": 5,
+      "note": "smart-topology t2.5: realistic proportions, ignored fez/apron/razor"
+    },
+    {
+      "step": "preview",
+      "task": "01a141ef-6030-7783-a2ca-97465df8170d",
+      "credits": 20,
+      "note": "text-to-3d meshy-7.1 remesh: realistic, moustache+vest only"
+    }
+  ],
+  "note": "Built 2026-10-16 as the Barber; now Abu Issam (unit umm_hara). Prompt kept as characters.json \u2192 hallaq_barber_v1."
+}

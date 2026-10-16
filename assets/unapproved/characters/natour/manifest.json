@@ -1,0 +1,17 @@
+{
+  "id": "natour",
+  "tasks": {
+    "concept": "01a141fa-31cc-75e4-812b-495d28180f93",
+    "mesh": "01a14216-b45c-7283-b26b-8538e4019e8c",
+    "rig": "01a14218-445d-73cf-a3c3-ba82f1a98a81",
+    "anim_idle": "01a14218-8cfd-7403-acbf-536bd19abbc1",
+    "anim_attack": "01a14218-af3b-73ee-b6a5-6fed0b89f417"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3
+  }
+}

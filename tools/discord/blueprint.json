@@ -1,0 +1,571 @@
+{
+  "_comment": "Haret Al-Yasmin community server layout. build_server.py creates whatever is missing and refreshes forum tags/guidelines. Tag names max 20 chars, max 20 tags per forum. 'moderated' tags can only be set by staff (Manage Threads). Explained in docs/community/DISCORD_SERVER.md.",
+  "guild": {
+    "verification_level": 2,
+    "explicit_content_filter": 2,
+    "default_message_notifications": 1,
+    "preferred_locale": "en-US",
+    "icon": "assets/server_icon.png"
+  },
+  "roles": [
+    {
+      "key": "developer",
+      "name": "Developer",
+      "color": "#E0B04B",
+      "hoist": true,
+      "mentionable": false,
+      "permissions": [
+        "ADMINISTRATOR"
+      ]
+    },
+    {
+      "key": "moderator",
+      "name": "Moderator",
+      "color": "#4F9D69",
+      "hoist": true,
+      "mentionable": true,
+      "permissions": [
+        "KICK_MEMBERS",
+        "BAN_MEMBERS",
+        "MODERATE_MEMBERS",
+        "MANAGE_MESSAGES",
+        "MANAGE_THREADS",
+        "MANAGE_NICKNAMES",
+        "VIEW_AUDIT_LOG",
+        "MUTE_MEMBERS",
+        "MOVE_MEMBERS"
+      ]
+    },
+    {
+      "key": "tester",
+      "name": "Tester",
+      "color": "#5B8DEF",
+      "hoist": true,
+      "mentionable": false,
+      "permissions": []
+    },
+    {
+      "key": "bug_hunter",
+      "name": "Bug Hunter",
+      "color": "#C0504D",
+      "hoist": false,
+      "mentionable": false,
+      "permissions": []
+    },
+    {
+      "key": "creator",
+      "name": "Content Creator",
+      "color": "#9B59B6",
+      "hoist": true,
+      "mentionable": false,
+      "permissions": []
+    },
+    {
+      "key": "pings",
+      "name": "Update Pings",
+      "color": "#99AAB5",
+      "hoist": false,
+      "mentionable": true,
+      "permissions": []
+    }
+  ],
+  "categories": [
+    {
+      "key": "start",
+      "name": "📌 START HERE · ابدأ هنا",
+      "readonly": true,
+      "channels": [
+        {
+          "key": "welcome",
+          "name": "welcome",
+          "type": "text",
+          "topic": "Welcome to Jasmine Lane! · أهلاً بكم في حارة الياسمين"
+        },
+        {
+          "key": "rules",
+          "name": "rules",
+          "type": "text",
+          "topic": "Server rules. Read before posting. · قوانين السيرفر"
+        },
+        {
+          "key": "game_info",
+          "name": "game-info",
+          "type": "text",
+          "topic": "What the game is, modes, summon odds, dailies. · معلومات اللعبة"
+        },
+        {
+          "key": "announcements",
+          "name": "announcements",
+          "type": "announcement",
+          "topic": "Updates, events and new codes. · التحديثات والأكواد",
+          "requires_community": true
+        },
+        {
+          "key": "patch_notes",
+          "name": "patch-notes",
+          "type": "announcement",
+          "topic": "What changed in each update. · ملاحظات التحديثات",
+          "requires_community": true
+        },
+        {
+          "key": "codes",
+          "name": "codes",
+          "type": "text",
+          "topic": "Active codes. Redeem them in the game's Codes menu. · الأكواد الفعّالة"
+        },
+        {
+          "key": "known_issues",
+          "name": "known-issues",
+          "type": "text",
+          "topic": "Bugs we already know about and their status. Check here before reporting. · مشاكل معروفة"
+        }
+      ]
+    },
+    {
+      "key": "community",
+      "name": "💬 COMMUNITY · المجتمع",
+      "channels": [
+        {
+          "key": "general",
+          "name": "general",
+          "type": "text",
+          "topic": "Chat about the game in any language."
+        },
+        {
+          "key": "daily",
+          "name": "daily-challenge",
+          "type": "text",
+          "topic": "A new challenge + question every day. Reply in the day's thread. · تحدي وسؤال كل يوم",
+          "thread_replies_only": true
+        },
+        {
+          "key": "arabic",
+          "name": "عربي",
+          "type": "text",
+          "topic": "دردشة باللغة العربية"
+        },
+        {
+          "key": "team_up",
+          "name": "team-up",
+          "type": "text",
+          "topic": "Find a party of up to 4. Post your mode + difficulty. · ابحث عن فريق",
+          "slowmode": 30
+        },
+        {
+          "key": "strategy",
+          "name": "strategy",
+          "type": "text",
+          "topic": "Defenders, placements, wave tips, endless records."
+        },
+        {
+          "key": "media",
+          "name": "screenshots-and-clips",
+          "type": "text",
+          "topic": "Show off your lane, your wins and your funniest losses.",
+          "slowmode": 10
+        },
+        {
+          "key": "off_topic",
+          "name": "off-topic",
+          "type": "text",
+          "topic": "Anything that is not the game (still follow the rules)."
+        }
+      ]
+    },
+    {
+      "key": "feedback",
+      "name": "🐞 FEEDBACK · الملاحظات",
+      "channels": [
+        {
+          "key": "bugs",
+          "name": "bug-reports",
+          "type": "forum",
+          "requires_community": true,
+          "require_tag": true,
+          "default_reaction": "👍",
+          "layout": "list",
+          "sort": "latest_activity",
+          "guidelines_file": "guidelines/bug-reports.md",
+          "tags": [
+            {
+              "name": "Combat & Towers",
+              "emoji": "⚔️"
+            },
+            {
+              "name": "Enemies & Waves",
+              "emoji": "🌊"
+            },
+            {
+              "name": "Summons",
+              "emoji": "🎲"
+            },
+            {
+              "name": "Lobby & Lane",
+              "emoji": "🏘️"
+            },
+            {
+              "name": "UI & Menus",
+              "emoji": "🖥️"
+            },
+            {
+              "name": "Shop & Robux",
+              "emoji": "💎"
+            },
+            {
+              "name": "Progress & Saves",
+              "emoji": "💾"
+            },
+            {
+              "name": "Codes & Rewards",
+              "emoji": "🎁"
+            },
+            {
+              "name": "Mobile",
+              "emoji": "📱"
+            },
+            {
+              "name": "Performance & Lag",
+              "emoji": "🐢"
+            },
+            {
+              "name": "Arabic / Language",
+              "emoji": "🔤"
+            },
+            {
+              "name": "Other",
+              "emoji": "❓"
+            },
+            {
+              "name": "Triaged",
+              "emoji": "👀",
+              "moderated": true
+            },
+            {
+              "name": "Needs Info",
+              "emoji": "❔",
+              "moderated": true
+            },
+            {
+              "name": "Confirmed",
+              "emoji": "✅",
+              "moderated": true
+            },
+            {
+              "name": "Critical",
+              "emoji": "🔥",
+              "moderated": true
+            },
+            {
+              "name": "In Progress",
+              "emoji": "🔧",
+              "moderated": true
+            },
+            {
+              "name": "Fixed",
+              "emoji": "🎉",
+              "moderated": true
+            },
+            {
+              "name": "Duplicate",
+              "emoji": "♻️",
+              "moderated": true
+            },
+            {
+              "name": "Won't Fix",
+              "emoji": "🚫",
+              "moderated": true
+            }
+          ]
+        },
+        {
+          "key": "suggestions",
+          "name": "suggestions",
+          "type": "forum",
+          "requires_community": true,
+          "require_tag": true,
+          "default_reaction": "👍",
+          "layout": "list",
+          "sort": "latest_activity",
+          "guidelines_file": "guidelines/suggestions.md",
+          "tags": [
+            {
+              "name": "Defenders",
+              "emoji": "🛡️"
+            },
+            {
+              "name": "Enemies & Waves",
+              "emoji": "🌊"
+            },
+            {
+              "name": "Maps & Modes",
+              "emoji": "🗺️"
+            },
+            {
+              "name": "Lobby & Lane",
+              "emoji": "🏘️"
+            },
+            {
+              "name": "Summons & Banners",
+              "emoji": "🎲"
+            },
+            {
+              "name": "Economy & Rewards",
+              "emoji": "🪙"
+            },
+            {
+              "name": "Cosmetics",
+              "emoji": "👘"
+            },
+            {
+              "name": "UI & Quality of Life",
+              "emoji": "🖥️"
+            },
+            {
+              "name": "Events",
+              "emoji": "🎊"
+            },
+            {
+              "name": "Party & Social",
+              "emoji": "🤝"
+            },
+            {
+              "name": "Other",
+              "emoji": "❓"
+            },
+            {
+              "name": "Triaged",
+              "emoji": "👀",
+              "moderated": true
+            },
+            {
+              "name": "Under Review",
+              "emoji": "🔍",
+              "moderated": true
+            },
+            {
+              "name": "Planned",
+              "emoji": "📅",
+              "moderated": true
+            },
+            {
+              "name": "In Progress",
+              "emoji": "🔧",
+              "moderated": true
+            },
+            {
+              "name": "Added",
+              "emoji": "🎉",
+              "moderated": true
+            },
+            {
+              "name": "Duplicate",
+              "emoji": "♻️",
+              "moderated": true
+            },
+            {
+              "name": "Declined",
+              "emoji": "🚫",
+              "moderated": true
+            }
+          ]
+        },
+        {
+          "key": "feedback",
+          "name": "game-feedback",
+          "type": "forum",
+          "requires_community": true,
+          "require_tag": true,
+          "default_reaction": "👍",
+          "layout": "list",
+          "sort": "latest_activity",
+          "guidelines_file": "guidelines/game-feedback.md",
+          "tags": [
+            {
+              "name": "Balance",
+              "emoji": "⚖️"
+            },
+            {
+              "name": "Difficulty",
+              "emoji": "🎯"
+            },
+            {
+              "name": "Fun",
+              "emoji": "😄"
+            },
+            {
+              "name": "First Session",
+              "emoji": "🚪"
+            },
+            {
+              "name": "Rewards & Grind",
+              "emoji": "⏳"
+            },
+            {
+              "name": "Prices & Robux",
+              "emoji": "💎"
+            },
+            {
+              "name": "Art & Sound",
+              "emoji": "🎨"
+            },
+            {
+              "name": "Story & Lane",
+              "emoji": "📜"
+            },
+            {
+              "name": "Mobile",
+              "emoji": "📱"
+            },
+            {
+              "name": "Triaged",
+              "emoji": "👀",
+              "moderated": true
+            },
+            {
+              "name": "Acted On",
+              "emoji": "✅",
+              "moderated": true
+            }
+          ]
+        },
+        {
+          "key": "help",
+          "name": "help",
+          "type": "forum",
+          "requires_community": true,
+          "require_tag": true,
+          "layout": "list",
+          "sort": "latest_activity",
+          "guidelines_file": "guidelines/help.md",
+          "tags": [
+            {
+              "name": "Purchases",
+              "emoji": "💎"
+            },
+            {
+              "name": "Missing Items",
+              "emoji": "🎁"
+            },
+            {
+              "name": "Account & Data",
+              "emoji": "💾"
+            },
+            {
+              "name": "How Do I…",
+              "emoji": "❓"
+            },
+            {
+              "name": "Triaged",
+              "emoji": "👀",
+              "moderated": true
+            },
+            {
+              "name": "Solved",
+              "emoji": "✅",
+              "moderated": true
+            },
+            {
+              "name": "Escalated",
+              "emoji": "⬆️",
+              "moderated": true
+            }
+          ]
+        },
+        {
+          "key": "private_report",
+          "name": "private-report",
+          "type": "text",
+          "topic": "Exploits, duping, scams or a safety problem? Click the # Threads icon → Create Thread → choose PRIVATE. Only you and staff can see it. Do not post exploits publicly.",
+          "private_threads_only": true
+        }
+      ]
+    },
+    {
+      "key": "testers",
+      "name": "🧪 TESTERS",
+      "visible_to": [
+        "developer",
+        "moderator",
+        "tester"
+      ],
+      "channels": [
+        {
+          "key": "tester_chat",
+          "name": "tester-chat",
+          "type": "text",
+          "topic": "Early builds, playtest sessions and raw feedback. Don't leak screenshots before release."
+        }
+      ]
+    },
+    {
+      "key": "team",
+      "name": "🔒 TEAM",
+      "visible_to": [
+        "developer",
+        "moderator"
+      ],
+      "channels": [
+        {
+          "key": "staff_chat",
+          "name": "staff-chat",
+          "type": "text",
+          "topic": "Staff only."
+        },
+        {
+          "key": "mod_log",
+          "name": "mod-log",
+          "type": "text",
+          "topic": "Discord community updates + moderation notes."
+        },
+        {
+          "key": "triage_reports",
+          "name": "triage-reports",
+          "type": "text",
+          "topic": "Daily triage digest from the feedback agent."
+        },
+        {
+          "key": "claude_control",
+          "name": "claude-control",
+          "type": "text",
+          "topic": "Developer ↔ Claude Code. Approve fix plans here.",
+          "visible_to": [
+            "developer"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "voice",
+      "name": "🔊 VOICE",
+      "channels": [
+        {
+          "key": "lounge",
+          "name": "Lounge",
+          "type": "voice"
+        },
+        {
+          "key": "party_1",
+          "name": "Party 1",
+          "type": "voice",
+          "user_limit": 4
+        },
+        {
+          "key": "party_2",
+          "name": "Party 2",
+          "type": "voice",
+          "user_limit": 4
+        }
+      ]
+    }
+  ],
+  "community": {
+    "rules_channel": "rules",
+    "updates_channel": "mod_log"
+  },
+  "messages": {
+    "welcome": "messages/welcome.md",
+    "rules": "messages/rules.md",
+    "game_info": "messages/game-info.md",
+    "known_issues": "messages/known-issues.md"
+  }
+}

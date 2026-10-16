@@ -1,5 +1,5 @@
 --!strict
--- Applies a reward bundle ({ lira, qirsh, traitStones, item, unit, xp }) to a profile. Shared by
+-- Applies a reward bundle ({ lira, qirsh, traitStones, item, unit, allUnits, xp }) to a profile. Shared by
 -- codes, daily rewards, the season pass and match rewards. Pure. Returns what was granted.
 
 local function sibling(name: string): any
@@ -64,6 +64,21 @@ function Grants.apply(profile: any, reward: any, ctx: Context): { [string]: any 
 		local trait = UnitLogic.rollTrait(ctx.traits.traits, ctx.traits.order, ctx.rng)
 		granted.unit = reward.unit
 		granted.unitResult = UnitLogic.obtain(profile, reward.unit, ctx.now, trait)
+	end
+	if reward.allUnits == true then
+		-- Only the missing defenders, in a stable order, so a second source never adds copies.
+		local ids = {}
+		for id in ctx.units do
+			if not profile.units[id] then
+				table.insert(ids, id)
+			end
+		end
+		table.sort(ids)
+		for _, id in ids do
+			local trait = UnitLogic.rollTrait(ctx.traits.traits, ctx.traits.order, ctx.rng)
+			UnitLogic.obtain(profile, id, ctx.now, trait)
+		end
+		granted.units = ids
 	end
 	if isPosInt(reward.xp) then
 		granted.xp = reward.xp

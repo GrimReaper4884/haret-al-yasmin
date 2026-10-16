@@ -1,0 +1,17 @@
+{
+  "id": "chief_thief",
+  "tasks": {
+    "concept": "01a1420e-44b5-721a-8074-f9daf1749a95",
+    "mesh": "01a14216-f7e7-77ae-9683-5819df051b3d",
+    "rig": "01a14218-8740-77ee-b2a0-e7a0b29e5d37",
+    "anim_idle": "01a14218-d014-7539-9a95-fe00eac55056",
+    "anim_attack": "01a14218-f2ad-75b5-af29-5b6e63312471"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 0,
+    "anim_attack": 3
+  }
+}
