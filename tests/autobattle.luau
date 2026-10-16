@@ -9,6 +9,8 @@
 -- the most damage per cash
 -- (after a wave that leaked it settles for the best upgrade it can afford instead of saving).
 -- It never sells, never retargets and skips every countdown (no skip bonus: the sim has none).
+-- Parties (opts.party = N) are N such bots in one match, each with its own cash and plan, scaled
+-- exactly as MatchService.create scales a real party (TD.PARTY_HP / PARTY_BOSS_HP / PARTY_CASH).
 --
 -- Requires _G.LogicRequire to be installed (tests/run.luau and tests/balance.luau do this).
 
@@ -264,14 +266,14 @@ local function think(bot, state, spots, rules)
 	end
 end
 
--- Plays one match. modeId: "ep1" | "ep2" | "ep3" | "infinite". Returns { won, wavesCleared, waves = { per-wave rows } }.
--- opts.maxWaves caps endless runs (default 150); opts.gate overrides the gate HP (debug).
-function AutoBattle.play(modeId: string, difficulty: string, policyId: string, opts: any?)
-	opts = opts or {}
-	local mode = Modes[modeId]
-	local diff = TD.DIFFICULTIES[difficulty]
+-- { hp, boss, cash } scaling for a party of `party` players (as MatchService.create applies it).
+function AutoBattle.partyScale(party: number)
+	return WaveLogic.partyScale(TD, party)
+end
+
+local function resolvePolicy(policyId)
 	local policy = if type(policyId) == "table" then policyId else AutoBattle.POLICIES[policyId]
-	assert(mode and diff and policy, "bad mode/difficulty/policy")
+	assert(policy, "bad policy " .. tostring(policyId))
 	local kinds = {}
 	for _, id in policy.plan do
 		assert(Units[id], "unknown unit " .. id)
@@ -282,24 +284,50 @@ function AutoBattle.play(modeId: string, difficulty: string, policyId: string, o
 		nKinds += 1
 	end
 	assert(nKinds <= (policy.slots or TD.LOADOUT_SLOTS), "plan uses more unit types than the loadout has slots")
+	return policy
+end
+
+-- Plays one match. modeId: "ep1" | "ep2" | "ep3" | "infinite". Returns { won, wavesCleared, waves = { per-wave rows } }.
+-- policyId: a POLICIES key or a policy table, or a list of them (one per player).
+-- opts.maxWaves caps endless runs (default 150); opts.gate overrides the gate HP (debug);
+-- opts.party = number of players (default: the length of a policy list, else 1); every player
+-- without its own entry plays the first policy. Rows sum cash / spent over the party.
+function AutoBattle.play(modeId: string, difficulty: string, policyId: any, opts: any?)
+	opts = opts or {}
+	local mode = Modes[modeId]
+	local diff = TD.DIFFICULTIES[difficulty]
+	assert(mode and diff, "bad mode/difficulty")
+	local list = if type(policyId) == "table" and policyId.plan == nil then policyId else { policyId }
+	local party = opts.party or #list
+	assert(party >= 1 and party <= TD.MAX_PLAYERS, "party must be 1.." .. TD.MAX_PLAYERS)
+	local bots = {}
+	local keys = {}
+	for i = 1, party do
+		local key = if party == 1 then "bot" else "bot" .. i
+		table.insert(keys, key)
+		table.insert(bots, { key = key, policy = resolvePolicy(list[i] or list[1]), planIndex = 1 })
+	end
+	local scale = WaveLogic.partyScale(TD, party)
 	local episode = if mode.kind == "story" then Waves.episodes[mode.episode] else nil
 	local total = if episode then episode.waves else nil
 	local arena = Arenas[mode.arena]
 	local rules = rulesFor(mode.arena)
 	local spots = spotsFor(mode.arena, rules)
-	local state = TdSim.new(arena.path, { "bot" }, TD.START_CASH, opts.gate or diff.gate, total, TD.PREP_SECONDS, {
+	local state = TdSim.new(arena.path, keys, math.floor(TD.START_CASH * scale.cash + 0.5), opts.gate or diff.gate, total, TD.PREP_SECONDS, {
 		between = TD.BETWEEN_WAVES,
-		waveBonusBase = TD.WAVE_BONUS_BASE,
-		waveBonusPerWave = TD.WAVE_BONUS_PER_WAVE,
+		waveBonusBase = TD.WAVE_BONUS_BASE * scale.cash,
+		waveBonusPerWave = TD.WAVE_BONUS_PER_WAVE * scale.cash,
 		rewardMul = diff.reward,
 		enemies = Enemies,
+		stunChainMax = TD.STUN_CHAIN_MAX,
+		stunImmunity = TD.STUN_IMMUNITY,
 	}, function(wave)
 		if episode then
-			return WaveLogic.story(episode, wave, diff)
+			return WaveLogic.story(episode, wave, diff, scale)
 		end
-		return WaveLogic.infinite(Waves.infinite, wave, diff)
+		return WaveLogic.infinite(Waves.infinite, wave, diff, scale)
 	end)
-	local bot = { key = "bot", policy = policy, planIndex = 1 }
+	local turn = 0
 	local maxWaves = opts.maxWaves or 150
 	local rows = {}
 	local cur = nil
@@ -311,7 +339,11 @@ function AutoBattle.play(modeId: string, difficulty: string, policyId: string, o
 	local guard = 0
 	while state.phase ~= "won" and state.phase ~= "lost" do
 		if state.time >= nextThink then
-			think(bot, state, spots, rules)
+			-- Rotate who decides first so no bot always gets the best spots.
+			turn += 1
+			for i = 0, party - 1 do
+				think(bots[(turn + i) % party + 1], state, spots, rules)
+			end
 			nextThink = state.time + THINK_EVERY
 		end
 		if state.phase == "prep" then
@@ -342,10 +374,14 @@ function AutoBattle.play(modeId: string, difficulty: string, policyId: string, o
 				end
 			elseif e.type == "waveEnd" or e.type == "lost" then
 				if cur then
-					bot.leaking = cur.leaked > 0
 					cur.gateHp = state.gateHp
-					cur.cash = state.players.bot.cash
-					cur.spent = state.players.bot.spent
+					cur.cash, cur.spent = 0, 0
+					for _, bot in bots do
+						bot.leaking = cur.leaked > 0
+						local p = state.players[bot.key]
+						cur.cash += p.cash
+						cur.spent += p.spent
+					end
 					cur.towers = #state.towers
 					local lv = 0
 					for _, t in state.towers do
@@ -374,6 +410,8 @@ function AutoBattle.play(modeId: string, difficulty: string, policyId: string, o
 		gateMax = state.gateMax,
 		waves = rows,
 		totalWaves = total,
+		party = party,
+		scale = scale,
 	}
 end
 

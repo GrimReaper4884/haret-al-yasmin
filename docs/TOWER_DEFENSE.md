@@ -42,13 +42,15 @@ clearing N on Normal; Hard after Normal, Nightmare after Hard, per episode.
 
 | Rule | Value |
 |------|-------|
-| Start cash | 600 per player; wave bonus 110 + 20 × wave; skip vote +60 to all |
+| Start cash | 600 per player; wave bonus 110 + 20 × wave; skip vote +60 to all (× `PARTY_CASH`, §5) |
 | Prep | 15 s before wave 1, 9 s between waves; all players voting skip starts at once |
 | Placement | anywhere inside the arena bounds, ≥ 3.2 studs from the road centreline, ≥ 2.6 from another defender, ≤ 20 per player, per-unit cap (`maxPlaced`) |
 | Upgrades | 5 levels (Rare) / 6 (Epic+); sell refunds 60 % of everything spent |
 | Targeting | first / last / strongest / closest (per defender) |
 | Stealth | night thieves and spies are invisible to defenders without `hitsStealth` (watchman, barber, 'akeed, za'im, 'arada, cat) |
 | Armor | fraction of damage ignored (bandit 15 %, rider 20 %, sapper 35 %, bosses 20–40 %) |
+| Parties | up to 4; regular enemy HP ×1 / 1.65 / 2.3 / 3.0 and boss HP ×1 / 1.35 / 1.65 / 2.1 for 1–4 players (§5) |
+| Stuns | chain, but an enemy held 60 s without a 3 s break ignores stuns for 3 s |
 | Support | Abu Badr and Abu Issam multiply the damage of defenders inside their range (best buff wins) |
 | Farm / repair | the coffee-house keeper pays cash per cleared wave; Abu Issam repairs the gate per wave |
 | Abilities | **shabriyeh** ('akeed ×6 / za'im ×10 / great za'im ×15 damage on one hit, every 12 / 9 / 7 s); **sweep** (strongman, 'arada: damage to everything in a radius) |
@@ -158,17 +160,108 @@ plus 4 'Akeeds, 5 stars, za'im's-blood trait.
 | ep3 | normal | lost w11 | lost w15 | lost w17 | lost w20 | lost w14 | WIN 94/100 | WIN 83/100 | WIN 96/100 |
 | ep3 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w20 | WIN 26/60 | WIN 56/60 |
 | ep3 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w10 | lost w15 | WIN 29/35 |
-| infinite | normal | died w12 | died w16 | died w14 | died w16 | died w13 | died w60 | died w79 | died w93 |
-| infinite | hard | died w10 | died w10 | died w10 | died w12 | died w10 | died w19 | died w30 | died w82 |
+| infinite | normal | died w12 | died w16 | died w14 | died w16 | died w13 | died w60 | died w79 | died w80 |
+| infinite | hard | died w10 | died w10 | died w10 | died w12 | died w10 | died w19 | died w30 | died w80 |
 | infinite | nightmare | died w9 | died w10 | died w10 | died w10 | died w10 | died w50 | died w60 | died w60 |
 
 Reading it: each episode raises the bar by one tier (ep1 Normal: 4 upgraded Rare/Epic; ep2 Normal: 6–10;
 ep3 Normal: a Legendary), Hard adds one tier, Nightmare needs Mythics (ep3 Nightmare also stars/traits).
 Endless deaths land on boss waves (60 = stealth Thief King, 100 = Commandant), so the "wave reached" is
-quantized by tens; a fully maxed Mythic team stalls at 79–93 on Normal with six-figure cash it can no longer
-spend. Known limits: the bot is single-player (no party scaling yet: 4 players get 4× cash against the same
-waves), never sells, and its placement is greedy, so margins of a few gate HP (ep2 Nightmare myth12up 3/35)
-should be treated as coin flips.
+quantized by tens; a fully maxed Mythic team stalls at 79–80 on Normal with six-figure cash it can no longer
+spend (whale endless was w93 / w82 on Normal / Hard before stun chains were capped, see below). Known
+limits: the bot never sells, and its placement is greedy, so margins of a few gate HP (ep2 Nightmare myth12up
+3/35) should be treated as coin flips.
+
+### Party scaling (2026-10-16)
+
+Every player in a party gets the full start cash and wave bonus and builds their own defence (≤ 20 towers
+each), so without scaling 4 players were ~4× stronger against the same waves. `TD.PARTY_*` (indexed by
+players in the match; `WaveLogic.partyScale`, applied in `MatchService.create`):
+
+| Players | regular enemy HP (`PARTY_HP`) | boss HP (`PARTY_BOSS_HP`) | cash each (`PARTY_CASH`) |
+|---|---|---|---|
+| 1 | ×1 | ×1 | ×1 |
+| 2 | ×1.65 | ×1.35 | ×1 |
+| 3 | ×2.3 | ×1.65 | ×1 |
+| 4 | ×3.0 | ×2.1 | ×1 |
+
+Why these shapes: a party's cash grows by N × (start + wave bonus), but kill cash is shared (it goes to the
+tower that lands the kill), the road fills up (later towers get worse spots) and more towers means fewer
+upgrade levels each, so the swarm multiplier stays below N. Bosses get a milder curve because a single boss
+walks past *every* player's defence; with the swarm curve on bosses too, upgraded parties lost to the
+wave-10/20 bosses they beat solo. Cash stays ×1 so every player can place a defender on wave 1 (the knob is
+there if live data says parties snowball).
+
+Tuned with `lune run tests/balance --party N` (N auto-battlers, each playing the column's loadout with its own
+cash, deciding in rotating order). Party ladders (compare with the solo table above; asserted in
+`tests/td.spec.luau` "Parties of 2–4…" and "A party of 4…"):
+
+Party of 2:
+
+| Mode | Diff. | re6 | re4up | re6up | re10up | leg6 | leg10up | myth12up | whale |
+|------|-------|------|------|------|------|------|------|------|------|
+| ep1 | normal | lost w15 | WIN 100/100 | WIN 100/100 | WIN 100/100 | lost w20 | WIN 100/100 | WIN 100/100 | WIN 100/100 |
+| ep1 | hard | lost w10 | lost w20 | lost w14 | WIN 12/60 | lost w15 | WIN 55/60 | WIN 59/60 | WIN 60/60 |
+| ep1 | nightmare | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | WIN 34/35 | WIN 35/35 |
+| ep2 | normal | lost w13 | lost w25 | WIN 83/100 | WIN 85/100 | lost w17 | WIN 87/100 | WIN 89/100 | WIN 100/100 |
+| ep2 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w11 | WIN 43/60 | WIN 29/60 | WIN 53/60 |
+| ep2 | nightmare | lost w8 | lost w7 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | WIN 22/35 |
+| ep3 | normal | lost w11 | lost w16 | lost w15 | lost w19 | lost w15 | WIN 88/100 | WIN 85/100 | WIN 99/100 |
+| ep3 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w30 | WIN 22/60 | WIN 51/60 |
+| ep3 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w9 | lost w10 | lost w9 | WIN 20/35 |
+| infinite | normal | died w12 | died w17 | died w15 | died w17 | died w15 | died w30 | died w80 | died w98 |
+| infinite | hard | died w10 | died w10 | died w10 | died w10 | died w10 | died w20 | died w77 | died w80 |
+| infinite | nightmare | died w10 | died w10 | died w10 | died w10 | died w10 | died w20 | died w60 | died w80 |
+
+Party of 3:
+
+| Mode | Diff. | re6 | re4up | re6up | re10up | leg6 | leg10up | myth12up | whale |
+|------|-------|------|------|------|------|------|------|------|------|
+| ep1 | normal | lost w17 | WIN 100/100 | WIN 100/100 | WIN 100/100 | lost w20 | WIN 100/100 | WIN 100/100 | WIN 100/100 |
+| ep1 | hard | lost w10 | WIN 57/60 | lost w20 | WIN 13/60 | lost w16 | WIN 59/60 | WIN 58/60 | WIN 60/60 |
+| ep1 | nightmare | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | WIN 31/35 | WIN 35/35 |
+| ep2 | normal | lost w14 | lost w28 | WIN 86/100 | WIN 86/100 | lost w18 | WIN 86/100 | WIN 86/100 | WIN 100/100 |
+| ep2 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w12 | WIN 38/60 | WIN 31/60 | WIN 54/60 |
+| ep2 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | WIN 21/35 |
+| ep3 | normal | lost w13 | lost w17 | lost w20 | lost w18 | lost w15 | WIN 90/100 | WIN 77/100 | WIN 100/100 |
+| ep3 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w11 | lost w20 | WIN 30/60 | WIN 52/60 |
+| ep3 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w9 | lost w10 | lost w9 | WIN 22/35 |
+| infinite | normal | died w13 | died w18 | died w20 | died w18 | died w16 | died w30 | died w40 | died w101 |
+| infinite | hard | died w10 | died w10 | died w10 | died w10 | died w13 | died w20 | died w60 | died w80 |
+| infinite | nightmare | died w10 | died w10 | died w10 | died w10 | died w10 | died w10 | died w30 | died w60 |
+
+Party of 4:
+
+| Mode | Diff. | re6 | re4up | re6up | re10up | leg6 | leg10up | myth12up | whale |
+|------|-------|------|------|------|------|------|------|------|------|
+| ep1 | normal | lost w17 | WIN 100/100 | WIN 100/100 | WIN 100/100 | lost w20 | WIN 100/100 | WIN 100/100 | WIN 100/100 |
+| ep1 | hard | lost w11 | lost w20 | lost w20 | WIN 9/60 | lost w17 | WIN 59/60 | WIN 59/60 | WIN 60/60 |
+| ep1 | nightmare | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | WIN 34/35 | WIN 35/35 |
+| ep2 | normal | lost w14 | lost w29 | WIN 92/100 | WIN 86/100 | lost w19 | WIN 86/100 | WIN 81/100 | WIN 100/100 |
+| ep2 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w13 | WIN 36/60 | WIN 27/60 | WIN 54/60 |
+| ep2 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | WIN 24/35 |
+| ep3 | normal | lost w12 | lost w16 | lost w16 | lost w17 | lost w16 | WIN 90/100 | WIN 82/100 | WIN 100/100 |
+| ep3 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w12 | lost w20 | lost w10 | WIN 54/60 |
+| ep3 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w9 | lost w9 | WIN 14/35 |
+| infinite | normal | died w13 | died w17 | died w18 | died w19 | died w16 | died w30 | died w40 | died w102 |
+| infinite | hard | died w10 | died w14 | died w10 | died w10 | died w13 | died w20 | died w20 | died w80 |
+| infinite | nightmare | died w10 | died w10 | died w10 | died w10 | died w10 | died w10 | died w30 | died w80 |
+
+Reading it: **Episode 1 Normal keeps the solo ladder for 2–4 Rare/Epic players** (no upgrades loses, 4–10
+upgraded Rare/Epic win at full gate), and every story cell matches solo except a few within a wave or a few
+gate HP of flipping: ep1 Hard re4up (solo lost on w19, party of 3 wins 57/60), ep2 Nightmare myth12up (solo
+3/35, a coin flip, lost by every party) and ep3 Hard myth12up for 4 players (solo 26/60, lost on the w10 boss).
+**Endless** is not matched yet: whales go as deep as solo or deeper (w80–102), but parties of 3–4 mid-tier
+teams (leg10up, myth12up) die one to four boss waves earlier than solo (w30–40 instead of w60–79). Endless
+results jump by whole boss waves between nearby multipliers, so it keeps the story curve for now; tuning it
+needs a better party bot (each bot fills its whole plan before upgrading, which overcrowds the road) and
+live data.
+
+**Stun chains** (`TD.STUN_CHAIN_MAX` 60 s, `TD.STUN_IMMUNITY` 3 s, in `TdSim`): parties of whales stacked
+enough Blacksmith/Strongman stuns to hold an endless wave at the spawn forever (wave 80 never ended — a match
+that never finishes). Stuns still chain, but an enemy held for a minute without 3 s of freedom shrugs stuns off
+for 3 s. Solo story results are unchanged; solo endless whales now fall to the wave-80 Commandant on Normal and
+Hard (were w93 / w82), still inside the 60–100 wall.
 
 ## 6. Economy and monetization (details in `MONETIZATION.md`)
 
@@ -225,5 +318,6 @@ match opening animates the leaves shutting and the bar dropping (client, local).
 - Audio: every cue id is 0 (silent) until original cues are produced (`AUDIO_BIBLE.md`).
 - Trading, raids, unit evolutions, leaderboards (OrderedDataStore) and a teleport-to-match-place setup for
   big servers are not built yet.
-- Balance is harness-tuned (§5) for solo play; party size does not scale enemies yet, and the numbers still
-  need live analytics (`MatchWon_*`, `Summon_*`, `PassClaim_*`).
+- Balance is harness-tuned (§5) for solo play and same-loadout parties of 2–4; Endless party depth and
+  mixed parties (one whale carrying three new players) are untuned, and the numbers still need live
+  analytics (`MatchWon_*`, `Summon_*`, `PassClaim_*`).

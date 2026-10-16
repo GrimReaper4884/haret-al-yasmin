@@ -5,6 +5,8 @@
 --   lune run tests/balance ep1 normal re6up   -- one run, wave by wave ("all" works for any field)
 --   lune run tests/balance all all all --waves   -- every run wave by wave
 --   lune run tests/balance --md               -- the summary as a Markdown table (docs)
+--   lune run tests/balance --party 4          -- a 4-player party, every player on the loadout
+--                                                (scaled by TD.PARTY_*; default 1)
 
 local process = require("@lune/process")
 
@@ -21,14 +23,28 @@ local TD = require("../src/shared/Config/TD")
 
 local MODES = { "ep1", "ep2", "ep3", "infinite" }
 
+local VALUE_FLAGS = { party = true } -- flags that take a value: --party 4 or --party=4
 local positional, flags = {}, {}
-for _, a in process.args do
+local i = 1
+while i <= #process.args do
+	local a = process.args[i]
 	if string.sub(a, 1, 2) == "--" then
-		flags[string.sub(a, 3)] = true
+		local name, value = string.match(a, "^%-%-([%w_]+)=(.*)$")
+		if name then
+			flags[name] = value
+		elseif VALUE_FLAGS[string.sub(a, 3)] then
+			flags[string.sub(a, 3)] = process.args[i + 1]
+			i += 1
+		else
+			flags[string.sub(a, 3)] = true
+		end
 	else
 		table.insert(positional, a)
 	end
+	i += 1
 end
+local party = tonumber(flags.party) or 1
+assert(party >= 1 and party <= TD.MAX_PLAYERS and party % 1 == 0, "--party must be 1.." .. TD.MAX_PLAYERS)
 local function pick(list, want)
 	if want == nil or want == "all" then
 		return list
@@ -72,7 +88,7 @@ local t0 = os.clock()
 for _, m in modes do
 	for _, d in diffs do
 		for _, pid in policies do
-			local r = AutoBattle.play(m, d, pid, { maxWaves = 150 })
+			local r = AutoBattle.play(m, d, pid, { maxWaves = 150, party = party })
 			results[m .. "/" .. d .. "/" .. pid] = r
 			if showWaves then
 				print(string.format("\n%s · %s · %s (%s) → %s   (boss!N%% = the boss reached the gate with N%% HP)", m, d, pid, AutoBattle.POLICIES[pid].label, outcome(r)))
@@ -116,4 +132,5 @@ else
 		end
 	end
 end
-print(string.format("\n(%d runs in %.1f s; loadouts: %s)", #modes * #diffs * #policies, os.clock() - t0, table.concat(policies, ", ")))
+local scale = AutoBattle.partyScale(party)
+print(string.format("\n(%d runs in %.1f s; party of %d: enemy HP ×%.2f, boss HP ×%.2f, cash ×%.2f each; loadouts: %s)", #modes * #diffs * #policies, os.clock() - t0, party, scale.hp, scale.boss, scale.cash, table.concat(policies, ", ")))

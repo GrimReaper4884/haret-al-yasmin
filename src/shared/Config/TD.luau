@@ -10,6 +10,8 @@ return {
 	WAVE_BONUS_PER_WAVE = 20, -- … plus this per wave number
 	SKIP_BONUS = 60, -- extra cash to everyone when all players vote to skip the countdown
 	PREP_SECONDS = 15, -- before wave 1
+	STUN_CHAIN_MAX = 60, -- seconds an enemy can be kept stunned without a break (stun-locks end) …
+	STUN_IMMUNITY = 3, -- … then it ignores stuns for this long
 	BETWEEN_WAVES = 9, -- countdown between waves
 	TICK = 1 / 20, -- simulation step (seconds of game time)
 	POSITION_RATE = 0.1, -- seconds between enemy position broadcasts
@@ -20,6 +22,13 @@ return {
 	RESULT_SECONDS = 12, -- how long the result screen stays before returning to the lane
 	QUEUE_SECONDS = 25, -- portal countdown once the first player steps in
 	QUEUE_FULL_SECONDS = 5, -- countdown once the party is full
+	-- Party scaling, indexed by players in the match (1..MAX_PLAYERS). Every player gets their own
+	-- start cash and wave bonus (× PARTY_CASH) and builds their own defence, so regular enemies get
+	-- PARTY_HP × their HP; bosses meet every defender on the road and get the milder PARTY_BOSS_HP.
+	-- Tuned with `lune run tests/balance --party N` (docs/TOWER_DEFENSE.md §5).
+	PARTY_HP = { 1, 1.65, 2.3, 3.0 },
+	PARTY_BOSS_HP = { 1, 1.35, 1.65, 2.1 },
+	PARTY_CASH = { 1, 1, 1, 1 },
 
 	-- Placement
 	LOADOUT_SLOTS = 6, -- +1 with the Extra Slot pass

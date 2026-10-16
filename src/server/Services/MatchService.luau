@@ -287,17 +287,21 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 	local episode = if mode.kind == "story" then Waves.episodes[mode.episode] elseif mode.kind == "event" then (Waves :: any).events[mode.event] else nil
 	local total = if episode then episode.waves else nil
 	local arena = Arenas[mode.arena]
-	local state = TdSim.new(arena.path, keys, TD.START_CASH, diff.gate, total, TD.PREP_SECONDS, {
+	-- Bigger parties face tougher enemies (and may split the cash), so 4 players aren't 4× stronger.
+	local scale = WaveLogic.partyScale(TD, #keys)
+	local state = TdSim.new(arena.path, keys, math.floor(TD.START_CASH * scale.cash + 0.5), diff.gate, total, TD.PREP_SECONDS, {
 		between = TD.BETWEEN_WAVES,
-		waveBonusBase = TD.WAVE_BONUS_BASE,
-		waveBonusPerWave = TD.WAVE_BONUS_PER_WAVE,
+		waveBonusBase = TD.WAVE_BONUS_BASE * scale.cash,
+		waveBonusPerWave = TD.WAVE_BONUS_PER_WAVE * scale.cash,
 		rewardMul = diff.reward,
 		enemies = Enemies :: any,
+		stunChainMax = TD.STUN_CHAIN_MAX,
+		stunImmunity = TD.STUN_IMMUNITY,
 	}, function(wave: number)
 		if episode then
-			return WaveLogic.story(episode, wave, diff)
+			return WaveLogic.story(episode, wave, diff, scale)
 		end
-		return WaveLogic.infinite(Waves.infinite, wave, diff)
+		return WaveLogic.infinite(Waves.infinite, wave, diff, scale)
 	end)
 
 	local match: Match = {
