@@ -21,6 +21,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local DataService = require(script.Parent.DataService)
 local MatchService = require(script.Parent.MatchService)
+local AfkService = require(script.Parent.AfkService)
 local Wallet = require(ReplicatedStorage:WaitForChild("Shared").Logic.Wallet)
 local Economy = require(ReplicatedStorage:WaitForChild("Shared").Config.Economy)
 local TD = require(ReplicatedStorage:WaitForChild("Shared").Config.TD)
@@ -102,6 +103,15 @@ function DebugService.start()
 				return true
 			end
 			return "bad target"
+		elseif cmd == "afk" then
+			-- "enter" / "leave", or a number of seconds to add to the current visit
+			if arg == "enter" then
+				return AfkService.enter(player, "debug")
+			elseif arg == "leave" then
+				AfkService.leave(player, "debug", true)
+				return true
+			end
+			return AfkService.debugAdvance(player, tonumber(arg) or 300)
 		elseif cmd == "failNext" then
 			DataService.debug.store():failNext(tonumber(arg) or 1)
 			return true

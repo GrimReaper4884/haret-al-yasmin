@@ -26,6 +26,7 @@ local bar: Frame
 local buttons: { [string]: TextButton } = {}
 local badges: { [string]: Frame } = {}
 local inMatch = false
+local inAfk = false -- sitting in the Hakawati's room (AfkController): the lobby HUD is hidden too
 local openers: { [string]: () -> () } = {}
 local lastLira: number? = nil
 
@@ -74,6 +75,7 @@ local function build()
 		{ key = "pass", color = Theme.colors.quest },
 		{ key = "daily", color = Theme.colors.confirm },
 		{ key = "codes", color = Color3.fromHex("#5E6F7D") },
+		{ key = "afk", color = Color3.fromHex("#8A5A2B") },
 		{ key = "settings", color = Color3.fromHex("#6E5E50") },
 	}
 	local rows = math.ceil(#items / COLS)
@@ -152,16 +154,17 @@ local function applyVisibility()
 	local root = Root.get()
 	local dialogue = root:FindFirstChild("Dialogue")
 	local dialogueOpen = dialogue ~= nil and (dialogue :: Frame).Visible
+	local away = inMatch or inAfk
 	for _, name in LOBBY_WIDGETS do
 		local w = root:FindFirstChild(name)
 		if w and w:IsA("GuiObject") then
 			if name == "Menu" then
-				w.Visible = not inMatch and not dialogueOpen
+				w.Visible = not away and not dialogueOpen
 			elseif name == "TestMode" then
 				local snapshot = StateController.get()
-				w.Visible = not inMatch and snapshot ~= nil and not snapshot.persistent
+				w.Visible = not away and snapshot ~= nil and not snapshot.persistent
 			else
-				w.Visible = not inMatch
+				w.Visible = not away
 			end
 		end
 	end
@@ -169,6 +172,11 @@ end
 
 function LobbyMenuController.setInMatch(v: boolean)
 	inMatch = v
+	applyVisibility()
+end
+
+function LobbyMenuController.setInAfk(v: boolean)
+	inAfk = v
 	applyVisibility()
 end
 

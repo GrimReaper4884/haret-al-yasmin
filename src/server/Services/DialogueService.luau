@@ -14,6 +14,7 @@ local DataService = require(script.Parent.DataService)
 local NpcService = require(script.Parent.NpcService)
 local QuestService = require(script.Parent.QuestService)
 local ShopService = require(script.Parent.ShopService)
+local AfkService = require(script.Parent.AfkService)
 local PlayerStateService = require(script.Parent.PlayerStateService)
 local RemoteGuard = require(script.Parent.RemoteGuard)
 local Analytics = require(script.Parent.AnalyticsService)
@@ -102,6 +103,14 @@ local function choose(player: Player, index: any)
 			local npcId = session.npcId
 			close(player)
 			ShopService.open(player, action.shop :: string, npcId)
+			return
+		elseif action.type == "afk" then
+			-- Abu Hatem sends the player up to the Hakawati's room (the AFK chamber).
+			close(player)
+			local ok, err = AfkService.enter(player, "dialogue")
+			if not ok then
+				PlayerStateService.notify(player, "afk.err." .. tostring(err))
+			end
 			return
 		elseif action.type == "close" then
 			close(player)

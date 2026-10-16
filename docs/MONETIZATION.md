@@ -44,7 +44,7 @@ rules: `docs/research/ROBLOX_IP_AND_POLICY.md`.*
 
 | Key | Perk | R$ |
 |-----|------|----|
-| `vip` | −20 % summon cost, +25 % lira from matches, embroidered shawl | 299 |
+| `vip` | −20 % summon cost, +25 % lira from matches, ×2 pay and daily cap in the Hakawati's room (AFK), embroidered shawl | 299 |
 | `fast_mode` | 3× match speed when hosting (2× is free for everyone) | 799 |
 | `extra_slot` | 7th loadout slot | 149 |
 | `lane_patron` | gold tarboosh + embroidered shawl (cosmetic support pass) | 249 |
@@ -62,6 +62,7 @@ Premium Payouts (engagement), paid private servers (~100 R$/month, owner toggle)
 | Loss | 25 % of the win value, scaled by waves reached |
 | Endless | 100 / 230 / 390 / 420 / 450 per 10-wave tier, +5 per tier after 50 |
 | Daily streak (7 days) | 20 + 30 + 0 + 45 + 60 + 0 + 120 = 275 per week |
+| Hakawati's room (AFK) | 80 per hour sat (cups + tales), capped at 240 a day; VIP ×2 / Premium ×1.5 scale pay and cap (docs/AFK_CHAMBER.md) |
 | Diary free track | ≈ 1,900 over the season |
 | Launch codes | 100 + 50 + 150 + 40 |
 

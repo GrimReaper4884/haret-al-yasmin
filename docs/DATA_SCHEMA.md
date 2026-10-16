@@ -112,6 +112,7 @@ published **test** experience.
 | `codes` | `{ [CODE]: at }` | redeemed codes |
 | `bundles` | `{ [productNameKey]: at }` | one-time bundles |
 | `daily` | `{ streak, lastDay }` | UTC day index |
+| `afk` | `{ day, lira, carry, cups, tales, seconds }` | The Hakawati's room (AFK chamber): UTC day and lira paid that day (cap), seconds toward the next cup, lifetime cups / tales / seconds. Filled by `AfkLogic.sanitize`; see docs/AFK_CHAMBER.md §5 |
 | `td` | `{ matches, wins, kills, cleared{modeId->difficulty}, bestInfinite }` | unlocks and stats |
 
 Tier keys inside `claimedFree`/`claimedPremium` are strings ("1".."50") so the DataStore JSON stays an

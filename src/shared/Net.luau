@@ -39,6 +39,12 @@ Net.Events = {
 	LeaveMatch = "LeaveMatch", -- C→S
 	SetTargeting = "SetTargeting", -- C→S towerId, mode
 	UseAbility = "UseAbility", -- C→S towerId (the defender's ultimate)
+	-- AFK chamber (the Hakawati's room)
+	AfkState = "AfkState", -- S→C { inside, carry, mult, session = { seconds, lira, qirsh, xp, traitStones } } | { inside = false, summary }
+	AfkPayout = "AfkPayout", -- S→C { kind, granted, capped, tale }
+	AfkEnter = "AfkEnter", -- C→S reason ("menu" | "idle")
+	AfkLeave = "AfkLeave", -- C→S
+	AfkHop = "AfkHop", -- C→S (idle for IDLE_HOP_SECONDS inside the room)
 	DebugCommand = "DebugCommand", -- C→S (Studio only; ignored in production) cmd, arg
 }
 

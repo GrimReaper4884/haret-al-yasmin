@@ -218,11 +218,25 @@ local function onPlayerAdded(player: Player)
 	DataService.ProfileLoaded:Fire(player, profile)
 end
 
+local beforeRelease: { (Player) -> () } = {}
+
+local function runBeforeRelease(player: Player)
+	for _, fn in beforeRelease do
+		local ok, err = pcall(function()
+			fn(player)
+		end)
+		if not ok then
+			warn("[DataService] beforeRelease hook failed: " .. tostring(err))
+		end
+	end
+end
+
 local function onPlayerRemoving(player: Player)
 	local entry = entries[player]
 	if not entry then
 		return
 	end
+	runBeforeRelease(player)
 	save(player, true)
 	entries[player] = nil
 end
@@ -257,6 +271,7 @@ function DataService.start()
 		for player in entries do
 			pending += 1
 			task.spawn(function()
+				runBeforeRelease(player)
 				save(player, true)
 				pending -= 1
 			end)
@@ -266,6 +281,12 @@ function DataService.start()
 			task.wait(0.1)
 		end
 	end)
+end
+
+-- Registers a function that runs (without yielding) just before a player's final save, so
+-- services can write in-memory progress into the profile (e.g. AFK sitting time).
+function DataService.beforeRelease(fn: (Player) -> ())
+	table.insert(beforeRelease, fn)
 end
 
 function DataService.isPersistent(): boolean

@@ -87,6 +87,14 @@ local drawers: { [string]: (Frame, Color3) -> () } = {
 		rectO(h, Color3.fromHex("#D8DCE0"), 0.5, 0.5, 0.6, 0.6, 1)
 		rectO(h, Color3.fromHex("#6E5E50"), 0.5, 0.5, 0.26, 0.26, 1)
 	end,
+	ui_afk = function(h, _c)
+		-- A glass of tea on a brass saucer, with steam.
+		rectO(h, GOLD, 0.5, 0.86, 0.78, 0.1, 1)
+		rectO(h, Color3.fromHex("#F5E6C8"), 0.5, 0.6, 0.42, 0.44, 0.25)
+		rect(h, Color3.fromHex("#B5532A"), 0.5, 0.66, 0.34, 0.28, 0.25)
+		rect(h, WHITE, 0.4, 0.22, 0.06, 0.2, 0.5, 15)
+		rect(h, WHITE, 0.58, 0.18, 0.06, 0.22, 0.5, -15)
+	end,
 	ui_daily = function(h, _c)
 		rectO(h, Palette.fabricRed, 0.5, 0.62, 0.66, 0.5, 0.12)
 		rectO(h, Palette.fabricRed, 0.5, 0.36, 0.76, 0.16, 0.12)

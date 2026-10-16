@@ -130,6 +130,7 @@ local specs = {
 	require("./settings.spec"),
 	require("./party.spec"),
 	require("./event.spec"),
+	require("./afk.spec"),
 }
 for _, spec in specs do
 	spec(t)

@@ -105,7 +105,7 @@ local function coffeeHouse(map: Instance)
 	end
 	Props.pot(m, Vector3.new(-24.35, 14.35, -20), "jasmine", 0.55)
 	-- Benches along the back and the south wall, tables in front of them
-	Props2.dikkeh(m, CFrame.new(-35.8, 0.3, -13) * CFrame.Angles(0, math.rad(90), 0), 20)
+	Props2.dikkeh(m, CFrame.new(-35.8, 0.3, -9.5) * CFrame.Angles(0, math.rad(90), 0), 13)
 	Props2.dikkeh(m, CFrame.new(-30, 0.3, -23.8), 10)
 	Props2.coffeeTable(m, CFrame.new(-32.5, 0.3, -19), true)
 	Props2.coffeeTable(m, CFrame.new(-32.5, 0.3, -12), false)
@@ -121,6 +121,13 @@ local function coffeeHouse(map: Instance)
 		Kit.part(m, { name = "AwningStripe", size = Vector3.new(5.02, 0.32, 1), cf = CFrame.new(-22, 11, z) * CFrame.Angles(0, 0, math.rad(-16)), color = Palette.jasmine, material = M.Fabric, collide = false, shadow = false })
 	end
 	Props2.sign(m, Kit.faceFrame(Vector3.new(-23.7, 12.9, -13), Vector3.new(1, 0, 0)), 9, ar("sign.coffee"), "Qahwat al-Hara", Palette.vine)
+	-- The stair door at the back to the Hakawati's room upstairs (the AFK chamber): walking onto
+	-- the mat opens the room's panel on the client (AfkController).
+	Props.door(m, Kit.faceFrame(Vector3.new(-37, 0.3, -20.5), Vector3.new(1, 0, 0)), 3.2, 7, Palette.woodDark)
+	Props2.sign(m, Kit.faceFrame(Vector3.new(-36.9, 9.4, -20.5), Vector3.new(1, 0, 0)), 5, ar("afk.room"), "Majlis al-Hakawati", Palette.fabricRed)
+	local mat = Kit.part(m, { name = "AfkMat", size = Vector3.new(3, 0.12, 3.6), cf = CFrame.new(-35.3, 0.36, -20.5), color = Palette.fabricRed, material = M.Fabric, shadow = false })
+	Kit.part(m, { name = "AfkMatBorder", size = Vector3.new(2.4, 0.13, 3), cf = CFrame.new(-35.3, 0.365, -20.5), color = Palette.fabricIndigo, material = M.Fabric, collide = false, shadow = false })
+	CollectionService:AddTag(mat, "AfkGate")
 end
 
 -- The barber on the lane's east side (x 8..24, z 24..48): open front like the tailor's.

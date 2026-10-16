@@ -3,7 +3,8 @@
 --   1 Units · 2 Summon · 3 Diary · 4 Codes · 5 Daily · 6 Store · 7 Summon ×1 · 8 Summon ×10
 --   9 teleport to the Episode 1 portal · M create + start an Episode 1 party · 0 teleport to the
 --   square · L fill the loadout with the
---   best owned units (imported-model units first) · X close every screen
+--   best owned units (imported-model units first) · X close every screen · N enter / leave the
+--   Hakawati's room (AFK) · Y add 30 minutes of sitting there
 --   In a match: P place the next loadout unit at your feet · B place it at a road-side spot · U upgrade the last tower you placed
 --   · K vote skip · J sell the last tower · T set speed 2x · C +5000 match cash · H leave · G set the gate to 1 HP.
 -- Never created outside Studio.
@@ -135,6 +136,14 @@ function DebugKeysController.start()
 			end)
 		elseif k == Enum.KeyCode.Zero then
 			Net.event(Net.Events.DebugCommand):FireServer("tp", "0,-5")
+		elseif k == Enum.KeyCode.N then
+			-- AFK chamber: walk up to the Hakawati's room, or back down
+			local afk = (StateController.get() :: any)
+			local inside = afk and afk.afk and afk.afk.inside
+			Net.event(Net.Events.DebugCommand):FireServer("afk", if inside then "leave" else "enter")
+		elseif k == Enum.KeyCode.Y then
+			-- AFK chamber: fast-forward one tale (30 minutes of sitting)
+			Net.event(Net.Events.DebugCommand):FireServer("afk", 1800)
 		elseif k == Enum.KeyCode.L then
 			local snapshot = StateController.get()
 			if snapshot then

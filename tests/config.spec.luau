@@ -142,6 +142,8 @@ return function(t)
 								t.eq(Quests[a.quest].target, npcId, where .. " only the target can receive")
 							elseif a.type == "openShop" then
 								t.eq(Shops[a.shop].npc, npcId, where .. " shop belongs to npc")
+							elseif a.type == "afk" then
+								t.eq(npcId, "qahwaji", where .. " only the coffee-house keeper sends players upstairs")
 							else
 								t.eq(a.type, "close", where .. " action type")
 							end

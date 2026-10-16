@@ -82,6 +82,8 @@ budgeted at 3,000 parts or fewer.
 | Square west (x -40..-24, z -26..0) | The coffee house (replaces SquareSW): open ground floor behind two columns, dikkeh benches, three low tables with tea and backgammon, samovar, cat; NPC `qahwaji` Abu Hatem at (-27, -13) |
 | Lane east (x 8..24, z 24..48) | The barber shop (replaces EastB): chair, mirror, bottle shelves, basin, bench, latticed bay above; NPC `barber` Abu Issam at (14.5, 36) |
 | Lane west | Notice board at (-8, 5, 74) with the launch codes |
+| Coffee house back wall | Stair door to the Hakawati's room at (-37, -20.5) with a sign and a red mat (`AfkGate` tag); the back bench is shortened to z -16..-3 |
+| Hakawati's room (off-map) | The AFK chamber at (-3000, 0, 0), `World/AfkRoom.luau`: closed room x ±18, z ±13, 15 high, painted ceiling, dais with the storyteller (NPC `hakawati`) at the north end, 12 stools + benches on three walls (34 seats), exit door in the south wall. Streams atomically; see docs/AFK_CHAMBER.md |
 | Shops | Painted signs over the bakery, tailor and spice shop |
 | Crowd | 8 ambient walkers (`CrowdService`) between gate, shops and square |
 

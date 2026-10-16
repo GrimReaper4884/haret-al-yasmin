@@ -28,6 +28,7 @@ end
 
 local Settings = sibling("Settings")
 local EventLogic = sibling("EventLogic")
+local AfkLogic = sibling("AfkLogic")
 
 local ProfileSchema = {}
 
@@ -77,6 +78,7 @@ function ProfileSchema.default(now: number, schemaVersion: number, ctx: Context?
 		bundles = {},
 		events = {}, -- Logic/EventLogic: { [eventId] = { currency, bought } }
 		daily = { streak = 0, lastDay = 0 },
+		afk = { day = 0, lira = 0, carry = 0, cups = 0, tales = 0, seconds = 0 }, -- Logic/AfkLogic
 		td = { matches = 0, wins = 0, kills = 0, cleared = {}, bestInfinite = 0 },
 	}
 end
@@ -255,6 +257,7 @@ function ProfileSchema.sanitize(p: any, ctx: Context, now: number): any
 	daily.streak = nonNegInt(daily.streak, 0)
 	daily.lastDay = nonNegInt(daily.lastDay, 0)
 	p.daily = daily
+	p.afk = AfkLogic.sanitize(p.afk)
 
 	local td = tableOr(p.td)
 	td.matches = nonNegInt(td.matches, 0)

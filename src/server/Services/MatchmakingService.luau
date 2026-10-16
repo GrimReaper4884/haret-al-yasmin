@@ -25,6 +25,9 @@ local MatchService = require(script.Parent.MatchService)
 
 local MatchmakingService = {}
 
+-- Set by AfkService: returns an error key while a player may not queue (sitting in the AFK room).
+MatchmakingService.blocked = nil :: ((Player) -> string?)?
+
 type Party = PartyLogic.Party<Player> & { replayKey: string? }
 
 local START_SOON = 3 -- seconds after the host taps Start
@@ -274,6 +277,11 @@ local function replay(player: Player, kind: string): { [string]: any }
 	return { ok = true }
 end
 
+-- Takes the player out of any party they are queued in (entering the AFK room).
+function MatchmakingService.leaveParty(player: Player)
+	leave(player, true)
+end
+
 function MatchmakingService.start()
 	evQueue = Net.event(Net.Events.QueueState)
 	evList = Net.event(Net.Events.PartyList)
@@ -284,6 +292,10 @@ function MatchmakingService.start()
 		end
 		if MatchService.matchOf(player) then
 			return { ok = false, err = "in_match" }
+		end
+		local blocked = MatchmakingService.blocked and MatchmakingService.blocked(player)
+		if blocked then
+			return { ok = false, err = blocked }
 		end
 		local party, err = create(player, modeId, difficulty)
 		return { ok = party ~= nil, err = err }
@@ -298,6 +310,10 @@ function MatchmakingService.start()
 		end
 		if MatchService.matchOf(player) then
 			return { ok = false, err = "in_match" }
+		end
+		local blocked = MatchmakingService.blocked and MatchmakingService.blocked(player)
+		if blocked then
+			return { ok = false, err = blocked }
 		end
 		local ok, err = join(player, party)
 		return { ok = ok, err = err }

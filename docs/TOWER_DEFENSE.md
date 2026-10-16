@@ -302,6 +302,8 @@ The lane gate is rebuilt in `Props2.gate`: studded leaves on hinges, wicket, kno
 night bar leaning by the jamb. The same prop stands closed and barred at the end of every arena; the
 match opening animates the leaves shutting and the bar dropping (client, local).
 
+**AFK chamber (2026-10-17):** the Hakawati's room upstairs in the coffee house pays a cup of tea every 5 minutes and a tale bonus every 30 to players who sit with the storyteller, with a daily lira cap and a server hop before the idle kick. Rules, research and flow: `docs/AFK_CHAMBER.md`.
+
 ## 10. Studio test harness (never active outside Studio)
 
 - `DebugOverlayController`: last server/client warnings in the top-left of the screen.

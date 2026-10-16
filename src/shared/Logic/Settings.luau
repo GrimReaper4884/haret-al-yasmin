@@ -17,6 +17,8 @@ Settings.defs = {
 	autoUlt = { kind = "bool", default = true },
 	-- The camera a match opens in: on foot behind the character, or the watchtower overview.
 	camera = { kind = "enum", values = { "walk", "overhead" }, default = "walk" },
+	-- Walk a lobby player who has been idle a while up to the Hakawati's room (Config/Afk).
+	autoAfk = { kind = "bool", default = true },
 	-- Vote to skip the countdown between waves automatically (never the setup before wave 1).
 	autoSkip = { kind = "bool", default = false },
 } :: { [string]: Def }

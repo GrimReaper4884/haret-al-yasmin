@@ -170,7 +170,27 @@ local Dialogue: { [string]: Tree } = {
 		nodes = {
 			greet = {
 				textKey = "dlg.qahwaji.greet",
-				choices = { { textKey = "dlg.qahwaji.greet.ok" } },
+				choices = {
+					{ textKey = "dlg.qahwaji.greet.hakawati", next = "hakawati" },
+					{ textKey = "dlg.qahwaji.greet.ok" },
+				},
+			},
+			-- The AFK chamber: Abu Hatem sends the player upstairs to the storyteller.
+			hakawati = {
+				textKey = "dlg.qahwaji.hakawati",
+				choices = {
+					{ textKey = "dlg.qahwaji.hakawati.go", action = { type = "afk" } },
+					{ textKey = "dlg.common.not_now", action = { type = "close" } },
+				},
+			},
+		},
+	},
+	hakawati = {
+		entries = { { node = "greet" } },
+		nodes = {
+			greet = {
+				textKey = "dlg.hakawati.greet",
+				choices = { { textKey = "dlg.hakawati.greet.ok" } },
 			},
 		},
 	},

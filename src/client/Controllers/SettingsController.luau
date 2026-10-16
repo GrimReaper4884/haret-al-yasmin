@@ -101,6 +101,10 @@ local ROWS: { Row } = {
 		key = "autoSkip",
 		labelKey = "settings.autoSkip",
 		options = { { value = true, textKey = "settings.on" }, { value = false, textKey = "settings.off" } },
+	},	{
+		key = "autoAfk",
+		labelKey = "settings.autoAfk",
+		options = { { value = true, textKey = "settings.on" }, { value = false, textKey = "settings.off" } },
 	},
 }
 

@@ -84,6 +84,18 @@ local Npcs: { [string]: NpcDef } = {
 		accent = "#B87333",
 		headwear = "cap",
 	},
+	-- The storyteller of the AFK chamber, on his dais in the Hakawati's room (Config/Afk.ORIGIN
+	-- -3000, 0, 0; the dais is at local z 8..13, 1.2 high).
+	hakawati = {
+		nameKey = "npc.hakawati.name",
+		roleKey = "npc.hakawati.role",
+		position = { -3000, 1.2, 10.4 },
+		yaw = 0, -- faces the listeners (-Z)
+		skin = "#B5835E",
+		robe = "#2F3E6B",
+		accent = "#C9A13B",
+		headwear = "tarboosh",
+	},
 }
 
 return Npcs

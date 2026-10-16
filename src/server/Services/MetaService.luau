@@ -48,6 +48,9 @@ local function grantCtx(): any
 	}
 end
 
+-- The reward context for Logic/Grants (also used by AfkService).
+MetaService.grantCtx = grantCtx
+
 local function summonCtx(): SummonLogic.Context
 	return {
 		units = Units :: any,
