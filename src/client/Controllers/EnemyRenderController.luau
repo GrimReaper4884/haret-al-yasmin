@@ -18,6 +18,7 @@ local RigBuilder = require(Shared.Util.RigBuilder)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
+local Fx = require(UI.Fx)
 local MatchController = require(script.Parent.MatchController)
 local AudioController = require(script.Parent.AudioController)
 
@@ -28,9 +29,9 @@ type Enemy = { model: Model, enemyId: string, dist: number, target: number, spee
 local folder: Folder
 local enemies: { [number]: Enemy } = {}
 local towerPos: { [number]: Vector3 } = {}
+local towerUnit: { [number]: string } = {}
 local arenaPath: Path.Path? = nil
 local origin: CFrame? = nil
-local effects = 0
 
 local function clear()
 	for _, e in enemies do
@@ -38,6 +39,7 @@ local function clear()
 	end
 	enemies = {}
 	towerPos = {}
+	towerUnit = {}
 end
 
 local function healthBar(model: Model, boss: boolean): Frame
@@ -61,7 +63,7 @@ local function spawn(e: any)
 	if not def or not origin or enemies[e.id] then
 		return
 	end
-	local model = RigBuilder.build(folder, "Enemy_" .. e.id, def.visual)
+	local model = RigBuilder.cached(folder, "Enemy_" .. e.id, def.visual, e.enemyId)
 	local rec: Enemy = { model = model, enemyId = e.enemyId, dist = 0, target = 0, speed = def.speed, hp = 1, bar = nil, bob = math.random() * 6, boss = def.boss == true, bornAt = os.clock(), missing = 0 }
 	rec.bar = healthBar(model, rec.boss)
 	enemies[e.id] = rec
@@ -70,6 +72,10 @@ local function spawn(e: any)
 end
 
 local function poof(model: Model)
+	if not Fx.full() then
+		model:Destroy()
+		return
+	end
 	for _, d in model:GetDescendants() do
 		if d:IsA("BasePart") and d.Name ~= "Root" then
 			TweenService:Create(d, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Transparency = 1, Size = d.Size * 0.3 }):Play()
@@ -94,48 +100,69 @@ local function remove(id: number, died: boolean)
 end
 
 -- A short neon streak from the defender to the target, coloured by rarity; abilities glow gold.
+-- Parts come from the shared Fx pool; the Effects setting trims what is drawn.
 local function strike(from: Vector3, to: Vector3, color: Color3, ability: boolean)
-	if effects > 40 then
+	local level = Fx.level()
+	if level == "off" and not ability then
 		return
 	end
-	effects += 1
+	local p = Fx.part()
+	if not p then
+		return
+	end
 	local mid = (from + to) / 2 + Vector3.new(0, 2.5, 0)
 	local len = (to - from).Magnitude
-	local p = Instance.new("Part")
-	p.Anchored = true
-	p.CanCollide = false
-	p.CanQuery = false
-	p.CanTouch = false
-	p.CastShadow = false
-	p.Material = Enum.Material.Neon
 	p.Color = if ability then Theme.lira else color
 	p.Size = Vector3.new(if ability then 0.5 else 0.18, if ability then 0.5 else 0.18, len)
 	p.CFrame = CFrame.lookAt(mid, to + Vector3.new(0, 2.5, 0))
 	p.Transparency = 0.1
-	p.Parent = folder
-	local t = TweenService:Create(p, TweenInfo.new(if ability then 0.35 else 0.15), { Transparency = 1 })
-	t:Play()
-	t.Completed:Connect(function()
-		p:Destroy()
-		effects -= 1
-	end)
-	if ability then
-		local flash = Instance.new("Part")
-		flash.Shape = Enum.PartType.Ball
-		flash.Anchored = true
-		flash.CanCollide = false
-		flash.CanQuery = false
-		flash.CastShadow = false
-		flash.Material = Enum.Material.Neon
-		flash.Color = Theme.lira
-		flash.Size = Vector3.new(2, 2, 2)
-		flash.CFrame = CFrame.new(to + Vector3.new(0, 3, 0))
-		flash.Parent = folder
-		local ft = TweenService:Create(flash, TweenInfo.new(0.4), { Size = Vector3.new(9, 9, 9), Transparency = 1 })
-		ft:Play()
-		ft.Completed:Connect(function()
-			flash:Destroy()
-		end)
+	Fx.fade(p, if ability then 0.35 else 0.15, { Transparency = 1 }, Enum.EasingStyle.Linear)
+	if ability and level ~= "off" then
+		local flash = Fx.part(Enum.PartType.Ball)
+		if flash then
+			flash.Color = Theme.lira
+			flash.Size = Vector3.new(2, 2, 2)
+			flash.CFrame = CFrame.new(to + Vector3.new(0, 3, 0))
+			Fx.fade(flash, 0.4, { Size = Vector3.new(9, 9, 9), Transparency = 1 })
+		end
+	end
+end
+
+-- Ultimate strikes in the world, per kind (pooled parts; Effects "full" only):
+-- shabriyeh = two crossing blade flashes over the target; sweep = a ground ring that runs out
+-- from the defender to its radius, with a dust disc under it.
+local function ultimateStrike(kind: string, from: Vector3, to: Vector3, radius: number, color: Color3)
+	if not Fx.full() then
+		return
+	end
+	if kind == "shabriyeh" then
+		for _, angle in { 35, -35 } do
+			local blade = Fx.part()
+			if blade then
+				blade.Color = Color3.new(1, 1, 1):Lerp(color, 0.3)
+				blade.Size = Vector3.new(0.25, 0.25, 1)
+				blade.CFrame = CFrame.new(to + Vector3.new(0, 3, 0)) * CFrame.Angles(0, math.rad(angle), math.rad(angle))
+				Fx.fade(blade, 0.35, { Size = Vector3.new(0.12, 0.12, 9), Transparency = 1 }, Enum.EasingStyle.Quart)
+			end
+		end
+	elseif kind == "sweep" then
+		local ring = Fx.part(Enum.PartType.Cylinder)
+		if ring then
+			ring.Color = color
+			ring.Transparency = 0.2
+			ring.Size = Vector3.new(0.3, 2, 2)
+			ring.CFrame = CFrame.new(from + Vector3.new(0, 0.3, 0)) * CFrame.Angles(0, 0, math.rad(90))
+			Fx.fade(ring, 0.5, { Size = Vector3.new(0.3, radius * 2, radius * 2), Transparency = 1 })
+		end
+		local dust = Fx.part(Enum.PartType.Cylinder)
+		if dust then
+			dust.Material = Enum.Material.SmoothPlastic
+			dust.Color = Color3.fromHex("#C9B48F")
+			dust.Transparency = 0.4
+			dust.Size = Vector3.new(1.2, 3, 3)
+			dust.CFrame = CFrame.new(from + Vector3.new(0, 0.6, 0)) * CFrame.Angles(0, 0, math.rad(90))
+			Fx.fade(dust, 0.8, { Size = Vector3.new(0.2, radius * 1.6, radius * 1.6), Transparency = 1 })
+		end
 	end
 end
 
@@ -154,27 +181,24 @@ local function onEvents(events: { any })
 			AudioController.sting("gate_hit")
 		elseif t == "towerPlaced" then
 			towerPos[e.id] = (origin * CFrame.new(e.x, 0, e.z)).Position
+			towerUnit[e.id] = e.unitId
 		elseif t == "towerSold" then
 			towerPos[e.id] = nil
+			towerUnit[e.id] = nil
 		elseif t == "attack" then
 			local from = towerPos[e.tower]
 			if from then
 				local to = (origin * CFrame.new(e.x, 0, e.z)).Position
-				local model = Workspace:FindFirstChild("Arenas")
-				local unitId = nil
-				if model then
-					for _, arena in model:GetChildren() do
-						local towers = arena:FindFirstChild("Towers")
-						local tm = towers and towers:FindFirstChild("Tower_" .. e.tower)
-						if tm then
-							unitId = tm:GetAttribute("UnitId")
-						end
-					end
-				end
+				local unitId = towerUnit[e.tower]
 				local def = if type(unitId) == "string" then (Units :: any)[unitId] else nil
-				strike(from, to, if def then Theme.rarityColor(def.rarity) else Theme.colors.quest, e.ability == true)
+				local color = if def then Theme.rarityColor(def.rarity) else Theme.colors.quest
+				strike(from, to, color, e.ability == true)
 				if e.ability then
 					AudioController.sting("shabriyeh")
+					local ab = def and def.ability
+					if ab then
+						ultimateStrike(ab.kind, from, to, ab.radius or 9, color)
+					end
 				end
 			end
 		end
@@ -224,6 +248,10 @@ local function step(dt: number)
 	if s and s.speed then
 		speedMul = s.speed
 	end
+	-- Only the anchored Root moves; every other part hangs off it on joints. One BulkMoveTo for the
+	-- whole wave instead of a PivotTo (which writes every part) per enemy per frame.
+	local parts: { BasePart } = {}
+	local cframes: { CFrame } = {}
 	for _, rec in enemies do
 		-- Move toward the last reported distance, a little faster than the enemy so we catch up.
 		local maxStep = rec.speed * speedMul * 1.35 * dt
@@ -236,7 +264,14 @@ local function step(dt: number)
 		rec.bob += dt * 10 * speedMul
 		local x, z, ux, uz = Path.position(p, rec.dist)
 		local bob = math.abs(math.sin(rec.bob)) * 0.25
-		rec.model:PivotTo(o * CFrame.lookAt(Vector3.new(x, bob, z), Vector3.new(x + ux, bob, z + uz)))
+		local root = rec.model.PrimaryPart
+		if root then
+			table.insert(parts, root)
+			table.insert(cframes, o * CFrame.lookAt(Vector3.new(x, bob, z), Vector3.new(x + ux, bob, z + uz)) * root.PivotOffset:Inverse())
+		end
+	end
+	if #parts > 0 then
+		Workspace:BulkMoveTo(parts, cframes, Enum.BulkMoveMode.FireCFrameChanged)
 	end
 end
 

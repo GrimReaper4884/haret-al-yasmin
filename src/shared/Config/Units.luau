@@ -2,10 +2,12 @@
 -- The defenders of the lane ("towers"). Pure data. Names and flavour live in Strings
 -- (unit.<id>.name / .desc); visuals describe a primitive rig (Util/RigBuilder).
 --
--- Every character is an ORIGINAL neighbourhood archetype (barber, baker, water carrier, watchman,
--- strongman, headman, the za'im…) inspired by classic Damascus-lane dramas, not a copy of any TV
--- character (docs/COPYRIGHT_REGISTER.md). Display names are plain strings and can be changed in
--- Strings without touching balance.
+-- Since 2026-10-16 (owner's decision, docs/COPYRIGHT_REGISTER.md C-201) most defenders carry the
+-- names and roles of the lane's main characters in the classic Damascus-lane drama (Abu Issam the
+-- barber-hakim, Abu Shehab, Mo'taz…). Ids and balance were kept, only identities moved: e.g. the
+-- legendary healer slot `umm_hara` is Abu Issam. Faces are stylized cartoons, never actor
+-- likenesses. Display names are plain strings and can be changed in Strings without touching
+-- balance.
 --
 -- levels[1] is the stats when placed (placeCost); levels[i>=2].cost is the upgrade price to reach i.
 -- damage per hit, range in studs, cooldown in seconds. splash = radius; slow = speed multiplier
@@ -94,8 +96,8 @@ local Units: { [string]: UnitDef } = {
 		maxPlaced = 4,
 		hitsStealth = true,
 		levels = {
-			L(180, 3, 12, 1.2, { slow = 0.75, slowFor = 1.5 }),
-			L(120, 5, 13, 1.15, { slow = 0.7, slowFor = 1.8 }),
+			L(180, 4, 12, 1.15, { slow = 0.75, slowFor = 1.5 }),
+			L(120, 6, 13, 1.1, { slow = 0.7, slowFor = 1.8 }),
 			L(220, 8, 14, 1.1, { slow = 0.65, slowFor = 2.0 }),
 			L(360, 12, 15, 1.0, { slow = 0.6, slowFor = 2.4 }),
 			L(560, 18, 16, 0.95, { slow = 0.5, slowFor = 2.8 }),
@@ -132,7 +134,7 @@ local Units: { [string]: UnitDef } = {
 			L(520, 22, 15, 1.3, { splash = 5, slow = 0.55, slowFor = 2.4 }),
 			L(800, 34, 16, 1.2, { splash = 5.5, slow = 0.5, slowFor = 2.8 }),
 		},
-		visual = { robe = "#2F3E6B", accent = "#B87333", skin = "#B97F5A", hat = "turban", hatColor = "#FBF8F1", weapon = "jug" },
+		visual = { robe = "#7A3B5C", accent = "#E8B23A", skin = "#C68E64", hat = "scarf", hatColor = "#F1E9DA", weapon = "stick" },
 	},
 	hallaq = {
 		nameKey = "unit.hallaq.name",
@@ -148,7 +150,7 @@ local Units: { [string]: UnitDef } = {
 			L(500, 29, 8.5, 0.42),
 			L(780, 44, 9, 0.38),
 		},
-		visual = { robe = "#FBF8F1", accent = "#1F1B18", skin = "#D2A07A", hat = "tarboosh", hatColor = "#A4302A", weapon = "razor" },
+		visual = { robe = "#FBF8F1", accent = "#2F3E6B", skin = "#D2A07A", hat = "tarboosh", hatColor = "#A4302A", weapon = "razor" },
 	},
 	khayyat = {
 		nameKey = "unit.khayyat.name",
@@ -163,7 +165,7 @@ local Units: { [string]: UnitDef } = {
 			L(480, 25, 21, 0.95),
 			L(740, 38, 22, 0.9),
 		},
-		visual = { robe = "#4A2E18", accent = "#A4302A", skin = "#D2A07A", hat = "tarboosh", hatColor = "#1F1B18", weapon = "needle" },
+		visual = { robe = "#6E5E50", accent = "#A4302A", skin = "#C08A62", hat = "cap", hatColor = "#FBF8F1", weapon = "jug" },
 	},
 	qahwaji = {
 		nameKey = "unit.qahwaji.name",
@@ -283,7 +285,7 @@ local Units: { [string]: UnitDef } = {
 			L(1800, 0, 18, 1, { heal = 24, buff = 1.36 }),
 			L(2600, 0, 19, 1, { heal = 32, buff = 1.45 }),
 		},
-		visual = { robe = "#2F3E6B", accent = "#FBF8F1", skin = "#B97F5A", hat = "scarf", hatColor = "#FBF8F1", weapon = "tray" },
+		visual = { robe = "#EADFC8", accent = "#1F1B18", skin = "#D2A07A", hat = "tarboosh", hatColor = "#A4302A", weapon = "razor" },
 	},
 
 	---------------------------------------------------------------- Mythic
@@ -321,7 +323,7 @@ local Units: { [string]: UnitDef } = {
 			L(4500, 800, 13, 0.38),
 		},
 		ability = { kind = "shabriyeh", cooldown = 7, multiplier = 15 },
-		visual = { robe = "#1F1B18", accent = "#C9A13B", skin = "#C68E64", hat = "tarboosh", hatColor = "#C9A13B", weapon = "dagger", scale = 1.18 },
+		visual = { robe = "#1F1B18", accent = "#C9A13B", skin = "#C68E64", hat = "tarboosh", hatColor = "#A4302A", weapon = "dagger", scale = 1.18 },
 	},
 
 	---------------------------------------------------------------- Secret (codes / events only)

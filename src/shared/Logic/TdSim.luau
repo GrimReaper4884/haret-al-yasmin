@@ -43,12 +43,14 @@ export type Tower = {
 	stats: any, -- UnitLogic.Stats
 	nextAt: number,
 	abilityAt: number,
+	abilityQueued: boolean?, -- the owner tapped the ultimate; fires on the next attack once ready
 	targeting: string, -- "first" | "last" | "strong" | "close"
 	invested: number,
 	kills: number,
 }
 
-export type PlayerState = { cash: number, kills: number, spent: number }
+-- autoAbility: ultimates fire as soon as they are ready (nil counts as on).
+export type PlayerState = { cash: number, kills: number, spent: number, autoAbility: boolean? }
 
 export type Event = { type: string, [string]: any }
 
@@ -270,7 +272,10 @@ local function towersAct(state: State, events: { Event })
 				local damage = st.damage * buffFor(state, t)
 				local ability = false
 				local ab = st.ability
-				if ab and state.time >= t.abilityAt then
+				local owner = state.players[t.owner]
+				local wants = t.abilityQueued == true or owner == nil or owner.autoAbility ~= false
+				if ab and wants and state.time >= t.abilityAt then
+					t.abilityQueued = false
 					if ab.kind == "shabriyeh" then
 						damage *= ab.multiplier
 						ability = true

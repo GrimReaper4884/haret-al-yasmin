@@ -127,6 +127,9 @@ local specs = {
 	require("./monetization.spec"),
 	require("./td.spec"),
 	require("./meta.spec"),
+	require("./settings.spec"),
+	require("./party.spec"),
+	require("./event.spec"),
 }
 for _, spec in specs do
 	spec(t)

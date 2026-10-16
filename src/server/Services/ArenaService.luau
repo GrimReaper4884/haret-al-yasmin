@@ -13,6 +13,7 @@ local TD = require(Shared.Config.TD)
 local Path = require(Shared.Logic.Path)
 local RigBuilder = require(Shared.Util.RigBuilder)
 local Arena = require(script.Parent.Parent:WaitForChild("World"):WaitForChild("Arena"))
+local PropDressing = require(script.Parent.Parent:WaitForChild("World"):WaitForChild("PropDressing"))
 
 local ArenaService = {}
 
@@ -41,6 +42,7 @@ function ArenaService.allocate(arenaId: string): Slot?
 			used[i] = true
 			local origin = CFrame.new(SLOT_X0 + (i - 1) * SLOT_STEP, 0, 0)
 			local model, gate = Arena.build(folder, arenaId, origin)
+			PropDressing.dressArena(model, arenaId, origin, Arenas[arenaId].path)
 			model.Name = string.format("Arena_%d_%s", i, arenaId)
 			local towers = Instance.new("Folder")
 			towers.Name = "Towers"
@@ -86,7 +88,7 @@ function ArenaService.buildTower(slot: Slot, tower: any, ownerName: string): Mod
 			bestD, bx, bz = dist, px, pz
 		end
 	end
-	local model = RigBuilder.build(nil, "Tower_" .. tower.id, unit.visual)
+	local model = RigBuilder.cached(nil, "Tower_" .. tower.id, unit.visual, tower.unitId)
 	local at = slot.origin * CFrame.new(tower.x, 0, tower.z)
 	local look = slot.origin * CFrame.new(bx, 0, bz)
 	model:PivotTo(CFrame.lookAt(at.Position, look.Position))

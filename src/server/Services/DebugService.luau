@@ -75,7 +75,7 @@ function DebugService.start()
 			MatchService.debugAddCash(player, math.clamp(math.floor(tonumber(arg) or 5000), 0, 100000))
 			return true
 		elseif cmd == "place" then
-			local unitId, x, z = string.match(tostring(arg), "^(%w+),(-?[%d%.]+),(-?[%d%.]+)$")
+			local unitId, x, z = string.match(tostring(arg), "^([%w_]+),(-?[%d%.]+),(-?[%d%.]+)$")
 			if not unitId then
 				return "bad arg"
 			end

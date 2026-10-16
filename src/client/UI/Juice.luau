@@ -1,0 +1,164 @@
+--!strict
+-- Small UI motion helpers ("juice"), timings from docs/research/ROBLOX_TD_UI_PATTERNS.md:
+-- press 0.06 s down / 0.18 s Back up, pop-in 0.25 s Back Out, count-up ~0.5 s, shake ±8 px.
+-- Everything respects the player's Reduced Motion setting.
+
+local GuiService = game:GetService("GuiService")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+
+local Fx = require(script.Parent.Fx)
+
+local Juice = {}
+
+local function reduced(): boolean
+	local ok, v = pcall(function()
+		return (GuiService :: any).ReducedMotionEnabled
+	end)
+	return ok and v == true
+end
+
+-- The UIScale every helper animates (created on demand, one per object).
+function Juice.scaleOf(gui: GuiObject): UIScale
+	local s = gui:FindFirstChild("JuiceScale")
+	if s and s:IsA("UIScale") then
+		return s
+	end
+	local n = Instance.new("UIScale")
+	n.Name = "JuiceScale"
+	n.Parent = gui
+	return n
+end
+
+-- Press feedback for a button: squash on press, springy release, slight grow on hover.
+function Juice.press(button: GuiButton)
+	local scale = Juice.scaleOf(button)
+	local hovering = false
+	local function to(v: number, t: number, style: Enum.EasingStyle)
+		TweenService:Create(scale, TweenInfo.new(t, style, Enum.EasingDirection.Out), { Scale = v }):Play()
+	end
+	button.InputBegan:Connect(function(input: InputObject)
+		local kind = input.UserInputType
+		if kind == Enum.UserInputType.MouseButton1 or kind == Enum.UserInputType.Touch then
+			to(0.92, 0.06, Enum.EasingStyle.Quad)
+		elseif kind == Enum.UserInputType.MouseMovement then
+			hovering = true
+			to(1.04, 0.12, Enum.EasingStyle.Quad)
+		end
+	end)
+	button.InputEnded:Connect(function(input: InputObject)
+		local kind = input.UserInputType
+		if kind == Enum.UserInputType.MouseButton1 or kind == Enum.UserInputType.Touch then
+			to(if hovering then 1.04 else 1, 0.18, Enum.EasingStyle.Back)
+		elseif kind == Enum.UserInputType.MouseMovement then
+			hovering = false
+			to(1, 0.15, Enum.EasingStyle.Quad)
+		end
+	end)
+end
+
+-- Pops a panel in (0.8 → 1, Back Out).
+function Juice.pop(gui: GuiObject, from: number?)
+	local scale = Juice.scaleOf(gui)
+	if reduced() then
+		scale.Scale = 1
+		return
+	end
+	scale.Scale = from or 0.8
+	TweenService:Create(scale, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+end
+
+-- A quick punch (1 → 1.15 → 1) to draw the eye to a changed number.
+function Juice.punch(gui: GuiObject, amount: number?)
+	if reduced() then
+		return
+	end
+	local scale = Juice.scaleOf(gui)
+	scale.Scale = 1 + (amount or 0.15)
+	TweenService:Create(scale, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+end
+
+-- Horizontal shake (errors, can't afford).
+function Juice.shake(gui: GuiObject)
+	if reduced() then
+		return
+	end
+	local base = gui.Position
+	task.spawn(function()
+		for _, dx in { 8, -8, 6, -6, 3, 0 } do
+			gui.Position = base + UDim2.fromOffset(dx, 0)
+			task.wait(0.04)
+		end
+		gui.Position = base
+	end)
+end
+
+-- Counts a label up/down from `from` to `to` over ~0.45 s using `format(n)` for the text.
+local counting: { [TextLabel]: number } = {}
+function Juice.count(label: TextLabel, from: number, to: number, format: (number) -> string)
+	if reduced() or from == to then
+		label.Text = format(to)
+		return
+	end
+	local token = (counting[label] or 0) + 1
+	counting[label] = token
+	local start = os.clock()
+	local dur = 0.45
+	local conn: RBXScriptConnection
+	conn = RunService.RenderStepped:Connect(function()
+		if counting[label] ~= token or not label.Parent then
+			conn:Disconnect()
+			return
+		end
+		local k = math.min(1, (os.clock() - start) / dur)
+		local e = 1 - (1 - k) ^ 3
+		label.Text = format(math.floor(from + (to - from) * e + 0.5))
+		if k >= 1 then
+			conn:Disconnect()
+		end
+	end)
+end
+
+-- A narrow white band sweeping across `frame` every few seconds (Legendary+ cards, premium
+-- buttons). Animates only the gradient Offset, the cheap path.
+function Juice.shine(frame: GuiObject, period: number?)
+	local holder = Instance.new("Frame")
+	holder.Name = "Shine"
+	holder.BackgroundColor3 = Color3.new(1, 1, 1)
+	holder.BackgroundTransparency = 0
+	holder.BorderSizePixel = 0
+	holder.Size = UDim2.fromScale(1, 1)
+	holder.ZIndex = frame.ZIndex + 1
+	holder.Active = false
+	holder.Parent = frame
+	local corner = frame:FindFirstChildOfClass("UICorner")
+	if corner then
+		corner:Clone().Parent = holder
+	end
+	local g = Instance.new("UIGradient")
+	g.Rotation = 20
+	g.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1),
+		NumberSequenceKeypoint.new(0.42, 1),
+		NumberSequenceKeypoint.new(0.5, 0.55),
+		NumberSequenceKeypoint.new(0.58, 1),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	g.Offset = Vector2.new(-1, 0)
+	g.Parent = holder
+	if reduced() or not Fx.full() then
+		holder.Visible = false
+		return
+	end
+	task.spawn(function()
+		while holder.Parent and Fx.full() do
+			g.Offset = Vector2.new(-1, 0)
+			local tw = TweenService:Create(g, TweenInfo.new(0.8, Enum.EasingStyle.Linear), { Offset = Vector2.new(1, 0) })
+			tw:Play()
+			tw.Completed:Wait()
+			task.wait(period or 2.2)
+		end
+	end)
+end
+
+return Juice

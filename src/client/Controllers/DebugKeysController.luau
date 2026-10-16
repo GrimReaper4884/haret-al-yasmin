@@ -2,7 +2,7 @@
 -- Studio-only keyboard harness so play-tests can be driven without the mouse:
 --   1 Units · 2 Summon · 3 Diary · 4 Codes · 5 Daily · 6 Store · 7 Summon ×1 · 8 Summon ×10
 --   9 teleport to the Episode 1 portal · 0 teleport to the square · L fill the loadout with the
---   best owned units · X close every screen
+--   best owned units (imported-model units first) · X close every screen
 --   In a match: P place the next loadout unit at your feet · B place it at a road-side spot · U upgrade the last tower you placed
 --   · K vote skip · J sell the last tower · T set speed 2x · C +5000 match cash · H leave · G set the gate to 1 HP.
 -- Never created outside Studio.
@@ -15,6 +15,7 @@ local UserInputService = game:GetService("UserInputService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared.Net)
 local Units = require(Shared.Config.Units)
+local Looks = require(Shared.Config.CharacterLooks)
 local TD = require(Shared.Config.TD)
 local StateController = require(script.Parent.StateController)
 local ShopController = require(script.Parent.ShopController)
@@ -133,8 +134,13 @@ function DebugKeysController.start()
 						table.insert(ids, id)
 					end
 				end
+				-- Units with an imported character model go first so new art always gets play-tested.
+				local function score(id: string): number
+					local look = (Looks :: any)[id]
+					return (rank[(Units :: any)[id].rarity] or 0) + (if look and look.model then 10 else 0)
+				end
 				table.sort(ids, function(a, b)
-					local ra, rb = rank[(Units :: any)[a].rarity] or 0, rank[(Units :: any)[b].rarity] or 0
+					local ra, rb = score(a), score(b)
 					if ra ~= rb then
 						return ra > rb
 					end

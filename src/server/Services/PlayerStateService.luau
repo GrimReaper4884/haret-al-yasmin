@@ -8,6 +8,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared.Net)
 local Validate = require(Shared.Logic.Validate)
+local Settings = require(Shared.Logic.Settings)
 local DataService = require(script.Parent.DataService)
 local RemoteGuard = require(script.Parent.RemoteGuard)
 local Analytics = require(script.Parent.AnalyticsService)
@@ -18,6 +19,14 @@ local pending: { [Player]: boolean } = {}
 local stateSync: RemoteEvent
 local notify: RemoteEvent
 local extras: { (Player, { [string]: any }) -> () } = {}
+
+local function eventsSnapshot(events: { [string]: any }): { [string]: any }
+	local out = {}
+	for id, rec in events do
+		out[id] = { currency = rec.currency, bought = table.clone(rec.bought) }
+	end
+	return out
+end
 
 local function snapshot(player: Player, profile: any): { [string]: any }
 	local quests = {}
@@ -40,6 +49,7 @@ local function snapshot(player: Player, profile: any): { [string]: any }
 		equipped = table.clone(profile.equipped),
 		quests = quests,
 		language = profile.settings.language,
+		settings = Settings.resolve(profile.settings),
 		persistent = DataService.isPersistent(),
 		-- Tower defense
 		units = units,
@@ -61,6 +71,7 @@ local function snapshot(player: Player, profile: any): { [string]: any }
 			bestInfinite = profile.td.bestInfinite,
 		},
 		bundles = table.clone(profile.bundles),
+		events = eventsSnapshot(profile.events),
 	}
 	for _, fn in extras do
 		fn(player, s)
@@ -121,6 +132,19 @@ function PlayerStateService.start()
 			return true
 		end)
 		Analytics.custom(player, "LanguageSet_" .. lang)
+	end)
+
+	RemoteGuard.event(Net.Events.SetSetting, RemoteGuard.DEFAULT, function(player: Player, key: any, value: any)
+		if not Settings.accept(key, value) then
+			return
+		end
+		DataService.mutate(player, function(profile)
+			if profile.settings[key] == value then
+				return false
+			end
+			profile.settings[key] = value
+			return true
+		end)
 	end)
 end
 

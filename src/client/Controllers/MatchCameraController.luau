@@ -1,10 +1,12 @@
 --!strict
--- Overhead "watchtower" camera for matches: a toggle in the match HUD (and the V key) switches
--- between the normal character camera and a tilted top-down view of the whole arena, which is
--- how most players place defenders on a phone. Always restored when the match ends.
+-- Match camera. Matches open on foot behind the player's character (the genre default: you walk
+-- the arena and place defenders around you); the Settings "Match camera" choice can make them open
+-- in the "watchtower" view instead, a tilted top-down view of the whole arena. A toggle in the
+-- match HUD (and the V key) switches between the two. Always restored when the match ends.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
@@ -15,6 +17,7 @@ local Theme = require(UI.Theme)
 local Root = require(UI.Root)
 local MatchController = require(script.Parent.MatchController)
 local LocaleController = require(script.Parent.LocaleController)
+local SettingsController = require(script.Parent.SettingsController)
 
 local MatchCameraController = {}
 
@@ -42,6 +45,9 @@ local function apply()
 	if not camera then
 		return
 	end
+	-- On foot the phone keeps its thumbstick and jump button; the watchtower view hides them so
+	-- taps go to placement.
+	GuiService.TouchControlsEnabled = not overhead
 	if overhead then
 		local target = overheadCFrame()
 		if target then
@@ -79,7 +85,7 @@ function MatchCameraController.start()
 	button.Activated:Connect(MatchCameraController.toggle)
 	MatchController.Started:Connect(function(payload: MatchController.Info)
 		info = payload
-		overhead = true -- matches open in the tactical view
+		overhead = SettingsController.get("camera") == "overhead"
 		button.Visible = true
 		task.delay(0.5, apply)
 	end)

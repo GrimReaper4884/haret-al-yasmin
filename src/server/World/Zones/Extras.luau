@@ -1,5 +1,5 @@
 --!strict
--- Lane extras for the tower-defense update: the mode portals in the square, the coffee house
+-- Lane extras for the tower-defense update: the Play hall in the square, the coffee house
 -- (qahwa) on the square's west side, the barber shop on the lane, painted shop signs, the gate
 -- nameplate, the watchman's corner and the notice board.
 
@@ -8,8 +8,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Palette = require(Shared.Config.Palette)
-local Modes = require(Shared.Config.Modes)
 local Strings = require(Shared.Config.Strings)
+local Events = require(Shared.Config.Events)
+local EventLogic = require(Shared.Logic.EventLogic)
 local World = script.Parent.Parent
 local Kit = require(World.Kit)
 local Props = require(World.Props)
@@ -23,34 +24,60 @@ local function ar(key: string): string
 	return Strings.ar[key] or key
 end
 
-local function portals(map: Instance)
-	local m = Kit.model(map, "Portals")
-	for modeId, mode in Modes :: { [string]: any } do
-		local px, pz = mode.portal[1], mode.portal[2]
-		local p = Kit.model(m, "Portal_" .. modeId)
-		local pad = Kit.part(p, { name = "Pad", size = Vector3.new(8, 0.4, 8), cf = CFrame.new(px, 0.2, pz), color = if mode.kind == "infinite" then Palette.fabricIndigo else Palette.tile, material = M.CeramicTiles })
-		pad:SetAttribute("ModeId", modeId)
-		pad:SetAttribute("Order", mode.order)
-		CollectionService:AddTag(pad, "Portal")
-		Kit.part(p, { name = "Inlay", size = Vector3.new(6, 0.42, 6), cf = CFrame.new(px, 0.2, pz) * CFrame.Angles(0, math.rad(45), 0), color = Palette.jasmine, material = M.CeramicTiles, shadow = false, collide = false })
-		-- Arch on the wall side of the pad, opening toward the fountain
-		local sign = if px < 0 then -1 else 1
-		local bx = px + sign * 3.6
-		for _, dz in { -4, 4 } do
-			Kit.part(p, { name = "Pillar", size = Vector3.new(1.4, 9, 1.4), cf = CFrame.new(bx, 4.5, pz + dz), color = Palette.stoneLight, material = M.Limestone })
-			for _, y in { 2, 4.5, 7 } do
-				Kit.part(p, { name = "Band", size = Vector3.new(1.45, 0.6, 1.45), cf = CFrame.new(bx, y, pz + dz), color = Palette.basalt, material = M.Basalt, shadow = false, collide = false })
-			end
+-- An arched gateway on the square's wall side: a tiled pad under a striped (ablaq) arch with a
+-- lantern and a hanging board. Returns the pad.
+local function archway(parent: Instance, px: number, pz: number, width: number, boardText: string, color: Color3): BasePart
+	local half = width / 2
+	local pad = Kit.part(parent, { name = "Pad", size = Vector3.new(8, 0.4, width), cf = CFrame.new(px, 0.2, pz), color = color, material = M.CeramicTiles })
+	Kit.part(parent, { name = "Inlay", size = Vector3.new(7, 0.42, 7), cf = CFrame.new(px, 0.2, pz) * CFrame.Angles(0, math.rad(45), 0), color = Palette.jasmine, material = M.CeramicTiles, shadow = false, collide = false })
+	local sign = if px < 0 then -1 else 1
+	local bx = px + sign * 4.6
+	for _, dz in { -half, half } do
+		Kit.part(parent, { name = "Pillar", size = Vector3.new(1.6, 11, 1.6), cf = CFrame.new(bx, 5.5, pz + dz), color = Palette.stoneLight, material = M.Limestone })
+		for _, y in { 2, 5, 8 } do
+			Kit.part(parent, { name = "Band", size = Vector3.new(1.65, 0.7, 1.65), cf = CFrame.new(bx, y, pz + dz), color = Palette.basalt, material = M.Basalt, shadow = false, collide = false })
 		end
-		Kit.part(p, { name = "Lintel", size = Vector3.new(1.8, 1.6, 10.4), cf = CFrame.new(bx, 9.8, pz), color = Palette.stoneWarm, material = M.Limestone })
-		for i = 1, 5 do
-			local z = pz - 4 + (i - 0.5) * 8 / 5
-			Kit.part(p, { name = "Voussoir", size = Vector3.new(1.85, 0.9, 8 / 5), cf = CFrame.new(bx, 9.1, z), color = if i % 2 == 0 then Palette.basalt else Palette.stoneLight, material = if i % 2 == 0 then M.Basalt else M.Limestone, shadow = false, collide = false })
-		end
-		Props.lantern(p, Kit.faceFrame(Vector3.new(bx - sign * 0.9, 8.2, pz), Vector3.new(-sign, 0, 0)), 12)
-		-- Hanging board with the mode's Arabic name (the client adds a localized billboard too)
-		Props2.sign(p, Kit.faceFrame(Vector3.new(bx - sign * 0.95, 7.2, pz), Vector3.new(-sign, 0, 0)), 7, ar(mode.nameKey), nil, if mode.kind == "infinite" then Palette.fabricIndigo else Palette.fabricRed)
 	end
+	Kit.part(parent, { name = "Lintel", size = Vector3.new(2, 1.8, width + 2.4), cf = CFrame.new(bx, 12, pz), color = Palette.stoneWarm, material = M.Limestone })
+	local n = 7
+	for i = 1, n do
+		local z = pz - half + (i - 0.5) * width / n
+		Kit.part(parent, { name = "Voussoir", size = Vector3.new(2.05, 1, width / n), cf = CFrame.new(bx, 11.2, z), color = if i % 2 == 0 then Palette.basalt else Palette.stoneLight, material = if i % 2 == 0 then M.Basalt else M.Limestone, shadow = false, collide = false })
+	end
+	for _, dz in { -half + 1.4, half - 1.4 } do
+		Props.lantern(parent, Kit.faceFrame(Vector3.new(bx - sign * 1, 9.6, pz + dz), Vector3.new(-sign, 0, 0)), 14)
+	end
+	Props2.sign(parent, Kit.faceFrame(Vector3.new(bx - sign * 1.05, 8.6, pz), Vector3.new(-sign, 0, 0)), 9, boardText, nil, color)
+	return pad
+end
+
+-- The Play hall on the square's west side: walking in opens the Play panel (story, endless,
+-- event) on the client. The old per-mode portals were folded into it.
+local function playHall(map: Instance)
+	local m = Kit.model(map, "PlayHall")
+	local pad = archway(m, -19, 8, 12, ar("play.hall"), Palette.fabricRed)
+	CollectionService:AddTag(pad, "PlayGate")
+end
+
+-- The event corner on the square's east side, mirroring the Play hall: built only while an event
+-- runs (Config/Events). Walking in opens Play → Event. Dressed for the olive harvest: young olive
+-- trees, crates of olives and oil jars.
+local function eventCorner(map: Instance)
+	local running = EventLogic.active(Events :: any, os.time())
+	if #running == 0 then
+		return
+	end
+	local def = (Events :: any)[running[1]]
+	local m = Kit.model(map, "EventCorner")
+	local pad = archway(m, 19, 8, 12, ar(def.nameKey), Color3.fromHex("#2F7D6B"))
+	pad:SetAttribute("Tab", "event")
+	CollectionService:AddTag(pad, "PlayGate")
+	local OLIVE = Color3.fromHex("#55602F")
+	Props.tree(m, Vector3.new(14.5, 0, 15.5), OLIVE, 0.75)
+	Props.crate(m, CFrame.new(16, 0, 1.2) * CFrame.Angles(0, math.rad(12), 0), OLIVE)
+	Props.crate(m, CFrame.new(17.6, 0, 0.6) * CFrame.Angles(0, math.rad(-8), 0), Color3.fromHex("#2B2F1A"))
+	Props.copperPot(m, Vector3.new(13.6, 0, 1.4), 1.1)
+	Props.copperPot(m, Vector3.new(12.7, 0, 2.5), 0.8)
 end
 
 -- The coffee house on the square's west side (x -40..-24, z -26..0): open ground floor behind
@@ -164,7 +191,8 @@ local function gateDressing(map: Instance)
 end
 
 function Extras.build(map: Instance)
-	portals(map)
+	playHall(map)
+	eventCorner(map)
 	coffeeHouse(map)
 	barber(map)
 	signs(map)

@@ -18,6 +18,7 @@ local Square = require(Zones.Square)
 local House = require(Zones.House)
 local Skyline = require(Zones.Skyline)
 local Extras = require(Zones.Extras)
+local PropDressing = require(World.PropDressing)
 
 local WorldService = {}
 
@@ -48,6 +49,7 @@ function WorldService.build()
 	House.build(map)
 	Skyline.build(map)
 	Extras.build(map)
+	PropDressing.dressLobby(map)
 	bounds(map)
 	map.Parent = Workspace
 

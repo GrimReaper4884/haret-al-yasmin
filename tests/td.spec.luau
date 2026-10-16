@@ -117,6 +117,23 @@ return function(t)
 			t.truthy(w20.spawns[1].hpMul > w10.spawns[1].hpMul)
 			t.truthy(w20.count <= 91, "capped")
 		end)
+		t.it("difficulty growth bites late, boss HP and the endless wall scale on top", function()
+			local ep = Waves.episodes.ep1
+			local nm = TD.DIFFICULTIES.nightmare
+			local n1, m1 = WaveLogic.story(ep, 1, NORMAL), WaveLogic.story(ep, 1, nm)
+			t.eq(m1.spawns[1].hpMul, n1.spawns[1].hpMul * nm.hp, "wave 1 differs only by the base multiplier")
+			local n20, m20 = WaveLogic.story(ep, 20, NORMAL), WaveLogic.story(ep, 20, nm)
+			t.truthy(m20.spawns[1].hpMul / n20.spawns[1].hpMul > 2, "nightmare's late waves are much tougher")
+			local boss = m20.spawns[#m20.spawns]
+			t.truthy(boss.boss)
+			t.eq(boss.hpMul, m20.spawns[1].hpMul * nm.boss)
+			local inf = Waves.infinite
+			local w50 = WaveLogic.infinite(inf, inf.lateFrom, NORMAL).spawns[1].hpMul
+			local w60 = WaveLogic.infinite(inf, inf.lateFrom + 10, NORMAL).spawns[1].hpMul
+			local quad = 1 + inf.hpPerWave * (inf.lateFrom + 10) + inf.hpPerWaveSq * (inf.lateFrom + 10) ^ 2
+			t.truthy(math.abs(w60 - quad * (1 + inf.lateGrowth) ^ 10) < 1e-9, "compounds after lateFrom")
+			t.truthy(w60 > w50)
+		end)
 	end)
 
 	t.describe("TdSim", function()
@@ -150,6 +167,46 @@ return function(t)
 			t.eq(count(ev, "won"), 1)
 			t.eq(s.players.p1.kills, 2)
 			t.eq(s.gateHp, 100)
+		end)
+
+		t.it("ultimates: auto fires on cooldown; manual waits for a tap, and taps are validated", function()
+			local function abilities(events)
+				local n = 0
+				for _, e in events do
+					if e.type == "attack" and e.ability then
+						n += 1
+					end
+				end
+				return n
+			end
+			local function crowd()
+				local spawns = {}
+				for k = 0, 39 do
+					table.insert(spawns, { at = k * 0.5, enemy = "colonel", hpMul = 50, speedMul = 0.2 })
+				end
+				return { spawns = spawns, count = #spawns }
+			end
+			-- Auto (default): fires without being asked.
+			local a = sim(straight, crowd, 1)
+			local _, _, ta = TdTowers.place(a, "p1", "zaim", Units.zaim, 10, 4, 0, nil, rules())
+			t.truthy(abilities(run(a, 25)) >= 1, "auto ultimate fired")
+			-- Manual: never fires until tapped, then once.
+			local m = sim(straight, crowd, 1)
+			m.players.p1.autoAbility = false
+			local _, _, tm = TdTowers.place(m, "p1", "zaim", Units.zaim, 10, 4, 0, nil, rules())
+			t.eq(abilities(run(m, 25)), 0, "manual ultimate waits")
+			local ok, err = TdTowers.useAbility(m, "p2", tm.id)
+			t.eq(ok, false)
+			t.eq(err, "not_yours")
+			t.truthy(TdTowers.useAbility(m, "p1", tm.id))
+			t.eq(abilities(run(m, 2)), 1, "fires once after the tap")
+			ok, err = TdTowers.useAbility(m, "p1", tm.id)
+			t.eq(err, "not_ready", "cooldown restarts")
+			-- A defender without an ultimate.
+			local _, _, tw = TdTowers.place(m, "p1", "walad", Units.walad, 30, 4, 0, nil, rules())
+			ok, err = TdTowers.useAbility(m, "p1", tw.id)
+			t.eq(err, "no_ability")
+			t.truthy(ta)
 		end)
 
 		t.it("non-detecting towers ignore stealth enemies", function()
@@ -377,6 +434,40 @@ return function(t)
 			t.eq(err, "locked_difficulty")
 			t.truthy(MatchRewards.canPlay(p, "infinite", Modes, "nightmare", TD), "infinite has no difficulty ladder")
 			t.eq(MatchRewards.canPlay(p, "nope", Modes, "normal", TD), false)
+		end)
+	end)
+
+	-- The balance targets (docs/TOWER_DEFENSE.md §5), played by the auto-battler on the real config.
+	-- Full report: `lune run tests/balance`.
+	t.describe("Balance (auto-battler)", function()
+		local AutoBattle = require("./autobattle")
+		local function play(mode, diff, policy)
+			return AutoBattle.play(mode, diff, policy, { maxWaves = 120 })
+		end
+
+		t.it("Episode 1 Normal: 4–6 upgraded Rare/Epic win; without upgrades the wave-10 boss breaks you", function()
+			t.truthy(play("ep1", "normal", "re4up").won, "4 R/E + upgrades")
+			t.truthy(play("ep1", "normal", "re6up").won, "6 R/E + upgrades")
+			local r = play("ep1", "normal", "re6")
+			t.eq(r.won, false, "6 R/E without upgrades")
+			t.truthy(r.waves[10].bossLeaked, "the Sergeant gets through")
+			t.eq(play("ep1", "normal", "leg6").won, false, "a Legendary without upgrades still falls")
+		end)
+		t.it("Hard needs upgrades on a bigger team or a Legendary", function()
+			t.eq(play("ep1", "hard", "re6up").won, false)
+			t.eq(play("ep1", "hard", "leg6").won, false)
+			t.truthy(play("ep1", "hard", "re10up").won)
+			t.truthy(play("ep1", "hard", "leg10up").won)
+		end)
+		t.it("Nightmare needs Mythics", function()
+			t.eq(play("ep1", "nightmare", "leg10up").won, false)
+			t.truthy(play("ep1", "nightmare", "myth12up").won)
+		end)
+		t.it("Endless becomes unwinnable between waves 60 and 100", function()
+			local r = play("infinite", "normal", "myth12up")
+			t.truthy(r.lost and r.wavesCleared >= 60 and r.wavesCleared < 100, "Mythic team died after wave " .. r.wavesCleared)
+			local w = play("infinite", "normal", "whale")
+			t.truthy(w.lost and w.wavesCleared < 110, "maxed team died after wave " .. w.wavesCleared)
 		end)
 	end)
 end

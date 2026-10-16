@@ -5,6 +5,7 @@
 local Create = require(script.Parent.Create)
 local Theme = require(script.Parent.Theme)
 local Root = require(script.Parent.Root)
+local Juice = require(script.Parent.Juice)
 
 local Modal = {}
 
@@ -92,8 +93,8 @@ function Modal.create(name: string, maxWidth: number, bodyHeight: number?): Moda
 		Parent = panel,
 	})
 	local title = Theme.label({
-		TextSize = 20,
-		FontFace = Theme.fontBold,
+		TextSize = 22,
+		FontFace = Theme.fontDisplay,
 		Size = UDim2.new(1, -(Theme.TOUCH + 4), 1, 0),
 		ZIndex = 11,
 		Parent = header,
@@ -136,7 +137,11 @@ function Modal.create(name: string, maxWidth: number, bodyHeight: number?): Moda
 		if panel.Visible and not v and self.onClose then
 			self.onClose()
 		end
+		local opening = v and not panel.Visible
 		panel.Visible = v
+		if opening then
+			Juice.pop(panel)
+		end
 	end
 	closers[panel] = function()
 		if self.onClose then

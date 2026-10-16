@@ -5,8 +5,8 @@
 
 return {
 	-- Match
-	START_CASH = 500, -- per player, at the start of a match
-	WAVE_BONUS_BASE = 90, -- cash to every player when a wave is cleared …
+	START_CASH = 600, -- per player, at the start of a match
+	WAVE_BONUS_BASE = 110, -- cash to every player when a wave is cleared …
 	WAVE_BONUS_PER_WAVE = 20, -- … plus this per wave number
 	SKIP_BONUS = 60, -- extra cash to everyone when all players vote to skip the countdown
 	PREP_SECONDS = 15, -- before wave 1
@@ -28,11 +28,15 @@ return {
 	PATH_HALF_WIDTH = 3.2, -- towers must stay this far from the path centreline
 	SELL_REFUND = 0.6, -- fraction of cash invested returned on sell
 
-	-- Difficulty: enemy HP / speed multipliers, reward multiplier, gate HP
+	-- Difficulty: enemy HP multiplier; growth = multiplier on the per-wave HP growth of story
+	-- episodes (the opening waves stay playable with starter cash, the late waves bite); endless =
+	-- the same for Endless Night (its curve is already quadratic); boss = extra boss HP; speed
+	-- multiplier; reward = kill cash and lira multiplier; gate HP. Tuned with `lune run tests/balance`
+	-- (results in docs/TOWER_DEFENSE.md §5).
 	DIFFICULTIES = {
-		normal = { hp = 1.0, speed = 1.0, reward = 1.0, gate = 100, order = 1 },
-		hard = { hp = 1.6, speed = 1.08, reward = 1.6, gate = 60, order = 2 },
-		nightmare = { hp = 2.6, speed = 1.15, reward = 2.4, gate = 35, order = 3 },
+		normal = { hp = 1.0, growth = 1.0, endless = 1.0, boss = 1.0, speed = 1.0, reward = 1.0, gate = 100, order = 1 },
+		hard = { hp = 1.25, growth = 1.7, endless = 1.25, boss = 1.0, speed = 1.05, reward = 1.6, gate = 60, order = 2 },
+		nightmare = { hp = 1.0, growth = 4.5, endless = 1.6, boss = 1.8, speed = 1.1, reward = 2.4, gate = 35, order = 3 },
 	},
 	DIFFICULTY_ORDER = { "normal", "hard", "nightmare" },
 

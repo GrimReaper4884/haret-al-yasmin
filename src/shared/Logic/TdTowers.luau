@@ -120,6 +120,26 @@ local function find(state: any, towerId: any): (any?, number)
 	return nil, 0
 end
 
+-- The owner taps a defender's ultimate. It fires on that defender's next attack (it still needs a
+-- target). Returns ok, err ("not_yours" | "no_ability" | "not_ready" | "match_over").
+function TdTowers.useAbility(state: any, owner: string, towerId: any): (boolean, string?)
+	local t = find(state, towerId)
+	if not t or t.owner ~= owner then
+		return false, "not_yours"
+	end
+	if state.phase == "won" or state.phase == "lost" then
+		return false, "match_over"
+	end
+	if not t.stats.ability then
+		return false, "no_ability"
+	end
+	if state.time < t.abilityAt then
+		return false, "not_ready"
+	end
+	t.abilityQueued = true
+	return true, nil
+end
+
 function TdTowers.upgrade(state: any, owner: string, towerId: any, def: any, rules: Rules): (boolean, string?, any?)
 	local t = find(state, towerId)
 	if not t or t.owner ~= owner then
