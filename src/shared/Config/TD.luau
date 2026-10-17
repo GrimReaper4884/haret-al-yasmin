@@ -10,8 +10,8 @@ return {
 	WAVE_BONUS_PER_WAVE = 20, -- … plus this per wave number
 	SKIP_BONUS = 60, -- extra cash to everyone when all players vote to skip the countdown
 	PREP_SECONDS = 15, -- before wave 1
-	STUN_CHAIN_MAX = 60, -- seconds an enemy can be kept stunned without a break (stun-locks end) …
-	STUN_IMMUNITY = 3, -- … then it ignores stuns for this long
+	STUN_CHAIN_MAX = 6, -- seconds a chain of stuns can hold an enemy (stun-locks end) …
+	STUN_IMMUNITY = 3, -- … then it ignores stuns for this long (an enemy walks at least a third of the time)
 	BETWEEN_WAVES = 9, -- countdown between waves
 	TICK = 1 / 20, -- simulation step (seconds of game time)
 	POSITION_RATE = 0.1, -- seconds between enemy position broadcasts

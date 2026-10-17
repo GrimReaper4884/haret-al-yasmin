@@ -50,7 +50,7 @@ clearing N on Normal; Hard after Normal, Nightmare after Hard, per episode.
 | Stealth | night thieves and spies are invisible to defenders without `hitsStealth` (watchman, barber, 'akeed, za'im, 'arada, cat) |
 | Armor | fraction of damage ignored (bandit 15 %, rider 20 %, sapper 35 %, bosses 20–40 %) |
 | Parties | up to 4; regular enemy HP ×1 / 1.65 / 2.3 / 3.0 and boss HP ×1 / 1.35 / 1.65 / 2.1 for 1–4 players (§5) |
-| Stuns | chain, but an enemy held 60 s without a 3 s break ignores stuns for 3 s |
+| Stuns | chain, but after 6 s of a chain an enemy ignores stuns for 3 s (it walks at least a third of the time) |
 | Support | Abu Badr and Abu Issam multiply the damage of defenders inside their range (best buff wins) |
 | Farm / repair | the coffee-house keeper pays cash per cleared wave; Abu Issam repairs the gate per wave |
 | Abilities | **shabriyeh** ('akeed ×6 / za'im ×10 / great za'im ×15 damage on one hit, every 12 / 9 / 7 s); **sweep** (strongman, 'arada: damage to everything in a radius) |
@@ -152,17 +152,17 @@ plus 4 'Akeeds, 5 stars, za'im's-blood trait.
 | Mode | Diff. | re6 | re4up | re6up | re10up | leg6 | leg10up | myth12up | whale |
 |------|-------|------|------|------|------|------|------|------|------|
 | ep1 | normal | lost w14 | WIN 100/100 | WIN 100/100 | WIN 100/100 | lost w19 | WIN 100/100 | WIN 100/100 | WIN 100/100 |
-| ep1 | hard | lost w10 | lost w19 | lost w14 | WIN 13/60 | lost w11 | WIN 57/60 | WIN 54/60 | WIN 60/60 |
+| ep1 | hard | lost w10 | lost w18 | lost w20 | WIN 15/60 | lost w11 | WIN 57/60 | WIN 54/60 | WIN 60/60 |
 | ep1 | nightmare | lost w9 | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | WIN 32/35 | WIN 35/35 |
-| ep2 | normal | lost w11 | lost w20 | WIN 68/100 | WIN 84/100 | lost w15 | WIN 90/100 | WIN 80/100 | WIN 96/100 |
-| ep2 | hard | lost w9 | lost w10 | lost w9 | lost w10 | lost w10 | WIN 40/60 | WIN 33/60 | WIN 50/60 |
+| ep2 | normal | lost w11 | lost w19 | WIN 74/100 | WIN 83/100 | lost w15 | WIN 90/100 | WIN 80/100 | WIN 96/100 |
+| ep2 | hard | lost w9 | lost w10 | lost w10 | lost w10 | lost w10 | WIN 40/60 | WIN 33/60 | WIN 50/60 |
 | ep2 | nightmare | lost w7 | lost w7 | lost w7 | lost w8 | lost w8 | lost w10 | WIN 3/35 | WIN 22/35 |
-| ep3 | normal | lost w11 | lost w15 | lost w17 | lost w20 | lost w14 | WIN 94/100 | WIN 83/100 | WIN 96/100 |
+| ep3 | normal | lost w11 | lost w15 | lost w13 | lost w20 | lost w14 | WIN 94/100 | WIN 83/100 | WIN 96/100 |
 | ep3 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w20 | WIN 26/60 | WIN 56/60 |
-| ep3 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w10 | lost w15 | WIN 29/35 |
-| infinite | normal | died w12 | died w16 | died w14 | died w16 | died w13 | died w60 | died w79 | died w80 |
-| infinite | hard | died w10 | died w10 | died w10 | died w12 | died w10 | died w19 | died w30 | died w80 |
-| infinite | nightmare | died w9 | died w10 | died w10 | died w10 | died w10 | died w50 | died w60 | died w60 |
+| ep3 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w10 | lost w10 | WIN 29/35 |
+| infinite | normal | died w12 | died w16 | died w14 | died w17 | died w13 | died w21 | died w70 | died w80 |
+| infinite | hard | died w10 | died w10 | died w10 | died w11 | died w10 | died w19 | died w30 | died w70 |
+| infinite | nightmare | died w9 | died w10 | died w10 | died w10 | died w10 | died w30 | died w40 | died w40 |
 
 Reading it: each episode raises the bar by one tier (ep1 Normal: 4 upgraded Rare/Epic; ep2 Normal: 6–10;
 ep3 Normal: a Legendary), Hard adds one tier, Nightmare needs Mythics (ep3 Nightmare also stars/traits).
@@ -201,51 +201,51 @@ Party of 2:
 | Mode | Diff. | re6 | re4up | re6up | re10up | leg6 | leg10up | myth12up | whale |
 |------|-------|------|------|------|------|------|------|------|------|
 | ep1 | normal | lost w15 | WIN 100/100 | WIN 100/100 | WIN 100/100 | lost w20 | WIN 100/100 | WIN 100/100 | WIN 100/100 |
-| ep1 | hard | lost w10 | lost w20 | lost w14 | WIN 12/60 | lost w15 | WIN 55/60 | WIN 59/60 | WIN 60/60 |
+| ep1 | hard | lost w10 | lost w20 | lost w14 | WIN 13/60 | lost w15 | WIN 54/60 | WIN 59/60 | WIN 60/60 |
 | ep1 | nightmare | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | WIN 34/35 | WIN 35/35 |
-| ep2 | normal | lost w13 | lost w25 | WIN 83/100 | WIN 85/100 | lost w17 | WIN 87/100 | WIN 89/100 | WIN 100/100 |
-| ep2 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w11 | WIN 43/60 | WIN 29/60 | WIN 53/60 |
-| ep2 | nightmare | lost w8 | lost w7 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | WIN 22/35 |
-| ep3 | normal | lost w11 | lost w16 | lost w15 | lost w19 | lost w15 | WIN 88/100 | WIN 85/100 | WIN 99/100 |
-| ep3 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w30 | WIN 22/60 | WIN 51/60 |
+| ep2 | normal | lost w12 | lost w24 | WIN 76/100 | WIN 82/100 | lost w17 | WIN 87/100 | WIN 89/100 | WIN 100/100 |
+| ep2 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w11 | WIN 42/60 | WIN 29/60 | WIN 53/60 |
+| ep2 | nightmare | lost w7 | lost w7 | lost w7 | lost w8 | lost w8 | lost w8 | lost w8 | WIN 22/35 |
+| ep3 | normal | lost w11 | lost w16 | lost w16 | lost w19 | lost w15 | WIN 88/100 | WIN 85/100 | WIN 99/100 |
+| ep3 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w20 | WIN 22/60 | WIN 51/60 |
 | ep3 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w9 | lost w10 | lost w9 | WIN 20/35 |
-| infinite | normal | died w12 | died w17 | died w15 | died w17 | died w15 | died w30 | died w80 | died w98 |
-| infinite | hard | died w10 | died w10 | died w10 | died w10 | died w10 | died w20 | died w77 | died w80 |
-| infinite | nightmare | died w10 | died w10 | died w10 | died w10 | died w10 | died w20 | died w60 | died w80 |
+| infinite | normal | died w12 | died w16 | died w14 | died w17 | died w15 | died w22 | died w40 | died w80 |
+| infinite | hard | died w10 | died w10 | died w10 | died w10 | died w10 | died w19 | died w40 | died w70 |
+| infinite | nightmare | died w10 | died w10 | died w10 | died w10 | died w10 | died w10 | died w30 | died w40 |
 
 Party of 3:
 
 | Mode | Diff. | re6 | re4up | re6up | re10up | leg6 | leg10up | myth12up | whale |
 |------|-------|------|------|------|------|------|------|------|------|
 | ep1 | normal | lost w17 | WIN 100/100 | WIN 100/100 | WIN 100/100 | lost w20 | WIN 100/100 | WIN 100/100 | WIN 100/100 |
-| ep1 | hard | lost w10 | WIN 57/60 | lost w20 | WIN 13/60 | lost w16 | WIN 59/60 | WIN 58/60 | WIN 60/60 |
+| ep1 | hard | lost w10 | WIN 53/60 | lost w13 | WIN 13/60 | lost w16 | WIN 60/60 | WIN 58/60 | WIN 60/60 |
 | ep1 | nightmare | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | WIN 31/35 | WIN 35/35 |
-| ep2 | normal | lost w14 | lost w28 | WIN 86/100 | WIN 86/100 | lost w18 | WIN 86/100 | WIN 86/100 | WIN 100/100 |
+| ep2 | normal | lost w13 | lost w28 | WIN 2/100 | WIN 80/100 | lost w18 | WIN 86/100 | WIN 86/100 | WIN 100/100 |
 | ep2 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w12 | WIN 38/60 | WIN 31/60 | WIN 54/60 |
-| ep2 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | WIN 21/35 |
-| ep3 | normal | lost w13 | lost w17 | lost w20 | lost w18 | lost w15 | WIN 90/100 | WIN 77/100 | WIN 100/100 |
-| ep3 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w11 | lost w20 | WIN 30/60 | WIN 52/60 |
-| ep3 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w9 | lost w10 | lost w9 | WIN 22/35 |
-| infinite | normal | died w13 | died w18 | died w20 | died w18 | died w16 | died w30 | died w40 | died w101 |
-| infinite | hard | died w10 | died w10 | died w10 | died w10 | died w13 | died w20 | died w60 | died w80 |
-| infinite | nightmare | died w10 | died w10 | died w10 | died w10 | died w10 | died w10 | died w30 | died w60 |
+| ep2 | nightmare | lost w7 | lost w8 | lost w7 | lost w8 | lost w8 | lost w8 | lost w8 | WIN 21/35 |
+| ep3 | normal | lost w13 | lost w17 | lost w18 | lost w18 | lost w15 | WIN 10/100 | WIN 77/100 | WIN 100/100 |
+| ep3 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w11 | lost w30 | WIN 30/60 | WIN 52/60 |
+| ep3 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w9 | lost w9 | lost w9 | lost w40 |
+| infinite | normal | died w13 | died w18 | died w17 | died w17 | died w16 | died w23 | died w40 | died w80 |
+| infinite | hard | died w10 | died w11 | died w10 | died w10 | died w13 | died w20 | died w40 | died w40 |
+| infinite | nightmare | died w10 | died w10 | died w10 | died w10 | died w10 | died w10 | died w30 | died w40 |
 
 Party of 4:
 
 | Mode | Diff. | re6 | re4up | re6up | re10up | leg6 | leg10up | myth12up | whale |
 |------|-------|------|------|------|------|------|------|------|------|
 | ep1 | normal | lost w17 | WIN 100/100 | WIN 100/100 | WIN 100/100 | lost w20 | WIN 100/100 | WIN 100/100 | WIN 100/100 |
-| ep1 | hard | lost w11 | lost w20 | lost w20 | WIN 9/60 | lost w17 | WIN 59/60 | WIN 59/60 | WIN 60/60 |
-| ep1 | nightmare | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | WIN 34/35 | WIN 35/35 |
-| ep2 | normal | lost w14 | lost w29 | WIN 92/100 | WIN 86/100 | lost w19 | WIN 86/100 | WIN 81/100 | WIN 100/100 |
+| ep1 | hard | lost w10 | WIN 57/60 | lost w16 | WIN 11/60 | lost w16 | WIN 59/60 | WIN 59/60 | WIN 60/60 |
+| ep1 | nightmare | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w20 | WIN 35/35 |
+| ep2 | normal | lost w14 | lost w28 | WIN 5/100 | WIN 86/100 | lost w19 | WIN 86/100 | WIN 81/100 | WIN 100/100 |
 | ep2 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w13 | WIN 36/60 | WIN 27/60 | WIN 54/60 |
 | ep2 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | WIN 24/35 |
-| ep3 | normal | lost w12 | lost w16 | lost w16 | lost w17 | lost w16 | WIN 90/100 | WIN 82/100 | WIN 100/100 |
+| ep3 | normal | lost w12 | lost w16 | lost w16 | lost w17 | lost w16 | WIN 88/100 | WIN 82/100 | WIN 100/100 |
 | ep3 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w12 | lost w20 | lost w10 | WIN 54/60 |
 | ep3 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w9 | lost w9 | WIN 14/35 |
-| infinite | normal | died w13 | died w17 | died w18 | died w19 | died w16 | died w30 | died w40 | died w102 |
-| infinite | hard | died w10 | died w14 | died w10 | died w10 | died w13 | died w20 | died w20 | died w80 |
-| infinite | nightmare | died w10 | died w10 | died w10 | died w10 | died w10 | died w10 | died w30 | died w80 |
+| infinite | normal | died w13 | died w19 | died w16 | died w18 | died w16 | died w29 | died w40 | died w80 |
+| infinite | hard | died w10 | died w13 | died w10 | died w10 | died w13 | died w20 | died w30 | died w70 |
+| infinite | nightmare | died w10 | died w10 | died w10 | died w10 | died w10 | died w10 | died w20 | died w30 |
 
 Reading it: **Episode 1 Normal keeps the solo ladder for 2–4 Rare/Epic players** (no upgrades loses, 4–10
 upgraded Rare/Epic win at full gate), and every story cell matches solo except a few within a wave or a few
@@ -257,11 +257,18 @@ results jump by whole boss waves between nearby multipliers, so it keeps the sto
 needs a better party bot (each bot fills its whole plan before upgrading, which overcrowds the road) and
 live data.
 
-**Stun chains** (`TD.STUN_CHAIN_MAX` 60 s, `TD.STUN_IMMUNITY` 3 s, in `TdSim`): parties of whales stacked
+**Stun chains** (`TD.STUN_CHAIN_MAX`, `TD.STUN_IMMUNITY`, in `TdSim`): parties of whales stacked
 enough Blacksmith/Strongman stuns to hold an endless wave at the spawn forever (wave 80 never ended — a match
 that never finishes). Stuns still chain, but an enemy held for a minute without 3 s of freedom shrugs stuns off
 for 3 s. Solo story results are unchanged; solo endless whales now fall to the wave-80 Commandant on Normal and
 Hard (were w93 / w82), still inside the 60–100 wall.
+
+*2026-10-17 (Discord report "infinite stun"):* a minute was still a lock to players: a pattern of Blacksmiths
+held a wave in place. The cap is now **6 s** of chain, then **3 s** immune, so an enemy walks at least a third of
+the time. Shorter caps (2.5–5 s) let the wave-40 Commandant reach the gate against myth12up (w40, below the
+60–100 endless target); 6–7 s is a stable plateau. Story results move by a few gate HP; endless Mythic/whale
+runs end one or two boss waves earlier (solo Normal myth12up w79 → w70), and a party of 4 myth12up now loses
+ep1 Nightmare at w20, which matches "Nightmare needs the whale" above. Tables above are regenerated.
 
 ## 6. Economy and monetization (details in `MONETIZATION.md`)
 

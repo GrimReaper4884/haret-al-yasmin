@@ -335,10 +335,17 @@ return function(t)
 			end
 			local locked = pinned(nil, nil)
 			t.truthy(locked.dist < 10, "without a cap 4 Blacksmiths + 2 Strongmen hold the Commandant near the spawn (dist " .. locked.dist .. ")")
-			local freed, longest = pinned(5, 1) -- short cap so the test sees it (TD.STUN_CHAIN_MAX is a minute)
+			local freed, longest = pinned(5, 1)
 			t.truthy(longest <= 5 + 1e-9, "no chain longer than the cap, got " .. longest)
-			t.truthy(TD.STUN_CHAIN_MAX > 0 and TD.STUN_IMMUNITY > 0, "the live config caps stun chains")
 			t.truthy(freed.dist > locked.dist + 5, "the capped enemy keeps walking (" .. freed.dist .. " vs " .. locked.dist .. ")")
+			-- The live numbers: a minute-long cap still read as an infinite stun to players (Discord,
+			-- 2026-10-17). An enemy must walk at least a third of the time under any stun pattern.
+			t.truthy(TD.STUN_CHAIN_MAX > 0 and TD.STUN_CHAIN_MAX <= 10, "the live cap is seconds, not a minute")
+			t.truthy(TD.STUN_IMMUNITY / (TD.STUN_CHAIN_MAX + TD.STUN_IMMUNITY) >= 1 / 3, "free at least a third of the time")
+			local live, liveLongest = pinned(TD.STUN_CHAIN_MAX, TD.STUN_IMMUNITY)
+			t.truthy(liveLongest <= TD.STUN_CHAIN_MAX + 1e-9, "live chains end at the cap, got " .. liveLongest)
+			-- The Commandant walks 40 s × its speed unstunned; with the live cap it covers at least a third.
+			t.truthy(live.dist >= Enemies.colonel.speed * (40 - 1) / 3, "the live cap keeps it walking (dist " .. live.dist .. ")")
 		end)
 
 		t.it("a fractional cash share still pays whole wave bonuses", function()
