@@ -686,3 +686,15 @@ Verdict: external (Studio or a plugin), ignored (D-020).
 | Art | 23 painted icons cut to 256² alpha (`assets/marketing/icons/`); all 23 at 30 px on dark and light (`pvc04_icons_at_30px_2026-10-18.png`): every one reads, the sling recut with `--all-white` (its loop kept a white fill) |
 | Registry | `Config/Icons` gains ui_shop, act_*, role_*, gem; primitive fallbacks drawn for each (`pvc04_fallback_drawers_2026-10-18.jpg`); `tests/icons.spec.luau` green (251) |
 | Open | upload (41 images now pending in `tools/upload_manifest.json`), then the rail / match buttons / role badges show the painted versions with no further code: `Icons.draw` already prefers ids |
+
+### PV-E01 atmosphere and lighting (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 252 specs (new: flicker stays in 0.9–1.1, moves smoothly at 15 Hz, seeds differ; night denser than day; ≤ 40 lights) |
+| Lighting children before | place `Atmosphere` d 0.30 + our `LaneHaze` d 0.32, place `Bloom` 1.0/24 + our `SoftBloom` 0.35/22, SunRays 0.04 |
+| After | one `LaneHaze` 0.32 (day) / 0.45 (night, #2E3550), one `SoftBloom` 0.35/24, SunRays 0.08, `NightGrade` cool +0.05 contrast at night and neutral by day; Sky stars 3000 |
+| Lanterns | 17 lights flickering near the camera in the lobby |
+| FPS (Studio window, focused) | lobby 60.0, Episode 1 match 60.0 (same as before) |
+| Captures (same cameras) | lobby `[0,10,75]→[0,6,0]`: `pve01_lobby_before_*` → `pve01_lobby_after_*` (warm daylight, softer bloom); arena `[3000,75,50]→[3000,20,-12]`: `pve01_arena_night_before_*` (grey fog) → `pve01_arena_night_after_*` (blue night, lantern pools) |
+| Restore | leaving the match: haze 0.32 #DEC8AA, NightGrade neutral, ClockTime 15.6 |

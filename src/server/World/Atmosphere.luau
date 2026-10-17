@@ -4,6 +4,9 @@
 -- down automatically on low graphics quality).
 
 local Lighting = game:GetService("Lighting")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Look = require(ReplicatedStorage:WaitForChild("Shared").Config.Lighting)
 
 local Atmosphere = {}
 
@@ -18,7 +21,20 @@ local function ensure(className: string, name: string): Instance
 	return inst
 end
 
+-- The place file ships Studio's default Atmosphere, Bloom and SunRays. Two hazes or two blooms
+-- stack (the night read grey), so at runtime only ours stay (PV-E01; the place file is untouched).
+local OURS = { LaneHaze = true, WarmGrade = true, SoftBloom = true, SunRays = true, HaretMoments = true, NightGrade = true }
+local function dropStrays()
+	for _, c in Lighting:GetChildren() do
+		local effect = c:IsA("Atmosphere") or c:IsA("BloomEffect") or c:IsA("SunRaysEffect") or c:IsA("ColorCorrectionEffect")
+		if effect and not OURS[c.Name] then
+			c:Destroy()
+		end
+	end
+end
+
 function Atmosphere.apply()
+	dropStrays()
 	Lighting.ClockTime = 15.6
 	Lighting.GeographicLatitude = 33.5
 	Lighting.Brightness = 2.4
@@ -30,10 +46,10 @@ function Atmosphere.apply()
 	Lighting.GlobalShadows = true
 
 	local atm = ensure("Atmosphere", "LaneHaze") :: Atmosphere
-	atm.Density = 0.32
+	atm.Density = Look.day.density
 	atm.Offset = 0.15
-	atm.Color = Color3.fromRGB(222, 200, 170)
-	atm.Decay = Color3.fromRGB(150, 120, 100)
+	atm.Color = Color3.fromHex(Look.day.hazeColor)
+	atm.Decay = Color3.fromHex(Look.day.hazeDecay)
 	atm.Glare = 0.2
 	atm.Haze = 1.4
 
@@ -44,13 +60,18 @@ function Atmosphere.apply()
 	cc.TintColor = Color3.fromRGB(255, 246, 232)
 
 	local bloom = ensure("BloomEffect", "SoftBloom") :: BloomEffect
-	bloom.Intensity = 0.35
-	bloom.Size = 22
+	bloom.Intensity = Look.day.bloom
+	bloom.Size = Look.day.bloomSize
 	bloom.Threshold = 1.6
 
 	local rays = ensure("SunRaysEffect", "SunRays") :: SunRaysEffect
-	rays.Intensity = 0.04
+	rays.Intensity = Look.day.sunRays
 	rays.Spread = 0.6
+
+	local sky = Lighting:FindFirstChildOfClass("Sky")
+	if sky then
+		sky.StarCount = Look.day.stars
+	end
 end
 
 return Atmosphere

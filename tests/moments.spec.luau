@@ -64,6 +64,27 @@ return function(t)
 			t.eq(Motion.allowed("wobble", "full", false, false), true)
 		end)
 
+		t.it("lantern flicker stays in range and moves smoothly (PV-E01)", function()
+			local Flicker = t.logic("Flicker")
+			local L = t.config("Lighting")
+			local f = L.flicker
+			local prev = nil
+			local lo, hi = math.huge, -math.huge
+			for i = 0, 600 do
+				local tt = i / f.hz
+				local v = Flicker.value(tt, 3.7, f.min, f.max)
+				t.truthy(v >= f.min - 1e-9 and v <= f.max + 1e-9, "in range")
+				if prev then
+					t.truthy(math.abs(v - prev) <= (f.max - f.min) * 0.5, "no strobe between ticks")
+				end
+				prev = v
+				lo, hi = math.min(lo, v), math.max(hi, v)
+			end
+			t.truthy(hi - lo > (f.max - f.min) * 0.4, "it does flicker")
+			t.truthy(Flicker.value(1, 1, f.min, f.max) ~= Flicker.value(1, 2, f.min, f.max), "seeds differ")
+			t.truthy(L.night.density > L.day.density and L.flicker.maxLights <= 40)
+		end)
+
 		t.it("the cutscenes setting exists, is a boolean and defaults on", function()
 			t.truthy(Settings.accept("cutscenes", false))
 			t.eq(Settings.accept("cutscenes", "off"), false)

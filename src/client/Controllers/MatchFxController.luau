@@ -14,6 +14,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Enemies = require(Shared.Config.Enemies)
 local Units = require(Shared.Config.Units)
 local Vfx = require(Shared.Config.Vfx)
+local LightLook = require(Shared.Config.Lighting)
 local Arenas = require(Shared.Config.Arenas)
 local Locale = require(Shared.Util.Locale)
 local MatchMoments = require(Shared.Logic.MatchMoments)
@@ -110,6 +111,29 @@ local function setNight(on: boolean)
 	TweenService:Create(Lighting, TweenInfo.new(2.5, Enum.EasingStyle.Sine), {
 		ClockTime = if on then 19.4 else dayClock,
 		Brightness = if on then 1.4 else dayBrightness,
+	}):Play()
+	-- PV-E01: denser haze and a slightly cool grade at night (client only; Config/Lighting).
+	local N = LightLook.night
+	local tw = TweenInfo.new(N.blend, Enum.EasingStyle.Sine)
+	local haze = Lighting:FindFirstChild("LaneHaze")
+	if haze and haze:IsA("Atmosphere") then
+		local D = LightLook.day
+		TweenService:Create(haze, tw, {
+			Density = if on then N.density else D.density,
+			Color = Color3.fromHex(if on then N.hazeColor else D.hazeColor),
+			Decay = Color3.fromHex(if on then N.hazeDecay else D.hazeDecay),
+		}):Play()
+	end
+	local grade = Lighting:FindFirstChild("NightGrade")
+	if not grade then
+		local n = Instance.new("ColorCorrectionEffect")
+		n.Name = "NightGrade"
+		n.Parent = Lighting
+		grade = n
+	end
+	TweenService:Create(grade :: ColorCorrectionEffect, tw, {
+		TintColor = if on then Color3.fromHex(N.tint) else Color3.new(1, 1, 1),
+		Contrast = if on then N.contrast else 0,
 	}):Play()
 end
 
@@ -515,19 +539,18 @@ local function finalWave(origin: Vector3)
 	local m = Vfx.MOMENTS
 	local tw = TweenInfo.new(m.finalLife, Enum.EasingStyle.Sine)
 	TweenService:Create(colorGrade(), tw, { TintColor = Color3.fromHex(m.finalTint) }):Play()
-	local atmo = Lighting:FindFirstChildOfClass("Atmosphere")
+	local atmo = Lighting:FindFirstChild("LaneHaze") :: Atmosphere?
 	if atmo then
 		atmoBase = atmoBase or atmo.Density
 		TweenService:Create(atmo, tw, { Density = math.min(1, (atmoBase :: number) + m.finalDensity) }):Play()
 	end
 	local arena = arenaModel(origin)
 	if arena then
+		-- AmbienceController multiplies each lantern by its "Boost" attribute while it flickers.
 		for _, l in arena:GetDescendants() do
 			if l:IsA("PointLight") or l:IsA("SpotLight") then
-				if boosted[l] == nil then
-					boosted[l] = l.Brightness
-				end
-				TweenService:Create(l, tw, { Brightness = boosted[l] * m.lanternBoost }):Play()
+				boosted[l] = 1
+				l:SetAttribute("Boost", m.lanternBoost)
 			end
 		end
 	end
@@ -539,14 +562,14 @@ local function restoreMoments()
 		g.TintColor = Color3.new(1, 1, 1)
 		g.Saturation = 0
 	end
-	local atmo = Lighting:FindFirstChildOfClass("Atmosphere")
+	local atmo = Lighting:FindFirstChild("LaneHaze") :: Atmosphere?
 	if atmo and atmoBase then
 		atmo.Density = atmoBase
 	end
 	atmoBase = nil
-	for l, b in boosted do
+	for l in boosted do
 		if l.Parent then
-			l.Brightness = b
+			l:SetAttribute("Boost", nil)
 		end
 	end
 	boosted = {}
