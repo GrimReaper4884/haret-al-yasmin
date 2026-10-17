@@ -1,10 +1,10 @@
 # Red-team pass (BUILD_PLAN P3-09)
 
-Date: 2026-10-17 · branch `phase/0` · Studio place not open (Phase 2 is owner-gated), so this pass is a
-**code read of every remote handler plus pure specs** (`tests/redteam.spec.luau`, 40 cases, in
-`lune run tests/run`). The Studio-side fuzzer (`RemoteFuzz.luau`, 1,000 random calls per remote from a
-Client context, profile checksum) and the two-session lock test need the place open and **Test → Clients
-and Servers** (owner); they are listed under *Open* at the end.
+Date: 2026-10-17 · branch `phase/0`. Two halves: a **code read of every remote handler plus pure specs**
+(`tests/redteam.spec.luau`, 40 cases, in `lune run tests/run`), done while the Studio place was closed, and
+the **Studio run** once it opened: `RemoteFuzz.luau` (33e81d3) measured the server while a Client-context
+probe fired every remote 1,000 times with hostile arguments, and a foreign session lock was planted on the
+live profile record to prove a second server is refused. Results in *Studio run* at the end.
 
 Every handler was asked the same questions: what if it fires 1,000×/s; NaN / ±inf / 1e308 / 2^53 /
 negative / fractional numbers; non-string ids; 65+ character or NUL / Arabic strings; ids not in Config;
@@ -77,7 +77,7 @@ conscious decision.
 | `DataService.mutate` | mutate before load / after release; a Logic function that errors mid-way; 1,000 mutations | pass (noted) | Refuses with `not_loaded` unless the entry is loaded and not released; every write runs through `Ledger.mutate`. A mutation that **errors after writing** leaves the partial write in the live profile (the service `pcall` only stops the error reaching the client) and the autosave persists it. No shipped Logic module writes before validating, and `Grants.apply` ignores hostile amounts instead of erroring; keep it that way. Spec: *a mutation that errors mid-way leaves no ledger line*. |
 | `Ledger.commit` | hostile `meta` (NaN src, table src, NaN seed, numeric key); replayed key with a real balance change; 1,000 mutations; hostile stored entries | pass (noted) | `src` falls back to `unknown`, seeds must be finite, the ring never exceeds `LEDGER_SIZE`, `sanitize` drops malformed entries and trims text to 64. **Note:** the ledger's key dedupe is an audit convenience, not the guard: a replayed key with a changed balance is *not* recorded, so a double grant would be invisible here. The guards are `profile.receipts` and `profile.codes`, both specced. Spec: *Grants and the audit ledger* ×5. |
 | `Grants.apply` | NaN / −inf / negative / fractional / string / table amounts; 1e308 and 2^53; unknown item or unit | pass | Positive finite integers only; caps at `MAX_LIRA`, `MAX_QIRSH`, `MAX_TRAIT_STONES`. Spec: *hostile reward amounts*. |
-| Session lock (`DataService.tryLoad` / `save`) | second server loads the same profile; stale lock | pass by code read, **open** in Studio | A lock held by another `JobId` younger than `LOCK_STALE_SECONDS` (600 s) refuses the load; after `LOAD_LOCK_RETRIES × LOAD_LOCK_WAIT` (30 s) the player is kicked with `kick.session_locked` and the entry is marked released, so nothing is ever saved over data that failed to load. `save` re-reads the lock inside `store:update` and refuses (`lost`, kick) when another job owns it. The live two-client test is the owner's (Test → Clients and Servers). |
+| Session lock (`DataService.tryLoad` / `save`) | second server loads the same profile; stale lock | pass (code read + Studio, see *Studio run*) | A lock held by another `JobId` younger than `LOCK_STALE_SECONDS` (600 s) refuses the load; after `LOAD_LOCK_RETRIES × LOAD_LOCK_WAIT` (30 s) the player is kicked with `kick.session_locked` and the entry is marked released, so nothing is ever saved over data that failed to load. `save` re-reads the lock inside `store:update` and refuses (`lost`, kick) when another job owns it. Studio: `foreignLock` + `reload` produced both refusals and the kick in 7.2 s (below). |
 | `DebugCommand` / `HaretDebug` | any player in Studio grants lira, places, teleports | pass | Studio only: `DebugService.start` returns before creating the hook or connecting the remote when `RunService:IsStudio()` is false. |
 
 ## Fixes in this pass
@@ -88,10 +88,49 @@ conscious decision.
 | `70f07e0` | `MetaService.setLoadout` answers `in_match` while the player's match is running | server glue (no pure seam); `luau-lsp` strict |
 | `6d6b054` | `MatchService.destroyMatch` is idempotent, so an early Back from the result screen cannot double-release an arena slot | server glue; `luau-lsp` strict |
 | `da09112` | `tests/redteam.spec.luau` (40 cases) registered in `tests/run.luau` | `lune run tests/run`: 227 passed |
+| `33e81d3` | `RemoteFuzz.luau` (Studio only) + `HaretDebug` `fuzz begin|end` and `foreignLock` commands | the Studio run below |
 
-## Open (needs the owner or the Studio place)
+## Studio run (2026-10-17, TEST place, Play Solo, real DataStore, the owner's profile)
 
-1. **Studio fuzz run** (`RemoteFuzz.luau` from BUILD_PLAN P3-09): 1,000 random calls per remote from a Client context with a profile checksum before and after, plus the rate-limit toasts. Needs the place open; the pure specs above cover every guard the fuzzer would hit, so the run is confirmation.
-2. **Two-session lock test**: Test → Clients and Servers, two clients on one account is not possible; the owner can join the TEST place from a second device while a Studio server holds the lock and should be kicked with the "session locked" message within 30 s.
-3. **Design decision: party difficulty piggy-back** (table above). No code change made.
-4. **Design note: `SetLoadout` during the result screen** is still allowed (the match has ended); placing is impossible then, so there is no exposure.
+Build `phase/0` at 33e81d3. Console at start: `[HaretAlYasmin] server ready`, no errors or warnings from
+our code. Today's daily was already claimed and `YASMIN` already redeemed on this profile, so the fuzz's
+`ClaimDaily` calls and `"YASMIN"` arguments were genuine replays.
+
+**Fuzz.** Server: `HaretDebug:Invoke("fuzz", "begin")`. Client-context `execute_luau`: for every remote in
+`ReplicatedStorage.Remotes` except `DebugCommand` (the Studio harness remote), 1,000 calls with 0–3
+arguments drawn from a hostile pool (NaN, ±inf, 1e308, 2^53, −1, 0, 2, 11, 1.5, "", " ", "0", "11",
+"nobody", Arabic, a NUL string, 65 and 10,000 chars, "YASMIN", "MONEY50K", "__index", "free2",
+"Premium", `{1}`, `{"nobody"}`, `{NaN}`, `{{}}`, true, false; never a value that is valid for some remote,
+and no empty or hash-only table, which `SetLoadout` rightly reads as an empty loadout). Events were fired
+in chunks of 250 per frame; functions through 25 coroutines of 40 invokes. Server: `fuzz end`.
+
+| Measure | Result |
+|---|---|
+| Calls | 34 events × 1,000 fires + 14 functions × 1,000 invokes, 32 s on the client, 54 s window |
+| Profile | **unchanged** byte for byte (2,015 bytes JSON); ledger 2 → 2 entries; `changedKeys = []` |
+| Function results | **0 × `ok = true`**; 0 invoke errors; every refusal a known code (`bad_request`, `not_in_match`, `bad_code`, `match_only`, `unknown_event`, `bad_loadout`, `already_claimed`, `gone`) |
+| Rate limits | 32,801 throttles; per function 985 (DEFAULT) or 996 (STRICT) of 1,000 invokes answered `rate_limited`; 5 `notify.slow_down` toasts let through, the rest counted |
+| Handler errors (`[RemoteGuard]`) | **0** |
+| Other output | engine only: "Remote event invocation queue exhausted … did you forget to implement OnServerEvent?" for the server→client-only events (no server handler, events dropped), and "Unreliable Event dropped as its payload is too large" for the 10,000-char string on `EnemyPositions`. Nothing from `src/` |
+| Server state | not in a match, 0 matches, not in the AFK room; character drifted 6.4 studs (spawn settling: still at the lane, 67 studs from the home pad, 2,991 from the room) |
+
+Note (noise, not a hole): a client can fill the engine's queue on server→client-only remotes and produce
+those warnings; a no-op `OnServerEvent` in `Net.serverSetup` would silence it. Left as is.
+
+**Session lock.** Server: `foreignLock` (a fresh lock owned by job `redteam-other-server` written onto
+`u_2465538767`), then `reload` (final save + load again), then the lock cleared.
+
+| Step | Console / result |
+|---|---|
+| save with a foreign lock | `[DataService] session lock lost for u_2465538767; not saving` → client kicked (`kick.session_lost`) after 7.2 s |
+| load with a foreign fresh lock | `[DataService] load failed for Grimreaper844848: locked` (the retry loop stops at once because the player is gone; a real second server retries 5 × 6 s, then kicks `kick.session_locked`) |
+| record afterwards | `data` intact (lira 50,840, `savedAt` from before the test), foreign lock cleared, so the owner can rejoin at once |
+
+Gotcha found on the way: `HaretDebug` resolves "the first player", so after the kick the clear had to be
+done from the server VM through `DataStoreService`; the command now also takes `"clear <userId>"`.
+
+## Open (owner decisions, no code pending)
+
+1. **Design decision: party difficulty piggy-back** (table above). No code change made.
+2. **Design note: `SetLoadout` during the result screen** is still allowed (the match has ended); placing is impossible then, so there is no exposure.
+3. **Two devices on the live game**: the lock test above exercised both refusal paths on the real DataStore from one client; a join from a second device while a Studio server holds the lock would show the player-facing `kick.session_locked` message after the 30 s retry window. Optional confirmation.

@@ -506,3 +506,15 @@ towers (the 4-player cap); `MatchEvents` batch 100 B avg, 3 KB max. Server ✅. 
 Studio throttled RenderStepped to a flat 66.7 ms (Heartbeat 16.7 ms) because the window was unfocused during
 MCP driving, so no honest FPS number exists yet; the phone check needs the Device Emulator.
 
+### P3-09 red-team pass (Studio half)
+
+*Build: `phase/0` at 33e81d3 · Persistence: real DataStore (the owner's TEST profile) · Console at start:
+`[HaretAlYasmin] server ready`, nothing from our code.*
+
+| Check | Result |
+|---|---|
+| Fuzz: 34 events × 1,000 fires + 14 RemoteFunctions × 1,000 invokes, hostile arguments, Client context | profile unchanged byte for byte (2,015 B, ledger 2 → 2); 0 `ok = true`; 0 `[RemoteGuard]` handler errors; 32,801 throttles (985–996 of every 1,000 invokes `rate_limited`); no match, party or AFK session created |
+| Console during the fuzz | engine only: queue-exhausted warnings on server→client-only remotes and "Unreliable Event dropped" for the 10,000-char string; nothing from `src/` |
+| Session lock: foreign lock + reload | `session lock lost … not saving` and `load failed …: locked`; client kicked in 7.2 s; record intact and the lock cleared afterwards |
+
+Full table and the driver: `docs/review/REDTEAM_P3-09.md`.

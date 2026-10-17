@@ -210,7 +210,7 @@ models, red-teaming, onboarding measurement, and live ops.
 - [ ] **P3-08 Mobile UI pass** · deps: P2-17
   - **Goal:** Touch targets ≥ 44 px, safe areas, portrait-proof modals, touch placement.
   - **Accept:** screenshots at phone and tablet via `rbx-device-simulator-lua`; a real-device run (owner, STOP) for touch placement.
-- [!] **P3-09 Red-team pass** · deps: P2-15 · da09112 (pure specs + 4 fixes, `docs/review/REDTEAM_P3-09.md`); the Studio `RemoteFuzz` run and the two-session lock test need the place open and a second client (owner)
+- [x] **P3-09 Red-team pass** · deps: P2-15 · 33e81d3 (pure specs + 4 fixes, then the Studio fuzz run and the session-lock test: `docs/review/REDTEAM_P3-09.md`)
   - **Create:** `src/server/Services/RemoteFuzz.luau` (Studio only): every remote, 1,000 fuzzed calls each from a Client context (random types, NaN/inf, huge strings, other players' ids, replayed receipts and codes).
   - **Accept:** 0 state changes from invalid calls (profile checksum unchanged), rate limits trip; a two-session lock test refuses the second session; findings in `docs/security/redteam-P3.md`.
 - [ ] **P3-10 Arabic and cultural review** · deps: none · STOP
