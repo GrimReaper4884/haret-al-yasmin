@@ -1,0 +1,25 @@
+{
+  "id": "haddad",
+  "tasks": {
+    "concept": "01a14688-6fed-7394-a5c3-d5c35bd7dff1",
+    "mesh": "01a14689-860d-74f2-b3dc-de4a6f2ff28c",
+    "rig": "01a1468a-cb8c-764e-bb02-7a25382bbdbe",
+    "anim_idle": "01a1468b-1921-77aa-98d7-abec71b9bbd9",
+    "anim_attack": "01a1468b-3c1e-71f3-b7e4-2487ddf31fb8",
+    "clip_axebreathe": "01a14794-9b01-74f9-88c6-003184e10a06",
+    "clip_hammer": "01a14794-d6be-77a5-abd4-40c3a365165b"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3,
+    "clip_axebreathe": 3,
+    "clip_hammer": 3
+  },
+  "clips": {
+    "axebreathe": 335,
+    "hammer": 128
+  }
+}

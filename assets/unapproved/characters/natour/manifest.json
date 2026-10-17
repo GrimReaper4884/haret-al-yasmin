@@ -1,0 +1,25 @@
+{
+  "id": "natour",
+  "tasks": {
+    "concept": "01a141fa-31cc-75e4-812b-495d28180f93",
+    "mesh": "01a14216-b45c-7283-b26b-8538e4019e8c",
+    "rig": "01a14218-445d-73cf-a3c3-ba82f1a98a81",
+    "anim_idle": "01a14218-8cfd-7403-acbf-536bd19abbc1",
+    "anim_attack": "01a14218-af3b-73ee-b6a5-6fed0b89f417",
+    "clip_spell": "01a14794-9a77-7116-9fcf-93068340d76f",
+    "clip_torch": "01a14794-bb4e-751d-b790-240791fca6f0"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3,
+    "clip_spell": 3,
+    "clip_torch": 3
+  },
+  "clips": {
+    "spell": 125,
+    "torch": 337
+  }
+}

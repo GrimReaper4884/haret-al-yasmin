@@ -1,0 +1,353 @@
+--!strict
+-- The defenders of the lane ("towers"). Pure data. Names and flavour live in Strings
+-- (unit.<id>.name / .desc); visuals describe a primitive rig (Util/RigBuilder).
+--
+-- Since 2026-10-16 (owner's decision, docs/COPYRIGHT_REGISTER.md C-201) most defenders carry the
+-- names and roles of the lane's main characters in the classic Damascus-lane drama (Abu Issam the
+-- barber-hakim, Abu Shehab, Mo'taz…). Ids and balance were kept, only identities moved: e.g. the
+-- legendary healer slot `umm_hara` is Abu Issam. Faces are stylized cartoons, never actor
+-- likenesses. Display names are plain strings and can be changed in Strings without touching
+-- balance.
+--
+-- levels[1] is the stats when placed (placeCost); levels[i>=2].cost is the upgrade price to reach i.
+-- damage per hit, range in studs, cooldown in seconds. splash = radius; slow = speed multiplier
+-- applied for slowFor seconds; buff = damage multiplier granted to towers in range (support);
+-- income = cash per cleared wave (farm); heal = gate HP per cleared wave (healer).
+
+export type Rarity = "rare" | "epic" | "legendary" | "mythic" | "secret"
+export type Role = "melee" | "ranged" | "splash" | "support" | "farm" | "healer"
+
+export type Level = {
+	cost: number,
+	damage: number,
+	range: number,
+	cooldown: number,
+	splash: number?,
+	slow: number?,
+	slowFor: number?,
+	stun: number?,
+	buff: number?,
+	income: number?,
+	heal: number?,
+}
+
+export type Ability = {
+	kind: "shabriyeh" | "sweep",
+	cooldown: number, -- seconds
+	multiplier: number, -- damage multiplier on the target (shabriyeh) or on everything in radius (sweep)
+	radius: number?,
+}
+
+export type Visual = {
+	robe: string, -- hex
+	accent: string, -- hex (sash / waistcoat)
+	skin: string,
+	hat: "tarboosh" | "cap" | "hatta" | "scarf" | "none" | "turban" | "kepi" | "helmet",
+	hatColor: string,
+	weapon: "stick" | "dagger" | "razor" | "sling" | "jug" | "lantern" | "needle" | "hammer" | "tray" | "none" | "sword" | "bread" | "cat" | "rifle" | "sack",
+	scale: number?,
+}
+
+export type UnitDef = {
+	nameKey: string,
+	descKey: string,
+	rarity: Rarity,
+	role: Role,
+	maxPlaced: number,
+	hitsStealth: boolean?,
+	levels: { Level },
+	ability: Ability?,
+	visual: Visual,
+	noBanner: boolean?, -- secret / event units never come from a banner
+}
+
+local function L(cost: number, damage: number, range: number, cooldown: number, extra: { [string]: any }?): Level
+	local l: any = { cost = cost, damage = damage, range = range, cooldown = cooldown }
+	if extra then
+		for k, v in extra do
+			l[k] = v
+		end
+	end
+	return l
+end
+
+local Units: { [string]: UnitDef } = {
+	---------------------------------------------------------------- Rare (starters)
+	walad = {
+		nameKey = "unit.walad.name",
+		descKey = "unit.walad.desc",
+		rarity = "rare",
+		role = "ranged",
+		maxPlaced = 8,
+		hitsStealth = true, -- the starter must be able to stop Episode 1's night thieves
+		levels = {
+			L(120, 4, 14, 1.0),
+			L(90, 6, 15, 0.95),
+			L(160, 9, 16, 0.9),
+			L(260, 14, 17, 0.85),
+			L(420, 22, 18, 0.8),
+		},
+		visual = { robe = "#EADFC8", accent = "#2F3E6B", skin = "#C68E64", hat = "cap", hatColor = "#FBF8F1", weapon = "sling", scale = 0.85 },
+	},
+	natour = {
+		nameKey = "unit.natour.name",
+		descKey = "unit.natour.desc",
+		rarity = "rare",
+		role = "ranged",
+		maxPlaced = 4,
+		hitsStealth = true,
+		levels = {
+			L(180, 4, 12, 1.15, { slow = 0.75, slowFor = 1.5 }),
+			L(120, 6, 13, 1.1, { slow = 0.7, slowFor = 1.8 }),
+			L(220, 8, 14, 1.1, { slow = 0.65, slowFor = 2.0 }),
+			L(360, 12, 15, 1.0, { slow = 0.6, slowFor = 2.4 }),
+			L(560, 18, 16, 0.95, { slow = 0.5, slowFor = 2.8 }),
+		},
+		visual = { robe = "#4A2E18", accent = "#B87333", skin = "#B97F5A", hat = "hatta", hatColor = "#EFE6D2", weapon = "lantern" },
+	},
+	farran = {
+		nameKey = "unit.farran.name",
+		descKey = "unit.farran.desc",
+		rarity = "rare",
+		role = "splash",
+		maxPlaced = 6,
+		levels = {
+			L(220, 5, 11, 1.6, { splash = 3 }),
+			L(150, 8, 12, 1.55, { splash = 3.2 }),
+			L(260, 12, 12, 1.5, { splash = 3.5 }),
+			L(420, 19, 13, 1.4, { splash = 3.8 }),
+			L(650, 30, 14, 1.3, { splash = 4.2 }),
+		},
+		visual = { robe = "#F1E9DA", accent = "#6B4423", skin = "#C68E64", hat = "cap", hatColor = "#EFE6D2", weapon = "bread" },
+	},
+
+	---------------------------------------------------------------- Rare
+	saqqa = {
+		nameKey = "unit.saqqa.name",
+		descKey = "unit.saqqa.desc",
+		rarity = "rare",
+		role = "splash",
+		maxPlaced = 5,
+		levels = {
+			L(300, 6, 12, 1.5, { splash = 4, slow = 0.7, slowFor = 1.5 }),
+			L(200, 9, 13, 1.45, { splash = 4.2, slow = 0.65, slowFor = 1.8 }),
+			L(340, 14, 14, 1.4, { splash = 4.5, slow = 0.6, slowFor = 2 }),
+			L(520, 22, 15, 1.3, { splash = 5, slow = 0.55, slowFor = 2.4 }),
+			L(800, 34, 16, 1.2, { splash = 5.5, slow = 0.5, slowFor = 2.8 }),
+		},
+		visual = { robe = "#7A3B5C", accent = "#E8B23A", skin = "#C68E64", hat = "scarf", hatColor = "#F1E9DA", weapon = "stick" },
+	},
+	hallaq = {
+		nameKey = "unit.hallaq.name",
+		descKey = "unit.hallaq.desc",
+		rarity = "rare",
+		role = "melee",
+		maxPlaced = 5,
+		hitsStealth = true,
+		levels = {
+			L(280, 9, 7, 0.5),
+			L(190, 13, 7.5, 0.48),
+			L(320, 19, 8, 0.45),
+			L(500, 29, 8.5, 0.42),
+			L(780, 44, 9, 0.38),
+		},
+		visual = { robe = "#FBF8F1", accent = "#2F3E6B", skin = "#D2A07A", hat = "tarboosh", hatColor = "#A4302A", weapon = "razor" },
+	},
+	khayyat = {
+		nameKey = "unit.khayyat.name",
+		descKey = "unit.khayyat.desc",
+		rarity = "rare",
+		role = "ranged",
+		maxPlaced = 5,
+		levels = {
+			L(260, 7, 18, 1.1),
+			L(180, 11, 19, 1.05),
+			L(300, 16, 20, 1.0),
+			L(480, 25, 21, 0.95),
+			L(740, 38, 22, 0.9),
+		},
+		visual = { robe = "#6E5E50", accent = "#A4302A", skin = "#C08A62", hat = "cap", hatColor = "#FBF8F1", weapon = "jug" },
+	},
+	qahwaji = {
+		nameKey = "unit.qahwaji.name",
+		descKey = "unit.qahwaji.desc",
+		rarity = "rare",
+		role = "farm",
+		maxPlaced = 4,
+		-- Income is the job; the small damage is his tea-glass throw at anyone who comes near the
+		-- coffee house (a chip, not a damage dealer: re-run tests/balance before raising it).
+		levels = {
+			L(350, 4, 9, 1.6, { income = 90 }),
+			L(300, 6, 9.5, 1.6, { income = 160 }),
+			L(500, 9, 10, 1.55, { income = 260 }),
+			L(800, 13, 10.5, 1.5, { income = 400 }),
+			L(1300, 18, 11, 1.45, { income = 620 }),
+		},
+		visual = { robe = "#5E7D3A", accent = "#C9A13B", skin = "#C08A62", hat = "tarboosh", hatColor = "#A4302A", weapon = "tray" },
+	},
+
+	---------------------------------------------------------------- Epic
+	qabaday = {
+		nameKey = "unit.qabaday.name",
+		descKey = "unit.qabaday.desc",
+		rarity = "epic",
+		role = "melee",
+		maxPlaced = 4,
+		hitsStealth = true,
+		levels = {
+			L(450, 22, 8, 0.7),
+			L(300, 32, 8.5, 0.68),
+			L(500, 48, 9, 0.65),
+			L(800, 72, 9.5, 0.6),
+			L(1200, 108, 10, 0.55),
+			L(1800, 160, 10.5, 0.5),
+		},
+		ability = { kind = "shabriyeh", cooldown = 12, multiplier = 6 },
+		visual = { robe = "#1F1B18", accent = "#A4302A", skin = "#C68E64", hat = "tarboosh", hatColor = "#A4302A", weapon = "dagger", scale = 1.08 },
+	},
+	haddad = {
+		nameKey = "unit.haddad.name",
+		descKey = "unit.haddad.desc",
+		rarity = "epic",
+		role = "splash",
+		maxPlaced = 4,
+		levels = {
+			L(520, 20, 10, 2.0, { splash = 5, stun = 0.4 }),
+			L(350, 30, 10.5, 1.95, { splash = 5.3, stun = 0.5 }),
+			L(560, 46, 11, 1.9, { splash = 5.6, stun = 0.6 }),
+			L(880, 70, 11.5, 1.8, { splash = 6, stun = 0.7 }),
+			L(1350, 105, 12, 1.7, { splash = 6.5, stun = 0.8 }),
+			L(2000, 155, 12.5, 1.6, { splash = 7, stun = 1.0 }),
+		},
+		visual = { robe = "#6E5E50", accent = "#3D3A38", skin = "#B97F5A", hat = "none", hatColor = "#000000", weapon = "hammer", scale = 1.12 },
+	},
+	mukhtar = {
+		nameKey = "unit.mukhtar.name",
+		descKey = "unit.mukhtar.desc",
+		rarity = "epic",
+		role = "support",
+		maxPlaced = 2,
+		levels = {
+			L(500, 0, 12, 1, { buff = 1.15 }),
+			L(350, 0, 13, 1, { buff = 1.22 }),
+			L(600, 0, 14, 1, { buff = 1.3 }),
+			L(950, 0, 15, 1, { buff = 1.4 }),
+			L(1500, 0, 16, 1, { buff = 1.52 }),
+			L(2200, 0, 17, 1, { buff = 1.65 }),
+		},
+		visual = { robe = "#EADFC8", accent = "#C9A13B", skin = "#C08A62", hat = "tarboosh", hatColor = "#A4302A", weapon = "none" },
+	},
+
+	---------------------------------------------------------------- Legendary
+	zaim = {
+		nameKey = "unit.zaim.name",
+		descKey = "unit.zaim.desc",
+		rarity = "legendary",
+		role = "melee",
+		maxPlaced = 2,
+		hitsStealth = true,
+		levels = {
+			L(800, 45, 9, 0.65),
+			L(500, 65, 9.5, 0.62),
+			L(800, 95, 10, 0.6),
+			L(1250, 140, 10.5, 0.55),
+			L(1900, 205, 11, 0.5),
+			L(2800, 300, 12, 0.45),
+		},
+		ability = { kind = "shabriyeh", cooldown = 9, multiplier = 10 },
+		visual = { robe = "#1F1B18", accent = "#C9A13B", skin = "#C68E64", hat = "tarboosh", hatColor = "#A4302A", weapon = "dagger", scale = 1.12 },
+	},
+	pahlawan = {
+		nameKey = "unit.pahlawan.name",
+		descKey = "unit.pahlawan.desc",
+		rarity = "legendary",
+		role = "splash",
+		maxPlaced = 2,
+		levels = {
+			L(850, 40, 9, 1.4, { splash = 6, stun = 0.6 }),
+			L(550, 60, 9.5, 1.35, { splash = 6.3, stun = 0.7 }),
+			L(850, 90, 10, 1.3, { splash = 6.6, stun = 0.8 }),
+			L(1300, 135, 10.5, 1.2, { splash = 7, stun = 0.9 }),
+			L(2000, 200, 11, 1.1, { splash = 7.5, stun = 1.0 }),
+			L(2900, 290, 12, 1.0, { splash = 8, stun = 1.2 }),
+		},
+		ability = { kind = "sweep", cooldown = 14, multiplier = 4, radius = 9 },
+		visual = { robe = "#A4302A", accent = "#1F1B18", skin = "#B97F5A", hat = "none", hatColor = "#000000", weapon = "none", scale = 1.25 },
+	},
+	umm_hara = {
+		nameKey = "unit.umm_hara.name",
+		descKey = "unit.umm_hara.desc",
+		rarity = "legendary",
+		role = "healer",
+		maxPlaced = 1,
+		levels = {
+			L(700, 0, 14, 1, { heal = 6, buff = 1.1 }),
+			L(500, 0, 15, 1, { heal = 9, buff = 1.15 }),
+			L(800, 0, 16, 1, { heal = 13, buff = 1.2 }),
+			L(1200, 0, 17, 1, { heal = 18, buff = 1.28 }),
+			L(1800, 0, 18, 1, { heal = 24, buff = 1.36 }),
+			L(2600, 0, 19, 1, { heal = 32, buff = 1.45 }),
+		},
+		visual = { robe = "#EADFC8", accent = "#1F1B18", skin = "#D2A07A", hat = "tarboosh", hatColor = "#A4302A", weapon = "razor" },
+	},
+
+	---------------------------------------------------------------- Mythic
+	arada = {
+		nameKey = "unit.arada.name",
+		descKey = "unit.arada.desc",
+		rarity = "mythic",
+		role = "splash",
+		maxPlaced = 1,
+		hitsStealth = true,
+		levels = {
+			L(1200, 70, 11, 1.0, { splash = 7 }),
+			L(800, 105, 11.5, 0.95, { splash = 7.5 }),
+			L(1200, 160, 12, 0.9, { splash = 8 }),
+			L(1800, 240, 12.5, 0.85, { splash = 8.5 }),
+			L(2700, 360, 13, 0.8, { splash = 9 }),
+			L(4000, 540, 14, 0.7, { splash = 10 }),
+		},
+		ability = { kind = "sweep", cooldown = 10, multiplier = 5, radius = 12 },
+		visual = { robe = "#FBF8F1", accent = "#A4302A", skin = "#C68E64", hat = "tarboosh", hatColor = "#A4302A", weapon = "sword", scale = 1.1 },
+	},
+	zaim_akbar = {
+		nameKey = "unit.zaim_akbar.name",
+		descKey = "unit.zaim_akbar.desc",
+		rarity = "mythic",
+		role = "melee",
+		maxPlaced = 1,
+		hitsStealth = true,
+		levels = {
+			L(1500, 110, 10, 0.55),
+			L(900, 160, 10.5, 0.52),
+			L(1400, 240, 11, 0.5),
+			L(2100, 360, 11.5, 0.46),
+			L(3000, 540, 12, 0.42),
+			L(4500, 800, 13, 0.38),
+		},
+		ability = { kind = "shabriyeh", cooldown = 7, multiplier = 15 },
+		visual = { robe = "#1F1B18", accent = "#C9A13B", skin = "#C68E64", hat = "tarboosh", hatColor = "#A4302A", weapon = "dagger", scale = 1.18 },
+	},
+
+	---------------------------------------------------------------- Secret (codes / events only)
+	qitt = {
+		nameKey = "unit.qitt.name",
+		descKey = "unit.qitt.desc",
+		rarity = "secret",
+		role = "melee",
+		maxPlaced = 1,
+		hitsStealth = true,
+		noBanner = true,
+		levels = {
+			L(50, 30, 7, 0.4),
+			L(50, 60, 7.5, 0.38),
+			L(100, 120, 8, 0.35),
+			L(200, 240, 8.5, 0.32),
+			L(400, 480, 9, 0.3),
+			L(800, 960, 10, 0.25),
+		},
+		visual = { robe = "#C98A4B", accent = "#C98A4B", skin = "#C98A4B", hat = "none", hatColor = "#000000", weapon = "cat", scale = 0.5 },
+	},
+}
+
+return Units

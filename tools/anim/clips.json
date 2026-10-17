@@ -1,0 +1,129 @@
+{
+  "_comment": "Signature animation set per character (docs/CHARACTER_PIPELINE.md, 'Signature animations'). 'actions' maps a clip name to its Meshy library action id; each character lists which clip plays as idle / attack / ability (towers) or walk (attackers). `python tools/anim/fetch.py` downloads missing clips for every character's own rig (3 credits each), `python tools/anim/bake.py` turns them into src/shared/Anim/Clips/*.luau. Optional per-slot overrides: {\"clip\": name, \"from\": frame, \"to\": frame, \"hit\": frame, \"speed\": x}.",
+  "actions": {
+    "drink": 342,
+    "pitch": 393,
+    "battlepose": 377,
+    "rslash": 219,
+    "pullthrow": 239,
+    "swordshout": 101,
+    "punchcombo": 198,
+    "idle5": 245,
+    "judgment": 102,
+    "thrust": 240,
+    "idle11": 251,
+    "lslash": 97,
+    "idle8": 248,
+    "mage": 129,
+    "scratch": 36,
+    "stomp": 255,
+    "reap": 99,
+    "idle1": 11,
+    "idle2": 12,
+    "idle3": 243,
+    "crouchthrow": 398,
+    "torch": 337,
+    "spell": 125,
+    "pickthrow": 280,
+    "axebreathe": 335,
+    "hammer": 128,
+    "chestpound": 88,
+    "bothfists": 214,
+    "slam": 127,
+    "dance": 78,
+    "combo3": 105,
+    "sneaky": 559,
+    "cautious": 524,
+    "confident": 107,
+    "orc": 119,
+    "proud": 114,
+    "hitreact": 178
+  },
+  "characters": {
+    "qahwaji": {
+      "idle": "drink",
+      "attack": "mage"
+    },
+    "zaim_akbar": {
+      "idle": "battlepose",
+      "attack": "rslash",
+      "ability": "pullthrow"
+    },
+    "qabaday": {
+      "idle": "swordshout",
+      "attack": "punchcombo",
+      "ability": "pitch"
+    },
+    "zaim": {
+      "idle": "idle5",
+      "attack": "judgment",
+      "ability": "thrust"
+    },
+    "hallaq": {
+      "idle": "idle11",
+      "attack": "lslash"
+    },
+    "umm_hara": {
+      "idle": "idle8",
+      "attack": "mage"
+    },
+    "mukhtar": {
+      "idle": "scratch",
+      "attack": "stomp"
+    },
+    "saqqa": {
+      "idle": "idle2",
+      "attack": "hammer"
+    },
+    "khayyat": {
+      "idle": "idle1",
+      "attack": "mage"
+    },
+    "farran": {
+      "idle": "idle2",
+      "attack": "crouchthrow"
+    },
+    "natour": {
+      "idle": "torch",
+      "attack": "spell"
+    },
+    "walad": {
+      "idle": "idle3",
+      "attack": "pickthrow"
+    },
+    "haddad": {
+      "idle": "axebreathe",
+      "attack": "hammer"
+    },
+    "pahlawan": {
+      "idle": "chestpound",
+      "attack": "bothfists",
+      "ability": "slam"
+    },
+    "arada": {
+      "idle": "dance",
+      "attack": "combo3",
+      "ability": "reap"
+    },
+    "spy": {
+      "walk": "sneaky",
+      "hit": "hitreact"
+    },
+    "thief": {
+      "walk": "sneaky",
+      "hit": "hitreact"
+    },
+    "chief_thief": {
+      "walk": "confident",
+      "hit": "hitreact"
+    },
+    "rival_zaim": {
+      "walk": "orc",
+      "hit": "hitreact"
+    },
+    "gendarme": {
+      "walk": "proud",
+      "hit": "hitreact"
+    }
+  }
+}

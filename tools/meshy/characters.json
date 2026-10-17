@@ -1,0 +1,159 @@
+{
+  "_comment": "Meshy prompts (docs/CHARACTER_PIPELINE.md). Characters are the lane drama's main cast by the owner's decision (COPYRIGHT_REGISTER C-201); keys are the unit/enemy ids they play. Never name the series or an actor, never ask for a real person's likeness: describe period costume and props only. 'style'/'texture_style' are prepended to character prompts, 'prop_style' to props.",
+  "style": "Chibi-proportioned stylized cartoon game character (oversized head about one third of total height, short sturdy body, big hands and feet), like a collectible vinyl toy for a mobile tower-defense game, clean simple shapes, bold readable silhouette, full body standing in T-pose, facing the camera, no base, no background.",
+  "texture_style": "Hand-painted flat colors, soft shading, no photorealism, warm Mediterranean palette, clean cloth folds, friendly expressive face.",
+  "animations": {
+    "_comment": "Meshy library action ids, filled after running `python tools/meshy/meshy.py library`. One clip per file so Roblox imports each as its own track. Defenders need idle + attack; the auto-rig already returns a free walk clip for attackers.",
+    "idle": 0,
+    "attack": 4,
+    "walk": null
+  },
+  "characters": {
+    "umm_hara": {
+      "height": 1.75,
+      "prompt": "Abu Issam, the respected barber and healer (hakim) of a 1930s Damascus neighbourhood, slim middle-aged man with a neat black handlebar moustache, red felt fez (tarboosh), long cream striped qumbaz robe under a dark brown wool jacket, wide cloth sash, a small leather bag of remedies on his shoulder, holding a straight razor, kind but serious face.",
+      "texture": "Red fez, cream qumbaz with thin brown stripes, dark brown jacket, beige sash, tan leather bag, steel razor, tan skin."
+    },
+    "hallaq": {
+      "height": 1.75,
+      "prompt": "Issam, the barber's eldest son and apprentice in a 1930s Damascus neighbourhood, young man in his twenties with a short tidy black beard and moustache, red fez, white collarless shirt, black waistcoat, white barber's apron, dark baggy sherwal trousers, holding scissors and a comb, calm friendly face.",
+      "texture": "Red fez, white shirt and apron, black waistcoat, charcoal trousers, steel scissors, tan skin."
+    },
+    "qabaday": {
+      "height": 1.8,
+      "prompt": "Mo'taz, a hot-headed young neighbourhood strongman ('akeed) of 1930s Damascus, athletic young man with a short black beard and upturned moustache, red fez, white shirt with rolled sleeves, black embroidered waistcoat, wide red-and-black striped sash with a curved dagger tucked in, black baggy sherwal trousers, leather boots, fierce determined face.",
+      "texture": "Red fez, white shirt, black waistcoat with gold embroidery, red-black striped sash, black trousers, steel dagger with brass hilt, tan skin."
+    },
+    "zaim_akbar": {
+      "height": 1.9,
+      "prompt": "Al-'Akeed Abu Shehab, the legendary protector of a 1930s Damascus neighbourhood, broad powerful man with a full black beard and thick moustache, fez wrapped with a white cloth band, black shirt, black embroidered waistcoat, wide striped sash with a curved dagger, black baggy sherwal trousers, heavy boots, proud stern heroic pose.",
+      "texture": "Black clothing with gold embroidery, white head-cloth band on a red fez, brown and gold striped sash, steel dagger, tan skin."
+    },
+    "zaim": {
+      "height": 1.8,
+      "prompt": "Za'im Abu Saleh, elderly leader and judge of a 1930s Damascus neighbourhood, dignified old man with a full white beard, fez wrapped with a white cloth band, long grey qumbaz robe, long black open cloak (aba) with gold trim, holding a wooden walking cane, wise calm face.",
+      "texture": "Red fez with white band, grey robe, black cloak with gold trim, dark wood cane, white beard, tan skin."
+    },
+    "qahwaji": {
+      "height": 1.75,
+      "prompt": "Abu Hatem, proud portly owner of a 1930s Damascus coffee house, plump man with a thick black moustache, red fez, long striped qumbaz robe under a short dark jacket, carrying a brass coffee pot with a long spout and a small cup, smug self-satisfied face.",
+      "texture": "Red fez, green and cream striped robe, dark jacket, shiny brass coffee pot, tan skin."
+    },
+    "mukhtar": {
+      "height": 1.7,
+      "prompt": "Abu Badr, the comically nervous loudmouth of a 1930s Damascus neighbourhood, skinny man with a huge black moustache and wide worried eyes, red fez slightly askew, striped qumbaz robe with a sash, holding a wooden stick he is clearly afraid to use, funny cowardly pose.",
+      "texture": "Red fez, blue-grey striped robe, beige sash, light wood stick, tan skin."
+    },
+    "saqqa": {
+      "height": 1.65,
+      "prompt": "Fawzia, the bossy loud-hearted wife in a 1930s Damascus neighbourhood, plump middle-aged woman with a headscarf and a long modest house dress with an apron, both hands open and empty (nothing held, no broom), arms straight out to the sides, confident scolding expression, modest clothing.",
+      "texture": "Plum purple dress, golden headscarf, cream apron, tan skin.",
+      "_note": "v2 (2026-10-17): no broom in the mesh. Meshy fused the v1 broom into the body (bristles glued to the floor when animated); the broom is now a held prop (src/shared/Anim/HandProps.luau)."
+    },
+    "khayyat": {
+      "height": 1.7,
+      "prompt": "Abu Ghalib, gossiping street seller of boiled chickpeas in 1930s Damascus, middle-aged man with grey stubble and a moustache, white skull cap, brown waistcoat over a beige shirt, apron, carrying a big steaming copper pot of chickpeas with a ladle, sly gossipy grin.",
+      "texture": "White cap, beige shirt, brown waistcoat, cream apron, copper pot, golden chickpeas, tan skin."
+    },
+    "farran": {
+      "height": 1.7,
+      "prompt": "Abu Bashir, the loyal strong baker of a 1930s Damascus neighbourhood, stout cheerful man with a thick moustache and stubble, small round white cotton skull cap (not a chef's hat), rolled sleeves, flour-dusted white apron over a beige shirt, baggy brown trousers, holding a long wooden bread peel with a round flatbread.",
+      "texture": "White skull cap and apron dusted with flour, beige shirt, brown trousers, golden-brown flatbread, tan skin."
+    },
+    "spy": {
+      "height": 1.7,
+      "prompt": "Al-Nims, sneaky comic spy from a rival 1930s Damascus neighbourhood, very thin man with a pencil moustache and shifty eyes, red fez, patched striped robe, carrying a brass hand-pump sprayer, tiptoeing sneaky pose.",
+      "texture": "Red fez, faded patched striped robe, brass sprayer, tan skin."
+    },
+    "chief_thief": {
+      "height": 1.75,
+      "prompt": "Al-Idaashari, a cunning gambler and thief of 1930s Damascus, wiry man with stubble and a sly grin, dark head scarf, dark shirt and baggy trousers, carrying a small sack of stolen gold coins.",
+      "texture": "Dark brown and black clothing, beige sack with gold coins, tan skin."
+    },
+    "rival_zaim": {
+      "height": 1.85,
+      "prompt": "Abu al-Nar, the fierce 'akeed of a rival 1930s Damascus neighbourhood, burly man with a thick black beard, fez wrapped with a dark cloth band, dark green waistcoat, wide sash with a curved dagger, black baggy trousers, menacing pose.",
+      "texture": "Dark green waistcoat, black clothes, dark head band on a red fez, steel dagger, tan skin."
+    },
+    "natour": {
+      "height": 1.75,
+      "prompt": "1930s Damascus night watchman, weathered man with a grey short beard and thick moustache, checkered head cloth held by a black cord, long dark brown robe with a brown cloak, holding an iron oil lantern in his right hand.",
+      "texture": "Off-white and red checkered head cloth, dark brown robe and cloak, warm glowing yellow lantern glass, tan skin."
+    },
+    "walad": {
+      "height": 1.3,
+      "prompt": "Cheeky 1930s Damascus neighbourhood boy, about ten years old, white skull cap, cream shirt with an indigo vest, baggy dark trousers, bare feet in sandals, holding a leather sling.",
+      "texture": "White cap, cream shirt, indigo vest, dark trousers, brown sling, light tan skin."
+    },
+    "haddad": {
+      "height": 1.85,
+      "prompt": "Abu Khater, the stubborn coppersmith of a 1930s Damascus neighbourhood, very broad muscular man with a full black beard and thick moustache, bare head with short black hair, grey shirt with rolled sleeves, thick dark leather apron, heavy boots, holding a large iron hammer.",
+      "texture": "Grey shirt, dark brown leather apron, black iron hammer head, wooden handle, soot marks, tan skin."
+    },
+    "pahlawan": {
+      "height": 2.0,
+      "prompt": "Giant 1930s traditional strongman wrestler, enormous muscular man with a handlebar moustache and stubble, bare arms, red sleeveless top, black baggy sherwal trousers with a wide black belt, fists clenched.",
+      "texture": "Red top, black trousers and belt, tan skin."
+    },
+    "arada": {
+      "height": 1.85,
+      "prompt": "1930s Damascus festive sword-and-shield dancer, energetic man with a short beard and handlebar moustache, red fez, white shirt, red sash, baggy black trousers, holding a straight sword and a small round brass shield.",
+      "texture": "Red fez, white shirt, crimson sash, black trousers, steel sword, polished brass shield, tan skin."
+    },
+    "gendarme": {
+      "height": 1.75,
+      "prompt": "1930s colonial-era gendarme soldier, slim man with a thin moustache, dark blue kepi cap with a black peak, dark blue uniform jacket with gold buttons, brown leather belt and cross strap, tall black boots, holding a bolt-action rifle.",
+      "texture": "Navy blue uniform, gold buttons and cap band, brown leather straps, black boots, wooden rifle, light skin."
+    },
+    "thief": {
+      "height": 1.7,
+      "prompt": "Sneaky 1930s night thief, lean man with stubble, dark head scarf wrapped around his head, dark brown shirt and baggy trousers, carrying a big sack over his shoulder.",
+      "texture": "Very dark brown and black clothing, beige sack, tan skin."
+    },
+    "hallaq_barber_v1": {
+      "height": 1.7,
+      "prompt": "1930s Damascus neighbourhood barber, slim middle-aged man with a black handlebar moustache, red felt fez with a black tassel, white collarless shirt, long white apron, black open waistcoat, dark baggy sherwal trousers, leather slippers, holding a straight razor in his right hand.",
+      "texture": "Red fez, crisp white apron and shirt, black waistcoat with thin gold trim, dark brown trousers, tan skin."
+    },
+    "qitt": {
+      "height": 0.5,
+      "pose": false,
+      "rig": false,
+      "prompt": "The beloved ginger street cat of a 1930s Damascus neighbourhood, chubby orange tabby cat with big green eyes and a curled tail, sitting proudly, cute and expressive, full body.",
+      "texture": "Warm orange tabby fur with darker stripes, white chest and paws, bright green eyes, pink nose."
+    }
+  },
+  "prop_style": "Stylized chunky cartoon game prop for a mobile tower-defense game set in a 1930s Damascus old-city lane, toy-like proportions, clean simple shapes, bold readable silhouette, hand-painted flat colors with soft shading, warm limestone and wood palette, single object centered, three-quarter view, no characters, no text, no background.",
+  "props": {
+    "gate": {
+      "prompt": "The great double wooden gate of an old Damascus neighbourhood lane: tall stone arch of alternating black basalt and honey limestone stripes, two heavy wooden door leaves with rows of iron studs, a small wicket door cut into one leaf, a thick wooden bar across, an oil lantern hanging above.",
+      "texture": "Honey limestone and black basalt stripes, dark weathered wood, black iron studs, warm lantern glow.",
+      "polycount": 6000
+    },
+    "barber_shop": {
+      "prompt": "Small 1930s Damascus barber and healer's shop front: stone doorway with wooden shutters, a wooden barber chair, a round wall mirror, a copper basin on a stand, a glass jar of remedies and a shelf of small bottles, a blank hand-painted wooden sign board.",
+      "texture": "Limestone wall, dark wood shutters and chair, copper basin, green glass jars, cream sign board.",
+      "polycount": 6000
+    },
+    "coffee_house": {
+      "prompt": "Corner of a 1930s Damascus coffee house: low wooden bench with a woven straw seat, a small round brass tray table with coffee cups, a tall glass narghile water pipe, a brass coffee pot on a small charcoal stove.",
+      "texture": "Dark wood bench, golden straw, shiny brass, teal glass narghile, glowing charcoal.",
+      "polycount": 5000
+    },
+    "bread_oven": {
+      "prompt": "Traditional domed bakery oven of a 1930s Damascus bakery: rounded stone and clay dome with an arched fire mouth glowing orange, a long wooden bread peel leaning against it, a stack of round flatbreads on a wooden board.",
+      "texture": "Warm clay and soot-blackened stone, orange fire glow, golden bread, pale wood.",
+      "polycount": 5000
+    },
+    "lantern_post": {
+      "prompt": "Wrought-iron street lantern from an old Damascus lane: hexagonal glass oil lantern with a pointed cap on a curved wall bracket, mounted on a short stone pillar, glowing warm light.",
+      "texture": "Black wrought iron, warm amber glass glow, limestone pillar.",
+      "polycount": 3000
+    },
+    "fountain": {
+      "prompt": "Small courtyard fountain of an old Damascus house: octagonal stone basin with black-and-white inlaid stone pattern, a central spout with water, potted jasmine at its rim.",
+      "texture": "Limestone and basalt inlay, turquoise tiles inside the basin, clear water, green jasmine with white flowers.",
+      "polycount": 5000
+    }
+  }
+}

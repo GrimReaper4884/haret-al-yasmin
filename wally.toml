@@ -1,0 +1,10 @@
+[package]
+name = "teyam/haret-al-yasmin"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+private = true
+
+[dependencies]
+
+[dev-dependencies]

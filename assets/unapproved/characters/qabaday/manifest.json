@@ -1,0 +1,28 @@
+{
+  "id": "qabaday",
+  "tasks": {
+    "concept": "01a1420d-b23a-754d-aa5c-54c074a71b77",
+    "mesh": "01a14212-38dc-733d-9049-28eff8165ceb",
+    "rig": "01a14214-1426-71ac-a55a-9a68f97a65a0",
+    "anim_idle": "01a14214-6d92-73b9-a2c4-2b1a39645f1b",
+    "anim_attack": "01a14214-8fd6-71cd-8c21-2d4aef9b8982",
+    "clip_pitch": "01a14794-582a-7196-adf1-ecf6c8445cd8",
+    "clip_punchcombo": "01a14794-7980-77ef-b526-bb4149c42b9a",
+    "clip_swordshout": "01a14794-9b8a-73ee-af7a-a0815ee8361a"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3,
+    "clip_pitch": 3,
+    "clip_punchcombo": 3,
+    "clip_swordshout": 3
+  },
+  "clips": {
+    "pitch": 393,
+    "punchcombo": 198,
+    "swordshout": 101
+  }
+}

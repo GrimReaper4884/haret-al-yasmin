@@ -1,0 +1,65 @@
+{
+  "name": "HaretAlYasmin",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Shared": {
+        "$path": "src/shared"
+      },
+      "CharacterModels": {
+        "$path": "assets/production/CharacterModels"
+      },
+      "PropModels": {
+        "$path": "assets/production/PropModels"
+      }
+    },
+    "ServerScriptService": {
+      "Server": {
+        "$path": "src/server"
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "Client": {
+          "$path": "src/client"
+        }
+      }
+    },
+    "Lighting": {
+      "$properties": {
+        "ClockTime": 15.2,
+        "Brightness": 2.2,
+        "Ambient": [
+          0.36,
+          0.31,
+          0.27
+        ],
+        "OutdoorAmbient": [
+          0.55,
+          0.5,
+          0.44
+        ],
+        "EnvironmentDiffuseScale": 0.6,
+        "EnvironmentSpecularScale": 0.4,
+        "GeographicLatitude": 33.5
+      }
+    },
+    "SoundService": {
+      "$properties": {
+        "RespectFilteringEnabled": true
+      }
+    },
+    "Workspace": {
+      "$properties": {
+        "StreamingEnabled": true,
+        "StreamingMinRadius": 96,
+        "StreamingTargetRadius": 320
+      }
+    },
+    "Players": {
+      "$properties": {
+        "RespawnTime": 3
+      }
+    }
+  }
+}

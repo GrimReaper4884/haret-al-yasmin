@@ -1,0 +1,25 @@
+{
+  "id": "mukhtar",
+  "tasks": {
+    "concept": "01a1420e-0881-71b6-9082-f1bd2b6943a0",
+    "mesh": "01a14214-b812-7652-ae3f-234bc74cd0a4",
+    "rig": "01a14216-144a-76ad-a0c6-22ee4f1145d2",
+    "anim_idle": "01a14216-5fd1-7254-9213-1f0fbd3f4772",
+    "anim_attack": "01a14216-9d4b-77b6-9289-6f579e1f5ccb",
+    "clip_scratch": "01a14794-5828-7512-90cb-dbbf5364546d",
+    "clip_stomp": "01a14794-9356-72c4-bbe9-ca8b57540111"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3,
+    "clip_scratch": 3,
+    "clip_stomp": 3
+  },
+  "clips": {
+    "scratch": 36,
+    "stomp": 255
+  }
+}

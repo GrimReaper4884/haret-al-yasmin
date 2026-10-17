@@ -1,0 +1,25 @@
+{
+  "id": "gendarme",
+  "tasks": {
+    "concept": "01a14688-7047-771d-9139-c351763c0918",
+    "mesh": "01a14689-86be-756d-940a-40a3016a53e7",
+    "rig": "01a1468a-c8ba-7768-8bbf-3b3f92eb7c0d",
+    "anim_idle": "01a1468b-127b-75f2-8095-5491a08cdcea",
+    "anim_attack": "01a1468b-3438-7383-8d66-47bbda9ef107",
+    "clip_hitreact": "01a14794-f748-7139-87b8-c0e0ce3f9ff4",
+    "clip_proud": "01a14795-1894-76a6-9bd2-be32f32809c2"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3,
+    "clip_hitreact": 0,
+    "clip_proud": 3
+  },
+  "clips": {
+    "hitreact": 178,
+    "proud": 114
+  }
+}

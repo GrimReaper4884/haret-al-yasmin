@@ -1,0 +1,79 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>logo</title>
+<style>body{margin:0;background:#333;display:flex;gap:20px;padding:20px;align-items:flex-start}canvas{background:transparent}</style>
+</head><body>
+<canvas id="c" width="1024" height="1024" style="width:512px;height:512px"></canvas>
+<canvas id="small" width="96" height="96" style="width:96px;height:96px;border-radius:50%"></canvas>
+<script>
+const S = 1024, c = document.getElementById('c'), g = c.getContext('2d');
+const img = new Image(); img.src = '../../../docs/art/cast_concepts_2026-10-16.png';
+
+function star8(ctx, x, y, r, rot) {
+  ctx.beginPath();
+  for (let i = 0; i < 16; i++) {
+    const a = rot + i * Math.PI / 8, rr = i % 2 ? r * 0.55 : r;
+    ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+  }
+  ctx.closePath();
+}
+function jasmine(ctx, x, y, r, rot) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+  for (let i = 0; i < 5; i++) {
+    ctx.save(); ctx.rotate(i * 2 * Math.PI / 5);
+    ctx.beginPath();
+    ctx.ellipse(0, -r * 0.55, r * 0.32, r * 0.58, 0.35, 0, Math.PI * 2);
+    const gr = ctx.createLinearGradient(0, 0, 0, -r);
+    gr.addColorStop(0, '#f3ecd6'); gr.addColorStop(1, '#ffffff');
+    ctx.fillStyle = gr; ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = r * 0.15;
+    ctx.fill(); ctx.restore();
+  }
+  ctx.beginPath(); ctx.arc(0, 0, r * 0.16, 0, Math.PI * 2);
+  ctx.fillStyle = '#e8b93c'; ctx.fill();
+  ctx.restore();
+}
+
+img.onload = () => {
+  const W = img.naturalWidth, H = img.naturalHeight;
+  // background disc
+  const bg = g.createRadialGradient(S/2, S*0.42, S*0.05, S/2, S/2, S*0.62);
+  bg.addColorStop(0, '#2f6b52'); bg.addColorStop(1, '#0d2a1f');
+  g.fillStyle = bg; g.fillRect(0, 0, S, S);
+  // damascene star lattice
+  g.save(); g.globalAlpha = 0.10; g.strokeStyle = '#e8c56a'; g.lineWidth = 4;
+  for (let y = -64; y < S + 128; y += 128) for (let x = -64; x < S + 128; x += 128) {
+    star8(g, x + ((y / 128) % 2 ? 64 : 0), y, 46, Math.PI / 8); g.stroke();
+  }
+  g.restore();
+  // portrait medallion
+  const cx = S/2, cy = S*0.45, R = S*0.33;
+  g.save(); g.beginPath(); g.arc(cx, cy, R, 0, Math.PI*2); g.closePath();
+  g.fillStyle = '#efe3c8'; g.fill(); g.clip();
+  // qahwaji: first column, second row of the concept sheet (scaled from 1500x1242 layout)
+  const sx = W * (10/1500), sy = H * (432/1242), sw = W * (280/1500), sh = sw;
+  g.drawImage(img, sx, sy, sw, sh, cx - R*1.08, cy - R*0.95, R*2.16, R*2.16);
+  g.restore();
+  // gold rings
+  g.lineWidth = S*0.022; g.strokeStyle = '#d9a93a';
+  g.beginPath(); g.arc(cx, cy, R, 0, Math.PI*2); g.stroke();
+  g.lineWidth = S*0.006; g.strokeStyle = '#f6dd8f';
+  g.beginPath(); g.arc(cx, cy, R + S*0.026, 0, Math.PI*2); g.stroke();
+  // jasmine sprigs
+  [[0.20,0.22,70,0.2],[0.27,0.13,48,1.0],[0.12,0.33,44,0.6],
+   [0.80,0.66,64,0.4],[0.88,0.55,44,1.2],[0.73,0.76,40,0.8]].forEach(([x,y,r,a]) => jasmine(g, S*x, S*y, r, a));
+  // ribbon + name
+  const by = S*0.83;
+  g.fillStyle = '#7a1f1f';
+  g.beginPath(); g.moveTo(S*0.08, by - 70); g.lineTo(S*0.92, by - 70); g.lineTo(S*0.88, by); g.lineTo(S*0.92, by + 70);
+  g.lineTo(S*0.08, by + 70); g.lineTo(S*0.12, by); g.closePath();
+  g.shadowColor = 'rgba(0,0,0,.5)'; g.shadowBlur = 20; g.fill(); g.shadowBlur = 0;
+  g.lineWidth = 6; g.strokeStyle = '#d9a93a'; g.stroke();
+  g.fillStyle = '#f6dd8f'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = 'rtl';
+  g.font = 'bold 112px "Arabic Typesetting", "Segoe UI", Tahoma, serif';
+  g.fillText('حارة الياسمين', S/2, by + 6);
+
+  const sm = document.getElementById('small').getContext('2d');
+  sm.imageSmoothingQuality = 'high'; sm.drawImage(c, 0, 0, 96, 96);
+  window.done = true;
+};
+</script>
+</body></html>

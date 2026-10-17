@@ -1,0 +1,28 @@
+{
+  "id": "thief",
+  "tasks": {
+    "concept": "01a14688-7051-73ce-a3f3-49636065039c",
+    "mesh": "01a14689-868b-73d0-8b10-bc5d33edbd15",
+    "rig": "01a1468a-b387-7379-926d-b575a30ce17e",
+    "anim_idle": "01a1468a-fdd2-740c-b3f2-972b3efa79e9",
+    "anim_attack": "01a1468b-215e-7572-a622-8a919c0e321a",
+    "clip_cautious": "01a14794-d622-72ca-8124-a6451fcb8920",
+    "clip_hitreact": "01a14794-f748-7537-85bd-654c27d5a616",
+    "clip_sneaky": "01a147b8-5a85-73ef-a45d-80fdaf7b6e14"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3,
+    "clip_cautious": 3,
+    "clip_hitreact": 0,
+    "clip_sneaky": 3
+  },
+  "clips": {
+    "cautious": 524,
+    "hitreact": 178,
+    "sneaky": 559
+  }
+}
