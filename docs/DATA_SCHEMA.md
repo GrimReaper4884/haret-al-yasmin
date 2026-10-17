@@ -28,7 +28,11 @@ type Profile = {
 	inventory: { [string]: number },       -- itemId → count (>0); removed keys mean 0
 	equipped: { head: string? },           -- slot → itemId (must be owned)
 	quests: { [string]: QuestRecord },
-	settings: { language: string? },       -- "en" | "ar" | nil (= follow the Roblox locale)
+	settings: { language: string? },       -- "en" | "ar" | nil (= follow the Roblox locale); the other keys are
+	                                       -- Logic/Settings.defs (effects, skipSummon, autoUlt, camera, autoAfk,
+	                                       -- autoSkip, music: boolean = true, sfx: boolean = true), checked by
+	                                       -- Settings.accept and dropped by Settings.sanitize when invalid.
+	                                       -- music / sfx are client-side only (AudioController); the server just stores them.
 	stats: { firstJoin: number, lastJoin: number, sessions: number },
 	receipts: { [string]: number },        -- RESERVED: Robux PurchaseId → os.time(); idempotent ProcessReceipt
 }

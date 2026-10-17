@@ -24,6 +24,7 @@ local Icons = require(UI.Icons)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
+local SettingsController = require(script.Parent.SettingsController)
 local ToastController = require(script.Parent.ToastController)
 
 local MatchController = {}
@@ -103,6 +104,16 @@ local function build()
 	end
 	local gearIcon = Create("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(28, 28), BackgroundTransparency = 1, ZIndex = 4, Parent = gear })
 	Icons.draw("ui_settings", gearIcon)
+	-- Music mute just left of the column, level with the gear.
+	SettingsController.muteButton({
+		Name = "Music",
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.fromOffset(-6, -3),
+		Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH),
+		BackgroundColor3 = Color3.fromHex("#6E5E50"),
+		ZIndex = 3,
+		Parent = lastRow,
+	}, true)
 	gear.Activated:Connect(function()
 		local open = LobbyMenuController.opener("settings")
 		if open then

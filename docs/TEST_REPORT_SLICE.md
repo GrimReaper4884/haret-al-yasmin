@@ -518,3 +518,26 @@ MCP driving, so no honest FPS number exists yet; the phone check needs the Devic
 | Session lock: foreign lock + reload | `session lock lost … not saving` and `load failed …: locked`; client kicked in 7.2 s; record intact and the lock cleared afterwards |
 
 Full table and the driver: `docs/review/REDTEAM_P3-09.md`.
+
+## Phase V polish (branch `phase/polish`, TEST place, Studio Play Solo through MCP)
+
+### PV-B08 music and sound toggles (2026-10-17)
+
+*Persistence: real DataStore (the owner's TEST profile); every setting was put back to on afterwards. Console:
+`[HaretAlYasmin] server ready`, nothing from `src/` (engine-only CorePackages warnings and the external
+`rbxassetid://203785492` line, PV-B00).*
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | selene 0/0, 228 Lune specs passed (new: music/sfx accept true/false, reject `"off"`/`1`/nil, default true, sanitize), strict analyze clean, `rojo build` OK |
+| Sync | `script_grep "ui_music"` finds `UI.Icons` and `Controllers.SettingsController` |
+| Lobby mute | GUI click on `HaretHud.Music` (MCP `user_mouse_input` by instance path works for GUI buttons): `lobby` loop gone within 0.8 s, tooltip "Music off (tap to play)"; profile `settings.music = false` |
+| Persists | `HaretDebug "reload"` → `settings = { music = false, … }`; Stop + Play: no loop is ever created on join (the controller waits for the first snapshot) |
+| Muted match | Episode 1 Normal via `M`; waves 1–20 polled every second: **no looped Sound at all**, including the wave-10 Sergeant and wave-20 Al-Idaashari boss waves |
+| Unmute mid-match | wave 11 → `match` fades in (0.17 → 0.40 over 1.5 s); re-muted, then unmuted during the wave-20 boss → `boss` at 0.45 (its Config volume) |
+| Sound effects off | Settings → Sound effects Off → profile `sfx = false`; a new match to wave 2: SoundService holds only the `match` loop, no sting was ever created (`gate_close`, `wave_start` skipped); set back to On |
+| Settings screen | 8 rows now scroll inside a 280 px body (fits 390 px phones); Music and Sound effects sit under Effects; Arabic labels "الموسيقى" / "المؤثرات الصوتية" right-aligned |
+
+Screenshots: `docs/art/pvb08_lobby_music_on_2026-10-17.jpg`, `pvb08_lobby_music_off_…`,
+`pvb08_match_boss_muted_…` (wave 10, slashed speaker beside Leave and the gear), `pvb08_match_music_on_…` (hover
+hint to the left of the button), `pvb08_settings_en_…`, `pvb08_settings_ar_…`.

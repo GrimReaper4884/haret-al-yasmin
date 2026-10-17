@@ -436,7 +436,7 @@ and the experience page shows our icon, five thumbnails and a trailer. `tools/ch
 ## 9. Checklist (tick with the commit hash)
 
 - [ ] PV-A01 · [ ] PV-A02 · [ ] PV-A03 · [ ] PV-A04 · [ ] PV-A05 (optional)
-- [ ] PV-B00 · [ ] PV-B01 · [ ] PV-B02 · [ ] PV-B03 · [ ] PV-B04 · [ ] PV-B05 · [ ] PV-B06 · [ ] PV-B07
+- [ ] PV-B00 · [ ] PV-B01 · [ ] PV-B02 · [ ] PV-B03 · [ ] PV-B04 · [ ] PV-B05 · [ ] PV-B06 · [ ] PV-B07 · [x] PV-B08 (hash)
 - [ ] PV-C01 · [ ] PV-C02 · [ ] PV-C03 · [ ] PV-C04 · [ ] PV-C05 · [ ] PV-C06
 - [ ] PV-D01 · [ ] PV-D02 · [ ] PV-D03 · [ ] PV-D04 · [ ] PV-D05 · [ ] PV-D06
 - [ ] PV-E01 · [ ] PV-E02 · [ ] PV-E03 · [ ] PV-E04 (optional)

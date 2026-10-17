@@ -37,6 +37,39 @@ end
 local WHITE = Color3.fromHex("#FBF8F1")
 local GOLD = Color3.fromHex("#F2C14E")
 
+-- A speaker (box + stepped cone on a dark silhouette) with three sound arcs: rings clipped to
+-- their right half.
+local function speaker(h: Frame)
+	local body = Color3.fromHex("#D8DCE0")
+	local shape = { { 0.2, 0.14, 0.3 }, { 0.3, 0.08, 0.44 }, { 0.37, 0.08, 0.58 }, { 0.43, 0.06, 0.72 } }
+	for _, r in shape do
+		rect(h, OUTLINE, r[1], 0.5, r[2] + 0.1, r[3] + 0.1, 0.2)
+	end
+	for _, r in shape do
+		rect(h, body, r[1], 0.5, r[2] + 0.005, r[3], 0.2)
+	end
+	local clip = Create("Frame", {
+		BackgroundTransparency = 1,
+		ClipsDescendants = true,
+		Position = UDim2.fromScale(0.5, 0),
+		Size = UDim2.fromScale(0.5, 1),
+		Parent = h,
+	})
+	for k, d in { 0.3, 0.54, 0.78 } do
+		Create("Frame", {
+			Name = "Arc" .. k,
+			BackgroundTransparency = 1,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(-0.04, 0.5),
+			Size = UDim2.fromScale(d * 2, d),
+			Parent = clip,
+		}, {
+			Create("UICorner", { CornerRadius = UDim.new(1, 0) }),
+			Create("UIStroke", { Color = WHITE, Thickness = 2, Transparency = (k - 1) * 0.15 }),
+		})
+	end
+end
+
 local drawers: { [string]: (Frame, Color3) -> () } = {
 	-- Menu rail icons (lobby). Bold, outlined, readable at 30 px.
 	ui_units = function(h, _c)
@@ -101,6 +134,14 @@ local drawers: { [string]: (Frame, Color3) -> () } = {
 		rect(h, GOLD, 0.5, 0.56, 0.12, 0.62, 0)
 		rectO(h, GOLD, 0.4, 0.2, 0.2, 0.14, 1, -25)
 		rectO(h, GOLD, 0.6, 0.2, 0.2, 0.14, 1, 25)
+	end,
+	ui_music = function(h, _c)
+		speaker(h)
+	end,
+	ui_music_off = function(h, _c)
+		speaker(h)
+		-- The red slash across the whole speaker.
+		rectO(h, Color3.fromHex("#E0433A"), 0.5, 0.5, 0.13, 1.02, 0.5, -45)
 	end,
 
 	tarboosh = function(h, c)

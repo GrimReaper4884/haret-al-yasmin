@@ -19,7 +19,7 @@ local LocaleController = require(script.Parent.LocaleController)
 
 local LobbyMenuController = {}
 
-local LOBBY_WIDGETS = { "Coins", "Errand", "Language", "Wardrobe", "Lira", "Menu", "TestMode" }
+local LOBBY_WIDGETS = { "Coins", "Errand", "Language", "Wardrobe", "Music", "Lira", "Menu", "TestMode" }
 
 local liraLabel: TextLabel
 local bar: Frame

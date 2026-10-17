@@ -21,6 +21,10 @@ Settings.defs = {
 	autoAfk = { kind = "bool", default = true },
 	-- Vote to skip the countdown between waves automatically (never the setup before wave 1).
 	autoSkip = { kind = "bool", default = false },
+	-- Play the lobby / match / boss music loops. Client-side only (AudioController).
+	music = { kind = "bool", default = true },
+	-- Play one-shot stings (gate, waves, summons, clicks). Client-side only (AudioController).
+	sfx = { kind = "bool", default = true },
 } :: { [string]: Def }
 
 local function valid(def: Def, value: any): boolean
