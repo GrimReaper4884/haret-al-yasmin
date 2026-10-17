@@ -348,6 +348,26 @@ return function(t)
 			t.truthy(live.dist >= Enemies.colonel.speed * (40 - 1) / 3, "the live cap keeps it walking (dist " .. live.dist .. ")")
 		end)
 
+		t.it("supports multiply the damage of defenders in their range, not outside it", function()
+			local function dealt(withMukhtar, mx)
+				local s = sim(straight, function()
+					return { spawns = { { at = 0, enemy = "colonel", hpMul = 1000, speedMul = 0.01 } }, count = 1 }
+				end, 1)
+				t.truthy(TdTowers.place(s, "p1", "qabaday", Units.qabaday, 2, 4, 0, nil, rules()))
+				if withMukhtar then
+					local ok, err = TdTowers.place(s, "p1", "mukhtar", Units.mukhtar, mx, 6, 0, nil, rules())
+					t.truthy(ok, err)
+				end
+				run(s, 10)
+				return s.enemies[1].maxHp - s.enemies[1].hp
+			end
+			local base = dealt(false)
+			t.truthy(base > 0, "the defender hits")
+			local buffed = dealt(true, 6)
+			t.truthy(math.abs(buffed / base - Units.mukhtar.levels[1].buff) < 1e-6, "Mukhtar's buff in range: " .. buffed / base)
+			t.eq(dealt(true, 2 + Units.mukhtar.levels[1].range + 3), base, "no buff out of range")
+		end)
+
 		t.it("a fractional cash share still pays whole wave bonuses", function()
 			local s = TdSim.new(straight, { "p1", "p2" }, 300, 100, 3, 1, {
 				between = 2,

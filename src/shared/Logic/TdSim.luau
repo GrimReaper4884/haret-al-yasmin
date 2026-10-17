@@ -201,6 +201,8 @@ local function buffFor(state: State, t: Tower): number
 	end
 	return best
 end
+-- Exposed so the server can show each defender's live buff (players couldn't tell buffs applied).
+TdSim.buffFor = buffFor
 
 local function pickTarget(state: State, t: Tower): (Enemy?, number, number)
 	local r2 = t.stats.range * t.stats.range

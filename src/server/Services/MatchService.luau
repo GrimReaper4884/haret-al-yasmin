@@ -59,6 +59,7 @@ export type Match = {
 	ended: boolean,
 	outcome: any?,
 	eventBuffer: { any },
+	buffShown: { [number]: number }, -- tower id → the support buff on its badge (absent = none)
 }
 
 local matches: { [number]: Match } = {}
@@ -380,6 +381,7 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 		ended = false,
 		outcome = nil,
 		eventBuffer = {},
+		buffShown = {},
 	}
 	nextMatchId += 1
 	matches[match.id] = match
@@ -473,6 +475,26 @@ local function towerContext(player: Player): (Match?, any?, string?)
 	return match, profile, nil
 end
 
+-- Support buffs change whenever a tower is placed, upgraded or sold: badge every defender whose
+-- damage a support multiplies (TdSim.buffFor, the same rule the simulation uses) and tell clients.
+local function refreshBuffs(match: Match)
+	for _, t in match.state.towers do
+		local b = if t.stats.damage > 0 then TdSim.buffFor(match.state, t) else 1
+		if b ~= (match.buffShown[t.id] or 1) then
+			if b > 1 then
+				match.buffShown[t.id] = b
+			else
+				match.buffShown[t.id] = nil
+			end
+			local model = ArenaService.findTower(match.slot, t.id)
+			if model then
+				ArenaService.setBuff(model, b)
+			end
+			queueEvent(match, { type = "towerBuff", id = t.id, buff = b })
+		end
+	end
+end
+
 local function placeTower(player: Player, unitId: any, x: any, z: any): { [string]: any }
 	local match, profile, err = towerContext(player)
 	if not match or not profile then
@@ -496,6 +518,7 @@ local function placeTower(player: Player, unitId: any, x: any, z: any): { [strin
 	end
 	ArenaService.buildTower(match.slot, tower, player.Name)
 	queueEvent(match, { type = "towerPlaced", id = tower.id, owner = player.Name, unitId = unitId, x = lx, z = lz, level = 1, range = tower.stats.range })
+	refreshBuffs(match)
 	flushEvents(match)
 	pushState(match)
 	return { ok = true, towerId = tower.id }
@@ -538,6 +561,7 @@ local function upgradeTower(player: Player, towerId: any): { [string]: any }
 		model:SetAttribute("Range", tower.stats.range)
 	end
 	queueEvent(match, { type = "towerUpgraded", id = towerId, level = tower.level, range = tower.stats.range })
+	refreshBuffs(match)
 	flushEvents(match)
 	pushState(match)
 	return { ok = true, level = tower.level }
@@ -557,6 +581,8 @@ local function sellTower(player: Player, towerId: any): { [string]: any }
 		model:Destroy()
 	end
 	queueEvent(match, { type = "towerSold", id = towerId })
+	match.buffShown[towerId] = nil
+	refreshBuffs(match)
 	flushEvents(match)
 	pushState(match)
 	return { ok = true, refund = refund }

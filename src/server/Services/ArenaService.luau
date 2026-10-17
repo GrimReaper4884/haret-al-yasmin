@@ -104,6 +104,46 @@ function ArenaService.buildTower(slot: Slot, tower: any, ownerName: string): Mod
 	return model
 end
 
+-- A gold "▲ +15%" badge over a defender a support is buffing (mul ≤ 1 removes it).
+function ArenaService.setBuff(model: Model, mul: number)
+	local badge = model:FindFirstChild("BuffBadge")
+	if mul <= 1 then
+		if badge then
+			badge:Destroy()
+		end
+		return
+	end
+	local root = model.PrimaryPart
+	if not root then
+		return
+	end
+	local label: TextLabel
+	if badge then
+		label = badge:FindFirstChild("Text") :: TextLabel
+	else
+		local cf, size = model:GetBoundingBox()
+		local gui = Instance.new("BillboardGui")
+		gui.Name = "BuffBadge"
+		gui.Adornee = root
+		gui.Size = UDim2.fromOffset(64, 22)
+		gui.StudsOffsetWorldSpace = Vector3.new(0, cf.Position.Y + size.Y / 2 - root.Position.Y + 0.9, 0)
+		gui.MaxDistance = 120
+		gui.LightInfluence = 0
+		label = Instance.new("TextLabel")
+		label.Name = "Text"
+		label.Size = UDim2.fromScale(1, 1)
+		label.BackgroundTransparency = 1
+		label.Font = Enum.Font.GothamBold
+		label.TextScaled = true
+		label.TextColor3 = Color3.fromHex("#FFD24A")
+		label.TextStrokeColor3 = Color3.fromHex("#3A2A10")
+		label.TextStrokeTransparency = 0
+		label.Parent = gui
+		gui.Parent = model
+	end
+	label.Text = string.format("▲ +%d%%", math.floor((mul - 1) * 100 + 0.5))
+end
+
 function ArenaService.findTower(slot: Slot, towerId: number): Model?
 	local m = slot.towers:FindFirstChild("Tower_" .. towerId)
 	return if m and m:IsA("Model") then m else nil

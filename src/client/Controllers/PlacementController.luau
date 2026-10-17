@@ -70,7 +70,7 @@ local ghost: Model? = nil
 local ring: Part? = nil
 local selected: number? = nil
 local selectedRing: Part? = nil
-local towers: { [number]: { unitId: string, level: number, owner: string, x: number, z: number, range: number, targeting: string, readyAt: number } } = {}
+local towers: { [number]: { unitId: string, level: number, owner: string, x: number, z: number, range: number, targeting: string, readyAt: number, buff: number? } } = {}
 local arenaPath: Path.Path? = nil
 local origin: CFrame? = nil
 local busy = false
@@ -400,8 +400,12 @@ local function renderTowerPanel()
 	local nextLevel = def.levels[rec.level + 1]
 	local nx = if nextLevel then myStats(rec.unitId, rec.level + 1) else nil
 	local lines = {}
+	local buff = rec.buff or 1 -- from nearby supports (server-computed, towerBuff events)
 	if st.damage > 0 then
-		table.insert(lines, statLine(t("match.stat_damage", { n = "" }), round(st.damage, 0), nx and round(nx.damage, 0)))
+		table.insert(lines, statLine(t("match.stat_damage", { n = "" }), round(st.damage * buff, 0), nx and round(nx.damage * buff, 0)))
+		if buff > 1 then
+			table.insert(lines, '<font color="' .. GAIN .. '">' .. t("match.buffed", { n = round((buff - 1) * 100, 0) }) .. "</font>")
+		end
 		table.insert(lines, statLine(t("match.stat_range", { n = "" }), round(st.range, 1), nx and round(nx.range, 1)))
 		table.insert(lines, statLine(t("match.stat_cooldown", { n = "" }), round(st.cooldown, 2), nx and round(nx.cooldown, 2), "s"))
 		-- Stealth enemies walk past defenders that can't see them; say so up front
@@ -664,6 +668,11 @@ local function onEvents(events: { any })
 			local speed = if state and state.speed then state.speed else 1
 			if def and def.ability then
 				rec.readyAt = os.clock() + def.ability.cooldown / speed
+			end
+		elseif e.type == "towerBuff" and towers[e.id] then
+			towers[e.id].buff = if type(e.buff) == "number" and e.buff > 1 then e.buff else nil
+			if selected == e.id then
+				renderTowerPanel()
 			end
 		elseif e.type == "towerTargeting" and towers[e.id] then
 			towers[e.id].targeting = e.mode
