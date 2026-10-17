@@ -176,7 +176,7 @@ models, red-teaming, onboarding measurement, and live ops.
 - [~] **P2-16 Onboarding funnel measurement** · deps: P2-02 · code + specs done; Studio harness timing pending (place not open)
   - **Goal:** Funnel events join → first prompt → first summon → portal → wave 1 → wave 5 → first clear, with timestamps; a Studio-only report of join → wave 1 time.
   - **Accept:** in Studio with the harness the steps complete in ≤ 60 s; the live median comes from the Creator Dashboard after the next publish (owner reads it; STOP to ask).
-- [ ] **P2-17 Match VFX pass** · deps: P1-15
+- [~] **P2-17 Match VFX pass** · deps: P1-15 · code + budget specs done; screenshots and the frame-time check need the Studio place open
   - **Goal:** Hits, deaths (petal/ash poof, no blood), shabriyeh and sweep impacts, boss telegraphs, gate hit; all client-side from `MatchEvents`, pooled, capped per frame.
   - **Accept:** screenshots of each effect; client frame time still within P1-18.
 - [ ] **P2-18 Vertical slice gate** · deps: P2-12..P2-17 · STOP

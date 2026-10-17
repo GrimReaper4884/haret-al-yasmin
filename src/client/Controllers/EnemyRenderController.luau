@@ -17,6 +17,7 @@ local Net = require(Shared.Net)
 local Enemies = require(Shared.Config.Enemies)
 local Units = require(Shared.Config.Units)
 local Arenas = require(Shared.Config.Arenas)
+local Vfx = require(Shared.Config.Vfx)
 local Path = require(Shared.Logic.Path)
 local RigBuilder = require(Shared.Util.RigBuilder)
 local BoneAnim = require(Shared.Anim.BoneAnim)
@@ -120,6 +121,106 @@ local function spawn(e: any)
 	model:PivotTo(origin * CFrame.lookAt(Vector3.new(x, 0, z), Vector3.new(x + ux, 0, z + uz)))
 end
 
+-- Death poof (P2-17): jasmine petals for people, ash for bosses; no blood. Pooled parts, shrunk
+-- to this frame's budget (Fx.allow); "reduced" draws two, "off" none.
+local function deathPoof(at: Vector3, boss: boolean)
+	if not Fx.any() then
+		return
+	end
+	local cfg = Vfx.DEATH
+	local wanted = if Fx.full() then cfg.petals else 2
+	local n = Fx.allow(wanted)
+	local colors = if boss then cfg.ashColors else cfg.petalColors
+	local size = if boss then cfg.ashSize else cfg.petalSize
+	for i = 1, n do
+		local p = Fx.part(if boss then Enum.PartType.Ball else Enum.PartType.Block)
+		if not p then
+			break
+		end
+		p.Material = if boss then Enum.Material.SmoothPlastic else Enum.Material.Neon
+		p.Color = Color3.fromHex(colors[((i - 1) % #colors) + 1])
+		p.Size = Vector3.new(size, size * 0.3, size)
+		p.Transparency = 0.1
+		local angle = (i / n) * math.pi * 2 + math.random() * 0.8
+		local start = at + Vector3.new(math.cos(angle) * 0.6, 1.8, math.sin(angle) * 0.6)
+		p.CFrame = CFrame.new(start) * CFrame.Angles(math.random() * 3, math.random() * 3, 0)
+		local goal = start + Vector3.new(math.cos(angle) * cfg.spread, cfg.rise * (0.6 + math.random() * 0.6), math.sin(angle) * cfg.spread)
+		Fx.fade(p, cfg.life, {
+			CFrame = CFrame.new(goal) * CFrame.Angles(math.random() * 6, math.random() * 6, math.random() * 6),
+			Transparency = 1,
+		}, Enum.EasingStyle.Sine)
+	end
+end
+
+-- A small spark where a strike lands (P2-17). One part; skipped under "reduced".
+local function hitSpark(at: Vector3, color: Color3)
+	if not Fx.full() then
+		return
+	end
+	local s = Fx.part(Enum.PartType.Ball)
+	if not s then
+		return
+	end
+	s.Color = color:Lerp(Color3.new(1, 1, 1), 0.5)
+	s.Size = Vector3.one * Vfx.HIT.size
+	s.CFrame = CFrame.new(at + Vector3.new(0, 2.5, 0))
+	s.Transparency = 0.15
+	Fx.fade(s, Vfx.HIT.life, { Size = Vector3.one * Vfx.HIT.grow, Transparency = 1 })
+end
+
+-- A thief reached the gate: a red disc flashes on the ground at the path's end (P2-17).
+local function gateHit()
+	local o, path = origin, arenaPath
+	if not Fx.any() or not o or not path then
+		return
+	end
+	local x, z = Path.position(path, path.length)
+	local disc = Fx.part(Enum.PartType.Cylinder)
+	if not disc then
+		return
+	end
+	local cfg = Vfx.GATE_HIT
+	disc.Color = Color3.fromHex(cfg.color)
+	disc.Transparency = 0.25
+	disc.Size = Vector3.new(0.3, 2, 2)
+	disc.CFrame = (o * CFrame.new(x, 0.25, z)) * CFrame.Angles(0, 0, math.rad(90))
+	Fx.fade(disc, cfg.life, { Size = Vector3.new(0.3, cfg.radius * 2, cfg.radius * 2), Transparency = 1 })
+end
+
+-- Boss telegraph (P2-17): red rings pulse at the spawn end of the path while the boss banner shows,
+-- then a shock ring where the boss steps in. Rings are "full" only; the spawn ring also "reduced".
+local function bossRing(at: Vector3, radius: number, life: number)
+	local ring = Fx.part(Enum.PartType.Cylinder)
+	if not ring then
+		return
+	end
+	ring.Color = Color3.fromHex(Vfx.BOSS.color)
+	ring.Transparency = 0.2
+	ring.Size = Vector3.new(0.4, 1.5, 1.5)
+	ring.CFrame = CFrame.new(at + Vector3.new(0, 0.3, 0)) * CFrame.Angles(0, 0, math.rad(90))
+	Fx.fade(ring, life, { Size = Vector3.new(0.4, radius * 2, radius * 2), Transparency = 1 })
+end
+
+local function bossTelegraph()
+	local o, path = origin, arenaPath
+	if not Fx.full() or not o or not path then
+		return
+	end
+	local x, z = Path.position(path, 0)
+	local at = (o * CFrame.new(x, 0, z)).Position
+	task.spawn(function()
+		for i = 1, Vfx.BOSS.pulses do
+			if not MatchController.active() then
+				return
+			end
+			bossRing(at, Vfx.BOSS.pulseRadius, Vfx.BOSS.pulseLife)
+			if i < Vfx.BOSS.pulses then
+				task.wait(Vfx.BOSS.pulseEvery)
+			end
+		end
+	end)
+end
+
 local function poof(model: Model)
 	if not Fx.full() then
 		model:Destroy()
@@ -146,6 +247,7 @@ local function remove(id: number, died: boolean)
 	enemies[id] = nil
 	byModel[rec.model] = nil
 	if died then
+		deathPoof(rec.model:GetPivot().Position, rec.boss)
 		poof(rec.model)
 	else
 		rec.model:Destroy()
@@ -170,6 +272,9 @@ local function strike(from: Vector3, to: Vector3, color: Color3, ability: boolea
 	p.CFrame = CFrame.lookAt(mid, to + Vector3.new(0, 2.5, 0))
 	p.Transparency = 0.1
 	Fx.fade(p, if ability then 0.35 else 0.15, { Transparency = 1 }, Enum.EasingStyle.Linear)
+	if not ability then
+		hitSpark(to, color)
+	end
 	if ability and level ~= "off" then
 		local flash = Fx.part(Enum.PartType.Ball)
 		if flash then
@@ -227,11 +332,19 @@ local function onEvents(events: { any })
 		local t = e.type
 		if t == "spawn" then
 			spawn(e)
+			if e.boss and Fx.any() then
+				local p = arenaPath :: Path.Path
+				local x, z = Path.position(p, 0)
+				bossRing((origin :: CFrame * CFrame.new(x, 0, z)).Position, Vfx.BOSS.spawnRadius, Vfx.BOSS.spawnLife)
+			end
 		elseif t == "death" then
 			remove(e.id, true)
 		elseif t == "reached" then
 			remove(e.id, false)
+			gateHit()
 			AudioController.sting("gate_hit")
+		elseif t == "waveStart" and e.boss then
+			bossTelegraph()
 		elseif t == "towerPlaced" then
 			towerPos[e.id] = (origin * CFrame.new(e.x, 0, e.z)).Position
 			towerUnit[e.id] = e.unitId

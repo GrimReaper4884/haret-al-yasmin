@@ -7,10 +7,14 @@
 -- it. Pools hand out anchored, non-colliding Neon parts and return them instead of destroying
 -- them, so a busy wave does not churn Instance.new / Destroy every hit.
 
+local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
-local Signal = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared").Util.Signal)
+local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
+local Signal = require(Shared.Util.Signal)
+local VfxBudget = require(Shared.Logic.VfxBudget)
+local Vfx = require(Shared.Config.Vfx)
 
 local Fx = {}
 
@@ -42,8 +46,22 @@ end
 
 local folder: Folder? = nil
 local free: { BasePart } = {}
-local live = 0
-local MAX_LIVE = 80 -- hard cap on pooled effect parts on screen at once
+-- Caps (Config/Vfx): MAX_LIVE parts out at once, MAX_PER_FRAME handed out per frame. An effect that
+-- misses the budget is skipped, never queued, so a busy wave degrades instead of stalling.
+local budget = VfxBudget.new(Vfx.MAX_LIVE, Vfx.MAX_PER_FRAME)
+RunService.Heartbeat:Connect(function()
+	VfxBudget.newFrame(budget)
+end)
+
+-- How many of `wanted` parts fit in this frame's budget (multi-part effects shrink to fit).
+function Fx.allow(wanted: number): number
+	return VfxBudget.allow(budget, wanted)
+end
+
+-- Live / per-frame counters for the debug overlay.
+function Fx.stats(): (number, number, number)
+	return budget.live, budget.frame, budget.skipped
+end
 
 local function fxFolder(): Folder
 	local f = folder
@@ -57,9 +75,9 @@ local function fxFolder(): Folder
 	return n
 end
 
--- A pooled effect part (Block or Ball), or nil when the budget is spent.
+-- A pooled effect part (Block, Ball or Cylinder), or nil when the budget is spent.
 function Fx.part(shape: Enum.PartType?): BasePart?
-	if live >= MAX_LIVE then
+	if not VfxBudget.take(budget) then
 		return nil
 	end
 	local p: BasePart? = nil
@@ -88,14 +106,13 @@ function Fx.part(shape: Enum.PartType?): BasePart?
 	part.Transparency = 0
 	part.Material = Enum.Material.Neon -- a borrower may have changed it
 	part.Parent = fxFolder()
-	live += 1
 	return part
 end
 
 function Fx.release(p: BasePart)
-	live = math.max(0, live - 1)
+	VfxBudget.release(budget)
 	p.Parent = nil
-	if #free < MAX_LIVE then
+	if #free < Vfx.MAX_LIVE then
 		table.insert(free, p)
 	else
 		p:Destroy()

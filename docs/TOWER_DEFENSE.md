@@ -330,3 +330,19 @@ match opening animates the leaves shutting and the bar dropping (client, local).
 - Balance is harness-tuned (§5) for solo play and same-loadout parties of 2–4; Endless party depth and
   mixed parties (one whale carrying three new players) are untuned, and the numbers still need live
   analytics (`MatchWon_*`, `Summon_*`, `PassClaim_*`).
+
+## 12. Match effects (`Config/Vfx`, `Logic/VfxBudget`, `UI/Fx`; BUILD_PLAN P2-17)
+
+Everything a match draws besides the figures comes from one pooled part budget: `Vfx.MAX_LIVE` (80) parts out
+at once and `Vfx.MAX_PER_FRAME` (14) handed out per frame (`Logic/VfxBudget`, unit-tested). An effect that
+misses the budget is skipped, never queued, and multi-part effects shrink to what fits (`Fx.allow`). The
+Effects setting still gates them: "full" draws all, "reduced" drops sparks, telegraph pulses and most petals,
+"off" keeps only the plain strike beams. The Studio overlay shows `[Fx] live · this frame · skipped`.
+
+| Moment | Effect (client-side, from `MatchEvents`) | Numbers |
+|---|---|---|
+| Hit | neon streak (P1) + a small white-tinted spark at the target | `Vfx.HIT` |
+| Death | model fades (P1) + jasmine petals (white, blossom pink, lantern gold); bosses give an ash poof. No blood | `Vfx.DEATH` |
+| Shabriyeh / sweep | crossing blade flashes / running ground ring with dust (P1-15) | `Vfx.SHABRIYEH`, `Vfx.SWEEP` |
+| Boss wave | red rings pulse at the spawn end during the boss banner; a shock ring where the boss steps in | `Vfx.BOSS` |
+| Gate hit | red disc at the gate end of the path + a red screen-edge blink (one per step) | `Vfx.GATE_HIT` |

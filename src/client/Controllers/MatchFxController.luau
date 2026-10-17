@@ -12,6 +12,7 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Enemies = require(Shared.Config.Enemies)
 local Units = require(Shared.Config.Units)
+local Vfx = require(Shared.Config.Vfx)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
@@ -209,10 +210,28 @@ local function ultimate(e: any)
 	end
 end
 
+-- The screen edge blinks `color` for `life` seconds (gate hits; ultimates use their own colour).
+local lastEdge = 0
+function MatchFxController.edgeFlash(color: Color3, alpha: number, life: number)
+	if not Fx.full() then
+		return
+	end
+	local now = os.clock()
+	if now - lastEdge < 0.15 then
+		return -- several thieves in one step: one blink
+	end
+	lastEdge = now
+	vignette.BackgroundColor3 = color
+	vignette.BackgroundTransparency = 1 - alpha
+	TweenService:Create(vignette, TweenInfo.new(life, Enum.EasingStyle.Quad), { BackgroundTransparency = 1 }):Play()
+end
+
 local function onEvents(events: { any })
 	local t = LocaleController.t
 	for _, e in events do
-		if e.type == "towerPlaced" then
+		if e.type == "reached" then
+			MatchFxController.edgeFlash(Color3.fromHex(Vfx.GATE_HIT.color), Vfx.GATE_HIT.vignette, Vfx.GATE_HIT.vignetteLife)
+		elseif e.type == "towerPlaced" then
 			towerInfo[e.id] = { unitId = e.unitId, owner = e.owner }
 		elseif e.type == "towerSold" then
 			towerInfo[e.id] = nil

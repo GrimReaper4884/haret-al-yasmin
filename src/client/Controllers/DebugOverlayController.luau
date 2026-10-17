@@ -9,6 +9,7 @@ local RunService = game:GetService("RunService")
 
 local UI = script.Parent.Parent.UI
 local Theme = require(UI.Theme)
+local Fx = require(UI.Fx)
 local Root = require(UI.Root)
 
 local DebugOverlayController = {}
@@ -37,6 +38,8 @@ function DebugOverlayController.start()
 	local serverLines: { string } = {}
 	local function render()
 		local lines = {}
+		local live, frame, skipped = Fx.stats()
+		table.insert(lines, string.format("[Fx] live %d · this frame %d · skipped %d", live, frame, skipped))
 		for _, l in clientLines do
 			table.insert(lines, "[C] " .. l)
 		end
@@ -53,6 +56,13 @@ function DebugOverlayController.start()
 			if #clientLines > MAX_LINES then
 				table.remove(clientLines, 1)
 			end
+			render()
+		end
+	end)
+	task.spawn(function()
+		-- The effects budget line refreshes on its own (P2-17); log lines re-render on arrival.
+		while label.Parent do
+			task.wait(0.5)
 			render()
 		end
 	end)
