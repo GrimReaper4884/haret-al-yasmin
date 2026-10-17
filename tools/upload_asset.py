@@ -43,7 +43,7 @@ def load_manifest() -> dict:
 
 
 def save_manifest(m: dict):
-    MANIFEST.write_text(json.dumps(m, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    MANIFEST.write_bytes((json.dumps(m, indent=2, ensure_ascii=False) + "\n").encode("utf-8"))  # LF on Windows too
 
 
 def rel(path: Path) -> str:

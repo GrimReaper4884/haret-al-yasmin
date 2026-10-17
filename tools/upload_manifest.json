@@ -4,207 +4,248 @@
     "assets/marketing/icons/lira.png": {
       "name": "Haret icon lira",
       "type": "Image",
-      "id": 0
+      "id": 91594568838206,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/qirsh.png": {
       "name": "Haret icon qirsh",
       "type": "Image",
-      "id": 0
+      "id": 140599145045126,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/cash.png": {
       "name": "Haret icon cash",
       "type": "Image",
-      "id": 0
+      "id": 129410440388323,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/lira_stack.png": {
       "name": "Haret icon lira_stack",
       "type": "Image",
-      "id": 0
+      "id": 93445954754265,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/qirsh_pouch.png": {
       "name": "Haret icon qirsh_pouch",
       "type": "Image",
-      "id": 0
+      "id": 82947809330849,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/stone.png": {
       "name": "Haret icon stone",
       "type": "Image",
-      "id": 0
+      "id": 121079621002145,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/stones_3.png": {
       "name": "Haret icon stones_3",
       "type": "Image",
-      "id": 0
+      "id": 80815170078106,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/xp.png": {
       "name": "Haret icon xp",
       "type": "Image",
-      "id": 0
+      "id": 87817934165202,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/pass.png": {
       "name": "Haret icon pass",
       "type": "Image",
-      "id": 0
+      "id": 111255187450298,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/ticket.png": {
       "name": "Haret icon ticket",
       "type": "Image",
-      "id": 0
+      "id": 113199979121197,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/vfx/spark.png": {
       "name": "Haret vfx spark",
       "type": "Image",
-      "id": 0
+      "id": 74879464229953,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/vfx/dust.png": {
       "name": "Haret vfx dust",
       "type": "Image",
-      "id": 0
+      "id": 77870170170422,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/vfx/petal.png": {
       "name": "Haret vfx petal",
       "type": "Image",
-      "id": 0
+      "id": 134057751781553,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/vfx/smoke.png": {
       "name": "Haret vfx smoke",
       "type": "Image",
-      "id": 0
+      "id": 100319124340565,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/vfx/steam.png": {
       "name": "Haret vfx steam",
       "type": "Image",
-      "id": 0
+      "id": 81355377598187,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/vfx/crumb.png": {
       "name": "Haret vfx crumb",
       "type": "Image",
-      "id": 0
+      "id": 116915557453058,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/vfx/shard.png": {
       "name": "Haret vfx shard",
       "type": "Image",
-      "id": 0
+      "id": 136345368143259,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/vfx/star.png": {
       "name": "Haret vfx star",
       "type": "Image",
-      "id": 0
+      "id": 138138713844695,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/ui_units.png": {
       "name": "Haret icon ui_units",
       "type": "Image",
-      "id": 0
+      "id": 93072318807029,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/ui_summon.png": {
       "name": "Haret icon ui_summon",
       "type": "Image",
-      "id": 0
+      "id": 139894468545667,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/ui_pass.png": {
       "name": "Haret icon ui_pass",
       "type": "Image",
-      "id": 0
+      "id": 100612098218612,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/ui_codes.png": {
       "name": "Haret icon ui_codes",
       "type": "Image",
-      "id": 0
+      "id": 129498450392895,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/ui_play.png": {
       "name": "Haret icon ui_play",
       "type": "Image",
-      "id": 0
+      "id": 119124942337695,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/ui_event.png": {
       "name": "Haret icon ui_event",
       "type": "Image",
-      "id": 0
+      "id": 81866345377315,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/ui_settings.png": {
       "name": "Haret icon ui_settings",
       "type": "Image",
-      "id": 0
+      "id": 126392875254573,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/ui_afk.png": {
       "name": "Haret icon ui_afk",
       "type": "Image",
-      "id": 0
+      "id": 73616718849628,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/ui_daily.png": {
       "name": "Haret icon ui_daily",
       "type": "Image",
-      "id": 0
+      "id": 79760059433884,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/ui_shop.png": {
       "name": "Haret icon ui_shop",
       "type": "Image",
-      "id": 0
+      "id": 91398480705014,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/act_upgrade.png": {
       "name": "Haret icon act_upgrade",
       "type": "Image",
-      "id": 0
+      "id": 118839200965690,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/act_sell.png": {
       "name": "Haret icon act_sell",
       "type": "Image",
-      "id": 0
+      "id": 136960612732395,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/act_target.png": {
       "name": "Haret icon act_target",
       "type": "Image",
-      "id": 0
+      "id": 130728713809801,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/act_speed.png": {
       "name": "Haret icon act_speed",
       "type": "Image",
-      "id": 0
+      "id": 115153852782730,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/act_skip.png": {
       "name": "Haret icon act_skip",
       "type": "Image",
-      "id": 0
+      "id": 84586717628744,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/act_leave.png": {
       "name": "Haret icon act_leave",
       "type": "Image",
-      "id": 0
+      "id": 79507462286688,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/role_melee.png": {
       "name": "Haret icon role_melee",
       "type": "Image",
-      "id": 0
+      "id": 123022930977561,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/role_ranged.png": {
       "name": "Haret icon role_ranged",
       "type": "Image",
-      "id": 0
+      "id": 120445918635830,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/role_splash.png": {
       "name": "Haret icon role_splash",
       "type": "Image",
-      "id": 0
+      "id": 102067809885629,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/role_support.png": {
       "name": "Haret icon role_support",
       "type": "Image",
-      "id": 0
+      "id": 93302330771605,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/role_healer.png": {
       "name": "Haret icon role_healer",
       "type": "Image",
-      "id": 0
+      "id": 138499908268330,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/role_farm.png": {
       "name": "Haret icon role_farm",
       "type": "Image",
-      "id": 0
+      "id": 123072503034014,
+      "uploaded": "2026-10-18"
     },
     "assets/marketing/icons/gem.png": {
       "name": "Haret icon gem",
       "type": "Image",
-      "id": 0
+      "id": 112303897320983,
+      "uploaded": "2026-10-18"
     }
   }
 }

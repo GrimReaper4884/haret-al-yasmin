@@ -4,54 +4,55 @@
 -- primitive drawer of the same name (tests/icons.spec.luau checks one exists), the same pattern as
 -- CharacterLooks[id].model. Ids come from tools/upload_manifest.json (tools/upload_asset.py) or a
 -- Creator Hub upload; `tint` recolours a white-on-alpha image (ImageColor3), otherwise the image
--- keeps its painted colours. Pure data.
+-- keeps its painted colours; `recolor` makes a white image take the caller's colour (Icons.draw colorHex).
+-- Pure data.
 
-export type Icon = { id: number, tint: string? }
+export type Icon = { id: number, tint: string?, recolor: boolean? }
 
 local Icons = {}
 
 Icons.images = {
 	-- Menu rail (LobbyMenuController: "ui_" .. key) and HUD buttons
-	ui_play = { id = 0 },
-	ui_event = { id = 0 },
-	ui_units = { id = 0 },
-	ui_summon = { id = 0 },
-	ui_pass = { id = 0 },
-	ui_daily = { id = 0 },
-	ui_codes = { id = 0 },
-	ui_afk = { id = 0 },
-	ui_settings = { id = 0 },
+	ui_play = { id = 119124942337695 },
+	ui_event = { id = 81866345377315 },
+	ui_units = { id = 93072318807029 },
+	ui_summon = { id = 139894468545667 },
+	ui_pass = { id = 100612098218612 },
+	ui_daily = { id = 79760059433884 },
+	ui_codes = { id = 129498450392895 },
+	ui_afk = { id = 73616718849628 },
+	ui_settings = { id = 126392875254573 },
 	ui_music = { id = 0 },
 	ui_music_off = { id = 0 },
-	ui_shop = { id = 0 },
+	ui_shop = { id = 91398480705014 },
 
 	-- Match actions and defender roles (PV-C04)
-	act_upgrade = { id = 0 },
-	act_sell = { id = 0 },
-	act_target = { id = 0 },
-	act_speed = { id = 0 },
-	act_skip = { id = 0 },
-	act_leave = { id = 0 },
-	role_melee = { id = 0 },
-	role_ranged = { id = 0 },
-	role_splash = { id = 0 },
-	role_support = { id = 0 },
-	role_healer = { id = 0 },
-	role_farm = { id = 0 },
+	act_upgrade = { id = 118839200965690 },
+	act_sell = { id = 136960612732395 },
+	act_target = { id = 130728713809801 },
+	act_speed = { id = 115153852782730 },
+	act_skip = { id = 84586717628744 },
+	act_leave = { id = 79507462286688 },
+	role_melee = { id = 123022930977561 },
+	role_ranged = { id = 120445918635830 },
+	role_splash = { id = 102067809885629 },
+	role_support = { id = 93302330771605 },
+	role_healer = { id = 138499908268330 },
+	role_farm = { id = 123072503034014 },
 	-- A white gem tinted per rarity (Theme.rarityColor) for card corners
-	gem = { id = 0 },
+	gem = { id = 112303897320983, recolor = true },
 
 	-- Currencies and reward kinds (PV-C03)
-	lira = { id = 0 },
-	qirsh = { id = 0 },
-	cash = { id = 0 },
-	stone = { id = 0 },
-	stones_3 = { id = 0 },
-	xp = { id = 0 },
-	pass = { id = 0 },
-	ticket = { id = 0 },
-	lira_stack = { id = 0 },
-	qirsh_pouch = { id = 0 },
+	lira = { id = 91594568838206 },
+	qirsh = { id = 140599145045126 },
+	cash = { id = 129410440388323 },
+	stone = { id = 121079621002145 },
+	stones_3 = { id = 80815170078106 },
+	xp = { id = 87817934165202 },
+	pass = { id = 111255187450298 },
+	ticket = { id = 113199979121197 },
+	lira_stack = { id = 93445954754265 },
+	qirsh_pouch = { id = 82947809330849 },
 	coins = { id = 0 },
 
 	-- Enemy health-bar markers (PV-A04)

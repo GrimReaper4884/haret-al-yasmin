@@ -325,7 +325,7 @@ local drawers: { [string]: (Frame, Color3) -> () } = {
 }
 
 -- An uploaded painted image for `name` (Config/Icons id > 0), fitted to the holder.
-local function image(name: string, holder: Frame): boolean
+local function image(name: string, holder: Frame, colorHex: string?): boolean
 	local def = IconIds.images[name]
 	if not def or def.id == 0 then
 		return false
@@ -341,6 +341,8 @@ local function image(name: string, holder: Frame): boolean
 	})
 	if def.tint then
 		img.ImageColor3 = Color3.fromHex(def.tint)
+	elseif def.recolor and colorHex then
+		img.ImageColor3 = Color3.fromHex(colorHex)
 	end
 	return true
 end
@@ -348,7 +350,7 @@ end
 -- Draws icon `name` into `holder`: the uploaded image when Config/Icons has an id, else the
 -- primitive drawer (tinted by colorHex), else the name as text.
 function Icons.draw(name: string, holder: Frame, colorHex: string?)
-	if image(name, holder) then
+	if image(name, holder, colorHex) then
 		return
 	end
 	local drawer = drawers[name]
