@@ -303,6 +303,21 @@ return function(t)
 				end
 			end
 		end)
+		t.it("MONEY50K pays the owner 50,000 lira and qirsh and nobody else", function()
+			local c = ctx(seq({ 0 }), 1000)
+			local ok, err = CodesLogic.redeem(profile(), "MONEY50K", Codes, c)
+			t.eq(err, "unknown_code")
+			t.eq(ok, false)
+			c.userId = 2465538767
+			local p = profile()
+			local granted
+			ok, err, granted = CodesLogic.redeem(p, "money50k", Codes, c)
+			t.truthy(ok, err)
+			t.eq(granted.lira, 50000)
+			t.eq(granted.qirsh, 50000)
+			t.eq(p.lira, 51000)
+			t.eq(p.qirsh, 50000)
+		end)
 	end)
 
 	t.describe("DailyLogic", function()
