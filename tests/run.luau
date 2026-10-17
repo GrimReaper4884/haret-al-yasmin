@@ -135,6 +135,7 @@ local specs = {
 	require("./ledger.spec"),
 	require("./funnel.spec"),
 	require("./vfx.spec"),
+	require("./redteam.spec"),
 }
 for _, spec in specs do
 	spec(t)
