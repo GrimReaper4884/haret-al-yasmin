@@ -57,17 +57,15 @@ local function purchase(player: Player, itemId: any): { [string]: any }
 		return { ok = false, err = "too_far" }
 	end
 	local shop = (Shops :: any)[session.shopId]
-	local ok, err, price = DataService.mutate(player, function(profile)
+	local ok, err = DataService.mutate(player, function(profile)
 		return ShopLogic.purchase(profile, shop, itemId, Items :: any)
-	end)
+	end, { src = "shop" })
 	if not ok then
 		PlayerStateService.notify(player, ERR_TO_NOTIFY[err :: string] or "notify.error")
 		return { ok = false, err = err }
 	end
 	local def = (Items :: any)[itemId]
-	local profile = DataService.getProfile(player)
 	PlayerStateService.notify(player, "notify.purchased", { itemKey = def.nameKey })
-	Analytics.sink(player, price, if profile then profile.qirsh else 0, itemId)
 	Analytics.funnel(player, Analytics.Funnel.FirstPurchase)
 	return { ok = true }
 end

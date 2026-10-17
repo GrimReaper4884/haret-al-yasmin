@@ -243,7 +243,7 @@ local function rewardPlayer(match: Match, player: Player, outcome: any): any
 			now = os.time(),
 		})
 		return true
-	end)
+	end, { src = "match:" .. match.modeId })
 	Analytics.custom(player, (if outcome.won then "MatchWon_" else "MatchLost_") .. match.modeId .. "_" .. match.difficulty, outcome.wavesCleared)
 	PlayerStateService.notify(player, "notify.match_rewards", { lira = reward.lira, qirsh = reward.qirsh, xp = reward.xp })
 	if eventGain > 0 and eventDef then

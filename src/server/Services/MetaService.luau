@@ -52,6 +52,15 @@ end
 -- The reward context for Logic/Grants (also used by AfkService).
 MetaService.grantCtx = grantCtx
 
+-- A fresh seed and a generator driven by it, for rolls that the audit ledger must be able to replay.
+local function seededRng(): (number, () -> number)
+	local seed = math.random(0, 2 ^ 31 - 1)
+	local random = Random.new(seed)
+	return seed, function()
+		return random:NextNumber()
+	end
+end
+
 local function summonCtx(): SummonLogic.Context
 	return {
 		units = Units :: any,
@@ -83,13 +92,17 @@ local function summon(player: Player, n: any): { [string]: any }
 		return { ok = false, err = "not_loaded" }
 	end
 	local cost = SummonLogic.cost(n, TD.SUMMON_COST, TD.SUMMON_TEN_COST, TD.VIP_SUMMON_DISCOUNT, MonetizationService.hasPerk(player, "vip"))
+	-- Every roll of this summon comes from one seeded generator; the seed goes into the ledger
+	-- entry so the pull can be replayed from the audit trail.
+	local seed, rng = seededRng()
+	local ctx = summonCtx()
+	ctx.rng = rng
 	local ok, err, results = DataService.mutate(player, function(p)
-		return SummonLogic.summon(p, n, cost, summonCtx())
-	end)
+		return SummonLogic.summon(p, n, cost, ctx)
+	end, { src = "summon_x" .. n, seed = seed })
 	if not ok then
 		return { ok = false, err = err }
 	end
-	Analytics.sink(player, cost, profile.lira, "summon_x" .. n)
 	Analytics.custom(player, "Summon_x" .. n)
 	local announce = {}
 	for _, r in results :: { any } do
@@ -134,11 +147,10 @@ local function rerollTrait(player: Player, unitId: any): { [string]: any }
 	if not Validate.isIdentifier(unitId) or not (Units :: any)[unitId] then
 		return { ok = false, err = "bad_request" }
 	end
+	local seed, rng = seededRng()
 	local ok, err, trait = DataService.mutate(player, function(p)
-		return UnitLogic.rerollTrait(p, unitId, TD.TRAIT_REROLL_COST, Traits.traits, Traits.order, function()
-			return math.random()
-		end)
-	end)
+		return UnitLogic.rerollTrait(p, unitId, TD.TRAIT_REROLL_COST, Traits.traits, Traits.order, rng)
+	end, { src = "reroll:" .. unitId, seed = seed })
 	if not ok then
 		return { ok = false, err = err }
 	end
@@ -153,7 +165,7 @@ local function claimPass(player: Player, tier: any, track: any): { [string]: any
 	end
 	local ok, err, granted = DataService.mutate(player, function(p)
 		return PassLogic.claim(p, tier, track, SeasonPass.tiers, grantCtx())
-	end)
+	end, { src = "pass:" .. track })
 	if not ok then
 		return { ok = false, err = err }
 	end
@@ -174,11 +186,12 @@ local function redeemCode(player: Player, code: any): { [string]: any }
 		Analytics.custom(player, "Code_" .. (CodesLogic.normalize(code) or "?"))
 		return { ok = true, granted = { cash = amount } }
 	end
+	local clean = CodesLogic.normalize(code) or "?"
 	local ok, err, granted = DataService.mutate(player, function(p)
 		local c = grantCtx()
 		c.userId = player.UserId
 		return CodesLogic.redeem(p, code, Codes :: any, c)
-	end)
+	end, { src = "code:" .. clean, key = "code:" .. clean })
 	if not ok then
 		return { ok = false, err = err }
 	end
@@ -189,7 +202,7 @@ end
 local function claimDaily(player: Player): { [string]: any }
 	local ok, err, granted, day = DataService.mutate(player, function(p)
 		return DailyLogic.claim(p, os.time(), Daily :: any, grantCtx())
-	end)
+	end, { src = "daily" })
 	if not ok then
 		return { ok = false, err = err }
 	end
@@ -205,7 +218,7 @@ local function eventBuy(player: Player, eventId: any, key: any): { [string]: any
 	end
 	local ok, err, granted = DataService.mutate(player, function(p)
 		return EventLogic.buy(p, Events :: any, eventId, key, os.time(), grantCtx())
-	end)
+	end, { src = "event:" .. eventId })
 	if not ok then
 		return { ok = false, err = err }
 	end

@@ -108,9 +108,10 @@ local function processReceipt(info: { [string]: any }): Enum.ProductPurchaseDeci
 		return Enum.ProductPurchaseDecision.NotProcessedYet
 	end
 
+	-- The ledger key is the PurchaseId, so a replayed receipt ("already") never writes a second line.
 	local ok, err, result = DataService.mutate(player, function(profile)
 		return MonetizationLogic.grantReceipt(profile, tostring(info.PurchaseId), product, grantCtx())
-	end)
+	end, { src = "receipt:" .. (key :: string), key = "receipt:" .. tostring(info.PurchaseId) })
 	if not ok then
 		warn("[Monetization] grant failed: " .. tostring(err))
 		return Enum.ProductPurchaseDecision.NotProcessedYet

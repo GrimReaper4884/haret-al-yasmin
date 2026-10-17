@@ -9,6 +9,7 @@ return {
 
 	MAX_QIRSH = 1000000,
 	RECEIPT_HISTORY = 100,
+	LEDGER_SIZE = 200, -- audit entries kept per profile (Logic/Ledger ring buffer)
 
 	INTERACT_RANGE = 14, -- studs between HumanoidRootPart and NPC for choices/purchases
 

@@ -4,6 +4,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Economy = require(Shared.Config.Economy)
@@ -13,9 +14,11 @@ local Traits = require(Shared.Config.Traits)
 local SeasonPass = require(Shared.Config.SeasonPass)
 local TD = require(Shared.Config.TD)
 local ProfileSchema = require(Shared.Logic.ProfileSchema)
+local Ledger = require(Shared.Logic.Ledger)
 local Locale = require(Shared.Util.Locale)
 local Signal = require(Shared.Util.Signal)
 local DataStoreAdapter = require(script.Parent.DataStoreAdapter)
+local Analytics = require(script.Parent.AnalyticsService)
 
 type Entry = {
 	profile: any?,
@@ -30,6 +33,7 @@ local DataService = {}
 
 DataService.ProfileLoaded = Signal.new()
 DataService.ProfileChanged = Signal.new()
+DataService.LedgerEntry = Signal.new() -- (player, Ledger.Entry) after a mutation moved a currency
 
 local store: DataStoreAdapter.Store
 local entries: { [Player]: Entry } = {}
@@ -41,6 +45,7 @@ local schemaCtx: ProfileSchema.Context = {
 	maxLira = TD.MAX_LIRA,
 	maxStones = TD.MAX_TRAIT_STONES,
 	receiptHistory = Economy.RECEIPT_HISTORY,
+	ledgerSize = Economy.LEDGER_SIZE,
 	items = Items :: any,
 	units = Units :: any,
 	traits = Traits.traits :: any,
@@ -303,17 +308,35 @@ end
 
 -- Applies fn to the live profile. fn MUST NOT yield and must only write when it returns true
 -- (all Logic modules validate first, then write). Returns whatever fn returns.
-function DataService.mutate(player: Player, fn: (profile: any) -> (boolean, ...any)): (boolean, ...any)
+-- `meta` names the mutation for the audit ledger (Logic/Ledger): any lira / qirsh / trait-stone
+-- change fn makes is recorded in profile.ledger inside this same mutation, with meta.key as the
+-- idempotency key and meta.seed as the roll seed. Mutations that move a currency without a meta
+-- are recorded as "unknown" (and warned about in Studio) so the audit stays complete.
+function DataService.mutate(player: Player, fn: (profile: any) -> (boolean, ...any), meta: Ledger.Meta?): (boolean, ...any)
 	local entry = entries[player]
 	if not entry or not entry.loaded or entry.released then
 		return false, "not_loaded"
 	end
-	local results = table.pack(fn(entry.profile))
-	if results[1] == true then
+	local results = table.pack(Ledger.mutate(entry.profile, fn, meta, os.time(), Economy.LEDGER_SIZE))
+	local ledgerEntry = results[1] :: Ledger.Entry?
+	if results[2] == true then
 		entry.version += 1
 		DataService.ProfileChanged:Fire(player)
+		if ledgerEntry then
+			if ledgerEntry.src == Ledger.UNKNOWN_SOURCE and RunService:IsStudio() then
+				warn("[DataService] currency changed without a ledger source: " .. debug.traceback("", 2))
+			end
+			Analytics.ledger(player, ledgerEntry, entry.profile)
+			DataService.LedgerEntry:Fire(player, ledgerEntry)
+		end
 	end
-	return table.unpack(results, 1, results.n)
+	return table.unpack(results, 2, results.n)
+end
+
+-- The audit trail (newest last). Read-only.
+function DataService.ledger(player: Player): { Ledger.Entry }
+	local profile = DataService.getProfile(player)
+	return if profile and type(profile.ledger) == "table" then profile.ledger else {}
 end
 
 -- Saves immediately (keeps the session). Used after Robux grants so a receipt is only

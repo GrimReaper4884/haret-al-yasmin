@@ -141,11 +141,10 @@ local function flush(player: Player, s: Session): boolean
 	local mult = multiplier(player)
 	local ok, _, payouts = DataService.mutate(player, function(p)
 		return AfkLogic.accrue(p, seconds, os.time(), Afk, mult, math.random, MetaService.grantCtx())
-	end)
+	end, { src = "afk" })
 	if not ok or not payouts then
 		return false
 	end
-	local profile = DataService.getProfile(player)
 	for _, pay in payouts :: { AfkLogic.Payout } do
 		local g = pay.granted
 		s.earned.lira += g.lira or 0
@@ -156,9 +155,6 @@ local function flush(player: Player, s: Session): boolean
 			s.earned.cups += 1
 		else
 			s.earned.tales += 1
-		end
-		if g.lira and g.lira > 0 and profile then
-			Analytics.source(player, g.lira, profile.lira, "afk_" .. pay.kind)
 		end
 		if player.Parent then
 			evPayout:FireClient(player, pay)

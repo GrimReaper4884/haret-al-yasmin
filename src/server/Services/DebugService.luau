@@ -5,6 +5,7 @@
 --   local D = game.ServerStorage.HaretDebug
 --   print(D:Invoke("state"))         -- live profile as JSON (first player)
 --   print(D:Invoke("peek"))          -- what the (mock) store holds
+--   print(D:Invoke("ledger"))        -- audit ledger (Logic/Ledger) as JSON, newest last
 --   print(D:Invoke("reload"))        -- save + release + load again
 --   print(D:Invoke("failNext", 3))   -- next 3 store calls fail (mock only)
 --   print(D:Invoke("qirsh", 500))    -- grant test qirsh (Studio only)
@@ -55,6 +56,8 @@ function DebugService.start()
 			return if p then HttpService:JSONEncode(p) else "not loaded"
 		elseif cmd == "peek" then
 			return HttpService:JSONEncode(DataService.debug.store():peek("u_" .. player.UserId))
+		elseif cmd == "ledger" then
+			return HttpService:JSONEncode(DataService.ledger(player))
 		elseif cmd == "reload" then
 			return DataService.debug.reload(player)
 		elseif cmd == "save" then
@@ -64,14 +67,14 @@ function DebugService.start()
 			local amount = math.clamp(math.floor(tonumber(arg) or 0), 0, 100000)
 			return DataService.mutate(player, function(profile)
 				return Wallet.add(profile, amount, Economy.MAX_QIRSH)
-			end)
+			end, { src = "debug" })
 		elseif cmd == "lira" then
 			local amount = math.clamp(math.floor(tonumber(arg) or 0), 0, 100000)
 			return DataService.mutate(player, function(profile)
 				profile.lira = math.min(profile.lira + amount, TD.MAX_LIRA)
 				profile.traitStones += 5
 				return true
-			end)
+			end, { src = "debug" })
 		elseif cmd == "cash" then
 			MatchService.debugAddCash(player, math.clamp(math.floor(tonumber(arg) or 5000), 0, 100000))
 			return true
@@ -155,7 +158,7 @@ function DebugService.start()
 			profile.lira = math.max(profile.lira, 5000)
 			profile.traitStones = math.max(profile.traitStones, 5)
 			return true
-		end)
+		end, { src = "debug" })
 	end)
 end
 

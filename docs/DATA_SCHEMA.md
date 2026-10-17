@@ -1,6 +1,6 @@
 # Data Schema
 
-*Status: living document · Last updated 2026-10-15 · Current schema version: **1***
+*Status: living document · Last updated 2026-10-17 · Current schema version: **2***
 
 ## 1. Store layout
 
@@ -114,7 +114,62 @@ published **test** experience.
 | `daily` | `{ streak, lastDay }` | UTC day index |
 | `afk` | `{ day, lira, carry, cups, tales, seconds }` | The Hakawati's room (AFK chamber): UTC day and lira paid that day (cap), seconds toward the next cup, lifetime cups / tales / seconds. Filled by `AfkLogic.sanitize`; see docs/AFK_CHAMBER.md §5 |
 | `td` | `{ matches, wins, kills, cleared{modeId->difficulty}, bestInfinite }` | unlocks and stats |
+| `ledger` | `{ Entry }`, newest last, ≤ `Economy.LEDGER_SIZE` (200) | audit ring buffer, see §9 |
 
 Tier keys inside `claimedFree`/`claimedPremium` are strings ("1".."50") so the DataStore JSON stays an
 object. All new tables use string keys only. In Studio, a failed load no longer kicks (flag
 `KICK_IN_STUDIO` in DataService) and the mock store seeds 5,000 lira and 5 trait stones.
+
+## 9. Audit ledger (BUILD_PLAN P2-15, 2026-10-17)
+
+Every change to `lira`, `qirsh` or `traitStones` is recorded **inside the mutation that made it**.
+`DataService.mutate(player, fn, meta)` runs `fn` through `Logic/Ledger.mutate`: it snapshots the three
+balances, runs `fn`, and when `fn` returns `true` and a balance moved it appends one entry to
+`profile.ledger` in the same step (so the entry is saved with the grant or not at all, and `fn` still
+never yields). Services never write entries by hand; they only name the mutation:
+
+```lua
+type Meta = { src: string, key: string?, seed: number? }
+type Entry = {
+	at: number,        -- os.time()
+	src: string,       -- see the table below (≤ 64 chars)
+	lira: number?,     -- signed delta; absent when that currency did not move
+	qirsh: number?,
+	stones: number?,
+	key: string?,      -- idempotency key: never recorded twice
+	seed: number?,     -- RNG seed of the rolls this mutation made
+}
+```
+
+| `src` | Where | `key` | `seed` |
+|---|---|---|---|
+| `receipt:<productKey>` | `MonetizationService.processReceipt` | `receipt:<PurchaseId>` | |
+| `code:<CODE>` | `MetaService.redeemCode` | `code:<CODE>` | |
+| `summon_x1` / `summon_x10` | `MetaService.summon` | | seed of the `Random` that drove every rarity, unit and trait roll of the pull |
+| `reroll:<unitId>` | `MetaService.rerollTrait` | | seed of the reroll (nudge included) |
+| `pass:free` / `pass:premium` | `MetaService.claimPass` | | |
+| `daily` | `MetaService.claimDaily` | | |
+| `event:<eventId>` | `MetaService.eventBuy` | | |
+| `match:<modeId>` | `MatchService.rewardPlayer` | | |
+| `afk` | `AfkService` payouts | | |
+| `shop` | `ShopService.purchase` | | |
+| `quest:<questId>` | `QuestService.deliver` | | |
+| `debug` | `DebugService` (Studio only) | | |
+| `unknown` | any mutation that moved a currency without a `meta` (warned in Studio) | | |
+
+Rules:
+
+1. **Idempotency.** A mutation whose `key` is already in the ledger writes no second entry. In practice the
+   logic refuses first (`grantReceipt` answers `"already"` without touching balances; `CodesLogic.redeem`
+   returns `already_redeemed`), so the ledger check is a second line of defence. Specs: `tests/ledger.spec.luau`.
+2. **Replay.** A summon or reroll can be reproduced from its entry: `Random.new(entry.seed)` fed to
+   `SummonLogic.summon` / `UnitLogic.rerollTrait` with the same profile state yields the same units.
+3. **Ring buffer.** `Ledger.sanitize` keeps the newest `Economy.LEDGER_SIZE` well-formed entries on load;
+   `commit` trims after every append. 200 entries × ~7 fields stays far under the 4 MB DataStore value limit.
+4. **Analytics.** Each entry also emits one `AnalyticsService:LogEconomyEvent` per currency moved
+   (`Analytics.ledger`): currency `Lira` / `Qirsh` / `TraitStones`, Source or Sink by sign, balance after
+   the mutation, transaction type from the source prefix (`receipt:` → IAP, `summon` / `reroll` / `shop` /
+   `event:` → Shop, `daily` → TimedReward, otherwise Gameplay), `src` as the SKU. The hand-written
+   `Analytics.source` / `sink` calls (which labelled lira summons as Qirsh) were removed.
+5. `DataService.LedgerEntry` fires `(player, entry)` after the mutation; `DataService.ledger(player)` returns
+   the live list read-only (used by `HaretDebug:Invoke("ledger")`).

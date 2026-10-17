@@ -62,12 +62,10 @@ function QuestService.deliver(player: Player, questId: string, npcId: string): (
 	end
 	local ok, err, paid = DataService.mutate(player, function(profile)
 		return QuestLogic.deliver(profile, questId, Quests :: any, Economy.MAX_QIRSH, os.time())
-	end)
+	end, { src = "quest:" .. questId })
 	if ok then
-		local profile = DataService.getProfile(player)
 		PlayerStateService.notify(player, "notify.quest_completed", { n = paid })
 		Analytics.funnel(player, Analytics.Funnel.DeliveredQuest)
-		Analytics.source(player, paid, if profile then profile.qirsh else 0, "quest_" .. questId)
 	end
 	return ok, err
 end

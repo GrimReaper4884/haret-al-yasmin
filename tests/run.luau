@@ -105,6 +105,7 @@ function t.schemaCtx(over)
 		maxLira = TD.MAX_LIRA,
 		maxStones = TD.MAX_TRAIT_STONES,
 		receiptHistory = Economy.RECEIPT_HISTORY,
+		ledgerSize = Economy.LEDGER_SIZE,
 		items = Items,
 		units = Units,
 		traits = Traits.traits,
@@ -131,6 +132,7 @@ local specs = {
 	require("./party.spec"),
 	require("./event.spec"),
 	require("./afk.spec"),
+	require("./ledger.spec"),
 }
 for _, spec in specs do
 	spec(t)
