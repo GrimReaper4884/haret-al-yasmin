@@ -199,6 +199,15 @@ return function(t)
 			local ev = run(s, 30)
 			t.eq(count(ev, "death"), 2, "one kill per wave")
 			t.truthy(count(ev, "attack") >= 2)
+			-- Attack events report the damage the target took (after armour), for damage numbers.
+			local armor = Enemies.thief.armor or 0
+			for _, e in ev do
+				if e.type == "attack" then
+					local mul = if e.ability then tower.stats.ability.multiplier else 1
+					t.eq(e.damage, math.floor(tower.stats.damage * mul * (1 - armor) + 0.5), "attack damage")
+					t.eq(e.damage, math.floor(e.damage), "whole number")
+				end
+			end
 			t.eq(s.phase, "won")
 			t.eq(count(ev, "won"), 1)
 			t.eq(s.players.p1.kills, 2)

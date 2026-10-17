@@ -120,6 +120,10 @@ This is the **official Blender Lab MCP server**, not `mcp-for-blender`. None of 
   `user_mouse_input` click on the viewport. GUI clicks were not needed and remain unverified.
 - `get_console_output` returns the whole log every time, including Roblox CorePackages warnings; filter by prefix.
 - `search_game_tree` from the root with `max_depth` 3 fills the 60–200 node cap with services; pass `path`.
+- `screen_capture` does not draw `BillboardGui`s with `AlwaysOnTop = true` (checked 2026-10-18 with a red-backed probe: the
+  AlwaysOnTop copy is missing, the identical non-AlwaysOnTop copy shows). Effects meant to be captured use AlwaysOnTop false.
+- `user_mouse_input` clicks on GUI buttons work (by `instance_path` when the path is unambiguous, otherwise by `x, y`
+  in AbsolutePosition space, i.e. without the top-bar inset); checked 2026-10-17 on the HUD mute button.
 - Blender `render_thumbnail_to_path` ignores the directory of `output_path` and writes under Blender's own temp
   folder (`%TEMP%\blender_<pid>\blender_mcp\<name>.png`); the result reports the real path. `execute_blender_code`
   must assign a dict to `result`; a bare return is ignored.

@@ -19,12 +19,14 @@ local Units = require(Shared.Config.Units)
 local Arenas = require(Shared.Config.Arenas)
 local Vfx = require(Shared.Config.Vfx)
 local Path = require(Shared.Logic.Path)
+local HitFx = require(Shared.Logic.HitFx)
 local RigBuilder = require(Shared.Util.RigBuilder)
 local BoneAnim = require(Shared.Anim.BoneAnim)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
 local Fx = require(UI.Fx)
+local DamageNumbers = require(UI.DamageNumbers)
 local MatchController = require(script.Parent.MatchController)
 local AudioController = require(script.Parent.AudioController)
 local ThrowFx = require(script.Parent.ThrowFx)
@@ -47,6 +49,7 @@ type Enemy = {
 	bornAt: number,
 	missing: number,
 	walks: boolean, -- baked walk clip: no synthetic bob
+	punchAt: number?, -- os.clock() of the last knockback nudge (PV-B02)
 }
 
 local folder: Folder
@@ -56,6 +59,7 @@ local towerPos: { [number]: Vector3 } = {}
 local towerUnit: { [number]: string } = {}
 local arenaPath: Path.Path? = nil
 local origin: CFrame? = nil
+local selectedTower: number? = nil -- PlacementController tells us; its target gets the flash
 
 local function clear()
 	for _, e in enemies do
@@ -104,6 +108,7 @@ local function spawn(e: any)
 		boss = def.boss == true,
 		bornAt = os.clock(),
 		missing = 0,
+		punchAt = nil,
 		walks = model:GetAttribute("Imported") == true and BoneAnim.has(e.enemyId),
 	}
 	rec.bar = healthBar(model, rec.boss)
@@ -324,6 +329,66 @@ local function ultimateStrike(kind: string, from: Vector3, to: Vector3, radius: 
 	end
 end
 
+-- Hit flash (PV-B02): a few pooled white Highlights, lent for HIT_FLASH.life to a boss or the
+-- selected tower's target. When all are lent the flash is skipped (the number still shows).
+local flashes: { Highlight } = {}
+local flashFree: { Highlight } = {}
+
+local function flash(model: Model)
+	local cfg = Vfx.HIT_FLASH
+	local hl: Highlight
+	local reused = table.remove(flashFree)
+	if reused then
+		hl = reused
+	else
+		if #flashes >= cfg.max then
+			return
+		end
+		hl = Create("Highlight", {
+			Name = "HitFlash",
+			FillColor = Color3.fromHex(cfg.color),
+			FillTransparency = cfg.fill,
+			OutlineTransparency = 1,
+			DepthMode = Enum.HighlightDepthMode.Occluded,
+			Enabled = false,
+			Parent = folder,
+		}) :: Highlight
+		table.insert(flashes, hl)
+	end
+	hl.Adornee = model
+	hl.Enabled = true
+	task.delay(cfg.life, function()
+		hl.Enabled = false
+		hl.Adornee = nil
+		table.insert(flashFree, hl)
+	end)
+end
+
+-- A hit landed on enemy `enemyId` (RigAnimController calls this when the swing or thrown prop
+-- arrives): the damage number, the spark, and a flash or a knockback nudge (Logic/HitFx).
+function EnemyRenderController.impact(enemyId: number?, damage: number?, ability: boolean, towerId: number?)
+	local rec = if enemyId then enemies[enemyId] else nil
+	if not rec then
+		return
+	end
+	local plan = HitFx.plan(Fx.level(), rec.boss, towerId ~= nil and towerId == selectedTower)
+	local root = rec.model.PrimaryPart
+	local at = if root then root.Position else rec.model:GetPivot().Position
+	if plan.number and type(damage) == "number" and damage > 0 then
+		DamageNumbers.show(at + Vector3.new(0, if rec.boss then 6 else 3.6, 0), damage, ability)
+	end
+	if plan.flash then
+		flash(rec.model)
+	elseif plan.punch then
+		rec.punchAt = os.clock()
+	end
+end
+
+-- The tower the player has selected (nil = none); its current target gets the white flash.
+function EnemyRenderController.setSelectedTower(id: number?)
+	selectedTower = id
+end
+
 local function onEvents(events: { any })
 	if not origin or not arenaPath then
 		return
@@ -466,6 +531,17 @@ local function step(dt: number)
 		rec.bob += dt * 10 * speedMul
 		local x, z, ux, uz = Path.position(p, rec.dist)
 		local bob = if rec.walks then 0 else math.abs(math.sin(rec.bob)) * 0.25
+		local punched = rec.punchAt
+		if punched then
+			-- Knockback nudge (PV-B02): pushed back along the path, back in place by HIT_PUNCH.life.
+			local kb = HitFx.knock(os.clock() - punched, Vfx.HIT_PUNCH.life, Vfx.HIT_PUNCH.knock)
+			if kb > 0 then
+				x -= ux * kb
+				z -= uz * kb
+			else
+				rec.punchAt = nil
+			end
+		end
 		local root = rec.model.PrimaryPart
 		if root then
 			table.insert(parts, root)
@@ -498,6 +574,7 @@ function EnemyRenderController.start()
 	folder = Instance.new("Folder")
 	folder.Name = "EnemyRender"
 	folder.Parent = Workspace
+	DamageNumbers.start()
 	MatchController.Started:Connect(function(info: MatchController.Info)
 		clear()
 		arenaPath = Path.build(Arenas[info.arenaId].path)

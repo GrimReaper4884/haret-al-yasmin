@@ -10,6 +10,14 @@ return {
 	-- A small spark where a strike lands (every hit; "reduced" and "off" skip it).
 	HIT = { size = 0.8, grow = 2.2, life = 0.18 },
 
+	-- Hit feedback on the figure (PV-B02, Logic/HitFx). Numbers: a pooled BillboardGui per number,
+	-- rising `rise` studs over `life` s; ability hits are `critScale` larger in gold. Flash: a pooled
+	-- white Highlight on bosses and the selected tower's target only (Roblox caps Highlights at 31);
+	-- everyone else is nudged back `knock` studs and returns over `life` s.
+	DAMAGE_NUMBERS = { pool = 32, textSize = 18, critScale = 1.4, stroke = 2, rise = 2, life = 0.5, color = "#FFFFFF", critColor = "#F2C14E", maxDistance = 160 },
+	HIT_FLASH = { color = "#FFFFFF", fill = 0.55, life = 0.08, max = 4 },
+	HIT_PUNCH = { knock = 0.35, life = 0.1 },
+
 	-- Deaths: a jasmine-petal poof for people, an ash poof for bosses. No blood anywhere.
 	DEATH = {
 		petals = 6, -- parts per poof ("reduced": 2)

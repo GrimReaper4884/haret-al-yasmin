@@ -584,3 +584,15 @@ the painted kit at 256/64/28 px on light and dark: `docs/art/icons_currency_2026
 | Join log otherwise | `[World] built 1498 parts`, `[HaretAlYasmin] server ready`, then engine-only CorePackages warnings; nothing from `src/` |
 
 Verdict: external (Studio or a plugin), ignored (D-020).
+
+### PV-B02 hit feedback (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 237 specs (new: `HitFx` plans per Effects level, number pool reuses free then oldest and never grows, 100 hits/s for 10 s stays inside 32 slots, rise/knock curves; `TdSim` attack events carry `damage` = stats × multiplier × (1 − armour)), strict analyze clean, `rojo build` OK |
+| Sync | `script_grep "EnemyRenderController.impact"` finds EnemyRender and RigAnim |
+| Numbers | Episode 1 Normal, six towers: white numbers rise over hit gendarmes ("9 / 9 / 5"), `docs/art/pvb02_damage_numbers_2026-10-18.jpg` (one frozen copy kept 8 s for the capture; numbers live 0.5 s) |
+| Boss flash | wave 10, the Sergeant: Highlight frames seen 5×, at most 3 at once, 2 pooled Highlights created in total; `docs/art/pvb02_boss_flash_2026-10-18.jpg` (frozen copy) |
+| Budget | 60 s through waves 10–12: `[Fx] live` peak 14 of 80, skipped 0; damage numbers peak 3 on screen, pool 32 fixed |
+| Not reproduced | the Endless wave-30 run with four players' towers (no multi-client tool, one player caps at 15 towers); covered by the 100 hits/s pool spec and the `VfxBudget` hard cap of 80 parts |
+| Console | nothing from `src/` |

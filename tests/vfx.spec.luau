@@ -73,6 +73,80 @@ return function(t)
 		end)
 	end)
 
+	t.describe("HitFx (PV-B02)", function()
+		local HitFx = t.logic("HitFx")
+
+		t.it("plans by Effects level: full draws all, reduced only numbers, off nothing", function()
+			local off = HitFx.plan("off", true, true)
+			t.eq(off.number or off.spark or off.flash or off.punch, false)
+			local reduced = HitFx.plan("reduced", true, true)
+			t.eq(reduced.number, true)
+			t.eq(reduced.spark or reduced.flash or reduced.punch, false, "reduced: numbers only")
+			local crowd = HitFx.plan("full", false, false)
+			t.eq(crowd.number and crowd.spark and crowd.punch, true)
+			t.eq(crowd.flash, false, "no Highlight for the crowd")
+			t.eq(HitFx.plan("full", true, false).flash, true, "bosses flash")
+			t.eq(HitFx.plan("full", false, true).flash, true, "the watched target flashes")
+			t.eq(HitFx.plan("full", true, false).punch, false, "a flash replaces the nudge")
+		end)
+
+		t.it("the number pool reuses free slots, then the oldest, never grows", function()
+			local cfg = Vfx.DAMAGE_NUMBERS
+			local pool = HitFx.newPool(cfg.pool)
+			t.eq(#pool.untilAt, cfg.pool)
+			local seen = {}
+			for i = 1, cfg.pool do
+				seen[HitFx.acquire(pool, 0, cfg.life)] = true
+			end
+			local n = 0
+			for _ in seen do
+				n += 1
+			end
+			t.eq(n, cfg.pool, "a burst fills every slot once")
+			t.eq(HitFx.busy(pool, 0.1), cfg.pool)
+			-- Full: the next number recycles the slot that frees soonest
+			pool.untilAt[7] = 0.2
+			t.eq(HitFx.acquire(pool, 0.1, cfg.life), 7, "oldest recycled")
+			t.eq(#pool.untilAt, cfg.pool, "never grows")
+			-- After the life, everything is free again
+			t.eq(HitFx.busy(pool, 10), 0)
+			t.eq(HitFx.acquire(pool, 10, cfg.life), 1, "first free slot")
+		end)
+
+		t.it("a crowd of hits at Endless wave 30 stays inside the pool and the Highlight cap", function()
+			local cfg = Vfx.DAMAGE_NUMBERS
+			local pool = HitFx.newPool(cfg.pool)
+			-- 4 players x 15 towers, a hit every 0.6 s each = 100 hits/s for 10 s at 60 fps
+			local peak = 0
+			local dt = 1 / 60
+			local acc = 0
+			for frame = 1, 600 do
+				local now = frame * dt
+				acc += 100 * dt
+				while acc >= 1 do
+					acc -= 1
+					HitFx.acquire(pool, now, cfg.life)
+				end
+				peak = math.max(peak, HitFx.busy(pool, now))
+			end
+			t.truthy(peak <= cfg.pool, "busy " .. peak)
+			t.truthy(Vfx.HIT_FLASH.max <= 31, "Roblox caps Highlights at 31")
+		end)
+
+		t.it("numbers rise with an ease-out and the nudge returns to zero", function()
+			local h = Vfx.DAMAGE_NUMBERS.rise
+			t.eq(HitFx.rise(0, h), 0)
+			t.eq(HitFx.rise(1, h), h)
+			t.truthy(HitFx.rise(0.5, h) > h / 2, "ease-out: past half way at half time")
+			t.eq(HitFx.rise(2, h), h, "clamped")
+			local p = Vfx.HIT_PUNCH
+			t.eq(HitFx.knock(0, p.life, p.knock), p.knock)
+			t.eq(HitFx.knock(p.life, p.life, p.knock), 0)
+			t.eq(HitFx.knock(-1, p.life, p.knock), 0)
+			t.truthy(HitFx.knock(p.life / 2, p.life, p.knock) < p.knock)
+		end)
+	end)
+
 	t.describe("Config/Vfx", function()
 		t.it("has sane budgets and well-formed colours", function()
 			t.truthy(Vfx.MAX_PER_FRAME >= 4 and Vfx.MAX_PER_FRAME <= Vfx.MAX_LIVE)
@@ -89,9 +163,14 @@ return function(t)
 			hex(Vfx.GATE_HIT.color)
 			hex(Vfx.BOSS.color)
 			hex(Vfx.SWEEP.dustColor)
+			hex(Vfx.DAMAGE_NUMBERS.color)
+			hex(Vfx.DAMAGE_NUMBERS.critColor)
+			hex(Vfx.HIT_FLASH.color)
+			t.truthy(Vfx.DAMAGE_NUMBERS.pool >= 8 and Vfx.DAMAGE_NUMBERS.pool <= 64)
+			t.truthy(Vfx.DAMAGE_NUMBERS.critScale > 1)
 			t.truthy(Vfx.DEATH.petals >= 2 and Vfx.DEATH.petals <= Vfx.MAX_PER_FRAME, "a poof fits in one frame")
 			t.truthy(Vfx.BOSS.pulses * 1 <= Vfx.MAX_PER_FRAME)
-			for _, e in { Vfx.HIT, Vfx.DEATH, Vfx.GATE_HIT } do
+			for _, e in { Vfx.HIT, Vfx.DEATH, Vfx.GATE_HIT, Vfx.DAMAGE_NUMBERS, Vfx.HIT_FLASH, Vfx.HIT_PUNCH } do
 				t.truthy(e.life > 0 and e.life <= 1.5, "effects are short")
 			end
 		end)

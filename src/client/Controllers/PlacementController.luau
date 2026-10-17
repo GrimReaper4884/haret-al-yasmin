@@ -35,6 +35,7 @@ local MatchController = require(script.Parent.MatchController)
 local ToastController = require(script.Parent.ToastController)
 local SettingsController = require(script.Parent.SettingsController)
 local RigAnimController = require(script.Parent.RigAnimController)
+local EnemyRenderController = require(script.Parent.EnemyRenderController)
 
 local PlacementController = {}
 
@@ -143,6 +144,7 @@ end
 
 local function clearSelection()
 	selected = nil
+	EnemyRenderController.setSelectedTower(nil)
 	towerPanel.Visible = false
 	if selectedRing then
 		selectedRing:Destroy()
@@ -461,6 +463,7 @@ local function selectTower(id: number)
 		return
 	end
 	selected = id
+	EnemyRenderController.setSelectedTower(id)
 	local st = myStats(rec.unitId, rec.level)
 	local r = makeRing(st.range, Theme.colors.accent)
 	r.CFrame = origin * CFrame.new(rec.x, 0.1, rec.z) * CFrame.Angles(0, 0, math.rad(90))

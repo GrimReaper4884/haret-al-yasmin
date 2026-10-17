@@ -306,14 +306,19 @@ local function towersAct(state: State, events: { Event })
 						splashHits(state, t, t.x, t.z, ab.radius or st.range, damage * ab.multiplier, events)
 					end
 				end
-				if not (ability and ab and ab.kind == "sweep") then
+				local perHit = damage
+				if ability and ab and ab.kind == "sweep" then
+					perHit = damage * ab.multiplier
+				else
 					if st.splash then
 						splashHits(state, t, tx, tz, st.splash, damage, events)
 					else
 						hit(state, t, target, damage, events)
 					end
 				end
-				table.insert(events, { type = "attack", tower = t.id, target = target.id, ability = ability, x = tx, z = tz })
+				-- `damage`: what the primary target lost (after armour), for the client's damage numbers.
+				local shown = math.floor(perHit * (1 - target.armor) + 0.5)
+				table.insert(events, { type = "attack", tower = t.id, target = target.id, ability = ability, x = tx, z = tz, damage = shown })
 			end
 		end
 	end

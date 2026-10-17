@@ -323,9 +323,15 @@ end
 
 -- Plays the attack (or ultimate) on a tower, turns it toward the world point `at`, and throws the
 -- character's prop from the hand when the swing lands (the target flinches when it arrives).
-function RigAnimController.attack(towerId: number, at: Vector3?, ability: boolean?, targetId: number?)
+function RigAnimController.attack(towerId: number, at: Vector3?, ability: boolean?, targetId: number?, damage: number?)
+	-- The hit lands on the target with the flinch: number, spark, flash (EnemyRenderController.impact).
+	local function landed()
+		flinch(targetId)
+		EnemyRenderController.impact(targetId, damage, ability == true, towerId)
+	end
 	local model = findTower(towerId)
 	if not model then
+		landed()
 		return
 	end
 	local rec = track(model, true)
@@ -357,7 +363,7 @@ function RigAnimController.attack(towerId: number, at: Vector3?, ability: boolea
 					BoneAnim.thrown(rec.bone, slot, 0.7)
 				end
 				ThrowFx.throw(kind, handPosition(model), target, function()
-					flinch(targetId)
+					landed()
 					if ability then
 						EnemyRenderController.ultimateAt(towerId, target)
 					end
@@ -365,7 +371,7 @@ function RigAnimController.attack(towerId: number, at: Vector3?, ability: boolea
 			end
 		end)
 	else
-		task.delay(delay, flinch, targetId)
+		task.delay(delay, landed)
 	end
 end
 
@@ -447,7 +453,7 @@ function RigAnimController.start()
 		for _, e in events do
 			if e.type == "attack" and type(e.tower) == "number" then
 				local at = if type(e.x) == "number" and type(e.z) == "number" then (origin * CFrame.new(e.x, 0, e.z)).Position else nil
-				RigAnimController.attack(e.tower, at, e.ability == true, if type(e.target) == "number" then e.target else nil)
+				RigAnimController.attack(e.tower, at, e.ability == true, if type(e.target) == "number" then e.target else nil, if type(e.damage) == "number" then e.damage else nil)
 			end
 		end
 	end)
