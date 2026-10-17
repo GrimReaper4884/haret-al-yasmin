@@ -113,9 +113,17 @@ local function gate(m: Instance, origin: CFrame, def: any): Model
 	Props2.nameplate(g, f * CFrame.new(0, H + 4.2, -0.2), 9, "حارة الياسمين")
 	Props.lantern(g, Kit.faceFrame((f * CFrame.new(-W / 2 - 1.5, 10, -0.2)).Position, -f.LookVector), 18)
 	Props.lantern(g, Kit.faceFrame((f * CFrame.new(W / 2 + 1.5, 10, -0.2)).Position, -f.LookVector), 18)
-	-- Rooftop parapet behind, so the wall reads as the edge of the quarter
-	Kit.part(g, { name = "Roofs", size = Vector3.new(80, 14, 30), cf = f * CFrame.new(0, 7, 19), color = Palette.plaster, material = M.Plaster, collide = false, shadow = false })
-	Kit.part(g, { name = "Roofs2", size = Vector3.new(40, 24, 20), cf = f * CFrame.new(18, 12, 26), color = Kit.tint(Palette.plaster, Kit.rng(def.seed), 0.08), material = M.Plaster, collide = false, shadow = false })
+	-- Rooftops of the quarter behind the gate (f's -Z, away from the road), starting past the field's
+	-- edge wall. They used to sit at +Z, on top of the last stretch of road, and swallowed the
+	-- orchard's bread oven (player report "a building on top of the track and a furnace inside the wall").
+	local b = def.bounds
+	local ux, uz = last[1] - prev[1], last[2] - prev[2]
+	local edge = if math.abs(ux) > math.abs(uz)
+		then (if ux > 0 then b[3] - last[1] else last[1] - b[1])
+		else (if uz > 0 then b[4] - last[2] else last[2] - b[2])
+	local back = edge + 4 -- past the boundary wall (bounds + 2.2) with a little air
+	Kit.part(g, { name = "Roofs", size = Vector3.new(80, 14, 30), cf = f * CFrame.new(0, 7, -(back + 15)), color = Palette.plaster, material = M.Plaster, collide = false, shadow = false })
+	Kit.part(g, { name = "Roofs2", size = Vector3.new(40, 24, 20), cf = f * CFrame.new(18, 12, -(back + 18)), color = Kit.tint(Palette.plaster, Kit.rng(def.seed), 0.08), material = M.Plaster, collide = false, shadow = false })
 	-- The gate itself, closed and barred: this is what the enemies attack
 	local doors = Props2.gate(g, f * CFrame.new(0, 0, 0), W, H, false)
 	doors.Name = "Doors"
