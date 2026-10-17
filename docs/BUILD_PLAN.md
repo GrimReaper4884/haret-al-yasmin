@@ -248,6 +248,16 @@ models, red-teaming, onboarding measurement, and live ops.
 
 ---
 
+## Phase V: Look-and-feel pass (runs alongside Phases 3–4)
+
+The full task list lives in [`docs/POLISH_PLAN.md`](POLISH_PLAN.md) (written 2026-10-17 after a live audit):
+the six remaining attackers through Meshy (PV-A), hit/death/boss animation and pooled particle effects (PV-B),
+a painted icon set for lira, qirsh, trait stones, rewards, menus and portraits (PV-C), the experience icon,
+thumbnails, trailer, animated-logo loading screen and covers (PV-D, supersedes P4-03), and lobby/arena
+dressing (PV-E). Branch `phase/polish`; tick tasks in that file's §9.
+
+---
+
 ## Phase 5: Launch
 
 - [ ] **P5-01 Launch audit** · deps: P4-*

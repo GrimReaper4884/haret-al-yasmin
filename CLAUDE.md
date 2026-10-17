@@ -10,6 +10,7 @@ pass, codes, dailies). The experience is **already public** on the TEST place an
 | File | Purpose |
 |---|---|
 | `docs/BUILD_PLAN.md` | Your work queue: phases, tasks, acceptance criteria, kickoff prompts |
+| `docs/POLISH_PLAN.md` | Phase V look-and-feel queue: Meshy enemies, effects, icon set, covers, loading screen, world dressing |
 | `docs/GAME_DESIGN.md`, `docs/TOWER_DEFENSE.md`, `docs/MONETIZATION.md`, `docs/AFK_CHAMBER.md` | Design and every number. Config wins at runtime; change doc and `src/shared/Config` in one commit |
 | `docs/SYSTEMS_ARCHITECTURE.md`, `docs/DATA_SCHEMA.md` | Service boundaries, remotes, persistence |
 | `docs/DECISIONS.md` | Dated log of every TUNE change and design deviation |
