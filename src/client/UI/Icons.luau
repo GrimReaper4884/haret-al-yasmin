@@ -203,6 +203,77 @@ local drawers: { [string]: (Frame, Color3) -> () } = {
 		rect(h, Palette.tile, 0.5, 0.5, 0.78, 0.56, 0.15)
 		rect(h, Color3.fromHex("#C9A13B"), 0.5, 0.5, 0.3, 0.3, 1)
 	end,
+	-- PV-C04 fallbacks (painted versions in assets/marketing/icons, ids in Config/Icons).
+	ui_shop = function(h, _c)
+		rectO(h, Palette.copper, 0.5, 0.45, 0.08, 0.6, 0.5)
+		rectO(h, Palette.copper, 0.5, 0.25, 0.8, 0.07, 0.5)
+		rectO(h, Palette.copper, 0.2, 0.55, 0.3, 0.12, 1)
+		rectO(h, Palette.copper, 0.8, 0.55, 0.3, 0.12, 1)
+		rectO(h, Palette.copper, 0.5, 0.82, 0.44, 0.1, 0.5)
+	end,
+	act_upgrade = function(h, _c)
+		rectO(h, Color3.fromHex("#4CAF50"), 0.45, 0.6, 0.22, 0.5, 0.2)
+		rectO(h, Color3.fromHex("#4CAF50"), 0.45, 0.32, 0.4, 0.4, 0.15, 45)
+		rectO(h, GOLD, 0.75, 0.75, 0.24, 0.24, 0.2, 45)
+	end,
+	act_sell = function(h, _c)
+		rectO(h, Palette.wood, 0.5, 0.62, 0.6, 0.55, 0.4)
+		rectO(h, GOLD, 0.5, 0.22, 0.24, 0.24, 1)
+	end,
+	act_target = function(h, _c)
+		rectO(h, WHITE, 0.5, 0.5, 0.86, 0.5, 1)
+		rectO(h, Palette.copper, 0.5, 0.5, 0.36, 0.36, 1)
+		rect(h, Palette.ink, 0.5, 0.5, 0.15, 0.15, 1)
+	end,
+	act_speed = function(h, _c)
+		rectO(h, Color3.fromHex("#F1E2C2"), 0.5, 0.24, 0.6, 0.16, 1)
+		rectO(h, Palette.fabricRed, 0.5, 0.48, 0.5, 0.36, 0.3)
+		rectO(h, Palette.fabricRed, 0.5, 0.76, 0.26, 0.3, 0.2)
+	end,
+	act_skip = function(h, _c)
+		for _, x in { 0.36, 0.64 } do
+			rectO(h, Color3.fromHex("#F2A83A"), x, 0.38, 0.12, 0.36, 0.3, -40)
+			rectO(h, Color3.fromHex("#F2A83A"), x, 0.62, 0.12, 0.36, 0.3, 40)
+		end
+	end,
+	act_leave = function(h, _c)
+		rectO(h, Palette.stoneWarm, 0.5, 0.52, 0.66, 0.82, 0.25)
+		rectO(h, Palette.wood, 0.5, 0.56, 0.48, 0.7, 0.2)
+		rect(h, GOLD, 0.62, 0.56, 0.08, 0.08, 1)
+	end,
+	role_melee = function(h, _c)
+		rectO(h, Color3.fromHex("#D8DCE0"), 0.45, 0.42, 0.14, 0.62, 0.5, 20)
+		rectO(h, GOLD, 0.58, 0.76, 0.34, 0.1, 0.5, 20)
+		rectO(h, Palette.wood, 0.63, 0.88, 0.1, 0.18, 0.4, 20)
+	end,
+	role_ranged = function(h, _c)
+		rectO(h, Palette.copper, 0.5, 0.58, 0.5, 0.2, 1)
+		rect(h, Palette.wood, 0.3, 0.3, 0.05, 0.5, 0.5, -20)
+		rect(h, Palette.wood, 0.7, 0.3, 0.05, 0.5, 0.5, 20)
+		rectO(h, Color3.fromHex("#A79E92"), 0.5, 0.56, 0.18, 0.18, 1)
+	end,
+	role_splash = function(h, _c)
+		rectO(h, Palette.wood, 0.4, 0.66, 0.1, 0.6, 0.5, 35)
+		rectO(h, Color3.fromHex("#E8C778"), 0.66, 0.32, 0.46, 0.46, 1)
+	end,
+	role_support = function(h, _c)
+		rectO(h, GOLD, 0.5, 0.56, 0.44, 0.56, 0.3)
+		rect(h, Color3.fromHex("#FFF2B8"), 0.5, 0.56, 0.24, 0.32, 0.4)
+		rectO(h, GOLD, 0.5, 0.2, 0.2, 0.12, 0.5)
+	end,
+	role_healer = function(h, _c)
+		rectO(h, Color3.fromHex("#9BE3A6"), 0.5, 0.6, 0.5, 0.56, 0.35)
+		rectO(h, Palette.wood, 0.5, 0.24, 0.26, 0.14, 0.3)
+	end,
+	role_farm = function(h, _c)
+		rectO(h, GOLD, 0.48, 0.62, 0.44, 0.5, 0.4)
+		rectO(h, GOLD, 0.48, 0.28, 0.2, 0.2, 0.4)
+		rectO(h, GOLD, 0.8, 0.46, 0.1, 0.36, 0.5, 35)
+	end,
+	gem = function(h, c)
+		rectO(h, c, 0.5, 0.5, 0.5, 0.5, 0.15, 45)
+		rect(h, WHITE, 0.42, 0.42, 0.14, 0.14, 0.3, 45)
+	end,
 	-- Enemy markers on health bars (PV-A04): armour and stealth.
 	shield = function(h, _c)
 		rectO(h, Color3.fromHex("#B8BEC6"), 0.5, 0.45, 0.7, 0.62, 0.25)

@@ -1,0 +1,232 @@
+[
+ {
+  "index": 0,
+  "name": "ui_units",
+  "prompt": "a red tarboosh fez resting on a neatly folded striped robe. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 1,
+  "name": "ui_units",
+  "prompt": "a red tarboosh fez resting on a neatly folded striped robe. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 2,
+  "name": "ui_summon",
+  "prompt": "an ornate brass lantern glowing warmly. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 3,
+  "name": "ui_summon",
+  "prompt": "an ornate brass lantern glowing warmly. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 4,
+  "name": "ui_pass",
+  "prompt": "a brown leather diary with a small jasmine sprig on the cover. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 5,
+  "name": "ui_pass",
+  "prompt": "a brown leather diary with a small jasmine sprig on the cover. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 6,
+  "name": "ui_codes",
+  "prompt": "a small paper slip with a round red stamp. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 7,
+  "name": "ui_codes",
+  "prompt": "a small paper slip with a round red stamp. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 8,
+  "name": "ui_play",
+  "prompt": "an old wooden double gate in a stone arch with a wooden bar across it. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 9,
+  "name": "ui_play",
+  "prompt": "an old wooden double gate in a stone arch with a wooden bar across it. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 10,
+  "name": "ui_event",
+  "prompt": "a hanging brass lantern with a crescent-shaped top. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 11,
+  "name": "ui_event",
+  "prompt": "a hanging brass lantern with a crescent-shaped top. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 12,
+  "name": "ui_settings",
+  "prompt": "a small brass coffee grinder with a crank handle. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 13,
+  "name": "ui_settings",
+  "prompt": "a small brass coffee grinder with a crank handle. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 14,
+  "name": "ui_afk",
+  "prompt": "a glass of red tea on a small brass saucer with a wisp of steam. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 15,
+  "name": "ui_afk",
+  "prompt": "a glass of red tea on a small brass saucer with a wisp of steam. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 16,
+  "name": "ui_daily",
+  "prompt": "a wrapped box of sweets tied with a red ribbon. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 17,
+  "name": "ui_daily",
+  "prompt": "a wrapped box of sweets tied with a red ribbon. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 18,
+  "name": "ui_shop",
+  "prompt": "a small copper balance scale. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 19,
+  "name": "ui_shop",
+  "prompt": "a small copper balance scale. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 20,
+  "name": "act_upgrade",
+  "prompt": "a bold green upward arrow with a small gold star. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 21,
+  "name": "act_upgrade",
+  "prompt": "a bold green upward arrow with a small gold star. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 22,
+  "name": "act_sell",
+  "prompt": "gold coins dropping into a small leather pouch. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 23,
+  "name": "act_sell",
+  "prompt": "gold coins dropping into a small leather pouch. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 24,
+  "name": "act_target",
+  "prompt": "a single watchful eye. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 25,
+  "name": "act_target",
+  "prompt": "a single watchful eye. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 26,
+  "name": "act_speed",
+  "prompt": "a small hand drum (darbuka) with motion lines. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 27,
+  "name": "act_speed",
+  "prompt": "a small hand drum (darbuka) with motion lines. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 28,
+  "name": "act_skip",
+  "prompt": "two bold forward chevrons. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 29,
+  "name": "act_skip",
+  "prompt": "two bold forward chevrons. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 30,
+  "name": "act_leave",
+  "prompt": "a small wooden door slightly open. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 31,
+  "name": "act_leave",
+  "prompt": "a small wooden door slightly open. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 32,
+  "name": "role_melee",
+  "prompt": "a curved dagger with an ornate hilt. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 33,
+  "name": "role_melee",
+  "prompt": "a curved dagger with an ornate hilt. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 34,
+  "name": "role_ranged",
+  "prompt": "a leather sling with a small stone. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 35,
+  "name": "role_ranged",
+  "prompt": "a leather sling with a small stone. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 36,
+  "name": "role_splash",
+  "prompt": "a long wooden bread peel paddle with a round flatbread. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 37,
+  "name": "role_splash",
+  "prompt": "a long wooden bread peel paddle with a round flatbread. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 38,
+  "name": "role_support",
+  "prompt": "a small brass oil lantern. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 39,
+  "name": "role_support",
+  "prompt": "a small brass oil lantern. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 40,
+  "name": "role_healer",
+  "prompt": "a small glass remedy jar with a green herbal liquid and a cork. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 41,
+  "name": "role_healer",
+  "prompt": "a small glass remedy jar with a green herbal liquid and a cork. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 42,
+  "name": "role_farm",
+  "prompt": "a brass Arabic coffee pot (dallah). flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 43,
+  "name": "role_farm",
+  "prompt": "a brass Arabic coffee pot (dallah). flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 44,
+  "name": "gem",
+  "prompt": "a faceted gem shown in pale white and silver so it can be tinted. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 45,
+  "name": "gem",
+  "prompt": "a faceted gem shown in pale white and silver so it can be tinted. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ }
+]

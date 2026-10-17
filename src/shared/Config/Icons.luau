@@ -23,6 +23,23 @@ Icons.images = {
 	ui_settings = { id = 0 },
 	ui_music = { id = 0 },
 	ui_music_off = { id = 0 },
+	ui_shop = { id = 0 },
+
+	-- Match actions and defender roles (PV-C04)
+	act_upgrade = { id = 0 },
+	act_sell = { id = 0 },
+	act_target = { id = 0 },
+	act_speed = { id = 0 },
+	act_skip = { id = 0 },
+	act_leave = { id = 0 },
+	role_melee = { id = 0 },
+	role_ranged = { id = 0 },
+	role_splash = { id = 0 },
+	role_support = { id = 0 },
+	role_healer = { id = 0 },
+	role_farm = { id = 0 },
+	-- A white gem tinted per rarity (Theme.rarityColor) for card corners
+	gem = { id = 0 },
 
 	-- Currencies and reward kinds (PV-C03)
 	lira = { id = 0 },

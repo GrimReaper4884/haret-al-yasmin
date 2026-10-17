@@ -17,7 +17,7 @@ from PIL import Image, ImageDraw, ImageFilter
 WHITE = 232  # a pixel whose R, G and B are all above this counts as background
 
 
-def cutout(src: Image.Image) -> Image.Image:
+def cutout(src: Image.Image, all_white: bool = False) -> Image.Image:
     im = src.convert("RGBA")
     w, h = im.size
     px = im.load()
@@ -34,6 +34,13 @@ def cutout(src: Image.Image) -> Image.Image:
     for y in range(h):
         q.append((0, y))
         q.append((w - 1, y))
+    if all_white:
+        # Enclosed background too (a sling's loop): every near-white pixel goes.
+        q.clear()
+        for y in range(h):
+            for x in range(w):
+                if whiteish(x, y):
+                    bg[y * w + x] = 1
     while q:
         x, y = q.popleft()
         i = y * w + x
@@ -88,13 +95,14 @@ def main():
     ap.add_argument("--size", type=int, default=256)
     ap.add_argument("--margin", type=float, default=0.06)
     ap.add_argument("--sheet", action="store_true")
+    ap.add_argument("--all-white", action="store_true", help="also clear white enclosed by the outline")
     a = ap.parse_args()
     if a.sheet:
         sheet(a.paths[0], a.paths[1:])
         print("saved", a.paths[0])
         return
     src, out = a.paths
-    fit(cutout(Image.open(src)), a.size, a.margin).save(out)
+    fit(cutout(Image.open(src), a.all_white), a.size, a.margin).save(out)
     print("saved", out)
 
 
