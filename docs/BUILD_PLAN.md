@@ -141,7 +141,7 @@ models, red-teaming, onboarding measurement, and live ops.
   - **Goal:** The worst realistic match: a party of 4 at Endless wave 60+ (≥ 150 live attackers) with 80 towers.
   - **Tools:** `execute_luau` Server (`os.clock` around `TdSim.step` and the `MatchEvents` batch) and Client (average frame time over 5 s from `RunService.RenderStepped`); `skill` `rbx-device-simulator-lua` for a mid-range phone; `skill` `rbx-perf-profiling` if the budget is missed.
   - **Accept:** server step ≤ 4 ms average and ≤ 8 ms p95 per match; client ≥ 30 FPS on the emulated phone; `EnemyPositions` packet ≤ 900 bytes; numbers logged in DECISIONS. If device emulation can't be driven from MCP, STOP and ask the owner to run the Device Emulator.
-- [ ] **P1-19 Prototype playtest report** · deps: P1-16 · STOP
+- [~] **P1-19 Prototype playtest report** · deps: P1-16 · STOP · draft in `docs/playtests/P1.md` (13 reports, 11 fixed, 6 questions); awaiting the owner's confirmation and the natour-lantern decision
   - **Goal:** Turn the Discord tester feedback (`tools/discord`, `docs/community`) into a dated report with replay intent.
   - **Create:** `docs/playtests/P1.md` (what testers did, bugs, 6 questions, a replay-intent table).
   - **Accept:** the owner confirms the summary; new issues become tasks here.
