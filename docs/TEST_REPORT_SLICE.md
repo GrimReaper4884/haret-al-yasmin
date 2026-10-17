@@ -572,3 +572,15 @@ hint to the left of the button), `pvb08_settings_en_…`, `pvb08_settings_ar_…
 
 Screenshots: `docs/art/pvc03_{summon,diary,diary_ar,daily,codes,store,play,match_hud,result}_2026-10-18.jpg`;
 the painted kit at 256/64/28 px on light and dark: `docs/art/icons_currency_2026-10-18.png`.
+
+### PV-B00 console hygiene (2026-10-18)
+
+| Check | Result |
+|---|---|
+| Repo | `grep -r 203785492 src default.project.json assets` and every `.rbxm`: no match |
+| Edit DataModel | 24 content properties over 101,597 instances: no match |
+| Play server | the same over 110,723 instances incl. the player's character; HumanoidDescription items do not use it |
+| What it is | economy API: "Pop Close Sound", AssetTypeId 3 (Audio), created 2015 by a third party |
+| Join log otherwise | `[World] built 1498 parts`, `[HaretAlYasmin] server ready`, then engine-only CorePackages warnings; nothing from `src/` |
+
+Verdict: external (Studio or a plugin), ignored (D-020).
