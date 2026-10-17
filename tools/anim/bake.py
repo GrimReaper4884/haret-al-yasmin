@@ -202,6 +202,41 @@ def bake_clip(path: Path, slot: str, opts: dict):
     hp1 = local("Hips", t1)[0]
     move = math.hypot(hp1[0] - hp0[0], hp1[2] - hp0[2]) / max(1e-6, t1 - t0)
 
+    # Facing: Meshy's fight clips are often filmed with the body turned 30-100 degrees. Turn the
+    # whole clip so the chest (Spine) faces forward: at the impact frame for strikes (the blow
+    # goes at the target), on average for loops. Forward is +Z in the glTF rig.
+    bind_cache = {}
+
+    def bind_world(name):
+        if name in bind_cache:
+            return bind_cache[name]
+        p, q = rest[name]
+        pi = parent.get(byname[name])
+        pname = nodes[pi]["name"] if pi is not None else None
+        if pname is None or pname == "Armature":
+            res = q
+        else:
+            res = qmul(bind_world(pname), q)
+        bind_cache[name] = res
+        return res
+
+    def chest_yaw(t):
+        q = world("Spine", t, {})[1]
+        v = qrot(qmul(q, qinv(bind_world("Spine"))), (0.0, 0.0, 1.0))
+        return math.atan2(v[0], v[2])
+
+    if "yaw" in opts:
+        yaw = math.radians(opts["yaw"])
+    elif hit_t is not None:
+        yaw = chest_yaw(hit_t)
+    else:
+        sx = sz = 0.0
+        for i in range(24):
+            a = chest_yaw(t0 + (t1 - t0) * i / 23)
+            sx, sz = sx + math.sin(a), sz + math.cos(a)
+        yaw = math.atan2(sx, sz)
+    turn = (0.0, math.sin(-yaw / 2), 0.0, math.cos(-yaw / 2))
+
     frames = max(2, int(round((t1 - t0) * fps)) + 1)
     rot_bytes = bytearray()
     hips = []
@@ -210,6 +245,8 @@ def bake_clip(path: Path, slot: str, opts: dict):
         for b in BONES:
             p, q = local(b, t)
             rp, rq = rest[b]
+            if b == "Hips":
+                q = qmul(turn, q)  # the Hips' parent is the Armature: turning it turns the figure
             d = qnorm(qmul(qinv(rq), q))
             if d[3] < 0:
                 d = tuple(-c for c in d)
@@ -228,6 +265,7 @@ def bake_clip(path: Path, slot: str, opts: dict):
     }
     if hit_t is not None:
         clip["hit"] = round((hit_t - t0) / (t1 - t0) * (frames - 1), 2)
+    clip["turned"] = round(math.degrees(-yaw))
     return clip
 
 
@@ -279,7 +317,7 @@ def bake(cid: str):
     )
     (OUT / f"{cid}.luau").write_text(body, encoding="utf-8", newline=chr(10))
     kb = len(body.encode()) // 1024
-    print(f"{cid}: " + ", ".join(f"{k}={v['name']}({v['frames']}f" + (f", hit {v['hit']}" if 'hit' in v else "") + ")" for k, v in out.items()) + f"  [{kb} KB]")
+    print(f"{cid}: " + ", ".join(f"{k}={v['name']}({v['frames']}f, turned {v['turned']}" + (f", hit {v['hit']}" if 'hit' in v else "") + ")" for k, v in out.items()) + f"  [{kb} KB]")
 
 
 if __name__ == "__main__":

@@ -71,7 +71,8 @@ local Looks: { [string]: Look } = {
 		moustache = "none",
 		cloak = "#7A3B5C",
 		model = "Fawzia",
-		anims = { idle = 75588436156960, attack = 100793540778597 },
+		-- v2 model (no fused broom; the broom is an Anim/HandProps prop): the published clips were
+		-- made for the v1 rig, so only the baked clips (Anim/Clips/saqqa) apply.
 	}, -- Fawzia
 	-- Issam, Abu Issam's son and apprentice
 	hallaq = {

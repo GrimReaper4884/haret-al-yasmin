@@ -31,6 +31,50 @@ Callers place figures with `PivotTo(groundCFrame)`.
 
 Only figures within 220 studs of the camera animate. Card previews in ViewportFrames stay posed.
 
+## Signature animations (baked bone clips, no Studio publishing)
+
+Since 2026-10-17 imported characters no longer share one generic Meshy idle + attack. Each has
+its own moves, chosen from Meshy's animation library and played by writing `Bone.Transform` on
+the client (`src/shared/Anim/BoneAnim.luau`), so no clip has to be published in Studio:
+
+1. **Pick.** `tools/anim/clips.json` maps each character to clip names (`idle`, `attack`,
+   `ability` for towers; `walk`, `hit` for attackers) and each name to a library action id
+   (`python tools/meshy/meshy.py library` lists them). Judge a clip first:
+   `blender -b --factory-startup -P tools/anim/preview.py -- <clip.glb> <out.png> 8 front`.
+2. **Fetch.** `python tools/anim/fetch.py [id ...]` downloads each clip for that character's own
+   rig into `assets/unapproved/characters/<id>/clips/` (3 credits each, skips what exists).
+3. **Bake.** `python tools/anim/bake.py [id ...]` writes `src/shared/Anim/Clips/<id>.luau`:
+   int16 quaternions per bone per frame (relative to the bind pose, which is also the imported
+   Bones' rest pose), root motion pinned in place (the walk's speed is kept so the stride matches
+   the enemy's real speed), attacks trimmed around the impact frame (peak hand/foot speed), and
+   the whole clip turned so the chest faces forward (Meshy fight clips are often filmed at 30–100°).
+4. **Check without Studio.** `python tools/anim/baked_glb.py <id> <slot> out.glb` rebuilds the
+   baked slot as a GLB for `preview.py`, i.e. exactly what the game plays.
+
+At runtime (`RigAnimController`): idles loop with a slight turn toward the last target, attacks
+play over the loop and `ThrowFx` launches the character's prop from the right hand on the impact
+frame (Abu Hatem's tea glass that shatters, the shibriyeh on Abu Shehab / Mo'taz / Abu Saleh's
+ultimates, the boy's stone, chickpeas, bread, the lantern flash, the remedy jar), the target
+flinches when it lands, and walks run at the enemy's measured speed. `Anim/HandProps` puts the
+items Meshy's T-pose step dropped back in the hands (tea glasses, shibriyeh, hammer, cane,
+lantern with light, sword and shield, rifle…). Unit cards pose the idle; the placement ghost
+plays it.
+
+Meshy fuses held props into the body mesh. `python tools/anim/islands.py list <glb>` shows the
+loose islands; `drop` removes one from the index buffer without touching the skeleton (so the
+baked clips stay valid), e.g. Abu Hatem's floating pot → `qahwaji_clean.glb`, re-imported
+2026-10-17 as `AbuHatem.rbxm` (Rig Type Custom, *Keep Zero Influence Bones* on; all 24 bones matched
+the old model). Play-tested in Studio the same day: idles, attacks, the shibriyeh ultimate, hand
+props and walks all play; two clips were swapped after seeing them in game (Abu Hatem's baseball
+pitch bent him flat on the follow-through → `mage` flick toss; the thieves' crouch-walk read as
+crawling from the TD camera → `sneaky`). Fawzia (`saqqa`) was regenerated in Meshy the same day with empty hands (v1, whose broom
+was fused into the body and stretched like rubber when animated, is kept in
+`assets/unapproved/characters/saqqa_v1_broom/`); her broom is now a held prop, and long props take a
+`tilt` in HandProps so they rest pointing at the ground and swing up in attacks. An island scan of
+every rig found no other loose props (Abu Bashir's cap and the spy's shoes are separate islands but
+are body parts). Studio debug command for this kind of test:
+`game.ServerStorage.HaretDebug:Invoke("grant", "qahwaji,zaim_akbar,…")` then `place`.
+
 ## Making an imported character
 
 All names and looks are original archetypes. Never put a TV series, actor or character name in a

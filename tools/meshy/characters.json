@@ -46,8 +46,9 @@
     },
     "saqqa": {
       "height": 1.65,
-      "prompt": "Fawzia, the bossy loud-hearted wife in a 1930s Damascus neighbourhood, plump middle-aged woman with a headscarf and a long modest house dress with an apron, holding a straw broom, confident scolding expression, modest clothing.",
-      "texture": "Plum purple dress, golden headscarf, cream apron, straw-coloured broom, tan skin."
+      "prompt": "Fawzia, the bossy loud-hearted wife in a 1930s Damascus neighbourhood, plump middle-aged woman with a headscarf and a long modest house dress with an apron, both hands open and empty (nothing held, no broom), arms straight out to the sides, confident scolding expression, modest clothing.",
+      "texture": "Plum purple dress, golden headscarf, cream apron, tan skin.",
+      "_note": "v2 (2026-10-17): no broom in the mesh. Meshy fused the v1 broom into the body (bristles glued to the floor when animated); the broom is now a held prop (src/shared/Anim/HandProps.luau)."
     },
     "khayyat": {
       "height": 1.7,

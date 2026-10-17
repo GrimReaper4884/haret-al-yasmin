@@ -353,6 +353,9 @@ function RigAnimController.attack(towerId: number, at: Vector3?, ability: boolea
 		local target = at + Vector3.new(0, 2.2, 0)
 		task.delay(delay, function()
 			if model.Parent then
+				if rec.bone then
+					BoneAnim.thrown(rec.bone, slot, 0.7)
+				end
 				ThrowFx.throw(kind, handPosition(model), target, function()
 					flinch(targetId)
 					if ability then

@@ -13,6 +13,8 @@
 -- units / s), `hit` = impact frame (attack slots). Each character's clips decode once and are
 -- shared by every copy of that character.
 
+local HandProps = require(script.Parent.HandProps)
+
 local BoneAnim = {}
 
 export type Clip = {
@@ -38,6 +40,8 @@ export type Player = {
 	shotSpeed: number,
 	shotWeight: number,
 	yaw: number, -- radians, whole-body turn about the vertical
+	id: string,
+	props: { HandProps.Prop }, -- held items following the hands (Anim/HandProps)
 }
 
 local folder = script.Parent:WaitForChild("Clips")
@@ -145,6 +149,7 @@ function BoneAnim.new(model: Model, id: string): Player?
 		bones[i] = b
 	end
 	local hips = bones[1]
+	local props = HandProps.attach(model, id, byName)
 	local shin = byName.LeftLeg
 	local scale = if shin and raw.ref and raw.ref > 0 then shin.CFrame.Position.Magnitude / raw.ref else model:GetScale()
 	return {
@@ -161,6 +166,8 @@ function BoneAnim.new(model: Model, id: string): Player?
 		shotSpeed = 1,
 		shotWeight = 1,
 		yaw = 0,
+		id = id,
+		props = props,
 	}
 end
 
@@ -258,6 +265,14 @@ function BoneAnim.step(p: Player, dt: number, smooth: boolean)
 		end
 		bones[b].Transform = cf
 	end
+	if #p.props > 0 then
+		HandProps.update(p.props, os.clock())
+	end
+end
+
+-- The prop thrown on `slot` leaves the hand for a moment (it reappears: "grabs another").
+function BoneAnim.thrown(p: Player, slot: string, seconds: number)
+	HandProps.thrown(p.props, p.id, slot, seconds)
 end
 
 -- Static pose (first frame of a slot), e.g. for card previews.
@@ -272,6 +287,9 @@ function BoneAnim.pose(p: Player, slot: string)
 			cf = cf + c.hips[1] * p.scale
 		end
 		bone.Transform = cf
+	end
+	if #p.props > 0 then
+		HandProps.update(p.props, os.clock())
 	end
 end
 

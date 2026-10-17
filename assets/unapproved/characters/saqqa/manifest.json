@@ -1,25 +1,34 @@
 {
   "id": "saqqa",
   "tasks": {
-    "concept": "01a1420e-08a8-734e-b879-23930b275c86",
-    "mesh": "01a14214-d42f-71e7-8693-9cd5cd20be93",
-    "rig": "01a14216-1650-716c-a1a3-63feec284963",
-    "anim_idle": "01a14216-6042-771c-9970-477ebc2bd2bc",
-    "anim_attack": "01a14216-9bea-7697-9f0c-7a4eb60c6bc2",
-    "clip_reap": "01a14794-5829-75d4-b375-02e56766dd10",
-    "clip_stomp": "01a14794-791a-729e-9e32-f1fa5e50d434"
+    "concept": "01a147bc-2125-7527-b100-20a09f2c0548",
+    "mesh": "01a147bc-7bc8-73bc-9273-7d42cd956908",
+    "rig": "01a147bd-8e10-76e2-87eb-d58575199ac5",
+    "clip_hammer": "01a147bd-f6ca-71a6-a5db-2922aeaf2ae0",
+    "clip_idle2": "01a147be-1784-75e5-b5f3-faa282b2865a"
   },
   "credits": {
     "concept": 6,
     "mesh": 30,
     "rig": 5,
-    "anim_idle": 3,
-    "anim_attack": 3,
-    "clip_reap": 3,
-    "clip_stomp": 3
+    "clip_hammer": 3,
+    "clip_idle2": 3
   },
   "clips": {
-    "reap": 99,
-    "stomp": 255
+    "hammer": 128,
+    "idle2": 12
+  },
+  "previous": {
+    "v1_broom": {
+      "concept": "01a1420e-08a8-734e-b879-23930b275c86",
+      "mesh": "01a14214-d42f-71e7-8693-9cd5cd20be93",
+      "rig": "01a14216-1650-716c-a1a3-63feec284963",
+      "anim_idle": "01a14216-6042-771c-9970-477ebc2bd2bc",
+      "anim_attack": "01a14216-9bea-7697-9f0c-7a4eb60c6bc2",
+      "clip_reap": "01a14794-5829-75d4-b375-02e56766dd10",
+      "clip_stomp": "01a14794-791a-729e-9e32-f1fa5e50d434",
+      "clip_hammer": "01a147a6-0111-70e6-b4a1-55164c1f772b",
+      "clip_idle2": "01a147a6-238c-72e0-943f-e420e71d5f22"
+    }
   }
 }

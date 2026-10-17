@@ -81,6 +81,18 @@ function DebugService.start()
 				return "bad arg"
 			end
 			return MatchService.debugPlace(player, unitId, tonumber(x) :: number, tonumber(z) :: number)
+		elseif cmd == "grant" then
+			-- "id,id,…": own these units and make them the loadout (play-testing specific figures)
+			local ids = string.split(tostring(arg), ",")
+			return DataService.mutate(player, function(profile)
+				for _, id in ids do
+					if not profile.units[id] then
+						profile.units[id] = { copies = 0, trait = "steady", at = os.time() }
+					end
+				end
+				profile.loadout = ids
+				return true
+			end)
 		elseif cmd == "gate" then
 			MatchService.debugSetGate(player, tonumber(arg) or 1)
 			return true

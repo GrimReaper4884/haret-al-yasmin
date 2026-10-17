@@ -7,13 +7,14 @@ Workbench engine, flat texture lighting, orthographic camera framed on the whole
 """
 
 import math
+import os
 import sys
 
 import bpy
 from mathutils import Vector
 
 argv = sys.argv[sys.argv.index("--") + 1 :]
-src, out = argv[0], argv[1]
+src, out = os.path.abspath(argv[0]), os.path.abspath(argv[1])
 count = int(argv[2]) if len(argv) > 2 else 8
 view = argv[3] if len(argv) > 3 else "threequarter"
 

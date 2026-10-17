@@ -10,6 +10,7 @@ local Units = require(Shared.Config.Units)
 local Palette = require(Shared.Config.Palette)
 local RigBuilder = require(Shared.Util.RigBuilder)
 local Looks = require(Shared.Config.CharacterLooks)
+local BoneAnim = require(Shared.Anim.BoneAnim)
 local Create = require(script.Parent.Create)
 local Theme = require(script.Parent.Theme)
 local Juice = require(script.Parent.Juice)
@@ -32,6 +33,30 @@ export type Options = {
 -- showcase (spinning) cards, frozen on the idle's first pose elsewhere so a grid of portraits
 -- costs nothing per frame. Primitive figures are posed by their build and are left alone.
 local function posePreview(vp: ViewportFrame, rig: Model, unitId: string, loop: boolean)
+	-- Baked signature clips (Anim/BoneAnim): pose bones directly, holding the character's props.
+	if rig:GetAttribute("Imported") and BoneAnim.has(unitId) then
+		local world = Instance.new("WorldModel")
+		world.Parent = vp
+		rig.Parent = world
+		local p = BoneAnim.new(rig, unitId)
+		if not p then
+			return
+		end
+		BoneAnim.loop(p, "idle")
+		if not loop then
+			BoneAnim.pose(p, "idle")
+			return
+		end
+		local conn: RBXScriptConnection
+		conn = RunService.RenderStepped:Connect(function(dt: number)
+			if not vp.Parent or not rig.Parent then
+				conn:Disconnect()
+				return
+			end
+			BoneAnim.step(p, dt, true)
+		end)
+		return
+	end
 	local look = (Looks :: any)[unitId]
 	local idle = look and look.anims and look.anims.idle
 	if not rig:GetAttribute("Imported") or not idle then

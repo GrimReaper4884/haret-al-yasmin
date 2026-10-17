@@ -40,25 +40,90 @@
     "hitreact": 178
   },
   "characters": {
-    "qahwaji": { "idle": "drink", "attack": "pitch" },
-    "zaim_akbar": { "idle": "battlepose", "attack": "rslash", "ability": "pullthrow" },
-    "qabaday": { "idle": "swordshout", "attack": "punchcombo", "ability": "pitch" },
-    "zaim": { "idle": "idle5", "attack": "judgment", "ability": "thrust" },
-    "hallaq": { "idle": "idle11", "attack": "lslash" },
-    "umm_hara": { "idle": "idle8", "attack": "mage" },
-    "mukhtar": { "idle": "scratch", "attack": "stomp" },
-    "saqqa": { "idle": "stomp", "attack": "reap" },
-    "khayyat": { "idle": "idle1", "attack": "mage" },
-    "farran": { "idle": "idle2", "attack": "crouchthrow" },
-    "natour": { "idle": "torch", "attack": "spell" },
-    "walad": { "idle": "idle3", "attack": "pickthrow" },
-    "haddad": { "idle": "axebreathe", "attack": "hammer" },
-    "pahlawan": { "idle": "chestpound", "attack": "bothfists", "ability": "slam" },
-    "arada": { "idle": "dance", "attack": "combo3", "ability": "reap" },
-    "spy": { "walk": "sneaky", "hit": "hitreact" },
-    "thief": { "walk": "cautious", "hit": "hitreact" },
-    "chief_thief": { "walk": "confident", "hit": "hitreact" },
-    "rival_zaim": { "walk": "orc", "hit": "hitreact" },
-    "gendarme": { "walk": "proud", "hit": "hitreact" }
+    "qahwaji": {
+      "idle": "drink",
+      "attack": "mage"
+    },
+    "zaim_akbar": {
+      "idle": "battlepose",
+      "attack": "rslash",
+      "ability": "pullthrow"
+    },
+    "qabaday": {
+      "idle": "swordshout",
+      "attack": "punchcombo",
+      "ability": "pitch"
+    },
+    "zaim": {
+      "idle": "idle5",
+      "attack": "judgment",
+      "ability": "thrust"
+    },
+    "hallaq": {
+      "idle": "idle11",
+      "attack": "lslash"
+    },
+    "umm_hara": {
+      "idle": "idle8",
+      "attack": "mage"
+    },
+    "mukhtar": {
+      "idle": "scratch",
+      "attack": "stomp"
+    },
+    "saqqa": {
+      "idle": "idle2",
+      "attack": "hammer"
+    },
+    "khayyat": {
+      "idle": "idle1",
+      "attack": "mage"
+    },
+    "farran": {
+      "idle": "idle2",
+      "attack": "crouchthrow"
+    },
+    "natour": {
+      "idle": "torch",
+      "attack": "spell"
+    },
+    "walad": {
+      "idle": "idle3",
+      "attack": "pickthrow"
+    },
+    "haddad": {
+      "idle": "axebreathe",
+      "attack": "hammer"
+    },
+    "pahlawan": {
+      "idle": "chestpound",
+      "attack": "bothfists",
+      "ability": "slam"
+    },
+    "arada": {
+      "idle": "dance",
+      "attack": "combo3",
+      "ability": "reap"
+    },
+    "spy": {
+      "walk": "sneaky",
+      "hit": "hitreact"
+    },
+    "thief": {
+      "walk": "sneaky",
+      "hit": "hitreact"
+    },
+    "chief_thief": {
+      "walk": "confident",
+      "hit": "hitreact"
+    },
+    "rival_zaim": {
+      "walk": "orc",
+      "hit": "hitreact"
+    },
+    "gendarme": {
+      "walk": "proud",
+      "hit": "hitreact"
+    }
   }
 }
