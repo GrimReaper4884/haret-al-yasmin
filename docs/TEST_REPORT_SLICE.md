@@ -607,3 +607,14 @@ Verdict: external (Studio or a plugin), ignored (D-020).
 | Reward coins | watchtower view: 2 coins in flight at once from kills toward the cash pill; pool of 6 frames built once; `pvb03_reward_coins_*.jpg` (frozen copies) |
 | Boss death | wave 10 Sergeant killed: the static watchtower camera shook for 12 frames, peak 0.82 studs, 0 drift afterwards |
 | Console | nothing from `src/` |
+
+### PV-A03 attacker clips, first five (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 240 specs (new `tests/clips.spec.luau`: every attacker with a baked file has walk/hit/death, bosses intro/stagger, rotations = frames × bones × 6 bytes, hips per frame; the six awaiting PV-A02 are listed and must have no file) |
+| Previews | `blender -b … preview.py` of the baked slots: `docs/art/pva03_clip_previews_2026-10-18.jpg` (thief run, gendarme quick walk, four deaths, the boss intro) |
+| Stride (Studio, Episode 1, 6 towers) | measured speed ÷ clip speed: gendarme median 1.64× (range 0.15–1.74, never clamped, 570 samples); thief median 0.87× (189 samples; 4 below 0.15 while stunned). Before the change: gendarme 2.3–3.6× (clamped), in-place walks unmatched |
+| Deaths before the poof | time from a figure stopping on the road to its removal: gendarme 2.95–2.97 s ×6 (77-frame knock-down 2.53 s + 0.4 s fade), thief 1.78 s (fly-up 1.57 s + fade) |
+| Boss intro / stagger | code path in place (spawn event with `boss`, flinch uses `stagger` when the figure has it); the in-game check rides on PV-B06 (wave 20) |
+| Still open | thug, bandit, rider, sapper, the Sergeant and the Commandant: clips after their import (PV-A02) |

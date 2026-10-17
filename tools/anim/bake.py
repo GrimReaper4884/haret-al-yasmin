@@ -42,7 +42,7 @@ BONES = [
     "LeftUpLeg", "LeftLeg", "LeftFoot", "RightUpLeg", "RightLeg", "RightFoot",
 ]
 EFFECTORS = ["RightHand", "LeftHand", "RightFoot", "LeftFoot"]
-FPS = {"idle": 20, "walk": 30, "attack": 30, "ability": 30, "hit": 30}
+FPS = {"idle": 20, "walk": 30, "attack": 30, "ability": 30, "hit": 30, "death": 30, "intro": 30, "stagger": 30}
 # Attack windows (seconds around the impact frame).
 WIND_UP, RECOVER = 0.42, 0.5
 
@@ -139,6 +139,28 @@ def sample(track, t, default):
 
 
 # ------------------------------------------------------------------ baking
+def planted_foot_speed(world, t0, t1, src_fps):
+    """Mean horizontal speed of the lower foot relative to the hips (armature units / s)."""
+    n = max(2, int(round((t1 - t0) * src_fps)))
+    dt = (t1 - t0) / n
+    total, count = 0.0, 0
+    prev = None
+    for i in range(n + 1):
+        t = t0 + i * dt
+        cache = {}
+        hips = world("Hips", t, cache)[0]
+        feet = [world(f, t, cache)[0] for f in ("LeftFoot", "RightFoot")]
+        low = min(range(2), key=lambda k: feet[k][1])
+        rel = [(feet[k][0] - hips[0], feet[k][2] - hips[2]) for k in range(2)]
+        if prev is not None:
+            pl, prel = prev
+            if pl == low:
+                total += math.hypot(rel[low][0] - prel[low][0], rel[low][1] - prel[low][1]) / dt
+                count += 1
+        prev = (low, rel)
+    return total / max(1, count)
+
+
 def bake_clip(path: Path, slot: str, opts: dict):
     nodes, parent, tracks = read_glb(path)
     byname = {n["name"]: i for i, n in enumerate(nodes)}
@@ -201,6 +223,10 @@ def bake_clip(path: Path, slot: str, opts: dict):
     hp0 = local("Hips", t0)[0]
     hp1 = local("Hips", t1)[0]
     move = math.hypot(hp1[0] - hp0[0], hp1[2] - hp0[2]) / max(1e-6, t1 - t0)
+    if slot == "walk" and (move < 1.0 or opts.get("strideFromFeet")):
+        # In-place walk (no root travel): the stride speed is how fast the planted foot (the
+        # lower one) slides back under the hips, averaged over the cycle.
+        move = planted_foot_speed(world, t0, t1, src_fps)
 
     # Facing: Meshy's fight clips are often filmed with the body turned 30-100 degrees. Turn the
     # whole clip so the chest (Spine) faces forward: at the impact frame for strikes (the blow

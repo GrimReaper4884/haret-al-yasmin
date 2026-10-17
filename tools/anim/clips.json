@@ -37,7 +37,17 @@
     "confident": 107,
     "orc": 119,
     "proud": 114,
-    "hitreact": 178
+    "hitreact": 178,
+    "flyup": 7,
+    "knockdown": 187,
+    "knockdown1": 190,
+    "dyingback": 189,
+    "waisthit": 171,
+    "run2": 14,
+    "run3": 15,
+    "runfast": 16,
+    "riflecharge": 511,
+    "quickwalk": 115
   },
   "characters": {
     "qahwaji": {
@@ -106,24 +116,60 @@
       "ability": "reap"
     },
     "spy": {
-      "walk": "sneaky",
-      "hit": "hitreact"
+      "walk": "run3",
+      "hit": "hitreact",
+      "death": {
+        "clip": "flyup",
+        "yaw": 0
+      }
     },
     "thief": {
-      "walk": "sneaky",
-      "hit": "hitreact"
+      "walk": "runfast",
+      "hit": "hitreact",
+      "death": {
+        "clip": "flyup",
+        "yaw": 0
+      }
     },
     "chief_thief": {
       "walk": "confident",
-      "hit": "hitreact"
+      "hit": "hitreact",
+      "death": {
+        "clip": "dyingback",
+        "yaw": 0
+      },
+      "intro": {
+        "clip": "chestpound",
+        "yaw": 0
+      },
+      "stagger": {
+        "clip": "waisthit",
+        "to": 24
+      }
     },
     "rival_zaim": {
-      "walk": "orc",
-      "hit": "hitreact"
+      "walk": "quickwalk",
+      "hit": "hitreact",
+      "death": {
+        "clip": "knockdown1",
+        "yaw": 0
+      },
+      "intro": {
+        "clip": "chestpound",
+        "yaw": 0
+      },
+      "stagger": {
+        "clip": "waisthit",
+        "to": 24
+      }
     },
     "gendarme": {
-      "walk": "proud",
-      "hit": "hitreact"
+      "walk": "quickwalk",
+      "hit": "hitreact",
+      "death": {
+        "clip": "knockdown",
+        "yaw": 0
+      }
     }
   }
 }

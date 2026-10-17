@@ -39,6 +39,7 @@ export type Player = {
 	shotT: number,
 	shotSpeed: number,
 	shotWeight: number,
+	shotHold: boolean, -- keep the shot's last frame when it ends (death falls)
 	yaw: number, -- radians, whole-body turn about the vertical
 	id: string,
 	props: { HandProps.Prop }, -- held items following the hands (Anim/HandProps)
@@ -165,6 +166,7 @@ function BoneAnim.new(model: Model, id: string): Player?
 		shotT = 0,
 		shotSpeed = 1,
 		shotWeight = 1,
+		shotHold = false,
 		yaw = 0,
 		id = id,
 		props = props,
@@ -183,8 +185,9 @@ function BoneAnim.loop(p: Player, slot: string, speed: number?)
 end
 
 -- Plays a one-shot clip over the loop. Returns the seconds until its impact frame (0 if none), or
--- nil when this character has no such clip. `weight` < 1 layers it partially (hit reactions).
-function BoneAnim.play(p: Player, slot: string, speed: number?, weight: number?): number?
+-- nil when this character has no such clip. `weight` < 1 layers it partially (hit reactions);
+-- `hold` keeps the last frame instead of fading back to the loop (a death fall).
+function BoneAnim.play(p: Player, slot: string, speed: number?, weight: number?, hold: boolean?): number?
 	local c = p.clips[slot]
 	if not c then
 		return nil
@@ -193,6 +196,7 @@ function BoneAnim.play(p: Player, slot: string, speed: number?, weight: number?)
 	p.shotT = 0
 	p.shotSpeed = speed or 1
 	p.shotWeight = weight or 1
+	p.shotHold = hold == true
 	return (c.hit or 0) / (c.fps * p.shotSpeed)
 end
 
@@ -234,11 +238,14 @@ function BoneAnim.step(p: Player, dt: number, smooth: boolean)
 	if shot then
 		p.shotT += dt * p.shotSpeed * shot.fps
 		local sl = shot.frames - 1
-		if p.shotT >= sl then
+		if p.shotT >= sl and p.shotHold then
+			p.shotT = sl
+		end
+		if p.shotT >= sl and not p.shotHold then
 			p.shot = nil
 		else
 			local secIn = p.shotT / (shot.fps * p.shotSpeed)
-			local secOut = (sl - p.shotT) / (shot.fps * p.shotSpeed)
+			local secOut = if p.shotHold then math.huge else (sl - p.shotT) / (shot.fps * p.shotSpeed)
 			w = math.min(1, secIn / FADE_IN, secOut / FADE_OUT) * p.shotWeight
 			local si = math.floor(p.shotT)
 			sa = p.shotT - si

@@ -301,13 +301,30 @@ local function enemyModel(id: number?): Model?
 	return if m and m:IsA("Model") then m else nil
 end
 
--- A short flinch layered over the enemy's walk.
+-- A short flinch layered over the enemy's walk; bosses that have a `stagger` clip play that.
 local function flinch(enemyId: number?)
 	local m = enemyModel(enemyId)
 	local rec = if m then recs[m] else nil
 	local bone = if rec then rec.bone else nil
 	if bone and not BoneAnim.busy(bone) then
-		BoneAnim.play(bone, "hit", 1.4, 0.6)
+		if BoneAnim.length(bone, "stagger") > 0 then
+			BoneAnim.play(bone, "stagger", 1.2, 0.7)
+		else
+			BoneAnim.play(bone, "hit", 1.4, 0.6)
+		end
+	end
+end
+
+-- A boss steps in with its `intro` taunt over the walk (PV-A03/B06).
+local function intro(enemyId: number)
+	local m = enemyModel(enemyId)
+	if not m then
+		return
+	end
+	local rec = track(m, false)
+	local bone = rec.bone
+	if bone and BoneAnim.length(bone, "intro") > 0 then
+		BoneAnim.play(bone, "intro", 1, 0.85)
 	end
 end
 
@@ -451,7 +468,9 @@ function RigAnimController.start()
 		end
 		local origin = CFrame.new(info.origin)
 		for _, e in events do
-			if e.type == "attack" and type(e.tower) == "number" then
+			if e.type == "spawn" and e.boss and type(e.id) == "number" then
+				intro(e.id)
+			elseif e.type == "attack" and type(e.tower) == "number" then
 				local at = if type(e.x) == "number" and type(e.z) == "number" then (origin * CFrame.new(e.x, 0, e.z)).Position else nil
 				RigAnimController.attack(e.tower, at, e.ability == true, if type(e.target) == "number" then e.target else nil, if type(e.damage) == "number" then e.damage else nil)
 			end
@@ -464,7 +483,7 @@ function RigAnimController.start()
 		local rec = recs[model]
 		local bone = if rec then rec.bone else nil
 		if bone and BoneAnim.length(bone, "death") > 0 then
-			BoneAnim.play(bone, "death", 1, 1)
+			BoneAnim.play(bone, "death", 1, 1, true)
 			return BoneAnim.length(bone, "death")
 		end
 		return 0
