@@ -2,6 +2,7 @@
   "_comment": "Meshy prompts (docs/CHARACTER_PIPELINE.md). Characters are the lane drama's main cast by the owner's decision (COPYRIGHT_REGISTER C-201); keys are the unit/enemy ids they play. Never name the series or an actor, never ask for a real person's likeness: describe period costume and props only. 'style'/'texture_style' are prepended to character prompts, 'prop_style' to props.",
   "style": "Chibi-proportioned stylized cartoon game character (oversized head about one third of total height, short sturdy body, big hands and feet), like a collectible vinyl toy for a mobile tower-defense game, clean simple shapes, bold readable silhouette, full body standing in T-pose, facing the camera, no base, no background.",
   "texture_style": "Hand-painted flat colors, soft shading, no photorealism, warm Mediterranean palette, clean cloth folds, friendly expressive face.",
+  "enemy_texture_style": "Hand-painted flat colors, soft shading, no photorealism, colder palette of indigo, basalt grey and olive with red accents, clean cloth folds, hostile scowling expressive face, menacing but never grotesque, no caricature.",
   "animations": {
     "_comment": "Meshy library action ids, filled after running `python tools/meshy/meshy.py library`. One clip per file so Roblox imports each as its own track. Defenders need idle + attack; the auto-rig already returns a free walk clip for attackers.",
     "idle": 0,
@@ -121,6 +122,42 @@
       "rig": false,
       "prompt": "The beloved ginger street cat of a 1930s Damascus neighbourhood, chubby orange tabby cat with big green eyes and a curled tail, sitting proudly, cute and expressive, full body.",
       "texture": "Warm orange tabby fur with darker stripes, white chest and paws, bright green eyes, pink nose."
+    },
+    "thug": {
+      "height": 1.75,
+      "texture_style": "enemy",
+      "prompt": "Rival-lane street thug of 1930s Damascus, stocky young man with stubble and a sneer, black tarboosh pushed back, olive-green striped qumbaz with the sleeves rolled, wide black sash, baggy dark trousers, leather slippers, holding a short wooden cudgel in his right hand, swaggering stance.",
+      "texture": "Olive and black stripes, black sash and tarboosh, dark wood cudgel, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "bandit": {
+      "height": 1.9,
+      "texture_style": "enemy",
+      "prompt": "Orchard bandit of the 1930s Syrian countryside, broad bearded man with a grey-and-white checkered head cloth (keffiyeh) under a black cord, long dusty brown robe, crossed leather bandoliers over the chest, dark cloak, tall boots, holding a curved sword in his right hand, grim menacing face.",
+      "texture": "Dusty brown robe, grey-white checkered head cloth, dark brown cloak, worn leather bandoliers, steel sword, tan weathered skin."
+    },
+    "rider": {
+      "height": 1.85,
+      "texture_style": "enemy",
+      "prompt": "Colonial-era mounted gendarmerie officer of the 1930s on foot, lean man with a thin handlebar moustache, dark blue kepi with a gold band, dark blue riding jacket with gold buttons and epaulettes, tan riding breeches, tall black riding boots with spurs, holding a sabre in his right hand and a riding crop tucked in his belt, arrogant upright pose.",
+      "texture": "Navy jacket with gold braid, tan breeches, black boots and spurs, steel sabre, light skin."
+    },
+    "sapper": {
+      "height": 1.8,
+      "texture_style": "enemy",
+      "prompt": "Military sapper of a 1930s colonial garrison, stocky man with a short beard, round steel helmet, dark grey work tunic with rolled sleeves, heavy canvas apron, leather gloves, a coil of fuse rope over the shoulder, holding a pickaxe in his right hand and a small powder keg under the left arm, dogged determined face.",
+      "texture": "Dark grey tunic, steel helmet, tan canvas apron, brown rope, black-and-red powder keg, light skin."
+    },
+    "sergeant": {
+      "height": 1.95,
+      "texture_style": "enemy",
+      "prompt": "The Sergeant (shawish), a burly 1930s colonial gendarmerie sergeant, thick black moustache and a scar on the cheek, dark blue kepi with a red band, dark blue uniform with gold chevrons on the sleeves, brass buttons, wide belt with a holster, tall black boots, holding a heavy cavalry sabre in his right hand, barking furious face.",
+      "texture": "Navy uniform, gold chevrons and buttons, red kepi band, black boots, steel sabre, light skin."
+    },
+    "colonel": {
+      "height": 2.1,
+      "texture_style": "enemy",
+      "prompt": "The Commandant, the towering commander of a 1930s colonial garrison, tall man with a grey goatee and monocle, black kepi with heavy gold braid, long black greatcoat with gold epaulettes and a red sash across the chest, white gloves, polished black boots, holding an ornate officer's sabre in his right hand, cold imperious face.",
+      "texture": "Black greatcoat, gold braid and epaulettes, crimson sash, white gloves, steel sabre with a gold hilt, pale skin."
     }
   },
   "prop_style": "Stylized chunky cartoon game prop for a mobile tower-defense game set in a 1930s Damascus old-city lane, toy-like proportions, clean simple shapes, bold readable silhouette, hand-painted flat colors with soft shading, warm limestone and wood palette, single object centered, three-quarter view, no characters, no text, no background.",

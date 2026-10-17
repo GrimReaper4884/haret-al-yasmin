@@ -1,0 +1,16 @@
+{
+  "id": "thug",
+  "tasks": {
+    "concept": "01a14ba8-309f-7277-86af-a8abaa76328f"
+  },
+  "credits": {
+    "concept": 6
+  },
+  "rerolled": [
+    {
+      "concept": "01a14ba7-29a2-71d0-a4d0-1e14205cae92",
+      "why": "arms down, grey skin",
+      "credits": 6
+    }
+  ]
+}
