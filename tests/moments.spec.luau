@@ -1,0 +1,58 @@
+--!nocheck
+-- Match presentation moments (Logic/MatchMoments, POLISH_PLAN PV-B06).
+
+return function(t)
+	local M = t.logic("MatchMoments")
+	local Settings = t.logic("Settings")
+
+	local function kinds(list)
+		local out = {}
+		for _, m in list do
+			table.insert(out, m.kind)
+		end
+		return table.concat(out, ",")
+	end
+
+	local full = { totalWaves = 20, cutscenes = true, effects = "full", reducedMotion = false }
+
+	t.describe("MatchMoments", function()
+		t.it("plain and boss wave starts; the last wave is also the final-wave moment", function()
+			t.eq(kinds(M.fromEvent({ type = "waveStart", wave = 3 }, full)), "waveStart")
+			local boss = M.fromEvent({ type = "waveStart", wave = 10, boss = "sergeant" }, full)
+			t.eq(kinds(boss), "bossIntro")
+			t.eq(boss[1].boss, "sergeant")
+			t.eq(boss[1].camera, true)
+			t.eq(kinds(M.fromEvent({ type = "waveStart", wave = 20, boss = "chief_thief" }, full)), "bossIntro,finalWave")
+			t.eq(kinds(M.fromEvent({ type = "waveStart", wave = 20 }, { totalWaves = nil, cutscenes = true, effects = "full", reducedMotion = false })), "waveStart", "endless has no final wave")
+		end)
+
+		t.it("the boss camera push respects cutscenes, effects off and reduced motion", function()
+			local e = { type = "waveStart", wave = 10, boss = "sergeant" }
+			t.eq(M.fromEvent(e, { totalWaves = 20, cutscenes = false, effects = "full", reducedMotion = false })[1].camera, false)
+			t.eq(M.fromEvent(e, { totalWaves = 20, cutscenes = true, effects = "off", reducedMotion = false })[1].camera, false)
+			t.eq(M.fromEvent(e, { totalWaves = 20, cutscenes = true, effects = "reduced", reducedMotion = true })[1].camera, false)
+			t.eq(M.fromEvent(e, { totalWaves = 20, cutscenes = true, effects = "reduced", reducedMotion = false })[1].camera, true)
+		end)
+
+		t.it("wave clears carry the bonus but not after the last wave", function()
+			local c = M.fromEvent({ type = "waveEnd", wave = 4, bonus = 120 }, full)
+			t.eq(kinds(c), "waveClear")
+			t.eq(c[1].bonus, 120)
+			t.eq(kinds(M.fromEvent({ type = "waveEnd", wave = 20, bonus = 300 }, full)), "", "victory covers the last wave")
+		end)
+
+		t.it("victory effects need full effects; defeat desaturates unless effects are off", function()
+			t.eq(M.fromEvent({ type = "won" }, full)[1].fx, true)
+			t.eq(M.fromEvent({ type = "won" }, { totalWaves = 20, cutscenes = true, effects = "reduced", reducedMotion = false })[1].fx, false)
+			t.eq(M.fromEvent({ type = "lost" }, { totalWaves = 20, cutscenes = true, effects = "reduced", reducedMotion = false })[1].fx, true)
+			t.eq(M.fromEvent({ type = "lost" }, { totalWaves = 20, cutscenes = true, effects = "off", reducedMotion = false })[1].fx, false)
+			t.eq(#M.fromEvent({ type = "attack" }, full), 0, "other events draw nothing here")
+		end)
+
+		t.it("the cutscenes setting exists, is a boolean and defaults on", function()
+			t.truthy(Settings.accept("cutscenes", false))
+			t.eq(Settings.accept("cutscenes", "off"), false)
+			t.eq(Settings.get(nil, "cutscenes"), true)
+		end)
+	end)
+end

@@ -25,6 +25,8 @@ Settings.defs = {
 	music = { kind = "bool", default = true },
 	-- Play one-shot stings (gate, waves, summons, clicks). Client-side only (AudioController).
 	sfx = { kind = "bool", default = true },
+	-- Short camera moves for story moments (the boss intro push). Client-side only.
+	cutscenes = { kind = "bool", default = true },
 } :: { [string]: Def }
 
 local function valid(def: Def, value: any): boolean

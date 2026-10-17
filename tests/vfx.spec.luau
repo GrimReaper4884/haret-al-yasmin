@@ -206,6 +206,21 @@ return function(t)
 		end)
 	end)
 
+	t.describe("Match moments (PV-B06)", function()
+		t.it("moment effects stay inside the budget", function()
+			local m = Vfx.MOMENTS
+			t.truthy(m.bossPush <= 1.5, "a short push")
+			t.truthy(#m.ribbonColors == 2 and m.ribbonSegments * 2 <= Vfx.MAX_PER_FRAME, "both ribbons fit one frame")
+			local live = (m.petalFall / m.petalEvery) * m.petalsPer + m.ribbonSegments * 2
+			t.truthy(live <= Vfx.MAX_LIVE, "petals + ribbons peak " .. live .. " of " .. Vfx.MAX_LIVE)
+			t.truthy(m.lanternBoost > 1 and m.lanternBoost <= 1.3)
+			for _, c in m.ribbonColors do
+				t.truthy(string.match(c, "^#%x%x%x%x%x%x$"))
+			end
+			t.truthy(string.match(m.finalTint, "^#%x%x%x%x%x%x$"))
+		end)
+	end)
+
 	t.describe("Config/Vfx", function()
 		t.it("has sane budgets and well-formed colours", function()
 			t.truthy(Vfx.MAX_PER_FRAME >= 4 and Vfx.MAX_PER_FRAME <= Vfx.MAX_LIVE)

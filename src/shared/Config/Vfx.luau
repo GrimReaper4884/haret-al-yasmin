@@ -84,6 +84,16 @@ return {
 		dashes = 24, dashDark = "#3D3A38", dashLight = "#F1E9DA",
 	},
 
+	-- Wave and boss presentation (PV-B06, Logic/MatchMoments decides, MatchFxController draws).
+	MOMENTS = {
+		bossPush = 1.2, pushDistance = 22, pushHeight = 9, -- camera push toward the spawn gate (s, studs)
+		clearHold = 1.6, -- wave-cleared banner from the top
+		finalTint = "#FFE2C2", finalDensity = 0.1, lanternBoost = 1.2, finalLife = 2, -- warm last wave
+		ribbonLife = 1.8, ribbonSegments = 6, ribbonColors = { "#C8322B", "#F2C14E" }, -- 'arada ribbons
+		petalSeconds = 3, petalEvery = 0.15, petalsPer = 3, petalFall = 2.6, petalHeight = 26, petalSpread = 28,
+		defeatLife = 1.5,
+	},
+
 	-- Ultimate strikes (EnemyRenderController.ultimateStrike): kept from P1-15.
 	SHABRIYEH = { bladeLife = 0.35, bladeLength = 9 },
 	SWEEP = { ringLife = 0.5, dustLife = 0.8, dustColor = "#C9B48F" },

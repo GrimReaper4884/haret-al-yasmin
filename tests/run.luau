@@ -138,6 +138,7 @@ local specs = {
 	require("./redteam.spec"),
 	require("./icons.spec"),
 	require("./clips.spec"),
+	require("./moments.spec"),
 }
 for _, spec in specs do
 	spec(t)

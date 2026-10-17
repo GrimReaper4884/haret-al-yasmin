@@ -14,6 +14,9 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Enemies = require(Shared.Config.Enemies)
 local Units = require(Shared.Config.Units)
 local Vfx = require(Shared.Config.Vfx)
+local Arenas = require(Shared.Config.Arenas)
+local Locale = require(Shared.Util.Locale)
+local MatchMoments = require(Shared.Logic.MatchMoments)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
@@ -22,6 +25,8 @@ local Root = require(UI.Root)
 local LocaleController = require(script.Parent.LocaleController)
 local MatchController = require(script.Parent.MatchController)
 local AudioController = require(script.Parent.AudioController)
+local SettingsController = require(script.Parent.SettingsController)
+local MatchCameraController = require(script.Parent.MatchCameraController)
 local PlacementController = require(script.Parent.PlacementController)
 local RigAnimController = require(script.Parent.RigAnimController)
 local CoinFlight = require(UI.CoinFlight)
@@ -423,8 +428,245 @@ local function towerSold(at: Vector3)
 	end
 end
 
-local function onEvents(events: { any })
+---------------------------------------------------------------- Moments (PV-B06)
+
+local topBand: Frame
+local topTitle: TextLabel
+local topSub: TextLabel
+local topToken = 0
+local grade: ColorCorrectionEffect? = nil
+local boosted: { [Light]: number } = {}
+local atmoBase: number? = nil
+
+local function buildTop()
+	topBand = Create("Frame", {
+		Name = "WaveClear",
+		AnchorPoint = Vector2.new(0.5, 1),
+		Position = UDim2.new(0.5, 0, 0, -10),
+		Size = UDim2.fromOffset(360, 60),
+		BackgroundColor3 = Theme.colors.confirm:Lerp(Color3.new(0, 0, 0), 0.45),
+		BackgroundTransparency = 0.15,
+		Visible = false,
+		ZIndex = 20,
+		Parent = Root.get(),
+	}, { Create("UICorner", { CornerRadius = UDim.new(0, 14) }) })
+	Theme.border(topBand, 2.5)
+	topTitle = Theme.display({ TextSize = 24, Size = UDim2.new(1, 0, 0, 32), Position = UDim2.fromOffset(0, 4), ZIndex = 21, Parent = topBand })
+	topTitle.TextXAlignment = Enum.TextXAlignment.Center
+	topSub = Theme.display({ TextSize = 15, TextColor3 = Color3.fromHex("#FFE9B8"), Size = UDim2.new(1, 0, 0, 18), Position = UDim2.fromOffset(0, 36), ZIndex = 21, Parent = topBand })
+	topSub.TextXAlignment = Enum.TextXAlignment.Center
+end
+
+-- "Wave n cleared · +cash" slides down from the top edge, holds, slides back up.
+local function topBanner(text: string, subText: string?, hold: number)
+	topToken += 1
+	local token = topToken
+	topTitle.Text = text
+	topSub.Text = subText or ""
+	topBand.Size = UDim2.fromOffset(360, if subText then 60 else 42)
+	topBand.Position = UDim2.new(0.5, 0, 0, -10)
+	topBand.Visible = true
+	-- It drops over the wave panel (top centre): toasts and the wave banner use the space below.
+	TweenService:Create(topBand, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Position = UDim2.new(0.5, 0, 0, if subText then 66 else 50) }):Play()
+	task.delay(hold, function()
+		if token ~= topToken then
+			return
+		end
+		local up = TweenService:Create(topBand, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Position = UDim2.new(0.5, 0, 0, -10) })
+		up:Play()
+		up.Completed:Connect(function()
+			if token == topToken then
+				topBand.Visible = false
+			end
+		end)
+	end)
+end
+
+local function colorGrade(): ColorCorrectionEffect
+	local g = grade
+	if g and g.Parent then
+		return g
+	end
+	local n = Instance.new("ColorCorrectionEffect")
+	n.Name = "HaretMoments"
+	n.Parent = Lighting
+	grade = n
+	return n
+end
+
+-- The arena model nearest the match origin (lanterns live in it).
+local function arenaModel(origin: Vector3): Instance?
+	local arenas = Workspace:FindFirstChild("Arenas")
+	if not arenas then
+		return nil
+	end
+	for _, arena in arenas:GetChildren() do
+		local gate = arena:FindFirstChild("GateWall")
+		local anchor = gate and gate:FindFirstChild("GateAnchor")
+		if anchor and anchor:IsA("BasePart") and (anchor.Position - origin).Magnitude < 400 then
+			return arena
+		end
+	end
+	return nil
+end
+
+-- Last wave: the night warms, the haze thickens a little and the lanterns brighten.
+local function finalWave(origin: Vector3)
+	local m = Vfx.MOMENTS
+	local tw = TweenInfo.new(m.finalLife, Enum.EasingStyle.Sine)
+	TweenService:Create(colorGrade(), tw, { TintColor = Color3.fromHex(m.finalTint) }):Play()
+	local atmo = Lighting:FindFirstChildOfClass("Atmosphere")
+	if atmo then
+		atmoBase = atmoBase or atmo.Density
+		TweenService:Create(atmo, tw, { Density = math.min(1, (atmoBase :: number) + m.finalDensity) }):Play()
+	end
+	local arena = arenaModel(origin)
+	if arena then
+		for _, l in arena:GetDescendants() do
+			if l:IsA("PointLight") or l:IsA("SpotLight") then
+				if boosted[l] == nil then
+					boosted[l] = l.Brightness
+				end
+				TweenService:Create(l, tw, { Brightness = boosted[l] * m.lanternBoost }):Play()
+			end
+		end
+	end
+end
+
+local function restoreMoments()
+	local g = grade
+	if g then
+		g.TintColor = Color3.new(1, 1, 1)
+		g.Saturation = 0
+	end
+	local atmo = Lighting:FindFirstChildOfClass("Atmosphere")
+	if atmo and atmoBase then
+		atmo.Density = atmoBase
+	end
+	atmoBase = nil
+	for l, b in boosted do
+		if l.Parent then
+			l.Brightness = b
+		end
+	end
+	boosted = {}
+end
+
+-- Victory: two 'arada ribbons spiral up from the gate, then petals drift down over the arena.
+local function victoryFx(origin: Vector3)
+	local m = Vfx.MOMENTS
+	local doors = findDoors(origin)
+	local base = if doors then doors:GetPivot().Position else origin
+	for r, hex in m.ribbonColors do
+		local segs: { BasePart } = {}
+		for _ = 1, Fx.allow(m.ribbonSegments) do
+			local p = Fx.part()
+			if not p then
+				break
+			end
+			p.Color = Color3.fromHex(hex)
+			p.Size = Vector3.new(0.7, 0.15, 2.6)
+			table.insert(segs, p)
+		end
+		local phase = if r == 1 then 0 else math.pi
+		task.spawn(function()
+			local t0 = os.clock()
+			while true do
+				local k = (os.clock() - t0) / m.ribbonLife
+				if k >= 1 then
+					break
+				end
+				for i, p in segs do
+					local u = math.max(0, k - (i - 1) * 0.035)
+					local a = phase + u * 9
+					local pos = base + Vector3.new(math.cos(a) * (2 + u * 4), 2 + u * 22, math.sin(a) * (2 + u * 4))
+					local ahead = phase + (u + 0.02) * 9
+					local nxt = base + Vector3.new(math.cos(ahead) * (2 + u * 4), 2 + (u + 0.02) * 22, math.sin(ahead) * (2 + u * 4))
+					p.CFrame = CFrame.lookAt(pos, nxt)
+					p.Transparency = math.clamp((k - 0.6) / 0.4, 0, 1)
+				end
+				RunService.Heartbeat:Wait()
+			end
+			for _, p in segs do
+				Fx.release(p)
+			end
+		end)
+	end
+	task.spawn(function()
+		local t0 = os.clock()
+		local center = origin
+		while os.clock() - t0 < m.petalSeconds do
+			for _ = 1, Fx.allow(m.petalsPer) do
+				local p = Fx.part()
+				if not p then
+					break
+				end
+				local x = (math.random() - 0.5) * 2 * m.petalSpread
+				local z = (math.random() - 0.5) * 2 * m.petalSpread
+				local top = center + Vector3.new(x, m.petalHeight, z)
+				p.Color = Color3.fromHex(Vfx.DEATH.petalColors[math.random(1, #Vfx.DEATH.petalColors)])
+				p.Size = Vector3.new(0.45, 0.08, 0.35)
+				p.CFrame = CFrame.new(top) * CFrame.Angles(math.random() * 3, math.random() * 3, 0)
+				local drift = Vector3.new((math.random() - 0.5) * 6, 0, (math.random() - 0.5) * 6)
+				Fx.fade(p, m.petalFall, { CFrame = CFrame.new(top - Vector3.new(0, m.petalHeight - 1, 0) + drift) * CFrame.Angles(math.random() * 9, math.random() * 9, 0), Transparency = 0.6 }, Enum.EasingStyle.Linear)
+			end
+			task.wait(m.petalEvery)
+		end
+	end)
+end
+
+local function defeatFx()
+	local g = colorGrade()
+	local m = Vfx.MOMENTS
+	TweenService:Create(g, TweenInfo.new(0.3), { Saturation = -1 }):Play()
+	task.delay(m.defeatLife, function()
+		TweenService:Create(g, TweenInfo.new(0.6), { Saturation = 0 }):Play()
+	end)
+end
+
+local function playMoment(mo: MatchMoments.Moment)
 	local t = LocaleController.t
+	local info = MatchController.info()
+	if mo.kind == "waveStart" then
+		MatchFxController.banner(t("match.wave_start", { n = mo.wave }))
+		AudioController.sting("wave_start")
+	elseif mo.kind == "bossIntro" then
+		local def = (Enemies :: any)[mo.boss]
+		local both = Locale.get("en", def.nameKey) .. "  ·  " .. Locale.get("ar", def.nameKey)
+		MatchFxController.banner(t("match.boss_wave", { boss = t(def.nameKey) }), both, 2.6, Theme.colors.hpLow)
+		AudioController.music("boss")
+		if mo.camera and info then
+			local path = Arenas[info.arenaId].path
+			local spawnAt = (CFrame.new(info.origin) * CFrame.new(path[1][1], 0, path[1][2])).Position
+			local m = Vfx.MOMENTS
+			MatchCameraController.push(spawnAt, m.bossPush, m.pushDistance, m.pushHeight)
+		end
+	elseif mo.kind == "finalWave" then
+		if mo.fx and info then
+			finalWave(info.origin)
+		end
+	elseif mo.kind == "waveClear" then
+		AudioController.music("match")
+		topBanner(t("match.wave_cleared", { n = mo.wave }), if mo.bonus then t("match.wave_bonus", { n = mo.bonus }) else nil, Vfx.MOMENTS.clearHold)
+		AudioController.sting("wave_clear")
+	elseif mo.kind == "victory" then
+		MatchFxController.banner(t("match.victory"), nil, 4, Theme.colors.gold)
+		AudioController.sting("victory")
+		AudioController.music(nil)
+		if mo.fx and info then
+			victoryFx(info.origin)
+		end
+	elseif mo.kind == "defeat" then
+		MatchFxController.banner(t("match.defeat"), nil, 4, Theme.colors.hpLow)
+		AudioController.sting("defeat")
+		AudioController.music(nil)
+		if mo.fx then
+			defeatFx()
+		end
+	end
+end
+
+local function onEvents(events: { any })
 	for _, e in events do
 		if e.type == "reached" then
 			MatchFxController.edgeFlash(Color3.fromHex(Vfx.GATE_HIT.color), Vfx.GATE_HIT.vignette, Vfx.GATE_HIT.vignetteLife)
@@ -452,33 +694,28 @@ local function onEvents(events: { any })
 			towerAt[e.id] = nil
 		elseif e.type == "attack" and e.ability then
 			ultimate(e)
-		elseif e.type == "waveStart" then
-			if e.boss then
-				MatchFxController.banner(t("match.boss_wave", { boss = t((Enemies :: any)[e.boss].nameKey) }), t("match.wave_start", { n = e.wave }), 2.6, Theme.colors.hpLow)
-				AudioController.music("boss")
-			else
-				MatchFxController.banner(t("match.wave_start", { n = e.wave }))
-				AudioController.sting("wave_start")
+		elseif e.type == "waveStart" or e.type == "waveEnd" or e.type == "won" or e.type == "lost" then
+			if e.type == "waveEnd" then
+				AudioController.music("match")
 			end
-		elseif e.type == "waveEnd" then
-			AudioController.music("match")
-			if e.wave and not (MatchController.info() and (MatchController.info() :: any).totalWaves == e.wave) then
-				MatchFxController.banner(t("match.wave_cleared", { n = e.wave }), if e.bonus then t("match.wave_bonus", { n = e.bonus }) else nil, 1.6, Theme.colors.confirm:Lerp(Color3.new(1, 1, 1), 0.3))
+			local info = MatchController.info()
+			local ctx: MatchMoments.Ctx = {
+				-- The live state carries the wave total (Info.totalWaves is optional).
+				totalWaves = (MatchController.state() or {}).totalWaves or (if info then info.totalWaves else nil),
+				cutscenes = SettingsController.get("cutscenes") ~= false,
+				effects = Fx.level(),
+				reducedMotion = reducedMotion(),
+			}
+			for _, mo in MatchMoments.fromEvent(e, ctx) do
+				playMoment(mo)
 			end
-		elseif e.type == "won" then
-			MatchFxController.banner(t("match.victory"), nil, 4, Theme.colors.gold)
-			AudioController.sting("victory")
-			AudioController.music(nil)
-		elseif e.type == "lost" then
-			MatchFxController.banner(t("match.defeat"), nil, 4, Theme.colors.hpLow)
-			AudioController.sting("defeat")
-			AudioController.music(nil)
 		end
 	end
 end
 
 function MatchFxController.start()
 	build()
+	buildTop()
 	buildUltFx()
 	MatchController.Started:Connect(function(info: MatchController.Info)
 		local t = LocaleController.t
@@ -493,6 +730,7 @@ function MatchFxController.start()
 	MatchController.Events:Connect(onEvents)
 	MatchController.Ended:Connect(function()
 		task.delay(3, function()
+			restoreMoments()
 			setNight(false)
 			AudioController.music("lobby")
 		end)

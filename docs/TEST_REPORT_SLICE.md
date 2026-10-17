@@ -636,3 +636,15 @@ Verdict: external (Studio or a plugin), ignored (D-020).
 | Upgrade | `P` then `U` ×2: the level-3 figure glows gold (pooled Highlight, 0.4 s), gold sparks and the scale punch play; `pvb05_upgrade_glow_2026-10-18.jpg` |
 | Sell | `J`: 6 coins (the whole pool) fly into the cash pill; `pvb05_sell_coins_2026-10-18.jpg` |
 | Pooling | 40 s of placing, upgrading, hits and selling used 22 distinct pooled effect parts (pool cap 80); coin frames fixed at 6; one upgrade Highlight |
+
+### PV-B06 wave and boss presentation (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 248 specs (new `tests/moments.spec.luau`: plain/boss/final wave starts, camera push gated by cutscenes / effects off / reduced motion, clears carry the bonus but not after the last wave, victory fx need full effects, defeat fx unless off, `cutscenes` setting; Vfx MOMENTS budget) |
+| Wave cleared | "Wave 1 cleared! · +130 cash" drops over the wave panel; before/after the move: `pvb06_wave_cleared_before_move_*.jpg` (overlapped the skip toast) → `pvb06_wave_cleared_*.jpg` |
+| Boss intro | Episode 1 wave 10: the camera moved 9.8 studs toward the spawn gate (Scriptable during the push, then restored); Olive Harvest wave 8 and 15 banners: "The Sergeant · الشاويش", "Al-Idaashari · الإدعشري" (`pvb06_final_wave_boss_banner_*.jpg`) |
+| Final wave | Olive Harvest wave 15: tint `#FFE2C2`, arena lantern 1.10 → 1.32 (+20 %), Atmosphere density 0.30 → 0.40; all restored when the match ends |
+| Victory | "The lane is safe!" + result with icon rewards (`pvb06_victory_result_*.jpg`); 24 pooled parts frozen 0.9 s in: red and gold ribbon segments above the gate and falling petals (`pvb06_victory_ribbons_petals_*.jpg`, seen from the lobby after the arena streamed out; ribbons thickened afterwards) |
+| Defeat | gate set to 1 HP: `ColorCorrection` saturation −1 for 1.77 s, then back to 0 |
+| Console | nothing from `src/` (the "execute_luau changed camera type. Resetting" line is Studio reacting to a probe during the push) |

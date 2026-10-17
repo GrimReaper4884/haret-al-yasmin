@@ -84,6 +84,11 @@ local ROWS: { Row } = {
 		},
 	},
 	{
+		key = "cutscenes",
+		labelKey = "settings.cutscenes",
+		options = { { value = true, textKey = "settings.on" }, { value = false, textKey = "settings.off" } },
+	},
+	{
 		key = "music",
 		labelKey = "settings.music",
 		options = { { value = true, textKey = "settings.on" }, { value = false, textKey = "settings.off" } },

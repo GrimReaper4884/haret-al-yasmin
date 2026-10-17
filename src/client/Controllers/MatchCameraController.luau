@@ -86,6 +86,35 @@ function MatchCameraController.shake(seconds: number, amplitude: number)
 	shakeAt, shakeLife, shakeAmp, shakeSeed = os.clock(), seconds, amplitude, math.random() * 10
 end
 
+-- Boss intro (PV-B06): a short push toward `at` and back. The caller checks the cutscenes setting
+-- (Logic/MatchMoments); a push already running is not restarted.
+local pushing = false
+function MatchCameraController.push(at: Vector3, seconds: number, distance: number, height: number)
+	local camera = Workspace.CurrentCamera
+	if not camera or pushing or reducedMotion() then
+		return
+	end
+	pushing = true
+	local prevType = camera.CameraType
+	local start = camera.CFrame
+	local away = Vector3.new(start.Position.X - at.X, 0, start.Position.Z - at.Z)
+	away = if away.Magnitude > 0.1 then away.Unit else Vector3.new(0, 0, 1)
+	local goal = CFrame.lookAt(at + away * distance + Vector3.new(0, height, 0), at + Vector3.new(0, 3, 0))
+	camera.CameraType = Enum.CameraType.Scriptable
+	local leg = math.min(0.45, seconds / 3)
+	TweenService:Create(camera, TweenInfo.new(leg, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), { CFrame = goal }):Play()
+	task.delay(seconds - leg, function()
+		local back = TweenService:Create(camera, TweenInfo.new(leg, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { CFrame = start })
+		back:Play()
+		back.Completed:Wait()
+		camera.CameraType = prevType
+		if overhead then
+			apply()
+		end
+		pushing = false
+	end)
+end
+
 function MatchCameraController.toggle()
 	if not MatchController.active() then
 		return
