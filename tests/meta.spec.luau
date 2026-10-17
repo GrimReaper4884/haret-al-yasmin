@@ -147,6 +147,127 @@ return function(t)
 		end)
 	end)
 
+	-- P2-12: Monte-Carlo checks of the published odds, the pity bounds and the trait reroll
+	-- disclosure. Seeded math.random so a failure reproduces; the whole suite stays under 10 s.
+	t.describe("Odds and pity simulation", function()
+		local PULLS = 1000000
+		local simStart = os.clock()
+
+		local function seeded(seed)
+			math.randomseed(seed)
+			return function()
+				return math.random()
+			end
+		end
+
+		t.it("1,000,000 pulls without pity match TD.ODDS within 4 sigma", function()
+			local c = ctx(seeded(2026))
+			c.pityLegendary = math.huge
+			c.pityMythic = math.huge
+			local summons = { total = 0, sinceLegendary = 0, sinceMythic = 0 }
+			local counts = {}
+			for _, rarity in TD.RARITY_ORDER do
+				counts[rarity] = 0
+			end
+			for _ = 1, PULLS do
+				local rarity, pity = SummonLogic.rollRarity(summons, c)
+				t.eq(pity, false, "pity never fires when disabled")
+				counts[rarity] += 1
+			end
+			local lines = {}
+			for _, rarity in TD.RARITY_ORDER do
+				local p = TD.ODDS[rarity]
+				if p then
+					local expected = p * PULLS
+					local sigma = math.sqrt(PULLS * p * (1 - p))
+					local z = (counts[rarity] - expected) / sigma
+					table.insert(lines, string.format("%s %d (expected %.0f, sigma %.1f, z %+.2f)", rarity, counts[rarity], expected, sigma, z))
+					t.truthy(math.abs(z) <= 4, rarity .. " outside 4 sigma: " .. lines[#lines])
+				else
+					t.eq(counts[rarity], 0, rarity .. " never drops from a summon")
+				end
+			end
+			print("    odds sim: " .. table.concat(lines, "; "))
+		end)
+
+		t.it("1,000,000 pulls with pity: no Legendary+ gap over 50, no Mythic gap over 400", function()
+			local p = profile()
+			p.lira = math.huge
+			local c = ctx(seeded(1917))
+			local sinceLegendary, sinceMythic = 0, 0
+			local maxLegendaryGap, maxMythicGap = 0, 0
+			local pityHits, mythics = 0, 0
+			for _ = 1, PULLS / 10 do
+				local ok, err, results = SummonLogic.summon(p, 10, 0, c)
+				t.truthy(ok, err)
+				for _, r in results do
+					sinceLegendary += 1
+					sinceMythic += 1
+					if r.rarity == "mythic" then
+						mythics += 1
+						maxMythicGap = math.max(maxMythicGap, sinceMythic)
+						maxLegendaryGap = math.max(maxLegendaryGap, sinceLegendary)
+						sinceMythic, sinceLegendary = 0, 0
+					elseif r.rarity == "legendary" then
+						maxLegendaryGap = math.max(maxLegendaryGap, sinceLegendary)
+						sinceLegendary = 0
+					end
+					if r.pity then
+						pityHits += 1
+					end
+				end
+			end
+			t.eq(p.summons.total, PULLS)
+			t.truthy(maxLegendaryGap <= TD.PITY_LEGENDARY, "legendary gap " .. maxLegendaryGap)
+			t.truthy(maxMythicGap <= TD.PITY_MYTHIC, "mythic gap " .. maxMythicGap)
+			t.truthy(mythics >= PULLS / TD.PITY_MYTHIC, "pity alone guarantees this many mythics")
+			print(string.format("    pity sim: max Legendary+ gap %d (cap %d), max Mythic gap %d (cap %d), %d mythics, %d pity hits", maxLegendaryGap, TD.PITY_LEGENDARY, maxMythicGap, TD.PITY_MYTHIC, mythics, pityHits))
+		end)
+
+		t.it("trait reroll odds sum to 1 for every current trait and match the roll", function()
+			for _, current in Traits.order do
+				local sum = 0
+				for _, row in UnitLogic.rerollOdds(Traits.traits, Traits.order, current) do
+					sum += row.percent / 100
+					t.truthy(row.percent > 0, row.trait .. " has a chance from " .. current)
+				end
+				t.truthy(math.abs(sum - 1) < 1e-9, "reroll odds from " .. current .. " sum to " .. sum)
+			end
+			local sum = 0
+			for _, row in UnitLogic.rerollOdds(Traits.traits, Traits.order, nil) do
+				sum += row.percent / 100
+			end
+			t.truthy(math.abs(sum - 1) < 1e-9, "fresh roll odds sum to " .. sum)
+
+			-- The disclosed reroll odds are what rerollTrait actually does (nudge included).
+			local N = 200000
+			local current = "steady"
+			local rng = seeded(1516)
+			local counts = {}
+			for _, id in Traits.order do
+				counts[id] = 0
+			end
+			for _ = 1, N do
+				local prof = { units = { u = { copies = 0, trait = current, at = 0 } }, traitStones = 1 }
+				local ok, _, got = UnitLogic.rerollTrait(prof, "u", 1, Traits.traits, Traits.order, rng)
+				t.truthy(ok)
+				counts[got] += 1
+			end
+			for _, row in UnitLogic.rerollOdds(Traits.traits, Traits.order, current) do
+				local pr = row.percent / 100
+				local sigma = math.sqrt(N * pr * (1 - pr))
+				local z = (counts[row.trait] - N * pr) / sigma
+				t.truthy(math.abs(z) <= 4, string.format("reroll %s from %s: %d vs %.0f (z %+.2f)", row.trait, current, counts[row.trait], N * pr, z))
+			end
+		end)
+
+		t.it("the simulations stay under 10 s", function()
+			local elapsed = os.clock() - simStart
+			print(string.format("    sim time: %.2f s", elapsed))
+			t.truthy(elapsed < 10, "simulation took " .. elapsed .. " s")
+		end)
+	end)
+
 	t.describe("Collection", function()
 		t.it("loadout must be owned, unique and within the slot count", function()
 			local p = profile()
