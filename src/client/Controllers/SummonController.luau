@@ -18,6 +18,7 @@ local SummonLogic = require(Shared.Logic.SummonLogic)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
+local Amount = require(UI.Amount)
 local Root = require(UI.Root)
 local Modal = require(UI.Modal)
 local UnitCard = require(UI.UnitCard)
@@ -327,9 +328,14 @@ render = function()
 	local vip: boolean = snapshot.perks ~= nil and (snapshot.perks :: any).vip == true
 	local c1 = SummonLogic.cost(1, TD.SUMMON_COST, TD.SUMMON_TEN_COST, TD.VIP_SUMMON_DISCOUNT, vip)
 	local c10 = SummonLogic.cost(10, TD.SUMMON_COST, TD.SUMMON_TEN_COST, TD.VIP_SUMMON_DISCOUNT, vip)
-	liraLabel.Text = t("hud.lira", { n = snapshot.lira }) .. (if snapshot.restricted then "  ·  " .. t("summon.restricted") else "")
-	oneButton.Text = t("summon.one", { n = c1 })
-	tenButton.Text = t("summon.ten", { n = c10 })
+	liraLabel.Text = ""
+	local balance: { Amount.Entry } = { { icon = "lira", text = tostring(snapshot.lira) } }
+	if snapshot.restricted then
+		table.insert(balance, { text = "·  " .. t("summon.restricted") })
+	end
+	Amount.fill(liraLabel, balance, { iconSize = 24, textSize = 15, color = Theme.lira, rtl = rtl })
+	Amount.button(oneButton, { { text = t("summon.x1") .. " ·" }, { icon = "lira", text = tostring(c1) } }, { rtl = rtl, iconSize = 24 })
+	Amount.button(tenButton, { { text = t("summon.x10") .. " ·" }, { icon = "lira", text = tostring(c10) } }, { rtl = rtl, iconSize = 24 })
 	-- Greyed when short of lira; still clickable so the tap explains why and offers the store
 	oneButton.BackgroundColor3 = if snapshot.lira >= c1
 		then Theme.colors.button

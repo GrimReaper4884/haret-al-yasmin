@@ -21,6 +21,7 @@ local Root = require(UI.Root)
 local Modal = require(UI.Modal)
 local Juice = require(UI.Juice)
 local Icons = require(UI.Icons)
+local Amount = require(UI.Amount)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
@@ -52,6 +53,8 @@ local leaveButton: TextButton
 local codesButton: TextButton
 local result: Modal.Modal
 local resultBody: TextLabel
+local resultAmounts: Frame
+local resultExtra: TextLabel
 local replayButton: TextButton
 local nextButton: TextButton
 local replayBusy = false
@@ -85,7 +88,7 @@ local function build()
 
 	-- Cash: bottom centre, just above the unit bar, so cost and wallet read in one glance.
 	local cashPill
-	cashPill, cashLabel = Theme.pill({ Name = "Cash", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -108), Size = UDim2.fromOffset(150, 36), ZIndex = 3, Parent = hud }, Theme.colors.gold)
+	cashPill, cashLabel = Theme.pill({ Name = "Cash", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -108), Size = UDim2.fromOffset(150, 36), ZIndex = 3, Parent = hud }, Theme.colors.gold, "cash")
 	cashLabel.TextColor3 = Color3.fromHex("#FFD970")
 	cashBox = cashPill
 
@@ -153,8 +156,15 @@ local function build()
 	Create("UIGradient", { Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.5, 0.85), NumberSequenceKeypoint.new(1, 0) }), Parent = flash })
 
 	result = Modal.create("MatchResult", 460, 150)
-	resultBody = Theme.label({ TextSize = 15, Size = UDim2.new(1, 0, 0, 100), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 11, Parent = result.body })
+	-- Waves held and the "Rewards" header, then the rewards as icon + number, then first clear and
+	-- event currency (three stacked pieces so the icon row never overlaps text).
+	local stack = Create("Frame", { Name = "Stack", BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 100), ZIndex = 11, Parent = result.body })
+	Create("UIListLayout", { Padding = UDim.new(0, 2), HorizontalAlignment = Enum.HorizontalAlignment.Center, SortOrder = Enum.SortOrder.LayoutOrder, Parent = stack })
+	resultBody = Theme.label({ LayoutOrder = 1, TextSize = 15, Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, ZIndex = 11, Parent = stack })
 	resultBody.TextXAlignment = Enum.TextXAlignment.Center
+	resultAmounts = Amount.row({ Name = "Rewards", LayoutOrder = 2, Size = UDim2.new(1, 0, 0, 30), ZIndex = 11, Parent = stack }, {})
+	resultExtra = Theme.label({ LayoutOrder = 3, TextSize = 15, FontFace = Theme.fontBold, TextColor3 = Theme.colors.quest, Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, ZIndex = 11, Parent = stack })
+	resultExtra.TextXAlignment = Enum.TextXAlignment.Center
 	-- Replay · Next · Back to the lane (the genre's end screen: keep playing without walking back).
 	local row = Create("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.fromScale(0.5, 1), Size = UDim2.new(1, 0, 0, Theme.TOUCH), ZIndex = 11, Parent = result.body })
 	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = row })
@@ -224,8 +234,9 @@ local function render()
 	gateMeter.set(frac, t("match.gate") .. "  " .. state.gateHp .. " / " .. state.gateMax)
 
 	local cash = state.cash
+	-- The cash icon carries the unit; the pill shows the number only.
 	local function fmt(n: number): string
-		return t("match.cash", { n = n })
+		return tostring(n)
 	end
 	if lastCash and cash ~= lastCash then
 		Juice.count(cashLabel, lastCash, cash, fmt)
@@ -255,22 +266,22 @@ local function showResult(payload: any)
 	result.title.Text = if payload.won then t("match.victory") else t("match.defeat")
 	result.title.TextColor3 = if payload.won then Theme.colors.quest else Theme.colors.danger
 	local lines = { t("match.waves_held", { n = payload.waves or 0 }) }
+	local extra = {}
 	local r = payload.reward
 	if r then
-		table.insert(lines, "")
 		table.insert(lines, t("match.rewards"))
-		table.insert(lines, t("reward.lira", { n = r.lira }) .. " · " .. t("reward.qirsh", { n = r.qirsh }) .. " · " .. t("reward.xp", { n = r.xp }))
-		if r.traitStones and r.traitStones > 0 then
-			table.insert(lines, t("reward.stones", { n = r.traitStones }))
-		end
 		if r.firstClear then
-			table.insert(lines, t("match.first_clear"))
+			table.insert(extra, t("match.first_clear"))
 		end
 		if r.eventCurrency and r.eventCurrencyKey then
-			table.insert(lines, "+" .. t(r.eventCurrencyKey, { n = r.eventCurrency }))
+			table.insert(extra, "+" .. t(r.eventCurrencyKey, { n = r.eventCurrency }))
 		end
 	end
 	resultBody.Text = table.concat(lines, "\n")
+	resultExtra.Text = table.concat(extra, "\n")
+	resultAmounts.Visible = r ~= nil
+	local rewardEntries = if r then Amount.reward(t, { lira = r.lira, qirsh = r.qirsh, xp = r.xp, traitStones = r.traitStones }) else {}
+	Amount.fill(resultAmounts, rewardEntries, { textSize = 16, iconSize = 26, rtl = LocaleController.isRtl(), display = true })
 	backButton.Text = t("match.back")
 	replayBusy = false
 	replayButton.Active = true

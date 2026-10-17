@@ -550,3 +550,25 @@ hint to the left of the button), `pvb08_settings_en_…`, `pvb08_settings_ar_…
 | Sync | `script_grep "IconIds.images"` finds `UI.Icons` |
 | Image branch (Client `execute_luau`, fresh module copies) | `Config/Icons.images.lira = { id = 123456, tint = "#FFD970" }` → one `ImageLabel`, `rbxassetid://123456`, ScaleType Fit, tint ffd970; back to id 0 → the primitive drawer (2 frames, no image); unknown name → TextLabel |
 | No visual change | live rail buttons hold 0 ImageLabels; screenshot `docs/art/pvc02_rail_unchanged_2026-10-17.jpg` matches the PV-B08 lobby shots |
+
+### PV-C03 currency and reward icons (2026-10-18)
+
+*Icons drawn by the primitive fallbacks (Config/Icons ids are 0 until the painted PNGs are uploaded).*
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | selene 0/0, 233 specs, strict analyze clean, `rojo build` OK |
+| Sync | `script_grep "Amount.reward"` finds Codes, Pass, Daily, Match and `UI.Amount` |
+| Lobby pills | gold lira coin + `50940`, copper qirsh coin + `50398` (no unit text) |
+| Summon | balance row lira icon + number; buttons "Summon ×1 · [lira] 50" and "Summon ×10 · [lira] 500" |
+| Lane Diary | every free/premium cell shows icon + number (lira, qirsh, stone); Arabic: icon right of the number, first entry rightmost |
+| Daily | 7 cards, Day 7 wraps three entries (lira, qirsh, xp) inside the card |
+| Codes | granted row "[lira] +50 [qirsh] +150 [stone] +1" under the result line (rendered into the live row; no one-time code spent) |
+| Store | lira packs use the `lira_stack` icon (Icons.product) |
+| Play panel | "20 waves · Rewards: [lira] 80 [qirsh] 120 [xp] 120 (First clear ×2)" |
+| Match | cash pill: cash coin + `600`; hotbar card costs: cash coin + 350/1500/180/220/280/300 |
+| Result screen | stacked: waves + "Rewards", icon row, "First clear!" (no overlap after the stack fix) |
+| Console | nothing from `src/` |
+
+Screenshots: `docs/art/pvc03_{summon,diary,diary_ar,daily,codes,store,play,match_hud,result}_2026-10-18.jpg`;
+the painted kit at 256/64/28 px on light and dark: `docs/art/icons_currency_2026-10-18.png`.

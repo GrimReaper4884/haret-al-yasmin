@@ -20,6 +20,7 @@ local PartyLogic = require(Shared.Logic.PartyLogic)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
+local Amount = require(UI.Amount)
 local Modal = require(UI.Modal)
 local Juice = require(UI.Juice)
 local StateController = require(script.Parent.StateController)
@@ -39,6 +40,7 @@ local detail: Frame
 local dName: TextLabel
 local dDesc: TextLabel
 local dInfo: TextLabel
+local dInfoRow: Frame
 local dEnemies: TextLabel
 local diffRow: Frame
 local diffButtons: { [string]: TextButton } = {}
@@ -91,13 +93,28 @@ local function wavesText(mode: any): string
 	return t("play.waves_endless")
 end
 
-local function rewardText(modeId: string, mode: any): string
+-- Story rewards as icon entries (UI/Amount); other modes describe their reward in text (nil here).
+local function rewardEntries(modeId: string, mode: any): { Amount.Entry }?
 	local t = LocaleController.t
 	local diff = TD.DIFFICULTIES[difficulty]
 	local base = (TD.STORY_REWARDS :: any)[modeId]
 	if mode.kind == "story" and base then
 		local mul = diff.reward
-		return string.format("%s: %s · %s · %d XP   (%s)", t("play.rewards"), t("hud.lira", { n = math.floor(base.lira * mul) }), t("hud.currency", { n = math.floor(base.qirsh * mul) }), math.floor(base.xp * mul), t("play.first_clear"))
+		return {
+			{ text = wavesText(mode) .. "  ·  " .. t("play.rewards") .. ":" },
+			{ icon = "lira", text = tostring(math.floor(base.lira * mul)) },
+			{ icon = "qirsh", text = tostring(math.floor(base.qirsh * mul)) },
+			{ icon = "xp", text = tostring(math.floor(base.xp * mul)) },
+			{ text = "(" .. t("play.first_clear") .. ")" },
+		}
+	end
+	return nil
+end
+
+local function rewardText(modeId: string, mode: any): string
+	local t = LocaleController.t
+	if mode.kind == "story" and (TD.STORY_REWARDS :: any)[modeId] then
+		return ""
 	elseif mode.kind == "event" and mode.rewardKey then
 		return t("play.rewards") .. ": " .. t(mode.rewardKey)
 	end
@@ -231,7 +248,9 @@ render = function()
 	local mode = (Modes :: any)[modeId]
 	dName.Text = t(mode.nameKey)
 	dDesc.Text = t(mode.descKey)
-	dInfo.Text = wavesText(mode) .. "   ·   " .. rewardText(modeId, mode)
+	local entries = rewardEntries(modeId, mode)
+	dInfo.Text = if entries then "" else wavesText(mode) .. "   ·   " .. rewardText(modeId, mode)
+	Amount.fill(dInfoRow, entries or {}, { iconSize = 24, textSize = 12, bold = true, align = Enum.HorizontalAlignment.Left, rtl = rtl })
 	dEnemies.Text = enemyText(mode)
 	for _, l in { dName, dDesc, dInfo, dEnemies } do
 		Theme.align(l, rtl)
@@ -310,6 +329,7 @@ local function build()
 		end)
 	end
 	dInfo = Theme.label({ TextSize = 12, FontFace = Theme.fontBold, Position = UDim2.fromOffset(0, 94), Size = UDim2.new(1, 0, 0, 30), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 12, Parent = detail })
+	dInfoRow = Amount.row({ Name = "Rewards", Position = UDim2.fromOffset(0, 92), Size = UDim2.new(1, 0, 0, 30), ZIndex = 12, Parent = detail }, {})
 	dEnemies = Theme.label({ TextSize = 12, TextColor3 = Theme.colors.textMuted, Position = UDim2.fromOffset(0, 124), Size = UDim2.new(1, 0, 0, 30), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 12, Parent = detail })
 
 	createButton = Theme.button({ TextSize = 16, AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(0.38, 0, 0, 44), BackgroundColor3 = Theme.colors.confirm, ZIndex = 12, Parent = detail })

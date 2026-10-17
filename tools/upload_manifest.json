@@ -1,4 +1,55 @@
 {
   "_comment": "Open Cloud uploads (tools/upload_asset.py, POLISH_PLAN PV-C01). Key = repo path; id 0 = registered, not uploaded yet. Ids are pasted into src/shared/Config (Icons, Vfx).",
-  "files": {}
+  "files": {
+    "assets/marketing/icons/lira.png": {
+      "name": "Haret icon lira",
+      "type": "Image",
+      "id": 0
+    },
+    "assets/marketing/icons/qirsh.png": {
+      "name": "Haret icon qirsh",
+      "type": "Image",
+      "id": 0
+    },
+    "assets/marketing/icons/cash.png": {
+      "name": "Haret icon cash",
+      "type": "Image",
+      "id": 0
+    },
+    "assets/marketing/icons/lira_stack.png": {
+      "name": "Haret icon lira_stack",
+      "type": "Image",
+      "id": 0
+    },
+    "assets/marketing/icons/qirsh_pouch.png": {
+      "name": "Haret icon qirsh_pouch",
+      "type": "Image",
+      "id": 0
+    },
+    "assets/marketing/icons/stone.png": {
+      "name": "Haret icon stone",
+      "type": "Image",
+      "id": 0
+    },
+    "assets/marketing/icons/stones_3.png": {
+      "name": "Haret icon stones_3",
+      "type": "Image",
+      "id": 0
+    },
+    "assets/marketing/icons/xp.png": {
+      "name": "Haret icon xp",
+      "type": "Image",
+      "id": 0
+    },
+    "assets/marketing/icons/pass.png": {
+      "name": "Haret icon pass",
+      "type": "Image",
+      "id": 0
+    },
+    "assets/marketing/icons/ticket.png": {
+      "name": "Haret icon ticket",
+      "type": "Image",
+      "id": 0
+    }
+  }
 }

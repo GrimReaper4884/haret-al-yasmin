@@ -24,6 +24,7 @@ local RigBuilder = require(Shared.Util.RigBuilder)
 local BoneAnim = require(Shared.Anim.BoneAnim)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
+local Icons = require(UI.Icons)
 local Theme = require(UI.Theme)
 local Root = require(UI.Root)
 local UnitCard = require(UI.UnitCard)
@@ -593,8 +594,18 @@ local function slotFor(i: number, unitId: string): Slot
 	vp.BackgroundTransparency = 1
 	vp.Parent = frame
 	local dim = Create("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.5, BorderSizePixel = 0, Visible = false, ZIndex = 6, Parent = frame }, { Create("UICorner", { CornerRadius = UDim.new(0, 12) }) })
-	local cost = Theme.display({ Text = "$" .. price, TextSize = 16, AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -2), Size = UDim2.new(1, 0, 0, 20), ZIndex = 7, Parent = frame })
-	cost.TextXAlignment = Enum.TextXAlignment.Center
+	-- Cost: the cash icon and the number, centred along the card's bottom edge.
+	local costRow = Create("Frame", { Name = "Cost", BackgroundTransparency = 1, AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -2), Size = UDim2.new(1, 0, 0, 20), ZIndex = 7, Parent = frame })
+	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, VerticalAlignment = Enum.VerticalAlignment.Center, Padding = UDim.new(0, 1), SortOrder = Enum.SortOrder.LayoutOrder, Parent = costRow })
+	local costIcon = Create("Frame", { LayoutOrder = 1, BackgroundTransparency = 1, Size = UDim2.fromOffset(18, 18), ZIndex = 7, Parent = costRow })
+	Icons.draw("cash", costIcon)
+	for _, d in costIcon:GetDescendants() do
+		if d:IsA("GuiObject") then
+			d.ZIndex = 7
+		end
+	end
+	local cost = Theme.display({ LayoutOrder = 2, Text = tostring(price), TextSize = 16, AutomaticSize = Enum.AutomaticSize.X, Size = UDim2.fromOffset(0, 20), ZIndex = 7, Parent = costRow })
+	cost.TextWrapped = false
 	local count = Theme.display({ Text = "", TextSize = 12, Position = UDim2.fromOffset(5, 3), Size = UDim2.fromOffset(40, 14), ZIndex = 7, Parent = frame })
 	count.TextXAlignment = Enum.TextXAlignment.Left
 	if def.rarity == "legendary" or def.rarity == "mythic" or def.rarity == "secret" then

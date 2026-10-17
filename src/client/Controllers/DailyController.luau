@@ -11,7 +11,7 @@ local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
 local Modal = require(UI.Modal)
-local RewardText = require(UI.RewardText)
+local Amount = require(UI.Amount)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
@@ -73,8 +73,7 @@ local function render()
 		end
 		local day = Theme.label({ Text = t("daily.day", { n = i }), TextSize = 13, FontFace = Theme.fontBold, Size = UDim2.new(1, 0, 0, 20), ZIndex = 12, Parent = card })
 		day.TextXAlignment = Enum.TextXAlignment.Center
-		local text = Theme.label({ Text = RewardText(t, reward), TextSize = 12, Position = UDim2.fromOffset(4, 24), Size = UDim2.new(1, -8, 0, 60), TextYAlignment = Enum.TextYAlignment.Top, TextColor3 = if done then Theme.colors.textMuted else Theme.colors.text, ZIndex = 12, Parent = card })
-		text.TextXAlignment = Enum.TextXAlignment.Center
+		Amount.row({ Position = UDim2.fromOffset(2, 24), Size = UDim2.new(1, -4, 0, 56), ZIndex = 12, Parent = card }, Amount.reward(t, reward), { iconSize = 24, textSize = 13, color = if done then Theme.colors.textMuted else nil, rtl = LocaleController.isRtl() })
 		if done then
 			local tick = Theme.label({ Text = "✓", TextSize = 22, TextColor3 = Theme.colors.quest, AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -2), Size = UDim2.new(1, 0, 0, 24), ZIndex = 12, Parent = card })
 			tick.TextXAlignment = Enum.TextXAlignment.Center

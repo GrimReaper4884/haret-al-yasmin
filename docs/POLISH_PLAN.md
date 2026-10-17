@@ -437,7 +437,7 @@ and the experience page shows our icon, five thumbnails and a trailer. `tools/ch
 
 - [~] PV-A01 (concepts done, awaiting owner approval) · [ ] PV-A02 · [ ] PV-A03 · [ ] PV-A04 · [ ] PV-A05 (optional)
 - [ ] PV-B00 · [ ] PV-B01 · [ ] PV-B02 · [ ] PV-B03 · [ ] PV-B04 · [ ] PV-B05 · [ ] PV-B06 · [ ] PV-B07 · [x] PV-B08 30e6a8f
-- [~] PV-C01 (tool + dry run done; first real upload awaits owner approval) · [x] PV-C02 (hash) · [ ] PV-C03 · [ ] PV-C04 · [ ] PV-C05 · [ ] PV-C06
+- [~] PV-C01 (tool + dry run done; first real upload awaits owner approval) · [x] PV-C02 5603d0e · [~] PV-C03 (UI wired, art ready; awaits owner pick + upload) · [ ] PV-C04 · [ ] PV-C05 · [ ] PV-C06
 - [ ] PV-D01 · [ ] PV-D02 · [ ] PV-D03 · [ ] PV-D04 · [ ] PV-D05 · [ ] PV-D06
 - [ ] PV-E01 · [ ] PV-E02 · [ ] PV-E03 · [ ] PV-E04 (optional)
 

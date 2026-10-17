@@ -26,3 +26,6 @@ assets/unapproved/**/*.fbm/
 
 # Claude Code worktrees
 .claude/worktrees/
+
+# Generated icon variants (provenance: requests.json / jobs.json / urls.txt stay tracked)
+assets/marketing/icons/raw/*.png

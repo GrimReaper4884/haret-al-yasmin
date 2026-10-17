@@ -12,7 +12,7 @@ local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
 local Modal = require(UI.Modal)
-local RewardText = require(UI.RewardText)
+local Amount = require(UI.Amount)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
@@ -76,8 +76,9 @@ local function tierColumn(t: any, snapshot: any, tier: number, level: number)
 	local function trackBlock(y: number, track: string, reward: any)
 		local claimed = (if track == "free" then snapshot.pass.claimedFree else snapshot.pass.claimedPremium)[tostring(tier)] == true
 		local lockedPremium = track == "premium" and not snapshot.pass.premium
-		local label = Theme.label({ Text = t("pass." .. track) .. "\n" .. RewardText(t, reward), TextSize = 11, Position = UDim2.fromOffset(4, y), Size = UDim2.new(1, -8, 0, 34), TextYAlignment = Enum.TextYAlignment.Top, TextColor3 = if track == "premium" then Theme.rarity.legendary else Theme.colors.text, ZIndex = 12, Parent = col })
+		local label = Theme.label({ Text = t("pass." .. track), TextSize = 11, Position = UDim2.fromOffset(4, y), Size = UDim2.new(1, -8, 0, 12), TextYAlignment = Enum.TextYAlignment.Top, TextColor3 = if track == "premium" then Theme.rarity.legendary else Theme.colors.text, ZIndex = 12, Parent = col })
 		label.TextXAlignment = Enum.TextXAlignment.Center
+		Amount.row({ Position = UDim2.fromOffset(2, y + 12), Size = UDim2.new(1, -4, 0, 24), ZIndex = 12, Parent = col }, Amount.reward(t, reward), { iconSize = 24, textSize = 12, rtl = LocaleController.isRtl() })
 		local text = if claimed then t("pass.claimed") elseif tier > level then t("pass.locked") elseif lockedPremium then t("pass.premium") else t("pass.claim")
 		local enabled = not claimed and tier <= level and not lockedPremium
 		local b = Theme.button({ Text = text, TextSize = 12, Position = UDim2.fromOffset(6, y + 36), Size = UDim2.new(1, -12, 0, 26), BackgroundColor3 = if enabled then Theme.colors.button else Theme.colors.buttonDisabled, AutoButtonColor = enabled, ZIndex = 12, Parent = col })
