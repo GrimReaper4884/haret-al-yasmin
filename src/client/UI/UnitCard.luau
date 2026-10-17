@@ -7,6 +7,7 @@ local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Units = require(Shared.Config.Units)
+local Enemies = require(Shared.Config.Enemies)
 local Palette = require(Shared.Config.Palette)
 local RigBuilder = require(Shared.Util.RigBuilder)
 local Looks = require(Shared.Config.CharacterLooks)
@@ -42,9 +43,11 @@ local function posePreview(vp: ViewportFrame, rig: Model, unitId: string, loop: 
 		if not p then
 			return
 		end
-		BoneAnim.loop(p, "idle")
+		-- Attackers have no idle: they pose on their walk.
+		local slot = if BoneAnim.length(p, "idle") > 0 then "idle" else "walk"
+		BoneAnim.loop(p, slot)
 		if not loop then
-			BoneAnim.pose(p, "idle")
+			BoneAnim.pose(p, slot)
 			return
 		end
 		local conn: RBXScriptConnection
@@ -110,8 +113,10 @@ local function posePreview(vp: ViewportFrame, rig: Model, unitId: string, loop: 
 end
 
 -- A viewport showing the unit rig (feet at y 0, facing the camera).
-function UnitCard.preview(unitId: string, props: { [string]: any }, spin: boolean?): ViewportFrame
-	local def = (Units :: any)[unitId]
+-- `portrait` frames head and shoulders (boss bar); otherwise the whole figure. Works for
+-- defenders and attackers (Config/Enemies) alike.
+function UnitCard.preview(unitId: string, props: { [string]: any }, spin: boolean?, portrait: boolean?): ViewportFrame
+	local def = (Units :: any)[unitId] or (Enemies :: any)[unitId]
 	local vp = Create("ViewportFrame", props)
 	vp.BackgroundColor3 = Palette.stoneWarm
 	vp.BackgroundTransparency = 0.35
@@ -131,8 +136,8 @@ function UnitCard.preview(unitId: string, props: { [string]: any }, spin: boolea
 	camera.Parent = vp
 	vp.CurrentCamera = camera
 	local isCat = def.visual.weapon == "cat"
-	local height = if isCat then 1.2 * s else 3.0 * s
-	local dist = if isCat then 6 * s else 9.6 * s
+	local height = if isCat then 1.2 * s elseif portrait then 4.1 * s else 3.0 * s
+	local dist = if isCat then 6 * s elseif portrait then 4.2 * s else 9.6 * s
 	local function place(yawDeg: number)
 		local yaw = math.rad(yawDeg)
 		local target = Vector3.new(0, height, 0)

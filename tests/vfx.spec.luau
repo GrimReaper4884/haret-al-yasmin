@@ -206,6 +206,16 @@ return function(t)
 		end)
 	end)
 
+	t.describe("Enemy read (PV-A04)", function()
+		t.it("markers, disc and boss bar are small and well-formed", function()
+			local r = Vfx.ENEMY_READ
+			t.truthy(string.match(r.barStroke, "^#%x%x%x%x%x%x$") and string.match(r.discColor, "^#%x%x%x%x%x%x$"))
+			t.truthy(r.marker >= 10 and r.marker <= 16, "markers stay small next to a 44 px bar")
+			t.truthy(r.portrait >= 48, "the boss portrait reads on a phone")
+			t.truthy(r.discTransparency > 0 and r.discTransparency < 1)
+		end)
+	end)
+
 	t.describe("Match moments (PV-B06)", function()
 		t.it("moment effects stay inside the budget", function()
 			local m = Vfx.MOMENTS

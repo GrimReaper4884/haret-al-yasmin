@@ -28,8 +28,13 @@ local Create = require(UI.Create)
 local Theme = require(UI.Theme)
 local Fx = require(UI.Fx)
 local DamageNumbers = require(UI.DamageNumbers)
+local Icons = require(UI.Icons)
+local Root = require(UI.Root)
+local Juice = require(UI.Juice)
+local UnitCard = require(UI.UnitCard)
 local CoinFlight = require(UI.CoinFlight)
 local MatchController = require(script.Parent.MatchController)
+local LocaleController = require(script.Parent.LocaleController)
 local MatchCameraController = require(script.Parent.MatchCameraController)
 local AudioController = require(script.Parent.AudioController)
 local ThrowFx = require(script.Parent.ThrowFx)
@@ -53,6 +58,7 @@ type Enemy = {
 	missing: number,
 	walks: boolean, -- baked walk clip: no synthetic bob
 	punchAt: number?, -- os.clock() of the last knockback nudge (PV-B02)
+	disc: BasePart?, -- red ground disc under a boss (PV-A04)
 }
 
 local folder: Folder
@@ -67,6 +73,10 @@ local selectedTower: number? = nil -- PlacementController tells us; its target g
 local function clear()
 	for _, e in enemies do
 		e.model:Destroy()
+		if e.disc then
+			Fx.release(e.disc)
+			e.disc = nil
+		end
 	end
 	enemies = {}
 	byModel = {}
@@ -74,20 +84,101 @@ local function clear()
 	towerUnit = {}
 end
 
-local function healthBar(model: Model, boss: boolean): Frame
+-- A health bar over the head: a dark-red ring around it marks a hostile (PV-A04), and small
+-- markers to its left show armour (shield) and stealth (eye).
+local function healthBar(model: Model, boss: boolean, armor: boolean, stealth: boolean): Frame
 	local head = model:FindFirstChild("Head") or model.PrimaryPart
+	local r = Vfx.ENEMY_READ
+	local w, h = if boss then 90 else 44, if boss then 10 else 6
+	local markers = (if armor then 1 else 0) + (if stealth then 1 else 0)
 	local gui = Create("BillboardGui", {
 		Adornee = head,
-		Size = UDim2.fromOffset(if boss then 90 else 44, if boss then 10 else 6),
+		Size = UDim2.fromOffset(w + markers * (r.marker + 2) + 4, math.max(h + 4, r.marker)),
 		StudsOffset = Vector3.new(0, if boss then 3.4 else 1.6, 0),
 		MaxDistance = 140,
 		AlwaysOnTop = false,
 		LightInfluence = 0,
 		Parent = model,
 	})
-	local back = Create("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.4, BorderSizePixel = 0, Parent = gui })
+	local back = Create("Frame", {
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.new(1, -2, 0.5, 0),
+		Size = UDim2.fromOffset(w, h),
+		BackgroundColor3 = Color3.new(0, 0, 0),
+		BackgroundTransparency = 0.4,
+		BorderSizePixel = 0,
+		Parent = gui,
+	})
+	Create("UIStroke", { Color = Color3.fromHex(r.barStroke), Thickness = r.barStrokeWidth, Parent = back })
 	local fill = Create("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = if boss then Theme.colors.danger else Theme.colors.quest, BorderSizePixel = 0, Parent = back })
+	local x = 0
+	for _, name in { if armor then "shield" else nil, if stealth then "eye" else nil } do
+		if name then
+			local holder = Create("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, x, 0.5, 0), Size = UDim2.fromOffset(r.marker, r.marker), Parent = gui })
+			Icons.draw(name, holder)
+			x += r.marker + 2
+		end
+	end
 	return fill
+end
+
+---------------------------------------------------------------- Boss bar (PV-A04)
+
+local bossBar: Frame
+local bossName: TextLabel
+local bossMeter: Theme.Meter
+local bossPortrait: Frame
+local bossId: number? = nil
+
+local function buildBossBar()
+	local r = Vfx.ENEMY_READ
+	bossBar = Create("Frame", {
+		Name = "BossBar",
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.new(0.5, 0, 0, 96),
+		Size = UDim2.fromOffset(r.bossBarWidth + r.portrait + 10, r.portrait),
+		BackgroundTransparency = 1,
+		Visible = false,
+		ZIndex = 4,
+		Parent = Root.get(),
+	})
+	bossPortrait = Create("Frame", {
+		Name = "Portrait",
+		Size = UDim2.fromOffset(r.portrait, r.portrait),
+		BackgroundColor3 = Color3.fromHex("#2A1E14"),
+		ZIndex = 4,
+		Parent = bossBar,
+	}, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+	Theme.border(bossPortrait, 2.5)
+	bossName = Theme.display({ TextSize = 16, Position = UDim2.fromOffset(r.portrait + 10, 4), Size = UDim2.fromOffset(r.bossBarWidth, 20), TextColor3 = Color3.fromHex("#FFD0C8"), ZIndex = 5, Parent = bossBar })
+	bossMeter = Theme.meter({ Position = UDim2.fromOffset(r.portrait + 10, 28), Size = UDim2.fromOffset(r.bossBarWidth, 20), ZIndex = 5, Parent = bossBar }, Theme.colors.danger)
+end
+
+local function showBoss(id: number, enemyId: string)
+	bossId = id
+	local def = (Enemies :: any)[enemyId]
+	bossName.Text = LocaleController.t(def.nameKey)
+	bossName.TextXAlignment = if LocaleController.isRtl() then Enum.TextXAlignment.Right else Enum.TextXAlignment.Left
+	for _, c in bossPortrait:GetChildren() do
+		if c:IsA("ViewportFrame") then
+			c:Destroy()
+		end
+	end
+	-- Portrait: the boss's own figure, head and shoulders (painted portraits arrive in PV-C05).
+	local vp = UnitCard.preview(enemyId, { Size = UDim2.fromScale(1, 1), ZIndex = 4 }, false, true)
+	vp.BackgroundTransparency = 1
+	Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = vp })
+	vp.Parent = bossPortrait
+	bossMeter.set(1, "")
+	bossBar.Visible = true
+	Juice.pop(bossBar)
+end
+
+local function hideBoss(id: number)
+	if bossId == id then
+		bossId = nil
+		bossBar.Visible = false
+	end
 end
 
 local function spawn(e: any)
@@ -114,7 +205,22 @@ local function spawn(e: any)
 		punchAt = nil,
 		walks = model:GetAttribute("Imported") == true and BoneAnim.has(e.enemyId),
 	}
-	rec.bar = healthBar(model, rec.boss)
+	rec.bar = healthBar(model, rec.boss, (def.armor or 0) > 0, def.stealth == true)
+	if rec.boss then
+		showBoss(e.id, e.enemyId)
+		if Fx.any() then
+			-- The red ground disc follows the boss (one pooled part, moved with the figure).
+			local r = Vfx.ENEMY_READ
+			local d = Fx.part(Enum.PartType.Cylinder)
+			if d then
+				d.Material = Enum.Material.Neon
+				d.Color = Color3.fromHex(r.discColor)
+				d.Transparency = r.discTransparency
+				d.Size = Vector3.new(0.12, r.discRadius * 2, r.discRadius * 2)
+				rec.disc = d
+			end
+		end
+	end
 	if def.stealth then
 		-- Stealth enemies are drawn see-through: only defenders that "see hidden thieves" can hit them
 		for _, d in model:GetDescendants() do
@@ -295,6 +401,14 @@ local function remove(id: number, died: boolean, death: any?)
 	end
 	enemies[id] = nil
 	byModel[rec.model] = nil
+	local disc = rec.disc
+	if disc then
+		rec.disc = nil
+		Fx.release(disc)
+	end
+	if rec.boss then
+		hideBoss(id)
+	end
 	if died then
 		local at = rec.model:GetPivot().Position
 		deathPoof(at, rec.boss)
@@ -642,6 +756,9 @@ local function onPositions(packed: { number })
 			if rec.bar then
 				rec.bar.Size = UDim2.fromScale(rec.hp, 1)
 			end
+			if id == bossId then
+				bossMeter.set(rec.hp, "")
+			end
 		end
 	end
 end
@@ -692,6 +809,11 @@ local function step(dt: number)
 			table.insert(parts, root)
 			table.insert(cframes, o * CFrame.lookAt(Vector3.new(x, bob, z), Vector3.new(x + ux, bob, z + uz)) * root.PivotOffset:Inverse())
 		end
+		local disc = rec.disc
+		if disc then
+			table.insert(parts, disc)
+			table.insert(cframes, o * CFrame.new(x, 0.15, z) * CFrame.Angles(0, 0, math.rad(90)))
+		end
 	end
 	if #parts > 0 then
 		Workspace:BulkMoveTo(parts, cframes, Enum.BulkMoveMode.FireCFrameChanged)
@@ -721,6 +843,7 @@ function EnemyRenderController.start()
 	folder.Parent = Workspace
 	DamageNumbers.start()
 	CoinFlight.start()
+	buildBossBar()
 	if RunService:IsStudio() then
 		-- Studio test hook (PV-B04 evidence): draw one role's impact at a point, e.g.
 		-- LocalPlayer.HaretFxDemo:Invoke("splash", Vector3.new(...), fromVector3?)
@@ -734,10 +857,14 @@ function EnemyRenderController.start()
 	end
 	MatchController.Started:Connect(function(info: MatchController.Info)
 		clear()
+		bossId = nil
+		bossBar.Visible = false
 		arenaPath = Path.build(Arenas[info.arenaId].path)
 		origin = CFrame.new(info.origin)
 	end)
 	MatchController.Ended:Connect(function()
+		bossId = nil
+		bossBar.Visible = false
 		task.delay(1, clear)
 	end)
 	MatchController.Events:Connect(onEvents)

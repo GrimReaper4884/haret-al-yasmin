@@ -203,6 +203,17 @@ local drawers: { [string]: (Frame, Color3) -> () } = {
 		rect(h, Palette.tile, 0.5, 0.5, 0.78, 0.56, 0.15)
 		rect(h, Color3.fromHex("#C9A13B"), 0.5, 0.5, 0.3, 0.3, 1)
 	end,
+	-- Enemy markers on health bars (PV-A04): armour and stealth.
+	shield = function(h, _c)
+		rectO(h, Color3.fromHex("#B8BEC6"), 0.5, 0.45, 0.7, 0.62, 0.25)
+		rectO(h, Color3.fromHex("#B8BEC6"), 0.5, 0.72, 0.4, 0.4, 0.2, 45)
+		rect(h, Color3.fromHex("#6E7782"), 0.5, 0.55, 0.12, 0.6, 0.5)
+	end,
+	eye = function(h, _c)
+		rectO(h, WHITE, 0.5, 0.5, 0.86, 0.5, 1)
+		rectO(h, Color3.fromHex("#6B4FA0"), 0.5, 0.5, 0.36, 0.36, 1)
+		rect(h, Palette.ink, 0.5, 0.5, 0.15, 0.15, 1)
+	end,
 	-- Placeholders for the PV-C03 currency kit until the painted images are uploaded.
 	qirsh = function(h, _c)
 		rectO(h, Palette.copper, 0.5, 0.5, 0.62, 0.62, 1)

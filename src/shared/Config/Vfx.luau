@@ -84,6 +84,11 @@ return {
 		dashes = 24, dashDark = "#3D3A38", dashLight = "#F1E9DA",
 	},
 
+	-- Enemies read at a glance (PV-A04): a dark-red stroke around every health bar, marker icons
+	-- (armour, stealth) beside it, a red ground disc under bosses ("reduced" keeps it), and a boss
+	-- bar at the top of the screen with a portrait.
+	ENEMY_READ = { barStroke = "#5A0E0E", barStrokeWidth = 1.5, marker = 12, discColor = "#B8322A", discRadius = 3.2, discTransparency = 0.55, bossBarWidth = 320, portrait = 64 },
+
 	-- Wave and boss presentation (PV-B06, Logic/MatchMoments decides, MatchFxController draws).
 	MOMENTS = {
 		bossPush = 1.2, pushDistance = 22, pushHeight = 9, -- camera push toward the spawn gate (s, studs)

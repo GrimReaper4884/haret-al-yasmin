@@ -648,3 +648,13 @@ Verdict: external (Studio or a plugin), ignored (D-020).
 | Victory | "The lane is safe!" + result with icon rewards (`pvb06_victory_result_*.jpg`); 24 pooled parts frozen 0.9 s in: red and gold ribbon segments above the gate and falling petals (`pvb06_victory_ribbons_petals_*.jpg`, seen from the lobby after the arena streamed out; ribbons thickened afterwards) |
 | Defeat | gate set to 1 HP: `ColorCorrection` saturation −1 for 1.77 s, then back to 0 |
 | Console | nothing from `src/` (the "execute_luau changed camera type. Resetting" line is Studio reacting to a probe during the push) |
+
+### PV-A04 enemies at a glance (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 249 specs (ENEMY_READ config; `shield` / `eye` registered with primitive drawers) |
+| Phone (Device Simulator, iPhone 17 Pro, viewport 750×381) | wave 10: the boss bar under the wave panel with the Sergeant's portrait, name and red meter (`pva04_phone_boss_bar_2026-10-18.jpg`); the ultimate banner covers it for its 2 s; simulator reset to default afterwards |
+| Health bars | every enemy bar has a dark-red ring; stealth thieves show the eye marker left of the bar, gendarmes (no armour) none (`pva04_stealth_marker_*.jpg`, zoom `pva04_bar_ring_zoom_*.png`) |
+| Boss disc | one pooled part follows the boss in the existing `BulkMoveTo`; released on death |
+| Not yet seen | the shield marker on an armoured attacker in play (thug, bandit, rider and sapper come later in the waves and are still block figures); same code path as the eye |

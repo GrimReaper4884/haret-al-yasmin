@@ -37,6 +37,10 @@ Icons.images = {
 	qirsh_pouch = { id = 0 },
 	coins = { id = 0 },
 
+	-- Enemy health-bar markers (PV-A04)
+	shield = { id = 0 },
+	eye = { id = 0 },
+
 	-- Wardrobe items (Items[].icon; tinted by Items[].iconColor while primitive)
 	basket = { id = 0 },
 	tarboosh = { id = 0 },
