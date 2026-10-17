@@ -112,7 +112,6 @@ function PlayerStateService.start()
 
 	DataService.ProfileLoaded:Connect(function(player: Player)
 		PlayerStateService.schedule(player)
-		Analytics.funnel(player, Analytics.Funnel.Spawned)
 	end)
 	DataService.ProfileChanged:Connect(PlayerStateService.schedule)
 

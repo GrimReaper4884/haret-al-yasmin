@@ -17,7 +17,7 @@ local ShopService = require(script.Parent.ShopService)
 local AfkService = require(script.Parent.AfkService)
 local PlayerStateService = require(script.Parent.PlayerStateService)
 local RemoteGuard = require(script.Parent.RemoteGuard)
-local Analytics = require(script.Parent.AnalyticsService)
+local FunnelService = require(script.Parent.FunnelService)
 
 local DialogueService = {}
 
@@ -62,7 +62,7 @@ function DialogueService.open(player: Player, npcId: string)
 	end
 	for _, q in Quests :: any do
 		if q.giver == npcId then
-			Analytics.funnel(player, Analytics.Funnel.TalkedToGiver)
+			FunnelService.reach(player, "prompt") -- the first prompt a new player answers
 			break
 		end
 	end

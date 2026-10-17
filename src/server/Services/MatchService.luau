@@ -36,6 +36,7 @@ local RemoteGuard = require(script.Parent.RemoteGuard)
 local MonetizationService = require(script.Parent.MonetizationService)
 local ArenaService = require(script.Parent.ArenaService)
 local Analytics = require(script.Parent.AnalyticsService)
+local FunnelService = require(script.Parent.FunnelService)
 
 local MatchService = {}
 
@@ -274,6 +275,9 @@ local function finish(match: Match, won: boolean)
 		if match.players[p] then
 			local reward = rewardPlayer(match, p, outcome)
 			evEnd:FireClient(p, { won = won, waves = outcome.wavesCleared, reward = reward })
+			if won and match.mode.kind == "story" then
+				FunnelService.reach(p, "clear")
+			end
 		end
 	end
 	MatchService.Ended:Fire(match)
@@ -416,6 +420,7 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 	for p in match.players do
 		evStart:FireClient(p, payload)
 		Analytics.custom(p, "MatchStart_" .. modeId .. "_" .. difficulty)
+		FunnelService.reach(p, "portal")
 	end
 	pushState(match)
 	return match, nil
@@ -616,6 +621,9 @@ local function stepMatch(match: Match, dt: number)
 				queueEvent(match, e)
 				if t == "waveEnd" then
 					autoSkip = true
+					for p in match.players do
+						FunnelService.waveCleared(p, e.wave)
+					end
 				end
 			elseif t == "death" then
 				local owner = match.byKey[e.owner]

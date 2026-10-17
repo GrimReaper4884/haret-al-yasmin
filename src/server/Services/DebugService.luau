@@ -6,6 +6,7 @@
 --   print(D:Invoke("state"))         -- live profile as JSON (first player)
 --   print(D:Invoke("peek"))          -- what the (mock) store holds
 --   print(D:Invoke("ledger"))        -- audit ledger (Logic/Ledger) as JSON, newest last
+--   print(D:Invoke("funnel"))        -- onboarding funnel rows with seconds since join (P2-16)
 --   print(D:Invoke("reload"))        -- save + release + load again
 --   print(D:Invoke("failNext", 3))   -- next 3 store calls fail (mock only)
 --   print(D:Invoke("qirsh", 500))    -- grant test qirsh (Studio only)
@@ -23,6 +24,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DataService = require(script.Parent.DataService)
 local MatchService = require(script.Parent.MatchService)
 local AfkService = require(script.Parent.AfkService)
+local FunnelService = require(script.Parent.FunnelService)
 local Wallet = require(ReplicatedStorage:WaitForChild("Shared").Logic.Wallet)
 local Economy = require(ReplicatedStorage:WaitForChild("Shared").Config.Economy)
 local TD = require(ReplicatedStorage:WaitForChild("Shared").Config.TD)
@@ -58,6 +60,8 @@ function DebugService.start()
 			return HttpService:JSONEncode(DataService.debug.store():peek("u_" .. player.UserId))
 		elseif cmd == "ledger" then
 			return HttpService:JSONEncode(DataService.ledger(player))
+		elseif cmd == "funnel" then
+			return HttpService:JSONEncode(FunnelService.report(player))
 		elseif cmd == "reload" then
 			return DataService.debug.reload(player)
 		elseif cmd == "save" then

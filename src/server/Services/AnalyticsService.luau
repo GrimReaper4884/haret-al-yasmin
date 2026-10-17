@@ -4,7 +4,9 @@
 local RobloxAnalytics = game:GetService("AnalyticsService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Ledger = require(ReplicatedStorage:WaitForChild("Shared").Logic.Ledger)
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Ledger = require(Shared.Logic.Ledger)
+local FunnelLogic = require(Shared.Logic.FunnelLogic)
 
 local Analytics = {}
 
@@ -15,16 +17,9 @@ local function safe(label: string, fn: () -> ())
 	end
 end
 
--- Onboarding funnel: 1 spawned, 2 talked to giver, 3 accepted, 4 delivered, 5 purchased.
-export type FunnelStep = { step: number, name: string }
-
-Analytics.Funnel = {
-	Spawned = { step = 1, name = "Spawned" } :: FunnelStep,
-	TalkedToGiver = { step = 2, name = "TalkedToGiver" } :: FunnelStep,
-	AcceptedQuest = { step = 3, name = "AcceptedQuest" } :: FunnelStep,
-	DeliveredQuest = { step = 4, name = "DeliveredQuest" } :: FunnelStep,
-	FirstPurchase = { step = 5, name = "FirstPurchase" } :: FunnelStep,
-}
+-- Onboarding funnel (Logic/FunnelLogic.ORDER): 1 join, 2 prompt, 3 summon, 4 portal, 5 wave1,
+-- 6 wave5, 7 clear. FunnelService stamps each step once per player and calls this.
+export type FunnelStep = FunnelLogic.Step
 
 function Analytics.funnel(player: Player, step: FunnelStep)
 	safe("funnel", function()

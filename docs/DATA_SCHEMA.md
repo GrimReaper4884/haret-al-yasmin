@@ -115,6 +115,7 @@ published **test** experience.
 | `afk` | `{ day, lira, carry, cups, tales, seconds }` | The Hakawati's room (AFK chamber): UTC day and lira paid that day (cap), seconds toward the next cup, lifetime cups / tales / seconds. Filled by `AfkLogic.sanitize`; see docs/AFK_CHAMBER.md §5 |
 | `td` | `{ matches, wins, kills, cleared{modeId->difficulty}, bestInfinite }` | unlocks and stats |
 | `ledger` | `{ Entry }`, newest last, ≤ `Economy.LEDGER_SIZE` (200) | audit ring buffer, see §9 |
+| `funnel` | `{ [step]: os.time() }` for `join, prompt, summon, portal, wave1, wave5, clear` | onboarding funnel stamps, first time only (`Logic/FunnelLogic`, BUILD_PLAN P2-16); unknown steps dropped on load |
 
 Tier keys inside `claimedFree`/`claimedPremium` are strings ("1".."50") so the DataStore JSON stays an
 object. All new tables use string keys only. In Studio, a failed load no longer kicks (flag

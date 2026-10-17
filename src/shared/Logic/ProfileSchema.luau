@@ -31,6 +31,7 @@ local Settings = sibling("Settings")
 local EventLogic = sibling("EventLogic")
 local AfkLogic = sibling("AfkLogic")
 local Ledger = sibling("Ledger")
+local FunnelLogic = sibling("FunnelLogic")
 
 local ProfileSchema = {}
 
@@ -69,6 +70,7 @@ function ProfileSchema.default(now: number, schemaVersion: number, ctx: Context?
 		stats = { firstJoin = now, lastJoin = now, sessions = 0 },
 		receipts = {},
 		ledger = {}, -- Logic/Ledger audit ring buffer
+		funnel = {}, -- Logic/FunnelLogic: { [step] = os.time() first reached }
 		-- Tower defense (schema v2)
 		lira = if ctx then ctx.starterLira or 0 else 0,
 		welcomeLira = if ctx then true else nil, -- the starter lira gift has been paid
@@ -184,6 +186,7 @@ function ProfileSchema.sanitize(p: any, ctx: Context, now: number): any
 	end
 	p.receipts = kept
 	p.ledger = Ledger.sanitize(p.ledger, ctx.ledgerSize or 200)
+	p.funnel = FunnelLogic.sanitize(p.funnel)
 
 	-- Tower defense -------------------------------------------------------------------------
 	p.lira = math.clamp(nonNegInt(p.lira, 0), 0, ctx.maxLira)

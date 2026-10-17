@@ -66,7 +66,6 @@ local function purchase(player: Player, itemId: any): { [string]: any }
 	end
 	local def = (Items :: any)[itemId]
 	PlayerStateService.notify(player, "notify.purchased", { itemKey = def.nameKey })
-	Analytics.funnel(player, Analytics.Funnel.FirstPurchase)
 	return { ok = true }
 end
 

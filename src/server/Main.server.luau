@@ -26,6 +26,7 @@ local MatchmakingService = require(Services.MatchmakingService)
 local MetaService = require(Services.MetaService)
 local AfkService = require(Services.AfkService)
 local CrowdService = require(Services.CrowdService)
+local FunnelService = require(Services.FunnelService)
 
 DataService.init()
 DebugService.start() -- Studio only: log mirror and test hooks
@@ -43,6 +44,7 @@ MatchService.start()
 MatchmakingService.start()
 MetaService.start()
 AfkService.start()
+FunnelService.start() -- onboarding funnel: stamps "join" on ProfileLoaded
 DataService.start()
 task.spawn(CrowdService.start)
 

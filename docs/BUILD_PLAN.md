@@ -161,7 +161,7 @@ models, red-teaming, onboarding measurement, and live ops.
 - [x] **P2-09 Season pass, codes, dailies** · `PassLogic`, `CodesLogic`, `DailyLogic`, UTC resets · 2b0b800
 - [x] **P2-10 Monetization plumbing** · `Products.luau` keys → ids, server-opened prompts, idempotent `ProcessReceipt`, fallbacks, pass perks · bf5c3d1, 658e4e5
 - [x] **P2-11 AFK chamber** · the Hakawati's room, `AfkLogic`, daily cap (D-010) · 8986c62
-- [ ] **P2-12 Odds and pity simulation specs** · deps: P0-04
+- [x] **P2-12 Odds and pity simulation specs** · deps: P0-04 · 4fe36d3
   - **Create:** in `tests/meta.spec.luau`: a 1,000,000-pull simulation with pity disabled matching `TD.ODDS` per rarity within 4σ; with pity enabled, no gap longer than 50 (Legendary+) or 400 (Mythic); trait reroll odds per current trait sum to 1 within 1e-9. Keep the sim under 10 s in Lune (seeded RNG).
   - **Accept:** specs green; counts and σ printed in the commit body.
 - [ ] **P2-13 Product ids and Studio purchase script** · deps: P2-10 · STOP
@@ -170,10 +170,10 @@ models, red-teaming, onboarding measurement, and live ops.
 - [ ] **P2-14 Player Emulator policy check** · deps: P2-13 · STOP
   - **Goal:** Add a Studio-only override attribute to force `ArePaidRandomItemsRestricted` both ways; screenshots of the restricted store and summon screens; then the owner checks the Player Emulator for Australia, Belgium, the Netherlands, the UK and Brazil.
   - **Accept:** specs for both paths; owner reports pass/fail per market.
-- [ ] **P2-15 Audit log and ledger** · deps: P2-02
+- [x] **P2-15 Audit log and ledger** · deps: P2-02 · 30b1bee
   - **Goal:** Every lira/qirsh/stone grant and spend writes an audit entry (source, amount, idempotency key) inside the same `mutate`; a per-player ring buffer in the profile plus analytics economy events.
   - **Accept:** specs: a replayed receipt or code produces no second entry; the summon and reroll entries carry the roll seed; `DATA_SCHEMA.md` updated.
-- [ ] **P2-16 Onboarding funnel measurement** · deps: P2-02
+- [~] **P2-16 Onboarding funnel measurement** · deps: P2-02 · code + specs done; Studio harness timing pending (place not open)
   - **Goal:** Funnel events join → first prompt → first summon → portal → wave 1 → wave 5 → first clear, with timestamps; a Studio-only report of join → wave 1 time.
   - **Accept:** in Studio with the harness the steps complete in ≤ 60 s; the live median comes from the Creator Dashboard after the next publish (owner reads it; STOP to ask).
 - [ ] **P2-17 Match VFX pass** · deps: P1-15

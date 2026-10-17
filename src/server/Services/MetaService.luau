@@ -31,6 +31,7 @@ local PlayerStateService = require(script.Parent.PlayerStateService)
 local RemoteGuard = require(script.Parent.RemoteGuard)
 local MonetizationService = require(script.Parent.MonetizationService)
 local Analytics = require(script.Parent.AnalyticsService)
+local FunnelService = require(script.Parent.FunnelService)
 
 local MetaService = {}
 
@@ -103,6 +104,7 @@ local function summon(player: Player, n: any): { [string]: any }
 	if not ok then
 		return { ok = false, err = err }
 	end
+	FunnelService.reach(player, "summon")
 	Analytics.custom(player, "Summon_x" .. n)
 	local announce = {}
 	for _, r in results :: { any } do

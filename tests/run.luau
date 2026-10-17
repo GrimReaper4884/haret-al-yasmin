@@ -133,6 +133,7 @@ local specs = {
 	require("./event.spec"),
 	require("./afk.spec"),
 	require("./ledger.spec"),
+	require("./funnel.spec"),
 }
 for _, spec in specs do
 	spec(t)
