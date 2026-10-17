@@ -135,6 +135,13 @@ local function setLoadout(player: Player, list: any): { [string]: any }
 	if type(list) ~= "table" or #list > 8 then
 		return { ok = false, err = "bad_request" }
 	end
+	-- The loadout is fixed for the length of a match (docs/TOWER_DEFENSE.md: 6 slots, 7 with the
+	-- pass). PlaceTower reads it live, so swapping it mid-match would place every owned unit and
+	-- make the Extra Slot pass worthless. The result screen (match.ended) is open again.
+	local match = MatchService.matchOf(player)
+	if match and not match.ended then
+		return { ok = false, err = "in_match" }
+	end
 	local slots = MetaService.loadoutSlots(player)
 	local ok, err = DataService.mutate(player, function(p)
 		return UnitLogic.setLoadout(p, list, slots, Units :: any)
