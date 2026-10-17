@@ -254,7 +254,13 @@ local function rewardPlayer(match: Match, player: Player, outcome: any): any
 	return reward
 end
 
+-- Idempotent: the last player pressing Back on the result screen (LeaveMatch) destroys the match
+-- before finish()'s delayed cleanup runs; a second release would free an arena slot that another
+-- party may already have been given.
 local function destroyMatch(match: Match)
+	if matches[match.id] ~= match then
+		return
+	end
 	matches[match.id] = nil
 	for p in match.players do
 		byPlayer[p] = nil
