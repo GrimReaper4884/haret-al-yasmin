@@ -435,8 +435,8 @@ and the experience page shows our icon, five thumbnails and a trailer. `tools/ch
 
 ## 9. Checklist (tick with the commit hash)
 
-- [~] PV-A01 (concepts done, awaiting owner approval) · [ ] PV-A02 · [~] PV-A03 (5 of 11 attackers; the six new ones follow PV-A02) · [x] PV-A04 (hash) · [ ] PV-A05 (optional)
-- [x] PV-B00 02c120c · [ ] PV-B01 · [x] PV-B02 0802c02 · [x] PV-B03 407e982 · [x] PV-B04 b1ca5d8 · [x] PV-B05 b427880 · [x] PV-B06 d738e08 · [ ] PV-B07 · [x] PV-B08 30e6a8f
+- [~] PV-A01 (concepts done, awaiting owner approval) · [ ] PV-A02 · [~] PV-A03 (5 of 11 attackers; the six new ones follow PV-A02) · [x] PV-A04 5babfac · [ ] PV-A05 (optional)
+- [x] PV-B00 02c120c · [ ] PV-B01 · [x] PV-B02 0802c02 · [x] PV-B03 407e982 · [x] PV-B04 b1ca5d8 · [x] PV-B05 b427880 · [x] PV-B06 d738e08 · [x] PV-B07 (hash) · [x] PV-B08 30e6a8f
 - [~] PV-C01 (tool + dry run done; first real upload awaits owner approval) · [x] PV-C02 5603d0e · [~] PV-C03 (UI wired, art ready; awaits owner pick + upload) · [ ] PV-C04 · [ ] PV-C05 · [ ] PV-C06
 - [ ] PV-D01 · [ ] PV-D02 · [ ] PV-D03 · [ ] PV-D04 · [ ] PV-D05 · [ ] PV-D06
 - [ ] PV-E01 · [ ] PV-E02 · [ ] PV-E03 · [ ] PV-E04 (optional)

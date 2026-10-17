@@ -114,6 +114,12 @@ local function build()
 			Parent = b,
 		})
 		Icons.draw("ui_" .. it.key, icon)
+		if it.key == "daily" then
+			Juice.wobble(icon, function()
+				local badge: Frame? = badges.daily
+				return if badge then badge.Visible else false
+			end)
+		end
 		local caption = Theme.display({
 			Name = "Caption",
 			TextSize = 11,

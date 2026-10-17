@@ -658,3 +658,14 @@ Verdict: external (Studio or a plugin), ignored (D-020).
 | Health bars | every enemy bar has a dark-red ring; stealth thieves show the eye marker left of the bar, gendarmes (no armour) none (`pva04_stealth_marker_*.jpg`, zoom `pva04_bar_ring_zoom_*.png`) |
 | Boss disc | one pooled part follows the boss in the existing `BulkMoveTo`; released on death |
 | Not yet seen | the shield marker on an armoured attacker in play (thug, bandit, rider and sapper come later in the waves and are still block figures); same code path as the eye |
+
+### PV-B07 lobby and UI motion (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 250 specs (new: `Motion.allowed` for every kind under Reduced Motion, Effects off/reduced/full and with/without a mouse) |
+| Daily chest | badge shown (client-only): the rail icon wobbles −7°…+8°; badge hidden: back to 0 within 2.5 s |
+| Card tilt | hovering a Units grid card: Rotation −3°, scale 1.04 (`pvb07_card_tilt_2026-10-18.jpg`) |
+| ×10 summon | 10 cards flipped face up in reading order (StartCorner TopLeft in English, TopRight in Arabic by code); `pvb07_summon_flip_grid_2026-10-18.jpg` (one ×10 pull spent 500 TEST-profile lira) |
+| Toasts | the skip-vote toast slides −12 → +2 → 0 px (Back easing) |
+| Not seen live | the Legendary+ petal burst (no Legendary in the pull), the Diary XP shine (needs an XP gain) and Reduced Motion itself (a user setting scripts cannot change); all go through the same gate, specced |

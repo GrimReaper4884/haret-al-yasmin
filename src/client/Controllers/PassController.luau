@@ -11,6 +11,7 @@ local PassLogic = require(Shared.Logic.PassLogic)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
+local Juice = require(UI.Juice)
 local Modal = require(UI.Modal)
 local Amount = require(UI.Amount)
 local StateController = require(script.Parent.StateController)
@@ -24,6 +25,7 @@ local levelLabel: TextLabel
 local xpBar: Frame
 local xpFill: Frame
 local xpLabel: TextLabel
+local lastXp: number? = nil
 local endsLabel: TextLabel
 local strip: ScrollingFrame
 local premiumButton: TextButton
@@ -107,6 +109,10 @@ function PassController.render()
 	levelLabel.Text = t("pass.level", { n = level })
 	xpLabel.Text = if need > 0 then t("pass.xp", { n = into, total = need }) else "MAX"
 	xpFill.Size = UDim2.fromScale(if need > 0 then into / need else 1, 1)
+	if lastXp and snapshot.pass.xp > lastXp then
+		Juice.shineOnce(xpFill)
+	end
+	lastXp = snapshot.pass.xp
 	local days = math.max(0, math.floor((SeasonPass.endsAt - os.time()) / 86400))
 	endsLabel.Text = t("pass.ends", { n = days })
 	premiumButton.Text = if snapshot.pass.premium then t("pass.premium") .. " ✓" else t("pass.buy_premium")

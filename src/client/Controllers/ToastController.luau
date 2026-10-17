@@ -10,6 +10,7 @@ local Net = require(Shared.Net)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
+local Juice = require(UI.Juice)
 local Root = require(UI.Root)
 local LocaleController = require(script.Parent.LocaleController)
 
@@ -39,12 +40,20 @@ end
 
 function ToastController.show(key: string, args: { [string]: any }?)
 	order += 1
-	local toast = Theme.panel({
+	-- The list layout places the holder; the panel inside it slides down into place (PV-B07).
+	local holder = Create("Frame", {
 		LayoutOrder = order,
+		BackgroundTransparency = 1,
 		Size = UDim2.fromOffset(0, 40),
 		AutomaticSize = Enum.AutomaticSize.X,
 		Parent = stack,
 	})
+	local toast = Theme.panel({
+		Size = UDim2.fromOffset(0, 40),
+		AutomaticSize = Enum.AutomaticSize.X,
+		Parent = holder,
+	})
+	Juice.slideIn(toast, 18)
 	Create("UIPadding", { PaddingLeft = UDim.new(0, 14), PaddingRight = UDim.new(0, 14), Parent = toast })
 	local label = Theme.label({
 		Text = LocaleController.t(key, resolveArgs(args)),
@@ -70,12 +79,12 @@ function ToastController.show(key: string, args: { [string]: any }?)
 	end
 
 	task.delay(LIFETIME, function()
-		if toast.Parent then
+		if holder.Parent then
 			local tween = TweenService:Create(label, TweenInfo.new(0.3), { TextTransparency = 1 })
 			TweenService:Create(toast, TweenInfo.new(0.3), { BackgroundTransparency = 1 }):Play()
 			tween:Play()
 			tween.Completed:Wait()
-			toast:Destroy()
+			holder:Destroy()
 		end
 	end)
 end

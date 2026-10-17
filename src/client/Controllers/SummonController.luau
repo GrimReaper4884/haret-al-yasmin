@@ -188,6 +188,7 @@ local function showCards(results: { any })
 	revealGrid.Size = UDim2.fromOffset(5 * 110, 2 * 150)
 	local grid = revealGrid:FindFirstChildOfClass("UIGridLayout") :: UIGridLayout
 	grid.CellSize = UDim2.fromOffset(100, 140)
+	grid.StartCorner = if LocaleController.isRtl() then Enum.StartCorner.TopRight else Enum.StartCorner.TopLeft
 	local cards = {}
 	for i, r in results do
 		local c = card(r, i, Vector2.new(100, 140), false)
@@ -209,7 +210,11 @@ local function showCards(results: { any })
 			if skipped then
 				continue
 			end
-			Juice.pop(c, 0.3)
+			if Juice.allowed("flip") then
+				Juice.flip(c, Color3.fromHex("#4A2E18"), 0.18)
+			else
+				Juice.pop(c, 0.3)
+			end
 			if rank >= 3 then
 				best = math.max(best, rank)
 				SummonController.shabriyehFlash(t("match.shabriyeh"))

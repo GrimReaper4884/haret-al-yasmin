@@ -49,6 +49,21 @@ return function(t)
 			t.eq(#M.fromEvent({ type = "attack" }, full), 0, "other events draw nothing here")
 		end)
 
+		t.it("UI motion gate (PV-B07): reduced motion stops everything; effects trim the extras", function()
+			local Motion = t.logic("Motion")
+			for _, k in Motion.kinds do
+				t.eq(Motion.allowed(k, "full", true, true), false, k .. " under Reduced Motion")
+				t.eq(Motion.allowed(k, "off", false, true), k == "press", k .. " with effects off")
+			end
+			t.eq(Motion.allowed("shine", "reduced", false, true), false)
+			t.eq(Motion.allowed("petals", "reduced", false, true), false)
+			t.eq(Motion.allowed("flip", "reduced", false, true), true)
+			t.eq(Motion.allowed("slide", "reduced", false, false), true)
+			t.eq(Motion.allowed("tilt", "full", false, false), false, "no hover tilt on touch")
+			t.eq(Motion.allowed("tilt", "full", false, true), true)
+			t.eq(Motion.allowed("wobble", "full", false, false), true)
+		end)
+
 		t.it("the cutscenes setting exists, is a boolean and defaults on", function()
 			t.truthy(Settings.accept("cutscenes", false))
 			t.eq(Settings.accept("cutscenes", "off"), false)
