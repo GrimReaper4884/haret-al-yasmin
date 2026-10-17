@@ -17,10 +17,12 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Units = require(Shared.Config.Units)
 local Looks = require(Shared.Config.CharacterLooks)
+local Vfx = require(Shared.Config.Vfx)
 local BoneAnim = require(Shared.Anim.BoneAnim)
 local MatchController = require(script.Parent.MatchController)
 local EnemyRenderController = require(script.Parent.EnemyRenderController)
 local ThrowFx = require(script.Parent.ThrowFx)
+local Fx = require(script.Parent.Parent.UI.Fx)
 
 local RigAnimController = {}
 
@@ -345,6 +347,13 @@ function RigAnimController.attack(towerId: number, at: Vector3?, ability: boolea
 	local function landed()
 		flinch(targetId)
 		EnemyRenderController.impact(targetId, damage, ability == true, towerId)
+		-- Splash hits freeze the striker for a blink (PV-B04 hit-stop).
+		local tm = findTower(towerId)
+		local tr = if tm then recs[tm] else nil
+		local hs = Vfx.ROLES.splash.hitStop
+		if tr and tr.bone and tr.role == "splash" and Fx.full() then
+			BoneAnim.slow(tr.bone, 0, hs)
+		end
 	end
 	local model = findTower(towerId)
 	if not model then
@@ -366,6 +375,12 @@ function RigAnimController.attack(towerId: number, at: Vector3?, ability: boolea
 	local bone = rec.bone
 	if bone then
 		delay = BoneAnim.play(bone, slot, 1.15) or BoneAnim.play(bone, "attack", 1.15) or 0
+		if ability and Fx.full() then
+			-- Slow-in on the figure only (PV-B04): the strike lands that much later.
+			local s = Vfx.abilitySlow
+			BoneAnim.slow(bone, s.factor, s.seconds)
+			delay += if delay <= s.factor * s.seconds then delay / s.factor - delay else s.seconds * (1 - s.factor)
+		end
 	else
 		local tracks = rec.tracks
 		if tracks and tracks.Attack then

@@ -53,6 +53,23 @@ return {
 		spawnLife = 0.6,
 	},
 
+	-- Per-role impact when a hit lands (PV-B04), drawn with pooled parts; thrown props keep their
+	-- own landing (ThrowFx) and skip the "puff". kind: arc (a white blade sweep + spark), puff (a
+	-- burst at the target), ring (a ground ring + dust, and `hitStop` s frozen on the striker's
+	-- clip), pulse (a soft ring around the support defender, radius = its range), sparkle (motes
+	-- rising at the target), none. Abilities add `abilitySlow`: the striker's clip runs at
+	-- `factor` for `seconds` (a slow-in) before the strike.
+	ROLES = {
+		melee = { kind = "arc", color = "#FFFFFF", life = 0.14, length = 3.2 },
+		ranged = { kind = "puff", color = "#C9B48F", life = 0.3, size = 1.8 },
+		splash = { kind = "ring", color = "#E8D2A6", life = 0.4, radius = 4, dust = 3, hitStop = 0.05 },
+		support = { kind = "pulse", color = "#F2C14E", life = 0.6 },
+		healer = { kind = "sparkle", color = "#CFF7D6", life = 0.6, motes = 4, rise = 3 },
+		farm = { kind = "none" },
+	},
+	ROLE_KINDS = { "arc", "puff", "ring", "pulse", "sparkle", "none" },
+	abilitySlow = { factor = 0.4, seconds = 0.3 },
+
 	-- Ultimate strikes (EnemyRenderController.ultimateStrike): kept from P1-15.
 	SHABRIYEH = { bladeLife = 0.35, bladeLength = 9 },
 	SWEEP = { ringLife = 0.5, dustLife = 0.8, dustColor = "#C9B48F" },

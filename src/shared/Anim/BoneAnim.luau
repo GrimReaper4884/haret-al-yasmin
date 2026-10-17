@@ -40,6 +40,8 @@ export type Player = {
 	shotSpeed: number,
 	shotWeight: number,
 	shotHold: boolean, -- keep the shot's last frame when it ends (death falls)
+	slowUntil: number, -- os.clock() until which time runs at slowFactor (hit-stop, slow-in)
+	slowFactor: number,
 	yaw: number, -- radians, whole-body turn about the vertical
 	id: string,
 	props: { HandProps.Prop }, -- held items following the hands (Anim/HandProps)
@@ -167,6 +169,8 @@ function BoneAnim.new(model: Model, id: string): Player?
 		shotSpeed = 1,
 		shotWeight = 1,
 		shotHold = false,
+		slowUntil = 0,
+		slowFactor = 1,
 		yaw = 0,
 		id = id,
 		props = props,
@@ -200,6 +204,12 @@ function BoneAnim.play(p: Player, slot: string, speed: number?, weight: number?,
 	return (c.hit or 0) / (c.fps * p.shotSpeed)
 end
 
+-- Runs this figure's clips at `factor` for `seconds` (0 = a hit-stop freeze, 0.4 = a slow-in).
+function BoneAnim.slow(p: Player, factor: number, seconds: number)
+	p.slowFactor = factor
+	p.slowUntil = os.clock() + seconds
+end
+
 function BoneAnim.busy(p: Player): boolean
 	return p.shot ~= nil
 end
@@ -223,6 +233,13 @@ function BoneAnim.step(p: Player, dt: number, smooth: boolean)
 	local loop = p.loop
 	if not loop then
 		return
+	end
+	if p.slowUntil > 0 then
+		if os.clock() < p.slowUntil then
+			dt *= p.slowFactor
+		else
+			p.slowUntil = 0
+		end
 	end
 	local last = loop.frames - 1
 	p.loopT = (p.loopT + dt * p.loopSpeed * loop.fps) % last

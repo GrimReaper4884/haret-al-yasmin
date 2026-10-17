@@ -167,6 +167,30 @@ return function(t)
 		end)
 	end)
 
+	t.describe("Role impacts (PV-B04)", function()
+		local Units = t.config("Units")
+		t.it("every unit role has an impact entry with a known kind", function()
+			local kinds = {}
+			for _, k in Vfx.ROLE_KINDS do
+				kinds[k] = true
+			end
+			for id, def in Units do
+				local r = Vfx.ROLES[def.role]
+				t.truthy(r, id .. ": role '" .. tostring(def.role) .. "' has no Config/Vfx.ROLES entry")
+				t.truthy(kinds[r.kind], id .. ": unknown impact kind " .. tostring(r.kind))
+			end
+			for role, r in Vfx.ROLES do
+				if r.kind ~= "none" then
+					t.truthy(type(r.color) == "string" and string.match(r.color, "^#%x%x%x%x%x%x$"), role .. " colour")
+					t.truthy(r.life > 0 and r.life <= 1, role .. " life")
+				end
+			end
+			t.truthy(Vfx.ROLES.splash.hitStop <= 0.1, "a hit-stop is a blink, not a pause")
+			t.truthy(Vfx.ROLES.splash.dust + 1 <= Vfx.MAX_PER_FRAME, "a splash fits one frame's budget")
+			t.truthy(Vfx.abilitySlow.factor > 0 and Vfx.abilitySlow.factor < 1 and Vfx.abilitySlow.seconds <= 0.5)
+		end)
+	end)
+
 	t.describe("Config/Vfx", function()
 		t.it("has sane budgets and well-formed colours", function()
 			t.truthy(Vfx.MAX_PER_FRAME >= 4 and Vfx.MAX_PER_FRAME <= Vfx.MAX_LIVE)

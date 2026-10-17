@@ -618,3 +618,11 @@ Verdict: external (Studio or a plugin), ignored (D-020).
 | Deaths before the poof | time from a figure stopping on the road to its removal: gendarme 2.95–2.97 s ×6 (77-frame knock-down 2.53 s + 0.4 s fade), thief 1.78 s (fly-up 1.57 s + fade) |
 | Boss intro / stagger | code path in place (spawn event with `boss`, flinch uses `stagger` when the figure has it); the in-game check rides on PV-B06 (wave 20) |
 | Still open | thug, bandit, rider, sapper, the Sergeant and the Commandant: clips after their import (PV-A02) |
+
+### PV-B04 per-role impacts (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 241 specs (new: every `Units[id].role` has a `Config/Vfx.ROLES` entry with a known kind; hit-stop ≤ 0.1 s; splash fits one frame's budget) |
+| Studio | the five impacts drawn side by side on the Episode 1 road via the Studio-only `HaretFxDemo` hook and frozen ~0.08 s in (12 pooled parts): melee white blade sweep + spark, ranged dust puff, splash ground ring + 3 dust puffs, support soft gold pulse, healer rising green-white motes. `docs/art/pvb04_roles_labelled_2026-10-18.jpg` (with labels, before softening the pulse) and `pvb04_roles_2026-10-18.jpg` |
+| Not captured | the 0.05 s hit-stop and the 0.3 s ability slow-in are too short for a still; code path `BoneAnim.slow` |

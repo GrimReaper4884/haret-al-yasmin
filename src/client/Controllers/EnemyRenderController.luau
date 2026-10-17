@@ -417,6 +417,92 @@ local function flash(model: Model)
 	end)
 end
 
+-- Per-role impact where a hit lands (PV-B04, Config/Vfx.ROLES). `from` is the striker's position.
+local function roleImpact(role: string, at: Vector3, from: Vector3?, radius: number?, thrown: boolean)
+	local r = (Vfx.ROLES :: any)[role]
+	if not r or r.kind == "none" or not Fx.full() then
+		return
+	end
+	local color = Color3.fromHex(r.color)
+	if r.kind == "arc" then
+		-- A white blade sweep across the target, perpendicular to the blow, plus the spark.
+		local blade = Fx.part()
+		if blade then
+			local dir = if from then Vector3.new(at.X - from.X, 0, at.Z - from.Z) else Vector3.new(0, 0, 1)
+			dir = if dir.Magnitude > 0.01 then dir.Unit else Vector3.new(0, 0, 1)
+			local base = CFrame.lookAt(at + Vector3.new(0, 2.6, 0), at + Vector3.new(0, 2.6, 0) + dir)
+			blade.Color = color
+			blade.Transparency = 0.15
+			blade.Size = Vector3.new(r.length, 0.12, 0.35)
+			blade.CFrame = base * CFrame.Angles(0, 0, math.rad(-35))
+			Fx.fade(blade, r.life, { CFrame = base * CFrame.Angles(0, 0, math.rad(35)), Transparency = 1 }, Enum.EasingStyle.Quart)
+		end
+		hitSpark(at, color)
+	elseif r.kind == "puff" then
+		if thrown then
+			return -- the projectile's own landing puff (ThrowFx) already played
+		end
+		local b = Fx.part(Enum.PartType.Ball)
+		if b then
+			b.Material = Enum.Material.SmoothPlastic
+			b.Color = color
+			b.Transparency = 0.3
+			b.Size = Vector3.one * r.size * 0.4
+			b.CFrame = CFrame.new(at + Vector3.new(0, 2.2, 0))
+			Fx.fade(b, r.life, { Size = Vector3.one * r.size, Transparency = 1 })
+		end
+	elseif r.kind == "ring" then
+		local ring = Fx.part(Enum.PartType.Cylinder)
+		if ring then
+			ring.Material = Enum.Material.SmoothPlastic
+			ring.Color = color
+			ring.Transparency = 0.3
+			ring.Size = Vector3.new(0.2, 1, 1)
+			ring.CFrame = CFrame.new(at + Vector3.new(0, 0.25, 0)) * CFrame.Angles(0, 0, math.rad(90))
+			Fx.fade(ring, r.life, { Size = Vector3.new(0.1, r.radius * 2, r.radius * 2), Transparency = 1 })
+		end
+		for i = 1, Fx.allow(r.dust) do
+			local d = Fx.part(Enum.PartType.Ball)
+			if not d then
+				break
+			end
+			local a = i * 2.1 + math.random()
+			d.Material = Enum.Material.SmoothPlastic
+			d.Color = Color3.fromHex(Vfx.SWEEP.dustColor)
+			d.Transparency = 0.35
+			d.Size = Vector3.one * 0.9
+			d.CFrame = CFrame.new(at + Vector3.new(math.cos(a), 0.5, math.sin(a)))
+			Fx.fade(d, r.life * 1.5, { Size = Vector3.one * 2.2, Transparency = 1, CFrame = CFrame.new(at + Vector3.new(math.cos(a) * 2, 1.8, math.sin(a) * 2)) })
+		end
+	elseif r.kind == "pulse" then
+		local c = from or at
+		local ring = Fx.part(Enum.PartType.Cylinder)
+		if ring then
+			ring.Material = Enum.Material.SmoothPlastic
+			ring.Color = color
+			ring.Transparency = 0.7
+			ring.Size = Vector3.new(0.15, 2, 2)
+			ring.CFrame = CFrame.new(c + Vector3.new(0, 0.3, 0)) * CFrame.Angles(0, 0, math.rad(90))
+			local rr = radius or 8
+			Fx.fade(ring, r.life, { Size = Vector3.new(0.1, rr * 2, rr * 2), Transparency = 1 }, Enum.EasingStyle.Sine)
+		end
+	elseif r.kind == "sparkle" then
+		for i = 1, Fx.allow(r.motes) do
+			local m = Fx.part(Enum.PartType.Ball)
+			if not m then
+				break
+			end
+			local a = i * 1.6 + math.random()
+			local start = at + Vector3.new(math.cos(a) * 0.8, 1.2 + math.random(), math.sin(a) * 0.8)
+			m.Color = color
+			m.Transparency = 0.1
+			m.Size = Vector3.one * 0.35
+			m.CFrame = CFrame.new(start)
+			Fx.fade(m, r.life, { CFrame = CFrame.new(start + Vector3.new(0, r.rise, 0)), Transparency = 1, Size = Vector3.one * 0.15 }, Enum.EasingStyle.Sine)
+		end
+	end
+end
+
 -- A hit landed on enemy `enemyId` (RigAnimController calls this when the swing or thrown prop
 -- arrives): the damage number, the spark, and a flash or a knockback nudge (Logic/HitFx).
 function EnemyRenderController.impact(enemyId: number?, damage: number?, ability: boolean, towerId: number?)
@@ -434,6 +520,12 @@ function EnemyRenderController.impact(enemyId: number?, damage: number?, ability
 		flash(rec.model)
 	elseif plan.punch then
 		rec.punchAt = os.clock()
+	end
+	local unitId = if towerId then towerUnit[towerId] else nil
+	local def = if type(unitId) == "string" then (Units :: any)[unitId] else nil
+	if def then
+		local slot = if ability then "ability" else "attack"
+		roleImpact(def.role, (rec.model:GetPivot()).Position, if towerId then towerPos[towerId] else nil, def.levels[1].range, ThrowFx.kindFor(unitId, slot) ~= nil)
 	end
 end
 
@@ -629,6 +721,17 @@ function EnemyRenderController.start()
 	folder.Parent = Workspace
 	DamageNumbers.start()
 	CoinFlight.start()
+	if RunService:IsStudio() then
+		-- Studio test hook (PV-B04 evidence): draw one role's impact at a point, e.g.
+		-- LocalPlayer.HaretFxDemo:Invoke("splash", Vector3.new(...), fromVector3?)
+		local demo = Instance.new("BindableFunction")
+		demo.Name = "HaretFxDemo"
+		demo.OnInvoke = function(role: string, at: Vector3, from: Vector3?)
+			roleImpact(role, at, from, 8, false)
+			return true
+		end
+		demo.Parent = Players.LocalPlayer
+	end
 	MatchController.Started:Connect(function(info: MatchController.Info)
 		clear()
 		arenaPath = Path.build(Arenas[info.arenaId].path)
