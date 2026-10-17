@@ -182,8 +182,8 @@ function MonetizationLogic.canPrompt(profile: Profile, product: DevProduct?, pro
 	if not product then
 		return false, "unknown_product"
 	end
-	if type(productId) ~= "number" or productId <= 0 then
-		return false, "not_available"
+	if not isAmount(productId) then
+		return false, "not_available" -- unpublished (0), NaN, infinite or fractional id
 	end
 	if product.kind == "item" and product.item and Inventory.has(profile, product.item, 1) then
 		return false, "already_owned"

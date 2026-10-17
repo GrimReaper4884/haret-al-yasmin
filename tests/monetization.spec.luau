@@ -132,6 +132,9 @@ return function(t)
 			local p = profile()
 			local gold = { kind = "item", item = "tarboosh_gold" }
 			t.eq(MonetizationLogic.canPrompt(p, gold, 0), false, "id 0 = not created yet")
+			for _, id in { 0 / 0, math.huge, -1, 1.5, "123", nil } do
+				t.eq(MonetizationLogic.canPrompt(p, gold, id), false, "id " .. tostring(id))
+			end
 			t.truthy(MonetizationLogic.canPrompt(p, gold, 123))
 			p.inventory.tarboosh_gold = 1
 			local ok, err = MonetizationLogic.canPrompt(p, gold, 123)

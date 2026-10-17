@@ -15,6 +15,9 @@ function RateLimiter.new(capacity: number, refillPerSecond: number): Limiter
 end
 
 function RateLimiter.allow(limiter: Limiter, key: any, now: number): boolean
+	if type(now) ~= "number" or now ~= now or now == math.huge or now == -math.huge then
+		return false -- a NaN clock would refill the bucket on every call; deny instead
+	end
 	local b = limiter.buckets[key]
 	if b == nil then
 		b = { tokens = limiter.capacity, at = now }
