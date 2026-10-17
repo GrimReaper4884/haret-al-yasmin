@@ -287,6 +287,15 @@ local function onEvents(events: { any })
 	MatchController.Events:Fire(events)
 end
 
+local function backToLobby()
+	info = nil
+	state = nil
+	result.setVisible(false)
+	LobbyMenuController.setInMatch(false)
+	GuiService.TouchControlsEnabled = true
+	render()
+end
+
 function MatchController.start()
 	build()
 	Net.event(Net.Events.MatchStart).OnClientEvent:Connect(function(payload: Info)
@@ -310,24 +319,22 @@ function MatchController.start()
 	Net.event(Net.Events.MatchEnd).OnClientEvent:Connect(function(payload: any)
 		showResult(payload)
 		MatchController.Ended:Fire(payload)
-		local function backToLobby()
-			info = nil
-			state = nil
-			result.setVisible(false)
-			LobbyMenuController.setInMatch(false)
-			GuiService.TouchControlsEnabled = true
-			render()
-		end
 		if payload.left then
 			backToLobby()
 		else
-			-- The server teleports us home after TD.RESULT_SECONDS; the lobby HUD comes back then.
+			-- The server teleports us home after TD.RESULT_SECONDS and says so (MatchHome); this
+			-- timer is only the fallback if that message is lost.
 			local endedId = if info then info.matchId else nil
 			task.delay(TD.RESULT_SECONDS + 0.5, function()
 				if info and info.matchId == endedId then
 					backToLobby()
 				end
 			end)
+		end
+	end)
+	Net.event(Net.Events.MatchHome).OnClientEvent:Connect(function(matchId: any)
+		if info and info.matchId == matchId then
+			backToLobby()
 		end
 	end)
 	LocaleController.Changed:Connect(render)

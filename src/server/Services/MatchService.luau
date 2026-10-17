@@ -69,6 +69,7 @@ local evState: RemoteEvent
 local evEvents: RemoteEvent
 local evStart: RemoteEvent
 local evEnd: RemoteEvent
+local evHome: RemoteEvent
 local evPositions: UnreliableRemoteEvent
 
 local function keyOf(player: Player): string
@@ -201,12 +202,15 @@ local function sendPositions(match: Match)
 	end
 end
 
-local function teleportHome(player: Player)
+-- Back to the lane, and the client drops the match HUD at once (it used to wait for its own
+-- result-screen timer, so the match UI showed in the lobby after "Back" or the auto-return).
+local function teleportHome(player: Player, matchId: number)
 	local character = player.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 	if root then
 		root.CFrame = CFrame.new(0, 3.5, 80) * CFrame.Angles(0, math.rad(180), 0)
 	end
+	evHome:FireClient(player, matchId)
 end
 
 local function rewardPlayer(match: Match, player: Player, outcome: any): any
@@ -275,7 +279,7 @@ local function finish(match: Match, won: boolean)
 	task.delay(TD.RESULT_SECONDS, function()
 		for p in match.players do
 			byPlayer[p] = nil
-			teleportHome(p)
+			teleportHome(p, match.id)
 		end
 		destroyMatch(match)
 	end)
@@ -308,7 +312,7 @@ local function removePlayer(match: Match, player: Player, goHome: boolean)
 			local reward = rewardPlayer(match, player, outcome)
 			evEnd:FireClient(player, { won = false, waves = outcome.wavesCleared, reward = reward, left = true })
 		end
-		teleportHome(player)
+		teleportHome(player, match.id)
 	end
 	if next(match.players) == nil then
 		if not match.ended then
@@ -629,6 +633,7 @@ function MatchService.start()
 	evEvents = Net.event(Net.Events.MatchEvents)
 	evStart = Net.event(Net.Events.MatchStart)
 	evEnd = Net.event(Net.Events.MatchEnd)
+	evHome = Net.event(Net.Events.MatchHome)
 	evPositions = Net.unreliable(Net.Events.EnemyPositions)
 
 	RemoteGuard.func(Net.Functions.PlaceTower, RemoteGuard.DEFAULT, placeTower)

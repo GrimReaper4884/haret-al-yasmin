@@ -33,6 +33,7 @@ Net.Events = {
 	MatchState = "MatchState", -- S→C { phase, wave, countdown, gateHp, gateMax, cash, speed, votes }
 	MatchEvents = "MatchEvents", -- S→C { events } (spawn/death/attack/tower…)
 	MatchEnd = "MatchEnd", -- S→C { won, waves, reward }
+	MatchHome = "MatchHome", -- S→C matchId: the player is back in the lane (drop the match HUD now)
 	EnemyPositions = "EnemyPositions", -- S→C (unreliable) { seq, then id, dist, hpFrac triples }, ≤ 24 enemies per packet
 	VoteSkip = "VoteSkip", -- C→S
 	SetSpeed = "SetSpeed", -- C→S 1 | 2 | 3 (host)
