@@ -5,13 +5,24 @@
     "mesh": "01a14689-862a-732a-851d-4cab8c487f9a",
     "rig": "01a1468b-fcbf-7514-a784-81319cb5fea0",
     "anim_idle": "01a1468c-48e7-72a4-803f-046bc4266459",
-    "anim_attack": "01a1468c-6c7f-74ac-99fa-536c2089d1c6"
+    "anim_attack": "01a1468c-6c7f-74ac-99fa-536c2089d1c6",
+    "clip_bothfists": "01a14794-b4cf-72b3-9530-3c7f53eee802",
+    "clip_chestpound": "01a14794-d5df-7094-a296-acfeff2ad274",
+    "clip_slam": "01a14794-f783-7493-a964-d0a03693e162"
   },
   "credits": {
     "concept": 6,
     "mesh": 30,
     "rig": 5,
     "anim_idle": 3,
-    "anim_attack": 3
+    "anim_attack": 3,
+    "clip_bothfists": 3,
+    "clip_chestpound": 3,
+    "clip_slam": 3
+  },
+  "clips": {
+    "bothfists": 214,
+    "chestpound": 88,
+    "slam": 127
   }
 }

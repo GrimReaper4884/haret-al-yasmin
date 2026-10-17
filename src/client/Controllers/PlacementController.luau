@@ -21,6 +21,7 @@ local Traits = require(Shared.Config.Traits)
 local Path = require(Shared.Logic.Path)
 local UnitLogic = require(Shared.Logic.UnitLogic)
 local RigBuilder = require(Shared.Util.RigBuilder)
+local BoneAnim = require(Shared.Anim.BoneAnim)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
@@ -32,6 +33,7 @@ local LocaleController = require(script.Parent.LocaleController)
 local MatchController = require(script.Parent.MatchController)
 local ToastController = require(script.Parent.ToastController)
 local SettingsController = require(script.Parent.SettingsController)
+local RigAnimController = require(script.Parent.RigAnimController)
 
 local PlacementController = {}
 
@@ -190,10 +192,12 @@ function PlacementController.begin(unitId: string)
 	hl.Parent = ghost
 	ghostLight = hl
 	-- Imported figures show their T-pose bind pose unless a clip plays; the ghost isn't in a
-	-- towers folder (RigAnimController), so play its idle here.
+	-- towers folder, so hand it to RigAnimController (baked clips) or play its published idle.
 	local look = (Looks :: any)[unitId]
 	local animator = (ghost :: Model):FindFirstChildWhichIsA("Animator", true)
-	if animator and look and look.anims and look.anims.idle then
+	if (ghost :: Model):GetAttribute("Imported") and BoneAnim.has(unitId) then
+		RigAnimController.adopt(ghost :: Model)
+	elseif animator and look and look.anims and look.anims.idle then
 		local anim = Instance.new("Animation")
 		anim.AnimationId = "rbxassetid://" .. tostring(look.anims.idle)
 		pcall(function()

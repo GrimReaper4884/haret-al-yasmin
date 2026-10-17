@@ -2,8 +2,11 @@
 -- Brings the figures to life on the client. Primitive figures (Util/RigBuilder) are jointed with
 -- Motor6Ds; this writes their Transform every frame: an idle sway for placed defenders, a walk
 -- cycle for attackers, and an attack swing (per role) that turns the defender toward its target.
--- Imported characters that carry an Animator and an "Anims" folder (Animation objects named
--- Idle / Walk / Attack) play those clips instead (docs/CHARACTER_PIPELINE.md).
+-- Imported characters with baked signature clips (Anim/Clips, tools/anim) are posed bone by bone
+-- through Anim/BoneAnim: each character's own idle, attack and ultimate, a walk matched to the
+-- enemy's real speed, a flinch when hit, and the thrown prop (ThrowFx) leaving the hand on the
+-- clip's impact frame. Imported characters without baked clips fall back to published Animator
+-- clips (CharacterLooks[id].anims or an "Anims" folder) (docs/CHARACTER_PIPELINE.md).
 --
 -- Only models within ANIM_RADIUS of the camera are animated; nothing here touches the server.
 
@@ -14,7 +17,10 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Units = require(Shared.Config.Units)
 local Looks = require(Shared.Config.CharacterLooks)
+local BoneAnim = require(Shared.Anim.BoneAnim)
 local MatchController = require(script.Parent.MatchController)
+local EnemyRenderController = require(script.Parent.EnemyRenderController)
+local ThrowFx = require(script.Parent.ThrowFx)
 
 local RigAnimController = {}
 
@@ -31,7 +37,8 @@ type Rec = {
 	yaw: number, -- current waist yaw (radians)
 	targetYaw: number,
 	tracks: { [string]: AnimationTrack }?,
-	retryAt: number?, -- imported figure whose Animator hadn't arrived yet: try loading again then
+	bone: BoneAnim.Player?, -- baked signature clips (preferred over tracks)
+	retryAt: number?, -- imported figure whose bones / Animator hadn't arrived yet: try again then
 }
 
 local recs: { [Model]: Rec } = {}
@@ -101,6 +108,28 @@ local function loadTracks(model: Model): { [string]: AnimationTrack }?
 	return tracks
 end
 
+-- Binds baked clips when this character has them. The importer's AnimationController is removed
+-- (locally) so a stray Animator can never fight the bone writes.
+local function bindBones(rec: Rec, isTower: boolean): boolean
+	local model = rec.model
+	local lookId = model:GetAttribute("LookId")
+	if not model:GetAttribute("Imported") or type(lookId) ~= "string" or not BoneAnim.has(lookId) then
+		return false
+	end
+	local p = BoneAnim.new(model, lookId)
+	if not p then
+		return false
+	end
+	for _, d in model:GetDescendants() do
+		if d:IsA("AnimationController") then
+			d:Destroy()
+		end
+	end
+	BoneAnim.loop(p, if isTower then "idle" else "walk")
+	rec.bone = p
+	return true
+end
+
 local function playLoop(rec: Rec, isTower: boolean)
 	local tracks = rec.tracks
 	if tracks then
@@ -117,9 +146,13 @@ local function track(model: Model, isTower: boolean): Rec
 		-- With streaming, parts of an imported figure can arrive after its root; until its clips
 		-- load it shows the raw T-pose, so keep trying instead of giving up on the first look.
 		if existing.retryAt and os.clock() >= existing.retryAt then
-			existing.tracks = loadTracks(model)
-			existing.retryAt = if existing.tracks then nil else os.clock() + 1
-			playLoop(existing, isTower)
+			if bindBones(existing, isTower) then
+				existing.retryAt = nil
+			else
+				existing.tracks = loadTracks(model)
+				existing.retryAt = if existing.tracks then nil else os.clock() + 1
+				playLoop(existing, isTower)
+			end
 		end
 		return existing
 	end
@@ -133,10 +166,18 @@ local function track(model: Model, isTower: boolean): Rec
 		attackAt = 0,
 		yaw = 0,
 		targetYaw = 0,
-		tracks = loadTracks(model),
+		tracks = nil,
 	}
-	if not rec.tracks and model:GetAttribute("Imported") then
-		rec.retryAt = os.clock() + 1
+	if not bindBones(rec, isTower) then
+		local lookId = model:GetAttribute("LookId")
+		if model:GetAttribute("Imported") and type(lookId) == "string" and BoneAnim.has(lookId) then
+			rec.retryAt = os.clock() + 0.5 -- bones not streamed in yet
+		else
+			rec.tracks = loadTracks(model)
+			if not rec.tracks and model:GetAttribute("Imported") then
+				rec.retryAt = os.clock() + 1
+			end
+		end
 	end
 	recs[model] = rec
 	model.Destroying:Connect(function()
@@ -164,7 +205,7 @@ local function swing(k: number): (number, number)
 	end
 end
 
-local function animateTower(rec: Rec, now: number, dt: number)
+local function animateTower(rec: Rec, now: number, dt: number, smooth: boolean)
 	local j = rec.joints
 	local t = now + rec.phase
 	-- Turn toward the last target, then drift back to facing the road.
@@ -172,6 +213,12 @@ local function animateTower(rec: Rec, now: number, dt: number)
 		rec.targetYaw = 0
 	end
 	rec.yaw += (rec.targetYaw - rec.yaw) * math.min(1, dt * 10)
+	local bone = rec.bone
+	if bone then
+		bone.yaw = rec.yaw
+		BoneAnim.step(bone, dt, smooth)
+		return
+	end
 	local breathe = math.sin(t * 1.6) * 0.025
 	local sway = math.sin(t * 0.7) * 0.05
 	local k = if rec.attackAt > 0 then (now - rec.attackAt) / ATTACK_TIME else 2
@@ -202,7 +249,17 @@ local function animateTower(rec: Rec, now: number, dt: number)
 	setT(j.rh, CFrame.identity)
 end
 
-local function animateEnemy(rec: Rec, now: number, speedMul: number)
+local function animateEnemy(rec: Rec, now: number, dt: number, speedMul: number, smooth: boolean)
+	local bone = rec.bone
+	if bone then
+		-- Match the stride to how fast the figure really moves (slows, stuns, wave speed-ups).
+		local v = EnemyRenderController.speedOf(rec.model)
+		local authored = BoneAnim.walkSpeed(bone)
+		local rate = if authored > 0.01 then math.clamp(v / authored, 0.15, 2.5) else speedMul
+		BoneAnim.loop(bone, "walk", rate)
+		BoneAnim.step(bone, dt, smooth)
+		return
+	end
 	local j = rec.joints
 	local t = (now + rec.phase) * 7 * speedMul
 	local stride = math.sin(t) * 0.55
@@ -238,8 +295,35 @@ local function findTower(towerId: number): Model?
 	return nil
 end
 
--- Plays the attack swing on a tower and turns it toward the world point `at`.
-function RigAnimController.attack(towerId: number, at: Vector3?)
+local function enemyModel(id: number?): Model?
+	local folder = Workspace:FindFirstChild("EnemyRender")
+	local m = if folder and id then folder:FindFirstChild("Enemy_" .. id) else nil
+	return if m and m:IsA("Model") then m else nil
+end
+
+-- A short flinch layered over the enemy's walk.
+local function flinch(enemyId: number?)
+	local m = enemyModel(enemyId)
+	local rec = if m then recs[m] else nil
+	local bone = if rec then rec.bone else nil
+	if bone and not BoneAnim.busy(bone) then
+		BoneAnim.play(bone, "hit", 1.4, 0.6)
+	end
+end
+
+-- Where a thrown prop leaves: the right hand of an imported figure, else above the root.
+local function handPosition(model: Model): Vector3
+	local hand = model:FindFirstChild("RightHand", true)
+	if hand and hand:IsA("Bone") then
+		return hand.TransformedWorldCFrame.Position
+	end
+	local root = model.PrimaryPart
+	return if root then root.Position + Vector3.new(0, 3, 0) else model:GetPivot().Position
+end
+
+-- Plays the attack (or ultimate) on a tower, turns it toward the world point `at`, and throws the
+-- character's prop from the hand when the swing lands (the target flinches when it arrives).
+function RigAnimController.attack(towerId: number, at: Vector3?, ability: boolean?, targetId: number?)
 	local model = findTower(towerId)
 	if not model then
 		return
@@ -252,10 +336,43 @@ function RigAnimController.attack(towerId: number, at: Vector3?)
 		-- Figures face -Z; yaw is positive toward -X when looking down -Z.
 		rec.targetYaw = math.clamp(math.atan2(-l.X, -l.Z), -1.2, 1.2)
 	end
-	local tracks = rec.tracks
-	if tracks and tracks.Attack then
-		tracks.Attack:Play(0.05)
+	local slot = if ability then "ability" else "attack"
+	local unitId = model:GetAttribute("UnitId")
+	local kind = ThrowFx.kindFor(if type(unitId) == "string" then unitId else nil, slot)
+	local delay = 0
+	local bone = rec.bone
+	if bone then
+		delay = BoneAnim.play(bone, slot, 1.15) or BoneAnim.play(bone, "attack", 1.15) or 0
+	else
+		local tracks = rec.tracks
+		if tracks and tracks.Attack then
+			tracks.Attack:Play(0.05)
+		end
 	end
+	if kind and at then
+		local target = at + Vector3.new(0, 2.2, 0)
+		task.delay(delay, function()
+			if model.Parent then
+				ThrowFx.throw(kind, handPosition(model), target, function()
+					flinch(targetId)
+					if ability then
+						EnemyRenderController.ultimateAt(towerId, target)
+					end
+				end)
+			end
+		end)
+	else
+		task.delay(delay, flinch, targetId)
+	end
+end
+
+-- Animates a figure outside the arena folders (the placement ghost) with its idle.
+local extras: { [Model]: boolean } = {}
+function RigAnimController.adopt(model: Model)
+	extras[model] = true
+	model.Destroying:Connect(function()
+		extras[model] = nil
+	end)
 end
 
 -- Level of detail: figures off screen are skipped, distant ones update every third frame
@@ -310,6 +427,11 @@ local function step(dt: number)
 			end
 		end
 	end
+	for m in extras do
+		if m.Parent and m.PrimaryPart then
+			animateTower(track(m, true), now, dt, true)
+		end
+	end
 end
 
 function RigAnimController.start()
@@ -322,11 +444,12 @@ function RigAnimController.start()
 		for _, e in events do
 			if e.type == "attack" and type(e.tower) == "number" then
 				local at = if type(e.x) == "number" and type(e.z) == "number" then (origin * CFrame.new(e.x, 0, e.z)).Position else nil
-				RigAnimController.attack(e.tower, at)
+				RigAnimController.attack(e.tower, at, e.ability == true, if type(e.target) == "number" then e.target else nil)
 			end
 		end
 	end)
 	RunService.RenderStepped:Connect(step)
+	ThrowFx.start()
 end
 
 return RigAnimController

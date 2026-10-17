@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "discord-feedback": {
+      "command": "python",
+      "args": ["tools/discord/feedback_mcp.py"]
+    }
+  }
+}

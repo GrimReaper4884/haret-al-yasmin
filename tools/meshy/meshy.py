@@ -13,6 +13,8 @@ Usage (from the repo root):
     python tools/meshy/meshy.py make hallaq [--until concept|mesh|rig|anim]
     python tools/meshy/meshy.py make gate            (props stop after the textured mesh)
     python tools/meshy/meshy.py status hallaq
+    python tools/meshy/meshy.py clip qahwaji attack 421     (one library action on an existing rig,
+                                                        saved as clips/attack.glb; 3 credits)
 """
 
 from __future__ import annotations
@@ -233,6 +235,35 @@ def make(cid: str, until: str):
     print(f"done: {cid} — credits so far {sum(credits.values())}")
 
 
+def clip(cid: str, name: str, action: int):
+    """Fetches one library action for a character's existing rig into <folder>/clips/<name>.glb.
+    These GLBs are baked into Luau bone data by tools/anim/bake.py (no Studio publishing)."""
+    m = load_manifest(cid)
+    tasks, credits = m["tasks"], m["credits"]
+    if "rig" not in tasks:
+        sys.exit(f"{cid} has no rig task yet: run `make {cid} --until rig` first")
+    tk = f"clip_{name}"
+    out = folder_for(cid) / "clips" / f"{name}.glb"
+    known = m.setdefault("clips", {}).get(name)
+    if out.exists() and known in (None, action):
+        m["clips"][name] = action  # already fetched (parallel runs can drop manifest entries)
+        save_manifest(cid, m)
+        return
+    if known != action:
+        tasks.pop(tk, None)  # a different action under the same name: fetch again
+    if tk not in tasks:
+        r = call("POST", "/v1/animations", {"rig_task_id": tasks["rig"], "action_id": int(action)})
+        tasks[tk] = r["result"]
+        m["clips"][name] = action
+        save_manifest(cid, m)
+    t = wait(f"/v1/animations/{tasks[tk]}", tk)
+    credits[tk] = t.get("consumed_credits", 0)
+    res = t.get("result") or {}
+    if res.get("animation_glb_url"):
+        download(res["animation_glb_url"], out)
+    save_manifest(cid, m)
+
+
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -243,6 +274,10 @@ def main():
     mk = sub.add_parser("make")
     mk.add_argument("id")
     mk.add_argument("--until", choices=STEPS, default="anim")
+    cl = sub.add_parser("clip")
+    cl.add_argument("id")
+    cl.add_argument("name")
+    cl.add_argument("action", type=int)
     st = sub.add_parser("status")
     st.add_argument("id")
     a = ap.parse_args()
@@ -261,6 +296,8 @@ def main():
             print(f"{it.get('action_id'):>5}  {it.get('category', ''):<14} {it.get('sub_category', ''):<22} {it.get('name')}")
     elif a.cmd == "make":
         make(a.id, a.until)
+    elif a.cmd == "clip":
+        clip(a.id, a.name, a.action)
     elif a.cmd == "status":
         print(json.dumps(load_manifest(a.id), indent=2))
 

@@ -5,13 +5,21 @@
     "mesh": "01a14214-d42f-71e7-8693-9cd5cd20be93",
     "rig": "01a14216-1650-716c-a1a3-63feec284963",
     "anim_idle": "01a14216-6042-771c-9970-477ebc2bd2bc",
-    "anim_attack": "01a14216-9bea-7697-9f0c-7a4eb60c6bc2"
+    "anim_attack": "01a14216-9bea-7697-9f0c-7a4eb60c6bc2",
+    "clip_reap": "01a14794-5829-75d4-b375-02e56766dd10",
+    "clip_stomp": "01a14794-791a-729e-9e32-f1fa5e50d434"
   },
   "credits": {
     "concept": 6,
     "mesh": 30,
     "rig": 5,
     "anim_idle": 3,
-    "anim_attack": 3
+    "anim_attack": 3,
+    "clip_reap": 3,
+    "clip_stomp": 3
+  },
+  "clips": {
+    "reap": 99,
+    "stomp": 255
   }
 }

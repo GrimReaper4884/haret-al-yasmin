@@ -23,3 +23,6 @@ assets/unapproved/**/*.fbx
 assets/unapproved/**/*.png
 __pycache__/
 assets/unapproved/**/*.fbm/
+
+# Claude Code worktrees
+.claude/worktrees/

@@ -2,6 +2,10 @@
 -- Draws the attackers: the server simulates and sends spawn/death events plus a 10 Hz stream of
 -- path distances; this controller builds a rig per enemy, moves it smoothly along the arena path
 -- between updates, shows a health bar, and plays hit/ability effects and defeat poofs.
+--
+-- Movement is predicted: each enemy runs at the speed measured from its last updates and is pulled
+-- gently toward the reported distance, instead of sprinting to each 10 Hz update and waiting
+-- (which read as stop-go "lag").
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -15,19 +19,38 @@ local Units = require(Shared.Config.Units)
 local Arenas = require(Shared.Config.Arenas)
 local Path = require(Shared.Logic.Path)
 local RigBuilder = require(Shared.Util.RigBuilder)
+local BoneAnim = require(Shared.Anim.BoneAnim)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
 local Fx = require(UI.Fx)
 local MatchController = require(script.Parent.MatchController)
 local AudioController = require(script.Parent.AudioController)
+local ThrowFx = require(script.Parent.ThrowFx)
 
 local EnemyRenderController = {}
 
-type Enemy = { model: Model, enemyId: string, dist: number, target: number, speed: number, hp: number, bar: Frame?, bob: number, boss: boolean, bornAt: number, missing: number }
+type Enemy = {
+	model: Model,
+	enemyId: string,
+	dist: number, -- drawn distance along the path
+	target: number, -- predicted server distance (advanced by vel between updates)
+	vel: number, -- measured speed along the path (studs / s)
+	lastAt: number?, -- os.clock() of the last position update
+	lastDist: number,
+	speed: number,
+	hp: number,
+	bar: Frame?,
+	bob: number,
+	boss: boolean,
+	bornAt: number,
+	missing: number,
+	walks: boolean, -- baked walk clip: no synthetic bob
+}
 
 local folder: Folder
 local enemies: { [number]: Enemy } = {}
+local byModel: { [Model]: Enemy } = {}
 local towerPos: { [number]: Vector3 } = {}
 local towerUnit: { [number]: string } = {}
 local arenaPath: Path.Path? = nil
@@ -38,6 +61,7 @@ local function clear()
 		e.model:Destroy()
 	end
 	enemies = {}
+	byModel = {}
 	towerPos = {}
 	towerUnit = {}
 end
@@ -64,7 +88,23 @@ local function spawn(e: any)
 		return
 	end
 	local model = RigBuilder.cached(folder, "Enemy_" .. e.id, def.visual, e.enemyId)
-	local rec: Enemy = { model = model, enemyId = e.enemyId, dist = 0, target = 0, speed = def.speed, hp = 1, bar = nil, bob = math.random() * 6, boss = def.boss == true, bornAt = os.clock(), missing = 0 }
+	local rec: Enemy = {
+		model = model,
+		enemyId = e.enemyId,
+		dist = 0,
+		target = 0,
+		vel = def.speed,
+		lastAt = nil,
+		lastDist = 0,
+		speed = def.speed,
+		hp = 1,
+		bar = nil,
+		bob = math.random() * 6,
+		boss = def.boss == true,
+		bornAt = os.clock(),
+		missing = 0,
+		walks = model:GetAttribute("Imported") == true and BoneAnim.has(e.enemyId),
+	}
 	rec.bar = healthBar(model, rec.boss)
 	if def.stealth then
 		-- Stealth enemies are drawn see-through: only defenders that "see hidden thieves" can hit them
@@ -75,6 +115,7 @@ local function spawn(e: any)
 		end
 	end
 	enemies[e.id] = rec
+	byModel[model] = rec
 	local x, z, ux, uz = Path.position(arenaPath :: Path.Path, 0)
 	model:PivotTo(origin * CFrame.lookAt(Vector3.new(x, 0, z), Vector3.new(x + ux, 0, z + uz)))
 end
@@ -103,6 +144,7 @@ local function remove(id: number, died: boolean)
 		return
 	end
 	enemies[id] = nil
+	byModel[rec.model] = nil
 	if died then
 		poof(rec.model)
 	else
@@ -203,11 +245,16 @@ local function onEvents(events: { any })
 				local unitId = towerUnit[e.tower]
 				local def = if type(unitId) == "string" then (Units :: any)[unitId] else nil
 				local color = if def then Theme.rarityColor(def.rarity) else Theme.colors.quest
-				strike(from, to, color, e.ability == true)
+				-- A thrown prop (ThrowFx, launched by RigAnimController) replaces the streak, and
+				-- an ultimate's flash then waits for it to land (EnemyRenderController.ultimateAt).
+				local thrown = ThrowFx.kindFor(unitId, if e.ability then "ability" else "attack") ~= nil
+				if not thrown then
+					strike(from, to, color, e.ability == true)
+				end
 				if e.ability then
 					AudioController.sting("shabriyeh")
 					local ab = def and def.ability
-					if ab then
+					if ab and not thrown then
 						ultimateStrike(ab.kind, from, to, ab.radius or 9, color)
 					end
 				end
@@ -256,6 +303,16 @@ local function onPositions(packed: { number })
 		local id, dist, hp = packed[i], packed[i + 1], packed[i + 2]
 		local rec = enemies[id]
 		if rec then
+			local now = os.clock()
+			local last = rec.lastAt
+			if last and now - last > 0.03 then
+				local v = math.max(0, (dist - rec.lastDist) / (now - last))
+				rec.vel = rec.vel * 0.6 + v * 0.4
+			end
+			if not last or now - last > 0.03 then
+				rec.lastAt = now
+				rec.lastDist = dist
+			end
 			rec.target = dist
 			rec.hp = hp / 100
 			roundSeen[id] = true
@@ -282,19 +339,20 @@ local function step(dt: number)
 	local parts: { BasePart } = {}
 	local cframes: { CFrame } = {}
 	for _, rec in enemies do
-		-- Move toward the last reported distance, a little faster than the enemy so we catch up.
+		-- Predict: the server distance keeps moving at the measured speed between updates; draw at
+		-- that speed plus a gentle pull toward the prediction (never backwards, snap if far off).
+		if rec.lastAt and os.clock() - rec.lastAt < 0.4 then
+			rec.target += rec.vel * dt
+		end
 		local delta = rec.target - rec.dist
-		-- Wave speed-ups aren't in rec.speed, so a model that has fallen well behind closes the gap
-		-- proportionally instead of trailing the real enemy for the rest of its walk.
-		local maxStep = math.max(rec.speed * speedMul * 1.35, delta * 3) * dt
-		if delta > 0 then
-			rec.dist += math.min(delta, maxStep)
-		elseif delta < -2 then
+		if math.abs(delta) > 8 then
 			rec.dist = rec.target
+		else
+			rec.dist += math.max(0, rec.vel * dt + delta * math.min(1, dt * 4))
 		end
 		rec.bob += dt * 10 * speedMul
 		local x, z, ux, uz = Path.position(p, rec.dist)
-		local bob = math.abs(math.sin(rec.bob)) * 0.25
+		local bob = if rec.walks then 0 else math.abs(math.sin(rec.bob)) * 0.25
 		local root = rec.model.PrimaryPart
 		if root then
 			table.insert(parts, root)
@@ -303,6 +361,23 @@ local function step(dt: number)
 	end
 	if #parts > 0 then
 		Workspace:BulkMoveTo(parts, cframes, Enum.BulkMoveMode.FireCFrameChanged)
+	end
+end
+
+-- How fast an enemy figure is moving along the path right now (studs / s), for walk-cycle speed.
+function EnemyRenderController.speedOf(model: Model): number
+	local rec = byModel[model]
+	return if rec then rec.vel else 0
+end
+
+-- The ultimate's world strike for a tower's ability, at `to` (called when a thrown shibriyeh lands).
+function EnemyRenderController.ultimateAt(towerId: number, to: Vector3)
+	local from = towerPos[towerId]
+	local unitId = towerUnit[towerId]
+	local def = if type(unitId) == "string" then (Units :: any)[unitId] else nil
+	local ab = def and def.ability
+	if from and ab then
+		ultimateStrike(ab.kind, from, to - Vector3.new(0, 2.2, 0), ab.radius or 9, Theme.rarityColor(def.rarity))
 	end
 end
 

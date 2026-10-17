@@ -174,12 +174,14 @@ local Units: { [string]: UnitDef } = {
 		rarity = "rare",
 		role = "farm",
 		maxPlaced = 4,
+		-- Income is the job; the small damage is his tea-glass throw at anyone who comes near the
+		-- coffee house (a chip, not a damage dealer: re-run tests/balance before raising it).
 		levels = {
-			L(350, 0, 0, 1, { income = 90 }),
-			L(300, 0, 0, 1, { income = 160 }),
-			L(500, 0, 0, 1, { income = 260 }),
-			L(800, 0, 0, 1, { income = 400 }),
-			L(1300, 0, 0, 1, { income = 620 }),
+			L(350, 4, 9, 1.6, { income = 90 }),
+			L(300, 6, 9.5, 1.6, { income = 160 }),
+			L(500, 9, 10, 1.55, { income = 260 }),
+			L(800, 13, 10.5, 1.5, { income = 400 }),
+			L(1300, 18, 11, 1.45, { income = 620 }),
 		},
 		visual = { robe = "#5E7D3A", accent = "#C9A13B", skin = "#C08A62", hat = "tarboosh", hatColor = "#A4302A", weapon = "tray" },
 	},

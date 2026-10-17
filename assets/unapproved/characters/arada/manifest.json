@@ -5,13 +5,24 @@
     "mesh": "01a14689-86f4-76eb-9701-079bb1cdaa8d",
     "rig": "01a1468a-7bb2-729e-9ebb-7a7786c36b86",
     "anim_idle": "01a1468a-c8e7-77e9-a731-8a1e8c567f70",
-    "anim_attack": "01a1468a-eb82-75fd-b075-34ddd7b399e7"
+    "anim_attack": "01a1468a-eb82-75fd-b075-34ddd7b399e7",
+    "clip_combo3": "01a14794-bbfc-7605-9212-886dd4c0db3b",
+    "clip_dance": "01a14794-dd84-7547-8319-c90da0b89c86",
+    "clip_reap": "01a14794-febc-7081-b906-afb715ea885a"
   },
   "credits": {
     "concept": 6,
     "mesh": 30,
     "rig": 5,
     "anim_idle": 3,
-    "anim_attack": 3
+    "anim_attack": 3,
+    "clip_combo3": 3,
+    "clip_dance": 3,
+    "clip_reap": 3
+  },
+  "clips": {
+    "combo3": 105,
+    "dance": 78,
+    "reap": 99
   }
 }

@@ -1,0 +1,19 @@
+{
+  "enabledMcpjsonServers": ["discord-feedback"],
+  "permissions": {
+    "allow": [
+      "mcp__discord-feedback",
+      "Bash(lune run tests/run)",
+      "Bash(lune run tests/run:*)",
+      "Bash(selene src)",
+      "Bash(stylua --check src)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git worktree list)",
+      "Bash(python tools/discord/build_server.py --dry-run)"
+    ]
+  }
+}
