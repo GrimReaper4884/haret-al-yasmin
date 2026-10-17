@@ -134,7 +134,7 @@ send Claude the questions that pushed it there.
 ### B2.5 Experience settings to check while you're there
 
 - [ ] Experience is still **Private** (Settings → Access / Privacy). Only you (and invited testers) can play.
-- [ ] **Enable Studio Access to API Services: ON** for this TEST experience only (in Studio with the TEST
+- [x] **Enable Studio Access to API Services: ON** (2026-10-17, set by Claude in Studio; DataStore read probe passes) for this TEST experience only (in Studio with the TEST
       place open: **Home → Game Settings → Security**). Needed so a Studio "rejoin" really reloads from
       the DataStore; otherwise the game runs on the mock store and forgets everything on Stop. Record it
       in §E.
