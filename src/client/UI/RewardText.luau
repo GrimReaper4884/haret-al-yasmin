@@ -19,6 +19,9 @@ return function(t: (string, { [string]: any }?) -> string, reward: any): string
 	if reward.traitStones and reward.traitStones > 0 then
 		table.insert(parts, t("reward.stones", { n = reward.traitStones }))
 	end
+	if reward.cash and reward.cash > 0 then
+		table.insert(parts, t("reward.cash", { n = reward.cash }))
+	end
 	if reward.xp and reward.xp > 0 then
 		table.insert(parts, t("reward.xp", { n = reward.xp }))
 	end

@@ -28,6 +28,7 @@ local ERRORS = {
 	bad_code = "codes.unknown",
 	expired = "codes.expired",
 	already_redeemed = "codes.already",
+	match_only = "codes.match_only",
 }
 
 local function build()

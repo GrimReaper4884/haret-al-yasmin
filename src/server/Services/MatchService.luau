@@ -429,14 +429,21 @@ function MatchService.debugSetGate(player: Player, hp: number)
 end
 
 -- Studio test hook: adds match cash to a player (DebugService only).
-function MatchService.debugAddCash(player: Player, amount: number)
+-- Adds wave cash to the player's share of their current match (codes, debug). False when not in one.
+function MatchService.addCash(player: Player, amount: number): boolean
 	local match = byPlayer[player]
 	local key = match and match.players[player]
 	local ps = key and match and match.state.players[key]
 	if match and ps then
 		ps.cash += amount
 		pushState(match)
+		return true
 	end
+	return false
+end
+
+function MatchService.debugAddCash(player: Player, amount: number)
+	MatchService.addCash(player, amount)
 end
 
 function MatchService.count(): number

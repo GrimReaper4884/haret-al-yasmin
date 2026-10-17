@@ -26,6 +26,7 @@ local Events = require(Shared.Config.Events)
 local DailyLogic = require(Shared.Logic.DailyLogic)
 local Validate = require(Shared.Logic.Validate)
 local DataService = require(script.Parent.DataService)
+local MatchService = require(script.Parent.MatchService)
 local PlayerStateService = require(script.Parent.PlayerStateService)
 local RemoteGuard = require(script.Parent.RemoteGuard)
 local MonetizationService = require(script.Parent.MonetizationService)
@@ -163,6 +164,15 @@ end
 local function redeemCode(player: Player, code: any): { [string]: any }
 	if not Validate.isShortString(code, 40) then
 		return { ok = false, err = "bad_code" }
+	end
+	if CodesLogic.isMatchCash(code, Codes :: any) then
+		local inMatch = MatchService.matchOf(player) ~= nil
+		local ok, err, amount = CodesLogic.redeemMatchCash(code, Codes :: any, { userId = player.UserId, now = os.time(), inMatch = inMatch })
+		if not ok or not amount or not MatchService.addCash(player, amount) then
+			return { ok = false, err = err or "match_only" }
+		end
+		Analytics.custom(player, "Code_" .. (CodesLogic.normalize(code) or "?"))
+		return { ok = true, granted = { cash = amount } }
 	end
 	local ok, err, granted = DataService.mutate(player, function(p)
 		local c = grantCtx()

@@ -385,6 +385,7 @@ local en: { [string]: string } = {
 	["codes.unknown"] = "Unknown code.",
 	["codes.expired"] = "This code has expired.",
 	["codes.already"] = "You already used this code.",
+	["codes.match_only"] = "This code only works during a match.",
 
 	-- Daily
 	["daily.title"] = "Daily reward",
@@ -401,6 +402,7 @@ local en: { [string]: string } = {
 	["reward.item"] = "{item}",
 	["reward.unit"] = "{unit}",
 	["reward.units"] = "+{n} new defenders",
+	["reward.cash"] = "+{n} cash",
 
 	-- Store additions
 	["store.lira"] = "Lira",
@@ -969,6 +971,7 @@ local ar: { [string]: string } = {
 	["codes.unknown"] = "كود مش معروف.",
 	["codes.expired"] = "هالكود خلص وقته.",
 	["codes.already"] = "استعملت هالكود من قبل.",
+	["codes.match_only"] = "هالكود بيشتغل بس جوّا المعركة.",
 
 	-- Daily
 	["daily.title"] = "جائزة اليوم",
@@ -985,6 +988,7 @@ local ar: { [string]: string } = {
 	["reward.item"] = "{item}",
 	["reward.unit"] = "{unit}",
 	["reward.units"] = "+{n} رجال جدد",
+	["reward.cash"] = "+{n} مصاري",
 
 	-- Store additions
 	["store.lira"] = "ليرات",

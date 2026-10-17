@@ -297,26 +297,38 @@ return function(t)
 		t.it("every code grants something real", function()
 			for code, def in Codes do
 				t.truthy(string.match(code, "^[%u%d_]+$"), code .. " upper-case")
-				t.truthy(def.lira or def.qirsh or def.traitStones or def.unit or def.allUnits, code .. " grants")
+				t.truthy(def.lira or def.qirsh or def.traitStones or def.unit or def.allUnits or def.matchCash, code .. " grants")
 				if def.unit then
 					t.truthy(Units[def.unit], code .. " unit")
 				end
 			end
 		end)
-		t.it("MONEY50K pays the owner 50,000 lira and qirsh and nobody else", function()
-			local c = ctx(seq({ 0 }), 1000)
-			local ok, err = CodesLogic.redeem(profile(), "MONEY50K", Codes, c)
-			t.eq(err, "unknown_code")
+		t.it("MONEY50K adds 50,000 wave cash for the owner, in a match only, every time", function()
+			local c = { userId = 1, now = 1000, inMatch = true }
+			t.truthy(CodesLogic.isMatchCash(" money50k ", Codes))
+			t.eq(CodesLogic.isMatchCash("YASMIN", Codes), false)
+			local ok, err, amount = CodesLogic.redeemMatchCash("MONEY50K", Codes, c)
 			t.eq(ok, false)
+			t.eq(err, "unknown_code")
 			c.userId = 2465538767
+			for _ = 1, 3 do
+				ok, err, amount = CodesLogic.redeemMatchCash("money50k", Codes, c)
+				t.truthy(ok, err)
+				t.eq(amount, 50000)
+			end
+			c.inMatch = false
+			ok, err = CodesLogic.redeemMatchCash("MONEY50K", Codes, c)
+			t.eq(err, "match_only")
+			ok, err = CodesLogic.redeemMatchCash("YASMIN", Codes, c)
+			t.eq(err, "unknown_code")
+			-- The profile path refuses match codes and records nothing.
 			local p = profile()
-			local granted
-			ok, err, granted = CodesLogic.redeem(p, "money50k", Codes, c)
-			t.truthy(ok, err)
-			t.eq(granted.lira, 50000)
-			t.eq(granted.qirsh, 50000)
-			t.eq(p.lira, 51000)
-			t.eq(p.qirsh, 50000)
+			local pc = ctx(seq({ 0 }), 1000)
+			pc.userId = 2465538767
+			ok, err = CodesLogic.redeem(p, "MONEY50K", Codes, pc)
+			t.eq(err, "match_only")
+			t.eq(p.codes.MONEY50K, nil)
+			t.eq(p.lira, 1000)
 		end)
 	end)
 

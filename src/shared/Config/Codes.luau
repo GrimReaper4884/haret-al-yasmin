@@ -9,6 +9,7 @@ export type CodeDef = {
 	traitStones: number?,
 	unit: string?, -- grants one copy
 	allUnits: boolean?, -- grants every defender in Config/Units the player doesn't own yet
+	matchCash: number?, -- wave cash in the current match; repeatable, only works during a match
 	onlyUserIds: { number }?, -- if set, only these Roblox user ids can redeem; others get unknown_code
 	expiresAt: number?,
 }
@@ -25,8 +26,8 @@ local Codes: { [string]: CodeDef } = {
 	-- Testers: every defender. Hand out privately, never post publicly (expires 2026-11-17).
 	-- To lock it to named testers, add onlyUserIds = { 12345, ... }.
 	HARATESTERWRCF5G = { allUnits = true, expiresAt = 1794873600 },
-	-- Owner only: 50,000 lira and qirsh to try every summon and shop item. Anyone else gets unknown_code.
-	MONEY50K = { lira = 50000, qirsh = 50000, onlyUserIds = { 2465538767 } },
+	-- Owner only: +50,000 wave cash in the current match, reusable every match. Anyone else gets unknown_code.
+	MONEY50K = { matchCash = 50000, onlyUserIds = { 2465538767 } },
 }
 
 return Codes

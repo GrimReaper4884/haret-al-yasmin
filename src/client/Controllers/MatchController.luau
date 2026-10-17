@@ -48,6 +48,7 @@ local flash: Frame
 local skipButton: TextButton
 local speedButton: TextButton
 local leaveButton: TextButton
+local codesButton: TextButton
 local result: Modal.Modal
 local resultBody: TextLabel
 local replayButton: TextButton
@@ -87,8 +88,8 @@ local function build()
 	cashLabel.TextColor3 = Color3.fromHex("#FFD970")
 	cashBox = cashPill
 
-	-- Right column: skip, speed, leave
-	local col = Create("Frame", { AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -10, 0, 60), Size = UDim2.fromOffset(112, 170), BackgroundTransparency = 1, ZIndex = 3, Parent = hud })
+	-- Right column: skip, speed, leave, codes
+	local col = Create("Frame", { AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -10, 0, 60), Size = UDim2.fromOffset(112, 220), BackgroundTransparency = 1, ZIndex = 3, Parent = hud })
 	Create("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = col })
 	skipButton = Theme.button({ LayoutOrder = 1, TextSize = 16, Size = UDim2.new(1, 0, 0, Theme.TOUCH), BackgroundColor3 = Theme.colors.confirm, ZIndex = 3, Parent = col })
 	speedButton = Theme.button({ LayoutOrder = 2, TextSize = 20, Size = UDim2.new(1, 0, 0, Theme.TOUCH), BackgroundColor3 = Theme.colors.gold, ZIndex = 3, Parent = col })
@@ -125,6 +126,14 @@ local function build()
 	end)
 	leaveButton.Activated:Connect(function()
 		Net.event(Net.Events.LeaveMatch):FireServer()
+	end)
+	-- Codes mid-match (match-cash codes only work here); the lobby menu is hidden during a match.
+	codesButton = Theme.button({ Name = "Codes", LayoutOrder = 4, TextSize = 15, Size = UDim2.new(1, 0, 0, Theme.TOUCH - 6), BackgroundColor3 = Color3.fromHex("#5E6F7D"), ZIndex = 3, Parent = col })
+	codesButton.Activated:Connect(function()
+		local open = LobbyMenuController.opener("codes")
+		if open then
+			open()
+		end
 	end)
 
 	-- Full-screen red flash when the gate is hit (own ScreenGui so it covers the safe-area insets).
@@ -227,6 +236,7 @@ local function render()
 	speedButton.Visible = state.host == me
 	speedButton.Text = t("match.speed", { n = state.speed or 1 })
 	leaveButton.Text = t("match.leave")
+	codesButton.Text = t("codes.title")
 end
 
 local function showResult(payload: any)
