@@ -128,7 +128,7 @@ Roblox `AnalyticsService`:
   (first dialogue answered) → 3 first summon → 4 portal (first match started) → 5 wave 1 cleared → 6 wave 5
   cleared → 7 first story clear. Each step is stamped once per player lifetime in `profile.funnel`, so the
   funnel reads as "players who ever got this far". The slice's quest funnel (spawned → talked → accepted →
-  delivered → purchased) was replaced on 2026-10-17 (DECISIONS D-012). Studio: `HaretDebug:Invoke("funnel")`
+  delivered → purchased) was replaced on 2026-10-17 (DECISIONS D-013). Studio: `HaretDebug:Invoke("funnel")`
   and a `[Funnel] … s after join` line per step; live medians come from the Creator Dashboard.
 - Economy events: every lira, qirsh and trait-stone move, emitted from the audit ledger (`DATA_SCHEMA.md` §9)
   with the mutation source as the SKU.

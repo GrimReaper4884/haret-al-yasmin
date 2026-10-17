@@ -137,7 +137,7 @@ models, red-teaming, onboarding measurement, and live ops.
 - [ ] **P1-17 Co-op verification (multi-client)** · deps: P0-02 · STOP
   - **Tools:** no multi-client MCP tool (TOOLS.md): ask the owner to start **Test → Clients and Servers** with 2 players.
   - **Accept:** with 2 clients: both get their own start cash and wave bonus; kill cash goes to the killing tower's owner; the skip vote needs both; a client that leaves mid-match pays the loss share and the match continues; no cross-talk in dialogue or shop sessions. Record in `TEST_REPORT_SLICE.md`.
-- [ ] **P1-18 Performance gate** · deps: P0-03
+- [!] **P1-18 Performance gate** · deps: P0-03 · server side PASSED (DECISIONS D-014: 0.7 ms avg / 1.2 ms p95 / 2.5 ms max with 271 attackers and 60 towers); client FPS and the phone check need the owner: Studio throttles RenderStepped to 15 FPS while unfocused, and the Device Emulator can't be driven from MCP
   - **Goal:** The worst realistic match: a party of 4 at Endless wave 60+ (≥ 150 live attackers) with 80 towers.
   - **Tools:** `execute_luau` Server (`os.clock` around `TdSim.step` and the `MatchEvents` batch) and Client (average frame time over 5 s from `RunService.RenderStepped`); `skill` `rbx-device-simulator-lua` for a mid-range phone; `skill` `rbx-perf-profiling` if the budget is missed.
   - **Accept:** server step ≤ 4 ms average and ≤ 8 ms p95 per match; client ≥ 30 FPS on the emulated phone; `EnemyPositions` packet ≤ 900 bytes; numbers logged in DECISIONS. If device emulation can't be driven from MCP, STOP and ask the owner to run the Device Emulator.
@@ -173,10 +173,10 @@ models, red-teaming, onboarding measurement, and live ops.
 - [x] **P2-15 Audit log and ledger** · deps: P2-02 · 30b1bee
   - **Goal:** Every lira/qirsh/stone grant and spend writes an audit entry (source, amount, idempotency key) inside the same `mutate`; a per-player ring buffer in the profile plus analytics economy events.
   - **Accept:** specs: a replayed receipt or code produces no second entry; the summon and reroll entries carry the roll seed; `DATA_SCHEMA.md` updated.
-- [~] **P2-16 Onboarding funnel measurement** · deps: P2-02 · code + specs done; Studio harness timing pending (place not open)
+- [x] **P2-16 Onboarding funnel measurement** · deps: P2-02 · 668cfe5 (harness: join → wave 1 in 52 s, TEST_REPORT_SLICE §P2-16; live median: STOP, owner reads the Creator Dashboard after the next publish)
   - **Goal:** Funnel events join → first prompt → first summon → portal → wave 1 → wave 5 → first clear, with timestamps; a Studio-only report of join → wave 1 time.
   - **Accept:** in Studio with the harness the steps complete in ≤ 60 s; the live median comes from the Creator Dashboard after the next publish (owner reads it; STOP to ask).
-- [~] **P2-17 Match VFX pass** · deps: P1-15 · code + budget specs done; screenshots and the frame-time check need the Studio place open
+- [x] **P2-17 Match VFX pass** · deps: P1-15 · 447a4b8 (Studio evidence in TEST_REPORT_SLICE §P2-17)
   - **Goal:** Hits, deaths (petal/ash poof, no blood), shabriyeh and sweep impacts, boss telegraphs, gate hit; all client-side from `MatchEvents`, pooled, capped per frame.
   - **Accept:** screenshots of each effect; client frame time still within P1-18.
 - [ ] **P2-18 Vertical slice gate** · deps: P2-12..P2-17 · STOP

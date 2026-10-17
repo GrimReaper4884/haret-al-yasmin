@@ -7,6 +7,7 @@
 --   print(D:Invoke("peek"))          -- what the (mock) store holds
 --   print(D:Invoke("ledger"))        -- audit ledger (Logic/Ledger) as JSON, newest last
 --   print(D:Invoke("funnel"))        -- onboarding funnel rows with seconds since join (P2-16)
+--   print(D:Invoke("funnel", "reset")) -- forget the stamps and restart the join clock (Studio timing runs)
 --   print(D:Invoke("reload"))        -- save + release + load again
 --   print(D:Invoke("failNext", 3))   -- next 3 store calls fail (mock only)
 --   print(D:Invoke("qirsh", 500))    -- grant test qirsh (Studio only)
@@ -61,6 +62,13 @@ function DebugService.start()
 		elseif cmd == "ledger" then
 			return HttpService:JSONEncode(DataService.ledger(player))
 		elseif cmd == "funnel" then
+			-- "reset" re-stamps join at now so a harness run can be timed again (stamps are lifetime)
+			if arg == "reset" then
+				return DataService.mutate(player, function(profile)
+					profile.funnel = { join = os.time() }
+					return true
+				end)
+			end
 			return HttpService:JSONEncode(FunnelService.report(player))
 		elseif cmd == "reload" then
 			return DataService.debug.reload(player)

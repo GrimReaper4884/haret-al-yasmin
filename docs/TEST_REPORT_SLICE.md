@@ -462,3 +462,47 @@ with the camera facing away read 0.00° on every frame.
 - `Workspace.Baseplate` and `SpawnLocation` are template leftovers in the saved place; harmless, delete if you like.
 - The `rbxassetid://203785492` warning is not from our content; it tracks with the Roblox avatar/core scripts.
 - Balance drift in the non-asserted Endless cells (above) needs a seeded harness before it means anything.
+
+## Phase 2 verification run · 2026-10-17 (TEST place, Studio Play Solo, driven through MCP)
+
+*Build: `phase/0` at 447a4b8 + the funnel-reset debug command · Persistence: real DataStore (the owner's TEST
+profile; the run added one seeded `summon_x1` and two `match:ep1` ledger entries) · Console: no errors or
+warnings from our code (the `rbxassetid://203785492` lines are Roblox core, not in `src/`).*
+
+### P2-16 onboarding funnel
+
+| Run | join | summon | portal | wave 1 | wave 5 | clear |
+|---|---|---|---|---|---|---|
+| 1 (first session, tool latency included) | 0 s | 44 s | 50 s | 70 s | 141 s | 584 s (Episode 1 won) |
+| 2 (clean: `HaretDebug:Invoke("funnel", "reset")`, then keys `7 X M C P B B B B K T` in one batch) | 0 s | 17 s | 23 s | **52 s** | | |
+
+Every reached step printed `[Funnel] <player> reached <step> (step n) <s> s after join` and fired
+`LogOnboardingFunnelStepEvent`; `HaretDebug:Invoke("funnel")` returned the seven rows. "prompt" (first
+dialogue answered) is not part of the harness and stayed empty. Accept: join → wave 1 in ≤ 60 s ✅ (52 s).
+The live median is the owner's to read from the Creator Dashboard after the next publish (STOP).
+
+### P2-17 match effects
+
+Evidence from a 28 s client-side watcher over `Workspace.ClientFx` during waves 17–19, then 24 s around the
+wave-20 boss (counts of pooled parts by shape/colour, peak live parts):
+
+| Effect | Seen | Where |
+|---|---|---|
+| Strike streaks | 36 + 17 | every attack (P1) |
+| Hit sparks | 23 + 15 | at the target |
+| Petal poofs | 103 + 36 petals | thieves' deaths (no blood) |
+| Sweep rings | 2 | an ultimate |
+| Gate-hit discs | 1 + 2 | thieves reached the gate (gate 100 → 89); screen-edge blink in `MatchFxController` |
+| Boss telegraph rings | 4 (first 7.6 s after the skip) | wave 20 "The 'Akeed's Charge" banner; 3 pulses + the spawn ring |
+| Peak pooled parts | 25 / 21 | cap 80, per-frame cap 14, `skipped` stayed 0 in the overlay |
+
+Screenshots taken: the fight at waves 4 and 15 (crowd with sparks), the boss banner at wave 20, the victory
+screen ("The lane is safe!", +80 lira · +120 qirsh · +120 XP). The effects never pushed `[Fx] skipped` above 0.
+
+### P1-18 performance gate (server side)
+
+See DECISIONS D-014: `TdSim.step` 0.70 ms avg / 1.23 ms p95 / 2.49 ms max with 271 live attackers and 60
+towers (the 4-player cap); `MatchEvents` batch 100 B avg, 3 KB max. Server ✅. Client ❗ needs the owner:
+Studio throttled RenderStepped to a flat 66.7 ms (Heartbeat 16.7 ms) because the window was unfocused during
+MCP driving, so no honest FPS number exists yet; the phone check needs the Device Emulator.
+
