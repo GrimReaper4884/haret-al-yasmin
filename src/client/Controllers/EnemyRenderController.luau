@@ -11,6 +11,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared.Net)
@@ -27,7 +28,9 @@ local Create = require(UI.Create)
 local Theme = require(UI.Theme)
 local Fx = require(UI.Fx)
 local DamageNumbers = require(UI.DamageNumbers)
+local CoinFlight = require(UI.CoinFlight)
 local MatchController = require(script.Parent.MatchController)
+local MatchCameraController = require(script.Parent.MatchCameraController)
 local AudioController = require(script.Parent.AudioController)
 local ThrowFx = require(script.Parent.ThrowFx)
 
@@ -226,11 +229,32 @@ local function bossTelegraph()
 	end)
 end
 
-local function poof(model: Model)
+-- Set by RigAnimController: plays a figure's `death` clip and returns its length in seconds (0 when
+-- the figure has none), so the fade waits for the fall (PV-B03; the clips arrive in PV-A03).
+local deathClip: ((Model) -> number)? = nil
+function EnemyRenderController.setDeathClip(fn: (Model) -> number)
+	deathClip = fn
+end
+
+-- A boss falls: a dust ring runs out from the body and the camera shakes briefly ("full" only).
+local function bossFall(at: Vector3)
 	if not Fx.full() then
-		model:Destroy()
 		return
 	end
+	local cfg = Vfx.BOSS_DEATH
+	local ring = Fx.part(Enum.PartType.Cylinder)
+	if ring then
+		ring.Material = Enum.Material.SmoothPlastic
+		ring.Color = Color3.fromHex(cfg.dustColor)
+		ring.Transparency = 0.35
+		ring.Size = Vector3.new(0.6, 2, 2)
+		ring.CFrame = CFrame.new(at + Vector3.new(0, 0.4, 0)) * CFrame.Angles(0, 0, math.rad(90))
+		Fx.fade(ring, cfg.ringLife, { Size = Vector3.new(0.2, cfg.ringRadius * 2, cfg.ringRadius * 2), Transparency = 1 })
+	end
+	MatchCameraController.shake(cfg.shake, cfg.amplitude)
+end
+
+local function fadeOut(model: Model)
 	-- Shrinking a skinned mesh doesn't move its bones, so imported figures would stretch; fade only
 	local skinned = model:FindFirstChildWhichIsA("Bone", true) ~= nil
 	for _, d in model:GetDescendants() do
@@ -244,7 +268,27 @@ local function poof(model: Model)
 	end)
 end
 
-local function remove(id: number, died: boolean)
+-- Defeated: play the death clip if the figure has one (hold its length), then fade.
+local function poof(model: Model)
+	if not Fx.full() then
+		model:Destroy()
+		return
+	end
+	local hold = if deathClip then deathClip(model) else 0
+	if hold > 0 then
+		-- The model is out of `enemies` already, so nothing moves it while it falls.
+		task.delay(hold, function()
+			if model.Parent then
+				fadeOut(model)
+			end
+		end)
+	else
+		fadeOut(model)
+	end
+end
+
+-- `death` is the server event when the enemy was defeated (it carries cash and the owner).
+local function remove(id: number, died: boolean, death: any?)
 	local rec = enemies[id]
 	if not rec then
 		return
@@ -252,7 +296,16 @@ local function remove(id: number, died: boolean)
 	enemies[id] = nil
 	byModel[rec.model] = nil
 	if died then
-		deathPoof(rec.model:GetPivot().Position, rec.boss)
+		local at = rec.model:GetPivot().Position
+		deathPoof(at, rec.boss)
+		if rec.boss then
+			bossFall(at)
+		end
+		-- Reward pop: your own kills fling a coin into the cash pill.
+		local pill = MatchController.cashPill()
+		if death and pill and Fx.any() and death.owner == Players.LocalPlayer.Name and (death.cash or 0) > 0 then
+			CoinFlight.fly(at + Vector3.new(0, 3, 0), pill)
+		end
 		poof(rec.model)
 	else
 		rec.model:Destroy()
@@ -403,7 +456,7 @@ local function onEvents(events: { any })
 				bossRing((origin :: CFrame * CFrame.new(x, 0, z)).Position, Vfx.BOSS.spawnRadius, Vfx.BOSS.spawnLife)
 			end
 		elseif t == "death" then
-			remove(e.id, true)
+			remove(e.id, true, e)
 		elseif t == "reached" then
 			remove(e.id, false)
 			gateHit()
@@ -575,6 +628,7 @@ function EnemyRenderController.start()
 	folder.Name = "EnemyRender"
 	folder.Parent = Workspace
 	DamageNumbers.start()
+	CoinFlight.start()
 	MatchController.Started:Connect(function(info: MatchController.Info)
 		clear()
 		arenaPath = Path.build(Arenas[info.arenaId].path)

@@ -160,6 +160,64 @@ local function closeGate(origin: Vector3)
 	end)
 end
 
+-- A thief reached the gate (PV-B03): the leaves shudder on their hinges and dust kicks up at the
+-- foot of the doors. A leaf that is already shuddering is left alone; the dust is pooled parts.
+local shuddering: { [BasePart]: boolean } = {}
+local function gateShudder()
+	local info = MatchController.info()
+	local doors = if info and Fx.any() then findDoors(info.origin) else nil
+	if not doors then
+		return
+	end
+	local cfg = Vfx.GATE_SHUDDER
+	for _, leafName in { "LeafW", "LeafE" } do
+		local leaf = doors:FindFirstChild(leafName)
+		if leaf and leaf:IsA("BasePart") and not shuddering[leaf] then
+			shuddering[leaf] = true
+			local rest = leaf.CFrame
+			local sideAttr = leaf:GetAttribute("Side")
+			local side: number = if type(sideAttr) == "number" then sideAttr else 1
+			local hinge = rest * CFrame.new(side * leaf.Size.X / 2, 0, 0)
+			local function at(deg: number): CFrame
+				return hinge * CFrame.Angles(0, math.rad(side * deg), 0) * CFrame.new(-side * leaf.Size.X / 2, 0, 0)
+			end
+			task.spawn(function()
+				local steps = { cfg.angle, -cfg.angle * 0.6, cfg.angle * 0.3, 0 }
+				for _, deg in steps do
+					leaf.CFrame = at(deg)
+					task.wait(cfg.life / #steps)
+				end
+				leaf.CFrame = rest
+				shuddering[leaf] = nil
+			end)
+		end
+	end
+	if not Fx.full() then
+		return
+	end
+	local base = doors:GetPivot()
+	-- Puffs scatter along the foot of the doors, pushed toward the road (the arena centre side).
+	local toward = (info :: any).origin - base.Position
+	toward = Vector3.new(toward.X, 0, toward.Z)
+	toward = if toward.Magnitude > 0.1 then toward.Unit else Vector3.zero
+	local width = doors:GetExtentsSize().X
+	for i = 1, Fx.allow(cfg.dust) do
+		local puff = Fx.part(Enum.PartType.Ball)
+		if not puff then
+			break
+		end
+		puff.Material = Enum.Material.SmoothPlastic
+		puff.Color = Color3.fromHex(cfg.dustColor)
+		puff.Transparency = 0.3
+		puff.Size = Vector3.one * cfg.dustSize
+		local spread = ((i - 0.5) / cfg.dust - 0.5) * width * 0.8 + (math.random() - 0.5) * 1.2
+		local start = (base * CFrame.new(spread, 0, 0)).Position + toward * (1 + math.random() * 1.5)
+		local ground = Vector3.new(start.X, base.Position.Y - doors:GetExtentsSize().Y / 2 + 0.6, start.Z)
+		puff.CFrame = CFrame.new(ground)
+		Fx.fade(puff, cfg.dustLife, { Size = Vector3.one * cfg.dustSize * 2.4, Transparency = 1, CFrame = CFrame.new(ground + Vector3.new(0, cfg.dustRise, 0)) })
+	end
+end
+
 ---------------------------------------------------------------- Ultimates
 -- docs/research/ANIME_VANGUARDS_STUDY.md §4: the name in a big banner, a rarity-coloured edge
 -- flash and a quick zoom punch for your own defenders' ultimates. Effects "reduced" keeps only the
@@ -231,6 +289,7 @@ local function onEvents(events: { any })
 	for _, e in events do
 		if e.type == "reached" then
 			MatchFxController.edgeFlash(Color3.fromHex(Vfx.GATE_HIT.color), Vfx.GATE_HIT.vignette, Vfx.GATE_HIT.vignetteLife)
+			gateShudder()
 		elseif e.type == "towerPlaced" then
 			towerInfo[e.id] = { unitId = e.unitId, owner = e.owner }
 		elseif e.type == "towerSold" then

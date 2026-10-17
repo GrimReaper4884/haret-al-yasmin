@@ -69,4 +69,22 @@ function HitFx.knock(elapsed: number, life: number, amount: number): number
 	return amount * (1 - elapsed / life)
 end
 
+-- A point on the coin's flight from (x0, y0) to (x1, y1) at progress k (0..1): a quadratic curve
+-- whose middle sits `lift / 2` px above the higher end (screen space, y grows downward).
+function HitFx.arc(k: number, x0: number, y0: number, x1: number, y1: number, lift: number): (number, number)
+	local c = math.clamp(k, 0, 1)
+	local cx, cy = (x0 + x1) / 2, 2 * math.min(y0, y1) - (y0 + y1) / 2 - lift
+	local a, b, d = (1 - c) * (1 - c), 2 * (1 - c) * c, c * c
+	return a * x0 + b * cx + d * x1, a * y0 + b * cy + d * y1
+end
+
+-- A camera shake offset (studs) at `elapsed` of `life`: a decaying jitter, zero after `life`.
+function HitFx.shake(elapsed: number, life: number, amplitude: number, seed: number): (number, number)
+	if elapsed < 0 or elapsed >= life then
+		return 0, 0
+	end
+	local fall = amplitude * (1 - elapsed / life)
+	return math.sin(elapsed * 90 + seed) * fall, math.cos(elapsed * 70 + seed * 1.7) * fall
+end
+
 return HitFx

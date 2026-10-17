@@ -68,6 +68,11 @@ function MatchController.state(): any
 	return state
 end
 
+-- The cash pill (the reward coins fly into it, PV-B03).
+function MatchController.cashPill(): Frame?
+	return cashBox
+end
+
 function MatchController.active(): boolean
 	return info ~= nil
 end

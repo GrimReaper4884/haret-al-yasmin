@@ -9,11 +9,14 @@ local UserInputService = game:GetService("UserInputService")
 local GuiService = game:GetService("GuiService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Arenas = require(Shared.Config.Arenas)
+local HitFx = require(Shared.Logic.HitFx)
 local UI = script.Parent.Parent.UI
 local Theme = require(UI.Theme)
+local Fx = require(UI.Fx)
 local Root = require(UI.Root)
 local MatchController = require(script.Parent.MatchController)
 local LocaleController = require(script.Parent.LocaleController)
@@ -62,6 +65,27 @@ local function apply()
 	end
 end
 
+-- A short decaying camera shake (PV-B03: boss deaths). Effects "full" only, never under Reduced Motion.
+local shakeAt: number? = nil
+local shakeLife = 0
+local shakeAmp = 0
+local shakeSeed = 0
+local applied = CFrame.identity
+
+local function reducedMotion(): boolean
+	local ok, v = pcall(function()
+		return (GuiService :: any).ReducedMotionEnabled
+	end)
+	return ok and v == true
+end
+
+function MatchCameraController.shake(seconds: number, amplitude: number)
+	if not Fx.full() or reducedMotion() then
+		return
+	end
+	shakeAt, shakeLife, shakeAmp, shakeSeed = os.clock(), seconds, amplitude, math.random() * 10
+end
+
 function MatchCameraController.toggle()
 	if not MatchController.active() then
 		return
@@ -71,6 +95,27 @@ function MatchCameraController.toggle()
 end
 
 function MatchCameraController.start()
+	RunService:BindToRenderStep("HaretShakeUndo", Enum.RenderPriority.Camera.Value - 1, function()
+		local camera = Workspace.CurrentCamera
+		if camera and applied ~= CFrame.identity then
+			camera.CFrame = camera.CFrame * applied:Inverse()
+			applied = CFrame.identity
+		end
+	end)
+	RunService:BindToRenderStep("HaretShake", Enum.RenderPriority.Camera.Value + 1, function()
+		local camera = Workspace.CurrentCamera
+		local at = shakeAt
+		if not camera or not at then
+			return
+		end
+		local dx, dy = HitFx.shake(os.clock() - at, shakeLife, shakeAmp, shakeSeed)
+		if dx == 0 and dy == 0 then
+			shakeAt = nil
+			return
+		end
+		applied = CFrame.new(dx, dy, 0)
+		camera.CFrame = camera.CFrame * applied
+	end)
 	button = Theme.button({
 		Name = "CameraToggle",
 		TextSize = 13,

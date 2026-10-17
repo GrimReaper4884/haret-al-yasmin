@@ -596,3 +596,14 @@ Verdict: external (Studio or a plugin), ignored (D-020).
 | Budget | 60 s through waves 10–12: `[Fx] live` peak 14 of 80, skipped 0; damage numbers peak 3 on screen, pool 32 fixed |
 | Not reproduced | the Endless wave-30 run with four players' towers (no multi-client tool, one player caps at 15 towers); covered by the 100 hits/s pool spec and the `VfxBudget` hard cap of 80 parts |
 | Console | nothing from `src/` |
+
+### PV-B03 deaths, reward coins, gate hits (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 238 specs (new: coin arc ends at both points and lifts its middle above both ends; shake decays to 0; coin/dust caps), strict analyze clean, `rojo build` OK |
+| Sync | `script_grep "gateShudder"` finds MatchFxController |
+| Gate hit | undefended wave 1: the west leaf turns 3° on its hinge 25 s in (LookVector delta 0.052) and 4 dust puffs rise at the foot of the doors with the red disc and edge flash; before/after the scatter fix: `pvb03_gate_hit_before_scatter_*.jpg` (a neat row) → `pvb03_gate_hit_dust_*.jpg` |
+| Reward coins | watchtower view: 2 coins in flight at once from kills toward the cash pill; pool of 6 frames built once; `pvb03_reward_coins_*.jpg` (frozen copies) |
+| Boss death | wave 10 Sergeant killed: the static watchtower camera shook for 12 frames, peak 0.82 studs, 0 drift afterwards |
+| Console | nothing from `src/` |

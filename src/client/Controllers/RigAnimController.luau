@@ -459,6 +459,16 @@ function RigAnimController.start()
 	end)
 	RunService.RenderStepped:Connect(step)
 	ThrowFx.start()
+	-- Defeated figures play their `death` clip before fading (PV-B03; clips are baked in PV-A03).
+	EnemyRenderController.setDeathClip(function(model: Model): number
+		local rec = recs[model]
+		local bone = if rec then rec.bone else nil
+		if bone and BoneAnim.length(bone, "death") > 0 then
+			BoneAnim.play(bone, "death", 1, 1)
+			return BoneAnim.length(bone, "death")
+		end
+		return 0
+	end)
 end
 
 return RigAnimController

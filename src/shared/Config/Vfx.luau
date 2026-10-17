@@ -18,6 +18,14 @@ return {
 	HIT_FLASH = { color = "#FFFFFF", fill = 0.55, life = 0.08, max = 4 },
 	HIT_PUNCH = { knock = 0.35, life = 0.1 },
 
+	-- Deaths and gate hits (PV-B03). A boss death adds a dust ring and a short camera shake (Effects
+	-- "full" and not Reduced Motion). Your own kills fling a cash coin from the body to the cash
+	-- pill (at most `max` in flight, the rest skipped). A gate hit shudders the gate leaves by
+	-- `angle` degrees and kicks up `dust` puffs at the foot of the doors.
+	BOSS_DEATH = { ringRadius = 10, ringLife = 0.7, dustColor = "#B9A57E", shake = 0.2, amplitude = 0.6 },
+	COIN_FLIGHT = { max = 6, life = 0.55, size = 32, lift = 90 },
+	GATE_SHUDDER = { life = 0.25, angle = 3, dust = 4, dustSize = 1.6, dustRise = 2.5, dustLife = 0.6, dustColor = "#C9B48F" },
+
 	-- Deaths: a jasmine-petal poof for people, an ash poof for bosses. No blood anywhere.
 	DEATH = {
 		petals = 6, -- parts per poof ("reduced": 2)
