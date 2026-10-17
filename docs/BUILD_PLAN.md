@@ -64,13 +64,13 @@ models, red-teaming, onboarding measurement, and live ops.
 
 ### Agent tasks
 
-- [~] **P0-01 Tool inventory** · deps: U0-11
+- [x] 7b0c66d **P0-01 Tool inventory** · deps: U0-11
   - **Goal:** Record the real MCP tool surface of this machine and fix every name in CLAUDE.md that differs.
   - **Create:** `docs/TOOLS.md`.
   - **Tools:** `claude mcp list`, tool schemas, `list_roblox_studios`, `get_studio_state`, `get_blendfile_summary_path_info`, `get_objects_summary`.
   - **Accept:** TOOLS.md lists both servers with required params and limits; `list_roblox_studios` returns the TEST place; every differing name is noted and CLAUDE.md uses the real names.
 
-- [ ] **P0-02 Rojo round-trip and playtest loop** · deps: P0-01
+- [x] 51bd1cb **P0-02 Rojo round-trip and playtest loop** · deps: P0-01
   - **Goal:** Prove live sync plus the playtest/console loop through MCP (earlier runs used computer use).
   - **Tools:** Bash (`rojo serve` already up on 34872), `search_game_tree`, `script_grep`, `start_stop_play`, `get_console_output`, `screen_capture`.
   - **Accept:**
@@ -78,37 +78,37 @@ models, red-teaming, onboarding measurement, and live ops.
     - A nonce comment added to `Main.server.luau` appears via `script_grep` within seconds, then is reverted; nothing is committed for it.
     - During a playtest the console shows `[HaretAlYasmin] server ready`, no `PERSISTENCE DISABLED` (API access on), and no errors or warnings from our code; a screenshot shows the lane.
 
-- [ ] **P0-03 Lint, type and test baseline** · deps: P0-02
+- [x] 47106ad **P0-03 Lint, type and test baseline** · deps: P0-02
   - **Goal:** Zero-error baseline and one repeatable command.
   - **Create:** `tools/check.ps1`, `tools/check.sh` (selene, `lune run tests/run`, sourcemap + `luau-lsp analyze` strict, `rojo build`; StyLua advisory per D-005), `.styluaignore` for generated clips.
   - **Fix:** the 3 type errors at HEAD (`BoneAnim.clipsFor` narrowing; `RigAnimController` passing `speedMul` as `dt` and omitting `smooth`, D-011) and the unused `RunService` in `DataService`.
   - **Accept:** `tools/check.ps1` prints `CHECK OK`; selene 0 errors 0 warnings; luau-lsp 0 errors; 147+ specs pass; a playtest shows imported enemies walking smoothly (the `dt` bug is visible as a jittering walk).
 
-- [ ] **P0-04 Test harness proof** · deps: P0-02
+- [x] 0c7a951 **P0-04 Test harness proof** · deps: P0-02
   - **Goal:** Prove the Lune harness catches a broken number.
   - **Tools:** Bash.
   - **Accept:** `lune run tests/run` is green; changing `TD.ODDS.rare` so the odds no longer sum to 1 (or `PITY_LEGENDARY`) makes at least one spec fail; the change is reverted. `lune run tests/balance` runs the 96-cell matrix and matches `TOWER_DEFENSE.md` §5 on the asserted cells. Convention: specs stay in `tests/*.spec.luau`, registered in `tests/run.luau`.
 
-- [ ] **P0-05 Place layout check** · deps: P0-02
+- [x] 0c7a951 **P0-05 Place layout check** · deps: P0-02
   - **Goal:** Confirm nothing in the place is Studio-owned and the runtime world matches the project file.
   - **Tools:** `search_game_tree` (Edit and Server), `inspect_instance`, `execute_luau`, `screen_capture`.
   - **Accept:** In Edit the DataModel holds only the Rojo-synced folders, `Lighting` and service properties from `default.project.json` (ClockTime 15.2, StreamingEnabled) and a baseplate/spawn; during a playtest `Workspace` contains the lane zones, `Crowd`, portals and (after a queue) `Arenas`. Any Studio-owned leftovers are listed for the owner (STOP before deleting anything).
 
-- [ ] **P0-06 Blender and preview toolkit** · deps: P0-01
+- [x] 0c7a951 **P0-06 Blender and preview toolkit** · deps: P0-01
   - **Goal:** The Blender side of the pipeline works from MCP and headlessly.
   - **Tools:** `get_blendfile_summary_path_info`, `execute_blender_code`, `get_screenshot_of_area_as_image`, `render_thumbnail_to_path`; Bash for `tools/anim/preview.py`.
   - **Accept:** `execute_blender_code` returns the Blender version and the tri count of the default cube; `render_thumbnail_to_path` writes a PNG that is actually looked at; `blender -b --factory-startup -P tools/anim/preview.py -- <an existing clip .glb> out.png 8 front` renders a sheet of an existing character clip.
 
-- [ ] **P0-07 Asset credentials and upload path** · deps: P0-06, U0-10
+- [x] 0c7a951 **P0-07 Asset credentials and upload path** · deps: P0-06, U0-10
   - **Goal:** Confirm the Open Cloud key works and decide the upload route.
   - **Accept:** a read-only Open Cloud call (key introspection or an Assets API read) succeeds without printing the key; `docs/CHARACTER_PIPELINE.md` names the current route (Studio importer, GLB) and D-004 records that `tools/upload_asset.py` is deferred to P3-02. If the key is missing: STOP and ask for U0-10.
 
-- [ ] **P0-08 Imported asset round trip** · deps: P0-05, P0-07
+- [x] 0c7a951 **P0-08 Imported asset round trip** · deps: P0-05, P0-07
   - **Goal:** One real asset verified end to end in Studio.
   - **Tools:** `search_game_tree`, `inspect_instance`, `execute_luau`, `screen_capture`.
   - **Accept:** `ReplicatedStorage.CharacterModels.AbuHatem` (or any production model) exists with Bones and no Script descendants; its bounding size is the archetype height ±5 % after `RigBuilder` scaling in a match; a playtest screenshot shows the imported model placed and animating with its hand prop.
 
-- [ ] **P0-09 Decision log** · deps: none
+- [x] 5fbe57a **P0-09 Decision log** · deps: none
   - **Create:** `docs/DECISIONS.md` seeded with D-001…D-011 (codebase choice, tool names, Lune, Meshy pipeline, StyLua advisory, one place, IP stance, growth axes, branching, AFK cap, the P0-03 fix).
   - **Accept:** the file exists; from now on every TUNE change and design deviation gets a dated line.
 
