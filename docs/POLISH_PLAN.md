@@ -439,7 +439,7 @@ and the experience page shows our icon, five thumbnails and a trailer. `tools/ch
 - [x] PV-B00 02c120c · [~] PV-B01 4a8009d (ids await the owner upload) · [x] PV-B02 0802c02 · [x] PV-B03 407e982 · [x] PV-B04 b1ca5d8 · [x] PV-B05 b427880 · [x] PV-B06 d738e08 · [x] PV-B07 c3e69e1 · [x] PV-B08 30e6a8f
 - [~] PV-C01 (tool + dry run done; first real upload awaits owner approval) · [x] PV-C02 5603d0e · [~] PV-C03 (UI wired, art ready; awaits owner pick + upload) · [~] PV-C04 (art + registry done; swaps in when uploaded) · [ ] PV-C05 · [ ] PV-C06
 - [ ] PV-D01 · [ ] PV-D02 · [ ] PV-D03 · [ ] PV-D04 · [ ] PV-D05 · [ ] PV-D06
-- [x] PV-E01 (hash) · [ ] PV-E02 · [ ] PV-E03 · [ ] PV-E04 (optional)
+- [x] PV-E01 d76b586 · [ ] PV-E02 · [ ] PV-E03 · [ ] PV-E04 (optional)
 
 ---
 
