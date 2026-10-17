@@ -116,7 +116,7 @@ local function clipsFor(id: string): ({ [string]: Clip }?, any)
 		cache[id] = set
 		got = set
 	end
-	return if got then got else nil, raw
+	return if type(got) == "table" then got else nil, raw
 end
 
 ---------------------------------------------------------------- players

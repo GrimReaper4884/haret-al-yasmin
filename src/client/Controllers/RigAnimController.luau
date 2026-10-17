@@ -413,7 +413,7 @@ local function step(dt: number)
 				i += 1
 				local show, far = visible(camera, m.PrimaryPart.Position, camPos)
 				if show and (not far or (frame + i) % 3 == 0) then
-					animateTower(track(m, true), now, if far then dt * 3 else dt)
+					animateTower(track(m, true), now, if far then dt * 3 else dt, not far)
 				end
 			end
 		end
@@ -425,7 +425,7 @@ local function step(dt: number)
 				i += 1
 				local show, far = visible(camera, m.PrimaryPart.Position, camPos)
 				if show and (not far or (frame + i) % 3 == 0) then
-					animateEnemy(track(m, false), now, speedMul)
+					animateEnemy(track(m, false), now, if far then dt * 3 else dt, speedMul, not far)
 				end
 			end
 		end
