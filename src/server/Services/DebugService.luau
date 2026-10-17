@@ -10,6 +10,10 @@
 --   print(D:Invoke("funnel", "reset")) -- forget the stamps and restart the join clock (Studio timing runs)
 --   print(D:Invoke("reload"))        -- save + release + load again
 --   print(D:Invoke("failNext", 3))   -- next 3 store calls fail (mock only)
+--   print(D:Invoke("fuzz", "begin")) -- red-team window: snapshot the profile, count throttles (P3-09)
+--   print(D:Invoke("fuzz", "end"))   -- close it: JSON report (profile unchanged?, throttles, errors)
+--   print(D:Invoke("foreignLock"))   -- another server "holds" this profile's lock (then "reload" must refuse)
+--   print(D:Invoke("foreignLock", "clear")) -- release it again ("clear <userId>" once the player is kicked)
 --   print(D:Invoke("qirsh", 500))    -- grant test qirsh (Studio only)
 --   print(D:Invoke("lira", 5000))    -- grant test lira and 5 trait stones (Studio only)
 
@@ -26,6 +30,7 @@ local DataService = require(script.Parent.DataService)
 local MatchService = require(script.Parent.MatchService)
 local AfkService = require(script.Parent.AfkService)
 local FunnelService = require(script.Parent.FunnelService)
+local RemoteFuzz = require(script.Parent.RemoteFuzz)
 local Wallet = require(ReplicatedStorage:WaitForChild("Shared").Logic.Wallet)
 local Economy = require(ReplicatedStorage:WaitForChild("Shared").Config.Economy)
 local TD = require(ReplicatedStorage:WaitForChild("Shared").Config.TD)
@@ -53,6 +58,23 @@ function DebugService.start()
 	end)
 	local fn = Instance.new("BindableFunction")
 	fn.Name = "HaretDebug"
+	-- P3-09 session-lock test on one client: writes (or clears) a fresh lock owned by another job on
+	-- the profile's record, nothing else. A following "reload" must then refuse to save (lock lost →
+	-- kick) and refuse to load (locked), exactly as a second server would be. The kick removes the
+	-- player, so the clear is also reachable without one: D:Invoke("foreignLock", "clear <userId>").
+	local function foreignLock(userId: number, clear: boolean): any
+		local key = Economy.KEY_PREFIX .. tostring(userId)
+		local ok, err = pcall(function()
+			DataService.debug.store():update(key, function(record: any)
+				if type(record) ~= "table" then
+					return nil
+				end
+				record.lock = if clear then nil else { jobId = "redteam-other-server", at = os.time() }
+				return record, { userId }
+			end)
+		end)
+		return if ok then true else "store error: " .. tostring(err)
+	end
 	local function run(player: Player, cmd: string, arg: any): any
 		if cmd == "state" then
 			local p = DataService.getProfile(player)
@@ -142,12 +164,23 @@ function DebugService.start()
 		elseif cmd == "failNext" then
 			DataService.debug.store():failNext(tonumber(arg) or 1)
 			return true
+		elseif cmd == "fuzz" then
+			if arg == "begin" then
+				return RemoteFuzz.begin(player)
+			end
+			return RemoteFuzz.finish()
+		elseif cmd == "foreignLock" then
+			return foreignLock(player.UserId, arg == "clear")
 		end
 		return "unknown command"
 	end
 	fn.OnInvoke = function(cmd: string, arg: any): any
 		local player = Players:GetPlayers()[1]
 		if not player then
+			local clearId = if cmd == "foreignLock" then tonumber(string.match(tostring(arg), "^clear%s+(%d+)$")) else nil
+			if clearId then
+				return foreignLock(clearId, true)
+			end
 			return "no player"
 		end
 		return run(player, cmd, arg)
