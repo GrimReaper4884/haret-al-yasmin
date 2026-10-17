@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "Roblox_Studio": {
+      "command": "/Applications/RobloxStudio.app/Contents/MacOS/StudioMCP",
+      "args": []
+    },
+    "blender": {
+      "command": "uvx",
+      "args": ["mcp-for-blender"],
+      "env": {
+        "DISABLE_TELEMETRY": "true"
+      }
+    }
+  }
+}

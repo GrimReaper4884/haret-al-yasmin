@@ -1,0 +1,12 @@
+# Normalize text to LF so StyLua (line_endings = "Unix") passes on Windows checkouts too.
+* text=auto eol=lf
+
+*.blend binary
+*.fbx binary
+*.glb binary
+*.gltf text
+*.png binary
+*.jpg binary
+*.tga binary
+*.rbxl binary
+*.rbxm binary

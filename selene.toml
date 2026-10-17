@@ -1,0 +1,6 @@
+std = "roblox"
+
+[lints]
+# Luau strict mode does the type checking; selene catches the rest.
+shadowing = "warn"
+unused_variable = "warn"

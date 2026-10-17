@@ -1,0 +1,10 @@
+# Toolchain pinned with Rokit (https://github.com/rojo-rbx/rokit). Run `rokit install` in the repo root.
+#
+# These versions are KNOWN-GOOD RELEASES (each release asset exists), not necessarily the latest.
+# Before the first install, check each repo's Releases page and bump if a newer stable exists
+# (`rokit add <owner/repo>` pins the latest automatically). Record any bump in docs/DECISIONS.md.
+[tools]
+rojo = "rojo-rbx/rojo@7.4.4"
+wally = "UpliftGames/wally@0.3.2"
+selene = "Kampfkarren/selene@0.27.1"
+stylua = "JohnnyMorganz/StyLua@0.20.0"

@@ -1,0 +1,25 @@
+[package]
+name = "haret/haret-al-yasmin"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+private = true
+
+# Installs to Packages/ (mapped to ReplicatedStorage.Packages by default.project.json).
+[dependencies]
+# TODO(P2-02) ProfileStore: distributed via the MadStudioRoblox/ProfileStore GitHub repo and the
+# Creator Store. No Wally package name has been verified, so none is listed here. Either vendor the
+# single ModuleScript as src/server/Vendor/ProfileStore.luau (keep its license header and record it in
+# assets/LICENSES.md), or add a Wally entry only after confirming the exact name/version on wally.run.
+#
+# TODO(P1-08) UI library: Vide (centau/vide) or Fusion (dphfox/Fusion). Confirm the exact Wally
+# package name and latest version on wally.run before adding a line here. Do not guess.
+
+[server-dependencies]
+
+# Installs to DevPackages/ (mapped to ReplicatedStorage.DevPackages; excluded from production builds).
+[dev-dependencies]
+# jest-globals@3.10.0 is the documented example in the jsdotlua/jest-lua README.
+# VERIFY "jsdotlua/jest" at the same version on wally.run before the first `wally install`.
+Jest = "jsdotlua/jest@3.10.0"
+JestGlobals = "jsdotlua/jest-globals@3.10.0"
