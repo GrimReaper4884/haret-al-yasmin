@@ -204,13 +204,36 @@ end
 -- Exposed so the server can show each defender's live buff (players couldn't tell buffs applied).
 TdSim.buffFor = buffFor
 
-local function pickTarget(state: State, t: Tower): (Enemy?, number, number)
+-- The nearest other revealer (Natour's lantern, `revealsStealth`) whose range covers the tower, or
+-- nil. A covered defender can target stealth enemies even without hitsStealth of its own.
+local function revealerFor(state: State, t: Tower): Tower?
+	local best: Tower? = nil
+	local bestD2 = math.huge
+	for _, s in state.towers do
+		if s.stats.revealsStealth and s ~= t then
+			local d2 = dist2(s.x, s.z, t.x, t.z)
+			if d2 <= s.stats.range * s.stats.range and d2 < bestD2 then
+				best, bestD2 = s, d2
+			end
+		end
+	end
+	return best
+end
+-- Exposed so the server can tell each defender's panel who lets it see hidden thieves.
+TdSim.revealerFor = revealerFor
+
+local function seesStealth(state: State, t: Tower): boolean
+	return t.stats.hitsStealth or revealerFor(state, t) ~= nil
+end
+TdSim.seesStealth = seesStealth
+
+local function pickTarget(state: State, t: Tower, sees: boolean): (Enemy?, number, number)
 	local r2 = t.stats.range * t.stats.range
 	local best: Enemy? = nil
 	local bestScore = -math.huge
 	local bx, bz = 0, 0
 	for _, e in state.enemies do
-		if e.alive and (t.stats.hitsStealth or not e.stealth) then
+		if e.alive and (sees or not e.stealth) then
 			local ex, ez = Path.position(state.path, e.dist)
 			local d2 = dist2(ex, ez, t.x, t.z)
 			if d2 <= r2 then
@@ -270,10 +293,10 @@ local function hit(state: State, t: Tower, e: Enemy, damage: number, events: { E
 	end
 end
 
-local function splashHits(state: State, t: Tower, cx: number, cz: number, radius: number, damage: number, events: { Event })
+local function splashHits(state: State, t: Tower, cx: number, cz: number, radius: number, damage: number, sees: boolean, events: { Event })
 	local r2 = radius * radius
 	for _, e in state.enemies do
-		if e.alive and (t.stats.hitsStealth or not e.stealth) then
+		if e.alive and (sees or not e.stealth) then
 			local ex, ez = Path.position(state.path, e.dist)
 			if dist2(ex, ez, cx, cz) <= r2 then
 				hit(state, t, e, damage, events)
@@ -286,7 +309,8 @@ local function towersAct(state: State, events: { Event })
 	for _, t in state.towers do
 		local st = t.stats
 		if st.damage > 0 and state.time >= t.nextAt then
-			local target, tx, tz = pickTarget(state, t)
+			local sees = seesStealth(state, t)
+			local target, tx, tz = pickTarget(state, t, sees)
 			if target then
 				t.nextAt = state.time + st.cooldown
 				local damage = st.damage * buffFor(state, t)
@@ -303,7 +327,7 @@ local function towersAct(state: State, events: { Event })
 					elseif ab.kind == "sweep" then
 						ability = true
 						t.abilityAt = state.time + ab.cooldown
-						splashHits(state, t, t.x, t.z, ab.radius or st.range, damage * ab.multiplier, events)
+						splashHits(state, t, t.x, t.z, ab.radius or st.range, damage * ab.multiplier, sees, events)
 					end
 				end
 				local perHit = damage
@@ -311,7 +335,7 @@ local function towersAct(state: State, events: { Event })
 					perHit = damage * ab.multiplier
 				else
 					if st.splash then
-						splashHits(state, t, tx, tz, st.splash, damage, events)
+						splashHits(state, t, tx, tz, st.splash, damage, sees, events)
 					else
 						hit(state, t, target, damage, events)
 					end

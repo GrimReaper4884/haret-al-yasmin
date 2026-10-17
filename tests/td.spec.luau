@@ -262,6 +262,40 @@ return function(t)
 			t.eq(count(ev, "reached"), 1)
 		end)
 
+		t.it("Natour's lantern lets defenders inside his range target stealth enemies", function()
+			local function attacksBy(ev, towerId)
+				local n = 0
+				for _, e in ev do
+					if e.type == "attack" and e.tower == towerId then
+						n += 1
+					end
+				end
+				return n
+			end
+			t.eq(Units.natour.revealsStealth, true)
+			-- In range: the tailor (no hitsStealth of its own) now hits the thief.
+			local s = sim(straight, oneThief, 1)
+			local _, _, tk = TdTowers.place(s, "p1", "khayyat", Units.khayyat, 50, 4, 0, nil, rules())
+			local _, _, tn = TdTowers.place(s, "p1", "natour", Units.natour, 50, 14, 0, nil, rules())
+			t.eq(TdSim.revealerFor(s, tk), tn)
+			t.eq(TdSim.seesStealth(s, tk), true)
+			t.eq(TdSim.revealerFor(s, tn), nil, "a lantern doesn't count itself")
+			t.truthy(attacksBy(run(s, 20), tk.id) > 0, "revealed defender attacks")
+			-- Out of range: the lantern is too far, the tailor stays blind.
+			local s2 = sim(straight, oneThief, 1)
+			local _, _, tk2 = TdTowers.place(s2, "p1", "khayyat", Units.khayyat, 50, 4, 0, nil, rules())
+			local _, _, tn2 = TdTowers.place(s2, "p1", "natour", Units.natour, 50, -16, 0, nil, rules())
+			t.eq(TdSim.revealerFor(s2, tk2), nil)
+			t.eq(attacksBy(run(s2, 20), tk2.id), 0)
+			-- Selling the lantern takes the reveal away.
+			local s3 = sim(straight, oneThief, 1)
+			local _, _, tk3 = TdTowers.place(s3, "p1", "khayyat", Units.khayyat, 50, 4, 0, nil, rules())
+			local _, _, tn3 = TdTowers.place(s3, "p1", "natour", Units.natour, 50, 14, 0, nil, rules())
+			t.truthy(TdTowers.sell(s3, "p1", tn3.id, rules()))
+			t.eq(TdSim.seesStealth(s3, tk3), false)
+			t.truthy(tn2)
+		end)
+
 		t.it("the gate falls → lost, and nothing moves afterwards", function()
 			local s = sim(straight, function()
 				return { spawns = { { at = 0, enemy = "colonel", hpMul = 1, speedMul = 1 } }, count = 1 }

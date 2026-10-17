@@ -698,3 +698,13 @@ Verdict: external (Studio or a plugin), ignored (D-020).
 | FPS (Studio window, focused) | lobby 60.0, Episode 1 match 60.0 (same as before) |
 | Captures (same cameras) | lobby `[0,10,75]→[0,6,0]`: `pve01_lobby_before_*` → `pve01_lobby_after_*` (warm daylight, softer bloom); arena `[3000,75,50]→[3000,20,-12]`: `pve01_arena_night_before_*` (grey fog) → `pve01_arena_night_after_*` (blue night, lantern pools) |
 | Restore | leaving the match: haze 0.32 #DEC8AA, NightGrade neutral, ClockTime 15.6 |
+
+### Natour lantern reveals stealth to nearby defenders (2026-10-18, D-031)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 253 specs (new: a tailor inside the lantern's range is revealed and attacks the thief; out of range it stays blind; selling the lantern removes the reveal; the lantern doesn't count itself) |
+| Play (Episode 1, 2×, waves 1–6) | lit Khayyat at (-23,0) beside a Natour at (-18,6): 6 hits on thieves; unlit Khayyat at (17,0): 0 hits on thieves (28 on gendarmes); Natour 3 thief hits |
+| Panels | lit Khayyat "Sees hidden thieves: lit by Abu Fares the Watchman's lantern" (`reveal_lit_defender_2026-10-18.jpg`); Natour "Lantern: defenders in its range see hidden thieves / Defenders in his light: 1" (`reveal_natour_panel_2026-10-18.jpg`); after selling the Natour the open Khayyat panel turns to red "Can't see hidden thieves" live (`reveal_after_sell_2026-10-18.jpg`) |
+| Console | no errors from our code |
+| Restore | owner's loadout restored (qahwaji, zaim_akbar, natour, farran, hallaq, saqqa), language en, no lira spent |

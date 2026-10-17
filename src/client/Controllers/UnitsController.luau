@@ -111,6 +111,9 @@ local function statLine(t: any, def: any, owned: any): string
 		table.insert(lines, t("match.stat_range", { n = math.floor(st.range * 10 + 0.5) / 10 }))
 		table.insert(lines, t("match.stat_cooldown", { n = math.floor(st.cooldown * 100 + 0.5) / 100 }))
 	end
+	if st.revealsStealth then
+		table.insert(lines, t("match.reveals_stealth"))
+	end
 	if st.income then
 		table.insert(lines, t("match.stat_income", { n = st.income }))
 	end

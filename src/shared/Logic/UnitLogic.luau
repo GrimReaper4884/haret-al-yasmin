@@ -17,6 +17,7 @@ export type Stats = {
 	heal: number?,
 	cash: number, -- kill reward multiplier
 	hitsStealth: boolean,
+	revealsStealth: boolean,
 	ability: any?,
 	maxLevel: number,
 }
@@ -52,6 +53,7 @@ function UnitLogic.stats(def: any, level: number, stars: number, trait: any?, st
 		heal = lv.heal,
 		cash = if trait and trait.cash then trait.cash else 1,
 		hitsStealth = def.hitsStealth == true,
+		revealsStealth = def.revealsStealth == true,
 		ability = def.ability,
 		maxLevel = #def.levels,
 	}

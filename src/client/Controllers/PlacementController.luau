@@ -73,7 +73,7 @@ local ghost: Model? = nil
 local ring: Part? = nil
 local selected: number? = nil
 local selectedRing: Part? = nil
-local towers: { [number]: { unitId: string, level: number, owner: string, x: number, z: number, range: number, targeting: string, readyAt: number, buff: number? } } = {}
+local towers: { [number]: { unitId: string, level: number, owner: string, x: number, z: number, range: number, targeting: string, readyAt: number, buff: number?, revealedBy: string?, revealedByTower: number? } } = {}
 local arenaPath: Path.Path? = nil
 local origin: CFrame? = nil
 local busy = false
@@ -379,6 +379,7 @@ local function call(fnName: string, ...: any)
 end
 
 local GAIN = "#3E9A2E"
+local LOSS = "#B5372B" -- readable on the parchment panel (the old #FF8A7A was for a dark panel)
 
 -- "12 → 18" with the gain in green when there is a next level.
 local function statLine(label: string, now: number, nxt: number?, suffix: string?): string
@@ -437,10 +438,31 @@ local function renderTowerPanel()
 			table.insert(lines, '<font color="' .. GAIN .. '">' .. t("match.buffed", { n = round((buff - 1) * 100, 0) }) .. "</font>")
 		end
 		table.insert(lines, statLine(t("match.stat_range", { n = "" }), round(st.range, 1), nx and round(nx.range, 1)))
-		table.insert(lines, statLine(t("match.stat_cooldown", { n = "" }), round(st.cooldown, 2), nx and round(nx.cooldown, 2), "s"))
-		-- Stealth enemies walk past defenders that can't see them; say so up front
-		local seesColor = if st.hitsStealth then "#8FE07A" else "#FF8A7A"
-		table.insert(lines, string.format('<font color="%s">%s</font>', seesColor, t(if st.hitsStealth then "match.sees_stealth" else "match.no_stealth")))
+		table.insert(lines, statLine(t("match.stat_speed_label"), round(st.cooldown, 2), nx and round(nx.cooldown, 2), "s"))
+		-- Stealth enemies walk past defenders that can't see them; say so up front. A defender inside
+		-- a Natour's lantern (server-computed, towerReveal events) sees them and says whose light it is.
+		local lit = not st.hitsStealth and rec.revealedBy ~= nil
+		local sees = st.hitsStealth or lit
+		local seesText
+		if lit then
+			local by = (Units :: any)[rec.revealedBy]
+			seesText = t("match.sees_stealth_lit", { name = if by then t(by.nameKey) else rec.revealedBy })
+		else
+			seesText = t(if sees then "match.sees_stealth" else "match.no_stealth")
+		end
+		table.insert(lines, string.format('<font color="%s">%s</font>', if sees then GAIN else LOSS, seesText))
+	end
+	if st.revealsStealth then
+		local n = 0
+		for _, other in towers do
+			if other.revealedByTower == selected then
+				n += 1
+			end
+		end
+		table.insert(lines, '<font color="' .. GAIN .. '">' .. t("match.reveals_stealth") .. "</font>")
+		if n > 0 then
+			table.insert(lines, t("match.reveals_count", { n = n }))
+		end
 	end
 	if st.income then
 		table.insert(lines, statLine(t("match.stat_income", { n = "" }), st.income, nx and nx.income))
@@ -723,6 +745,14 @@ local function onEvents(events: { any })
 		elseif e.type == "towerBuff" and towers[e.id] then
 			towers[e.id].buff = if type(e.buff) == "number" and e.buff > 1 then e.buff else nil
 			if selected == e.id then
+				renderTowerPanel()
+			end
+		elseif e.type == "towerReveal" and towers[e.id] then
+			local rec = towers[e.id]
+			local before = rec.revealedByTower
+			rec.revealedBy = if type(e.by) == "string" then e.by else nil
+			rec.revealedByTower = if type(e.byTower) == "number" then e.byTower else nil
+			if selected ~= nil and (selected == e.id or selected == before or selected == rec.revealedByTower) then
 				renderTowerPanel()
 			end
 		elseif e.type == "towerTargeting" and towers[e.id] then

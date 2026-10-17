@@ -13,6 +13,8 @@
 -- damage per hit, range in studs, cooldown in seconds. splash = radius; slow = speed multiplier
 -- applied for slowFor seconds; buff = damage multiplier granted to towers in range (support);
 -- income = cash per cleared wave (farm); heal = gate HP per cleared wave (healer).
+-- revealsStealth = the unit's light lets every other defender inside its range target stealth
+-- enemies too (Natour's lantern; TdSim.revealerFor).
 
 export type Rarity = "rare" | "epic" | "legendary" | "mythic" | "secret"
 export type Role = "melee" | "ranged" | "splash" | "support" | "farm" | "healer"
@@ -55,6 +57,7 @@ export type UnitDef = {
 	role: Role,
 	maxPlaced: number,
 	hitsStealth: boolean?,
+	revealsStealth: boolean?,
 	levels: { Level },
 	ability: Ability?,
 	visual: Visual,
@@ -96,6 +99,7 @@ local Units: { [string]: UnitDef } = {
 		role = "ranged",
 		maxPlaced = 4,
 		hitsStealth = true,
+		revealsStealth = true, -- the lantern: defenders inside his range see hidden thieves too
 		levels = {
 			L(180, 4, 12, 1.15, { slow = 0.75, slowFor = 1.5 }),
 			L(120, 6, 13, 1.1, { slow = 0.7, slowFor = 1.8 }),

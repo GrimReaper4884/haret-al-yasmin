@@ -47,7 +47,7 @@ clearing N on Normal; Hard after Normal, Nightmare after Hard, per episode.
 | Placement | anywhere inside the arena bounds, ≥ 3.2 studs from the road centreline, ≥ 2.6 from another defender, ≤ 20 per player, per-unit cap (`maxPlaced`) |
 | Upgrades | 5 levels (Rare) / 6 (Epic+); sell refunds 60 % of everything spent |
 | Targeting | first / last / strongest / closest (per defender) |
-| Stealth | night thieves and spies are invisible to defenders without `hitsStealth` (watchman, barber, 'akeed, za'im, 'arada, cat) |
+| Stealth | night thieves and spies are invisible to defenders without `hitsStealth` (watchman, barber, 'akeed, za'im, 'arada, cat), unless the defender stands inside a watchman's lantern (`revealsStealth`: any other defender within his range sees them too; D-031) |
 | Armor | fraction of damage ignored (bandit 15 %, rider 20 %, sapper 35 %, bosses 20–40 %) |
 | Parties | up to 4; regular enemy HP ×1 / 1.65 / 2.3 / 3.0 and boss HP ×1 / 1.35 / 1.65 / 2.1 for 1–4 players (§5) |
 | Stuns | chain, but after 6 s of a chain an enemy ignores stuns for 3 s (it walks at least a third of the time) |
@@ -64,7 +64,7 @@ The simulation is pure (`TdSim.step(state, dt)` returns events) and covered by `
 | Id | Name (EN) | Rarity | Role | Signature |
 |----|-----------|--------|------|-----------|
 | walad | Lane Boy | Rare | ranged | starter unit, cheap, 8 max |
-| natour | Abu Fares the Watchman | Rare | ranged | sees stealth, lantern slows |
+| natour | Abu Fares the Watchman | Rare | ranged | sees stealth, lantern slows and reveals stealth to defenders in his range |
 | farran | Abu Bashir the Baker | Rare | splash | hot loaves |
 | saqqa | Fawzia | Rare | splash | broom sweep, slows |
 | hallaq | Issam, the Barber's Son | Rare | melee | fast razor, sees stealth |

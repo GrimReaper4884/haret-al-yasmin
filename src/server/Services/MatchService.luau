@@ -61,6 +61,7 @@ export type Match = {
 	outcome: any?,
 	eventBuffer: { any },
 	buffShown: { [number]: number }, -- tower id → the support buff on its badge (absent = none)
+	revealShown: { [number]: number }, -- tower id → the lantern tower letting it see stealth (absent = none)
 }
 
 local matches: { [number]: Match } = {}
@@ -392,6 +393,7 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 		outcome = nil,
 		eventBuffer = {},
 		buffShown = {},
+		revealShown = {},
 	}
 	nextMatchId += 1
 	matches[match.id] = match
@@ -503,6 +505,18 @@ local function refreshBuffs(match: Match)
 			end
 			queueEvent(match, { type = "towerBuff", id = t.id, buff = b })
 		end
+		-- Natour's lantern (TdSim.revealerFor): a defender that can't see stealth on its own is told
+		-- which lantern lets it, so its panel can say "sees hidden thieves thanks to …".
+		local r = if t.stats.damage > 0 and not t.stats.hitsStealth then TdSim.revealerFor(match.state, t) else nil
+		local rid = if r then r.id else nil
+		if rid ~= match.revealShown[t.id] then
+			if rid then
+				match.revealShown[t.id] = rid
+			else
+				match.revealShown[t.id] = nil
+			end
+			queueEvent(match, { type = "towerReveal", id = t.id, by = if r then r.unitId else nil, byTower = rid })
+		end
 	end
 end
 
@@ -593,6 +607,7 @@ local function sellTower(player: Player, towerId: any): { [string]: any }
 	end
 	queueEvent(match, { type = "towerSold", id = towerId })
 	match.buffShown[towerId] = nil
+	match.revealShown[towerId] = nil
 	refreshBuffs(match)
 	flushEvents(match)
 	pushState(match)
