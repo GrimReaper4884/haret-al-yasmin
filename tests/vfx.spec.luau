@@ -191,6 +191,21 @@ return function(t)
 		end)
 	end)
 
+	t.describe("Tower moments (PV-B05)", function()
+		t.it("placement, upgrade and sell effects fit the budgets", function()
+			local c = Vfx.TOWER
+			t.truthy(c.petals + 1 <= Vfx.MAX_PER_FRAME, "dust ring + petals fit one frame")
+			t.truthy(c.stars <= Vfx.MAX_PER_FRAME, "the star burst fits one frame")
+			t.truthy(c.coins <= Vfx.COIN_FLIGHT.max, "the sell shower never outgrows the coin pool")
+			t.truthy(c.punch > 1 and c.punch <= 1.25 and c.punchLife <= 0.5)
+			t.truthy(c.glowLevel >= 2)
+			t.eq(c.dashes % 2, 0, "ablaq dashes alternate, so an even count")
+			for _, k in { "dustColor", "petalColor", "starColor", "glowColor", "dashDark", "dashLight" } do
+				t.truthy(string.match(c[k], "^#%x%x%x%x%x%x$"), k)
+			end
+		end)
+	end)
+
 	t.describe("Config/Vfx", function()
 		t.it("has sane budgets and well-formed colours", function()
 			t.truthy(Vfx.MAX_PER_FRAME >= 4 and Vfx.MAX_PER_FRAME <= Vfx.MAX_LIVE)

@@ -17,6 +17,7 @@ local TD = require(Shared.Config.TD)
 local Units = require(Shared.Config.Units)
 local Looks = require(Shared.Config.CharacterLooks)
 local Arenas = require(Shared.Config.Arenas)
+local Vfx = require(Shared.Config.Vfx)
 local Traits = require(Shared.Config.Traits)
 local Path = require(Shared.Logic.Path)
 local UnitLogic = require(Shared.Logic.UnitLogic)
@@ -152,6 +153,8 @@ local function clearSelection()
 	end
 end
 
+-- The range preview (PV-B05): a soft disc with an ablaq edge of alternating basalt and cream
+-- dashes, welded to the disc so moving the disc (the ghost follows the cursor) carries the edge.
 local function makeRing(radius: number, color: Color3): Part
 	local p = Instance.new("Part")
 	p.Name = "RangeRing"
@@ -164,7 +167,31 @@ local function makeRing(radius: number, color: Color3): Part
 	p.CastShadow = false
 	p.Material = Enum.Material.Neon
 	p.Color = color
-	p.Transparency = 0.75
+	p.Transparency = 0.85
+	local cfg = Vfx.TOWER
+	local n = cfg.dashes
+	local len = 2 * math.pi * radius / n * 0.8
+	for i = 1, n do
+		local a = (i - 1) / n * 2 * math.pi
+		local d = Instance.new("Part")
+		d.Name = "Dash"
+		d.Anchored = false
+		d.Massless = true
+		d.CanCollide = false
+		d.CanQuery = false
+		d.CanTouch = false
+		d.CastShadow = false
+		d.Material = Enum.Material.SmoothPlastic
+		d.Color = Color3.fromHex(if i % 2 == 0 then cfg.dashDark else cfg.dashLight)
+		d.Size = Vector3.new(0.14, 0.32, len)
+		-- The disc's axis is its local X; the edge lies in its local Y/Z plane.
+		d.CFrame = p.CFrame * CFrame.new(0, radius * math.cos(a), radius * math.sin(a)) * CFrame.Angles(a, 0, 0)
+		local w = Instance.new("WeldConstraint")
+		w.Part0 = p
+		w.Part1 = d
+		w.Parent = d
+		d.Parent = p
+	end
 	p.Parent = Workspace
 	return p
 end
@@ -631,6 +658,16 @@ local function slotFor(i: number, unitId: string): Slot
 	end)
 	holder.Parent = bar
 	return { frame = frame, cost = cost, count = count, dim = dim, stroke = stroke, unitId = unitId, price = price }
+end
+
+-- Pops the loadout card of `unitId` (a defender of yours just landed, PV-B05).
+function PlacementController.popSlot(unitId: string)
+	for _, s in slots do
+		if s.unitId == unitId then
+			Juice.punch(s.frame, 0.18)
+			return
+		end
+	end
 end
 
 local function renderBar()

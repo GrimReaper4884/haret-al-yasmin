@@ -626,3 +626,13 @@ Verdict: external (Studio or a plugin), ignored (D-020).
 | `tools/check.ps1` | 241 specs (new: every `Units[id].role` has a `Config/Vfx.ROLES` entry with a known kind; hit-stop ≤ 0.1 s; splash fits one frame's budget) |
 | Studio | the five impacts drawn side by side on the Episode 1 road via the Studio-only `HaretFxDemo` hook and frozen ~0.08 s in (12 pooled parts): melee white blade sweep + spark, ranged dust puff, splash ground ring + 3 dust puffs, support soft gold pulse, healer rising green-white motes. `docs/art/pvb04_roles_labelled_2026-10-18.jpg` (with labels, before softening the pulse) and `pvb04_roles_2026-10-18.jpg` |
 | Not captured | the 0.05 s hit-stop and the 0.3 s ability slow-in are too short for a still; code path `BoneAnim.slow` |
+
+### PV-B05 placement, upgrade, sell (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 242 specs (new: dust + petals and the star burst fit one frame, the sell shower never outgrows the 6-coin pool, punch ≤ 1.25, even dash count, hex colours) |
+| Range ring | placement ghost: soft disc with 24 alternating basalt/cream dashes welded to it (follows the ghost); `pvb05_ablaq_range_ring_2026-10-18.jpg` |
+| Upgrade | `P` then `U` ×2: the level-3 figure glows gold (pooled Highlight, 0.4 s), gold sparks and the scale punch play; `pvb05_upgrade_glow_2026-10-18.jpg` |
+| Sell | `J`: 6 coins (the whole pool) fly into the cash pill; `pvb05_sell_coins_2026-10-18.jpg` |
+| Pooling | 40 s of placing, upgrading, hits and selling used 22 distinct pooled effect parts (pool cap 80); coin frames fixed at 6; one upgrade Highlight |

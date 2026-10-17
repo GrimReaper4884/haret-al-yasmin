@@ -70,6 +70,20 @@ return {
 	ROLE_KINDS = { "arc", "puff", "ring", "pulse", "sparkle", "none" },
 	abilitySlow = { factor = 0.4, seconds = 0.3 },
 
+	-- Placing, upgrading and selling a defender (PV-B05). Landing: a dust ring and `petals` jasmine
+	-- petals; upgrade: `stars` gold sparks bursting up and a 1 -> `punch` -> 1 scale punch on the
+	-- figure, plus a brief gold glow from level `glowLevel`; sell: `coins` cash coins into the pill.
+	-- The range ring gets an ablaq edge of `dashes` alternating basalt/cream dashes.
+	TOWER = {
+		dustRadius = 3.5, dustLife = 0.45, dustColor = "#D8C4A0",
+		petals = 4, petalLife = 0.8, petalColor = "#FFF6EA",
+		stars = 6, starLife = 0.55, starColor = "#F2C14E",
+		punch = 1.12, punchLife = 0.3,
+		glowLevel = 3, glowLife = 0.4, glowColor = "#F2C14E",
+		coins = 6, coinGap = 0.05,
+		dashes = 24, dashDark = "#3D3A38", dashLight = "#F1E9DA",
+	},
+
 	-- Ultimate strikes (EnemyRenderController.ultimateStrike): kept from P1-15.
 	SHABRIYEH = { bladeLife = 0.35, bladeLength = 9 },
 	SWEEP = { ringLife = 0.5, dustLife = 0.8, dustColor = "#C9B48F" },

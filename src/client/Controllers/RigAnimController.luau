@@ -297,6 +297,11 @@ local function findTower(towerId: number): Model?
 	return nil
 end
 
+-- The figure of tower `towerId` in the arena (nil when not streamed in).
+function RigAnimController.findTower(towerId: number): Model?
+	return findTower(towerId)
+end
+
 local function enemyModel(id: number?): Model?
 	local folder = Workspace:FindFirstChild("EnemyRender")
 	local m = if folder and id then folder:FindFirstChild("Enemy_" .. id) else nil

@@ -8,6 +8,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Enemies = require(Shared.Config.Enemies)
@@ -21,6 +22,9 @@ local Root = require(UI.Root)
 local LocaleController = require(script.Parent.LocaleController)
 local MatchController = require(script.Parent.MatchController)
 local AudioController = require(script.Parent.AudioController)
+local PlacementController = require(script.Parent.PlacementController)
+local RigAnimController = require(script.Parent.RigAnimController)
+local CoinFlight = require(UI.CoinFlight)
 
 local MatchFxController = {}
 
@@ -284,6 +288,141 @@ function MatchFxController.edgeFlash(color: Color3, alpha: number, life: number)
 	TweenService:Create(vignette, TweenInfo.new(life, Enum.EasingStyle.Quad), { BackgroundTransparency = 1 }):Play()
 end
 
+---------------------------------------------------------------- Tower moments (PV-B05)
+
+local towerAt: { [number]: Vector3 } = {}
+local glow: Highlight? = nil
+
+local function reducedMotion(): boolean
+	local ok, v = pcall(function()
+		return (game:GetService("GuiService") :: any).ReducedMotionEnabled
+	end)
+	return ok and v == true
+end
+
+-- A defender lands: a dust ring at its feet and a few jasmine petals.
+local function towerLanded(at: Vector3)
+	if not Fx.full() then
+		return
+	end
+	local c = Vfx.TOWER
+	local ring = Fx.part(Enum.PartType.Cylinder)
+	if ring then
+		ring.Material = Enum.Material.SmoothPlastic
+		ring.Color = Color3.fromHex(c.dustColor)
+		ring.Transparency = 0.3
+		ring.Size = Vector3.new(0.3, 1.5, 1.5)
+		ring.CFrame = CFrame.new(at + Vector3.new(0, 0.3, 0)) * CFrame.Angles(0, 0, math.rad(90))
+		Fx.fade(ring, c.dustLife, { Size = Vector3.new(0.1, c.dustRadius * 2, c.dustRadius * 2), Transparency = 1 })
+	end
+	for i = 1, Fx.allow(c.petals) do
+		local p = Fx.part()
+		if not p then
+			break
+		end
+		local a = i / c.petals * math.pi * 2 + math.random() * 0.6
+		local start = at + Vector3.new(math.cos(a) * 0.8, 2.5, math.sin(a) * 0.8)
+		p.Color = Color3.fromHex(c.petalColor)
+		p.Size = Vector3.new(0.4, 0.08, 0.3)
+		p.Transparency = 0.05
+		p.CFrame = CFrame.new(start) * CFrame.Angles(math.random() * 3, a, 0)
+		local goal = start + Vector3.new(math.cos(a) * 1.8, 1.2, math.sin(a) * 1.8)
+		Fx.fade(p, c.petalLife, { CFrame = CFrame.new(goal) * CFrame.Angles(math.random() * 6, a + 3, math.random() * 6), Transparency = 1 }, Enum.EasingStyle.Sine)
+	end
+end
+
+-- A 1 -> punch -> 1 scale punch on a defender's figure (local only; ends on its exact old scale).
+local punching: { [Model]: boolean } = {}
+local function punchModel(model: Model)
+	if punching[model] or reducedMotion() then
+		return
+	end
+	punching[model] = true
+	local c = Vfx.TOWER
+	local s0 = model:GetScale()
+	task.spawn(function()
+		local t0 = os.clock()
+		while model.Parent do
+			local k = (os.clock() - t0) / c.punchLife
+			if k >= 1 then
+				break
+			end
+			model:ScaleTo(s0 * (1 + (c.punch - 1) * math.sin(k * math.pi)))
+			RunService.Heartbeat:Wait()
+		end
+		if model.Parent then
+			model:ScaleTo(s0)
+		end
+		punching[model] = nil
+	end)
+end
+
+-- An upgrade: gold sparks burst upward, the figure punches, and from glowLevel a brief gold glow.
+local function towerUpgraded(towerId: number, level: number)
+	local at = towerAt[towerId]
+	if not at or not Fx.full() then
+		return
+	end
+	local c = Vfx.TOWER
+	for i = 1, Fx.allow(c.stars) do
+		local s = Fx.part()
+		if not s then
+			break
+		end
+		local a = i / c.stars * math.pi * 2
+		local start = at + Vector3.new(0, 2.2, 0)
+		s.Color = Color3.fromHex(c.starColor)
+		s.Size = Vector3.one * 0.45
+		s.Transparency = 0
+		s.CFrame = CFrame.new(start) * CFrame.Angles(0, a, math.rad(45))
+		local goal = start + Vector3.new(math.cos(a) * 2.4, 2.6 + math.random(), math.sin(a) * 2.4)
+		Fx.fade(s, c.starLife, { CFrame = CFrame.new(goal) * CFrame.Angles(0, a + 2, math.rad(45)), Size = Vector3.one * 0.12, Transparency = 1 })
+	end
+	local model = RigAnimController.findTower(towerId)
+	if model then
+		punchModel(model)
+		if level >= c.glowLevel then
+			local h = glow
+			if not h then
+				local n = Instance.new("Highlight")
+				n.Name = "UpgradeGlow"
+				n.FillColor = Color3.fromHex(c.glowColor)
+				n.OutlineColor = Color3.fromHex(c.glowColor)
+				n.FillTransparency = 0.55
+				n.DepthMode = Enum.HighlightDepthMode.Occluded
+				n.Enabled = false
+				n.Parent = Workspace
+				glow = n
+				h = n
+			end
+			local hl = h :: Highlight
+			hl.Adornee = model
+			hl.Enabled = true
+			task.delay(c.glowLife, function()
+				if hl.Adornee == model then
+					hl.Enabled = false
+					hl.Adornee = nil
+				end
+			end)
+		end
+	end
+end
+
+-- Selling your defender: a shower of cash coins into the cash pill.
+local function towerSold(at: Vector3)
+	local pill = MatchController.cashPill()
+	if not pill or not Fx.any() then
+		return
+	end
+	local c = Vfx.TOWER
+	for i = 1, c.coins do
+		task.delay((i - 1) * c.coinGap, function()
+			local jitter = Vector3.new((math.random() - 0.5) * 2, 2 + math.random() * 1.5, (math.random() - 0.5) * 2)
+			CoinFlight.fly(at + jitter, pill)
+		end)
+	end
+end
+
 local function onEvents(events: { any })
 	local t = LocaleController.t
 	for _, e in events do
@@ -292,8 +431,25 @@ local function onEvents(events: { any })
 			gateShudder()
 		elseif e.type == "towerPlaced" then
 			towerInfo[e.id] = { unitId = e.unitId, owner = e.owner }
+			local info = MatchController.info()
+			if info and type(e.x) == "number" and type(e.z) == "number" then
+				local at = (CFrame.new(info.origin) * CFrame.new(e.x, 0, e.z)).Position
+				towerAt[e.id] = at
+				towerLanded(at)
+			end
+			if e.owner == Players.LocalPlayer.Name then
+				PlacementController.popSlot(e.unitId)
+			end
+		elseif e.type == "towerUpgraded" then
+			towerUpgraded(e.id, if type(e.level) == "number" then e.level else 1)
 		elseif e.type == "towerSold" then
+			local ti = towerInfo[e.id]
+			local at = towerAt[e.id]
+			if ti and at and ti.owner == Players.LocalPlayer.Name then
+				towerSold(at)
+			end
 			towerInfo[e.id] = nil
+			towerAt[e.id] = nil
 		elseif e.type == "attack" and e.ability then
 			ultimate(e)
 		elseif e.type == "waveStart" then
