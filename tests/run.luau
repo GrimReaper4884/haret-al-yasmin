@@ -136,6 +136,7 @@ local specs = {
 	require("./funnel.spec"),
 	require("./vfx.spec"),
 	require("./redteam.spec"),
+	require("./icons.spec"),
 }
 for _, spec in specs do
 	spec(t)

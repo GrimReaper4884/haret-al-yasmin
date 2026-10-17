@@ -541,3 +541,12 @@ Full table and the driver: `docs/review/REDTEAM_P3-09.md`.
 Screenshots: `docs/art/pvb08_lobby_music_on_2026-10-17.jpg`, `pvb08_lobby_music_off_…`,
 `pvb08_match_boss_muted_…` (wave 10, slashed speaker beside Leave and the gear), `pvb08_match_music_on_…` (hover
 hint to the left of the button), `pvb08_settings_en_…`, `pvb08_settings_ar_…`.
+
+### PV-C02 icon registry (2026-10-17)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 233 Lune specs (new `tests/icons.spec.luau`: ids whole and ≥ 0, every id-0 name has a primitive drawer, every rail/HUD/item icon, every reward key in SeasonPass/Daily/Codes/Events and every product kind resolves), strict analyze clean, `rojo build` OK |
+| Sync | `script_grep "IconIds.images"` finds `UI.Icons` |
+| Image branch (Client `execute_luau`, fresh module copies) | `Config/Icons.images.lira = { id = 123456, tint = "#FFD970" }` → one `ImageLabel`, `rbxassetid://123456`, ScaleType Fit, tint ffd970; back to id 0 → the primitive drawer (2 frames, no image); unknown name → TextLabel |
+| No visual change | live rail buttons hold 0 ImageLabels; screenshot `docs/art/pvc02_rail_unchanged_2026-10-17.jpg` matches the PV-B08 lobby shots |

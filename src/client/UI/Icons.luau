@@ -1,10 +1,11 @@
 --!strict
--- Item icons drawn from UI primitives (no uploaded images). Items.icon names a drawer and
--- Items.iconColor tints it. Unknown names fall back to text.
+-- Icons: the painted image from Config/Icons when its id is set, otherwise a drawer built from UI
+-- primitives (Items.icon names a drawer, Items.iconColor tints it). Unknown names fall back to text.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Palette = require(ReplicatedStorage:WaitForChild("Shared").Config.Palette)
+local IconIds = require(ReplicatedStorage:WaitForChild("Shared").Config.Icons)
 local Create = require(script.Parent.Create)
 
 local Icons = {}
@@ -202,9 +203,72 @@ local drawers: { [string]: (Frame, Color3) -> () } = {
 		rect(h, Palette.tile, 0.5, 0.5, 0.78, 0.56, 0.15)
 		rect(h, Color3.fromHex("#C9A13B"), 0.5, 0.5, 0.3, 0.3, 1)
 	end,
+	-- Placeholders for the PV-C03 currency kit until the painted images are uploaded.
+	qirsh = function(h, _c)
+		rectO(h, Palette.copper, 0.5, 0.5, 0.62, 0.62, 1)
+		rect(h, Color3.fromHex("#8A5426"), 0.5, 0.5, 0.26, 0.26, 1)
+	end,
+	cash = function(h, _c)
+		rectO(h, Color3.fromHex("#D9A441"), 0.5, 0.5, 0.62, 0.62, 1)
+		rect(h, Palette.basalt, 0.5, 0.54, 0.18, 0.22, 0.2)
+		rect(h, Palette.basalt, 0.5, 0.42, 0.24, 0.08, 1)
+	end,
+	stones_3 = function(h, _c)
+		rectO(h, Color3.fromHex("#C9A13B"), 0.5, 0.74, 0.86, 0.18, 1)
+		for _, x in { 0.3, 0.5, 0.7 } do
+			rectO(h, Color3.fromHex("#7B3FA0"), x, if x == 0.5 then 0.48 else 0.56, 0.24, 0.24, 0.2, 45)
+		end
+	end,
+	xp = function(h, _c)
+		rectO(h, Color3.fromHex("#EADFC8"), 0.46, 0.52, 0.56, 0.72, 0.1)
+		rect(h, Palette.ink, 0.46, 0.4, 0.36, 0.05, 0.5)
+		rect(h, Palette.ink, 0.46, 0.52, 0.36, 0.05, 0.5)
+		rectO(h, Palette.fabricRed, 0.7, 0.74, 0.22, 0.22, 1)
+	end,
+	ticket = function(h, _c)
+		rectO(h, Color3.fromHex("#F1E9DA"), 0.5, 0.5, 0.82, 0.5, 0.12, -10)
+		rectO(h, GOLD, 0.5, 0.5, 0.2, 0.28, 0.35, -10)
+	end,
+	lira_stack = function(h, _c)
+		for k = 0, 2 do
+			rectO(h, Color3.fromHex("#C9A13B"), 0.5, 0.74 - k * 0.16, 0.7, 0.2, 1)
+		end
+		rectO(h, Color3.fromHex("#E8D07A"), 0.5, 0.3, 0.7, 0.2, 1)
+	end,
+	qirsh_pouch = function(h, _c)
+		rectO(h, Palette.wood, 0.5, 0.58, 0.62, 0.6, 0.4)
+		rect(h, Palette.woodDark, 0.5, 0.3, 0.4, 0.08, 1)
+		rectO(h, Palette.copper, 0.78, 0.78, 0.26, 0.26, 1)
+	end,
 }
 
+-- An uploaded painted image for `name` (Config/Icons id > 0), fitted to the holder.
+local function image(name: string, holder: Frame): boolean
+	local def = IconIds.images[name]
+	if not def or def.id == 0 then
+		return false
+	end
+	local img = Create("ImageLabel", {
+		Name = "Image",
+		BackgroundTransparency = 1,
+		Size = UDim2.fromScale(1, 1),
+		Image = "rbxassetid://" .. tostring(def.id),
+		ScaleType = Enum.ScaleType.Fit,
+		ZIndex = holder.ZIndex,
+		Parent = holder,
+	})
+	if def.tint then
+		img.ImageColor3 = Color3.fromHex(def.tint)
+	end
+	return true
+end
+
+-- Draws icon `name` into `holder`: the uploaded image when Config/Icons has an id, else the
+-- primitive drawer (tinted by colorHex), else the name as text.
 function Icons.draw(name: string, holder: Frame, colorHex: string?)
+	if image(name, holder) then
+		return
+	end
 	local drawer = drawers[name]
 	local color = if colorHex then Color3.fromHex(colorHex) else Palette.copper
 	if drawer then
