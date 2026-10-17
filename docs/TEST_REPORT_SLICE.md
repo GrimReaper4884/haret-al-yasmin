@@ -406,3 +406,59 @@ every fifth wave, the boss waves and the last wave.
 
 Not covered here: Hard/Nightmare and Episodes 2–3 in Studio (harness only), the win screen in Studio,
 multi-player parties (enemy HP does not scale with party size yet), touch placement on a phone.
+
+## Phase 0 verification (2026-10-17, branch `phase/0`)
+
+*Build: `feat/vertical-slice` at f46109a plus the Phase 0 commits · Place: "Haret Al-Yasmin (TEST)" (120389740593436),
+Studio API access on · Driven entirely through the Studio MCP server (`start_stop_play`, `execute_luau`,
+`user_keyboard_input`, `screen_capture`), no computer use · Plan: `docs/BUILD_PLAN.md` Phase 0.*
+
+### Static checks (`tools/check.ps1`)
+
+| Check | Result |
+|-------|--------|
+| `selene src` | 0 errors, 0 warnings (the unused `RunService` in `DataService` removed) |
+| `lune run tests/run` | **147 passed, 0 failed** |
+| `luau-lsp analyze` (strict, Rojo sourcemap, Roblox definitions) | 0 errors (3 at HEAD before P0-03: `BoneAnim.clipsFor` narrowing, `RigAnimController` calling `animateTower`/`animateEnemy` with the wrong arguments) |
+| `rojo build` | OK |
+| `stylua --check src tests` | 96 files unformatted, advisory only (DECISIONS D-005); generated clips ignored via `.styluaignore` |
+| Mutation test (P0-04) | `TD.ODDS.rare` 0.755 → 0.75: `meta.spec` fails twice ("odds sum to 1, got 0.995", pity roll expected mythic got rare); file restored, 147 green again |
+| `lune run tests/balance` | 96 runs in 7.7 s; every asserted cell holds. Non-asserted drift vs `TOWER_DEFENSE.md` §5: infinite/normal leg10up died w22 (doc w60), ep1 hard re6up lost w20 (doc w14), re10up WIN 15/60 (doc 13/60). The harness and `TdSim` have no fixed seed, so re-measure before tuning (P1-18) |
+
+### Tool and sync checks
+
+| # | Task | Evidence |
+|---|------|----------|
+| P0-01 | Tool inventory | `docs/TOOLS.md`; `list_roblox_studios` → the TEST place; Blender Lab server answers `get_blendfile_summary_path_info` / `get_objects_summary` |
+| P0-02 | Rojo round-trip | In Edit: `ServerScriptService.Server.Main` (Script), `.Services` (20 modules), `.World`; `ReplicatedStorage.Shared.{Net,Config,Logic,Util,Anim}`, `CharacterModels` (21 models), `PropModels` (6). A nonce comment appended to line 2 of `Main.server.luau` showed up in `script_grep` ("P0-02 nonce 7f3a9c") within seconds; reverted from HEAD, nothing committed |
+| P0-02 | Playtest console | `[World] built 1498 parts (budget 6000)`, `[HaretAlYasmin] server ready`, no `PERSISTENCE DISABLED` (real DataStore), no errors or warnings from our code. Remaining noise is Roblox's: UIBlox `FoundationProvider not found` warnings from CorePackages and `ContentId: rbxassetid://203785492 failed due to: Asset type does not match requested type` ×8, an id that appears nowhere in `src/`, `docs/`, `tools/`, the production `.rbxm` files or any instance property (110,827 instances scanned); it comes from the Roblox avatar/core scripts |
+| P0-05 | Place layout | Edit-mode `Workspace`: `Terrain`, `Baseplate` (+Texture), `SpawnLocation` (+Decal), `Camera` only; the template `Baseplate` and `SpawnLocation` are the only Studio-owned leftovers (WorldService removes template spawns at runtime; owner's call whether to delete the Baseplate). During Play the server `Workspace` holds `Map`, `Npcs`, `Clues`, `Arenas`, `Crowd`, `HakawatiRoom`; 49 remotes under `ReplicatedStorage.Remotes`; no scripts outside the Rojo folders except Roblox's own (CoreGui, PlayerModule, character `Animate`). Lighting at runtime: ClockTime 15.6, Brightness 2.4 (project file 15.2 / 2.2, adjusted by `World/Atmosphere`) |
+| P0-06 | Blender | `execute_blender_code`: Blender 5.2.2 LTS, default cube 12 tris, FBX and glTF exporters present, unit system Metric. `render_thumbnail_to_path` wrote a PNG (to Blender's own temp folder, see TOOLS.md). Headless: `blender -b --factory-startup -P tools/anim/preview.py -- assets/unapproved/characters/qahwaji/clips/axebreathe.glb out.png 8 front` rendered an 8-frame sheet of Abu Hatem (checked visually: fez, striped qumbaz, apron, idle sway) |
+| P0-07 | Open Cloud | `GET https://apis.roblox.com/assets/v1/assets/112157925514712` with `x-api-key` from `ROBLOX_OPEN_CLOUD_KEY` → HTTP 200: `displayName "Armature|Idle|baselayer"`, `assetType Animation`, creator `2465538767` (the owner). Key never printed. Upload tool deferred (D-004) |
+| P0-08 | Imported asset round trip | `ReplicatedStorage.CharacterModels.AbuHatem`: Model, `Mesh_0` MeshPart primary, 24 Bones, `AnimationController`, 0 scripts (all 21 models: 23–25 bones, 0 scripts; the static `Cat` has none). In a match the placed towers measured: qahwaji / natour / hallaq / farran / saqqa bounding height 5.59–5.60 studs (= `RigBuilder.HEIGHT` 5.6 at scale 1, within 0.2 %), zaim_akbar 6.6 (giant build ×1.18); every tower `Rigged = true`, 2 parts (MeshPart + Root), 0 scripts. Screenshot: Wave 5/20 "Episode 1 · Night of the Thieves · Normal", gate 100/100, Abu Hatem with his tea tray, Abu Bashir, Fawzia with her broom and a night thief on the road |
+
+### Match drive-through (Episode 1 Normal, solo)
+
+Keys sent with `user_keyboard_input` after one viewport click: `9` (teleport to the portal; the Play screen opened),
+`X`, `M` (party created and started: `[DebugKeys] party true true nil`), `C` (+5000 cash), `B` ×6
+(`[HaretDebug] place qahwaji,18,0 true nil` … `saqqa,44,12 true nil`). Loadout granted beforehand with
+`HaretDebug:Invoke("grant", "qahwaji,zaim_akbar,natour,farran,hallaq,saqqa")`. Waves 1 → 5 ran with the gate at
+100/100 and cash climbing 600 → 4,114.
+
+**P0-03 animation fix, measured on the client at 54 fps** (per-frame rotation of one bone over 12 frames):
+
+| Figure | Bone | mean °/frame | max °/frame |
+|---|---|---|---|
+| Enemy_14 (gendarme, walking) | LeftArm | 1.17 | 1.82 |
+| Enemy_15 (gendarme, walking) | LeftArm | 1.71 | 2.31 |
+| Tower_4 (Abu Hatem, idle) | RightUpLeg | 0.29 | 0.32 |
+
+Before the fix `animateEnemy` received the match speed multiplier as `dt`, so a walk clip advanced by whole
+seconds every frame. Figures outside the camera frustum are (correctly) not stepped at all: a first sample taken
+with the camera facing away read 0.00° on every frame.
+
+### Owner items from this pass
+
+- `Workspace.Baseplate` and `SpawnLocation` are template leftovers in the saved place; harmless, delete if you like.
+- The `rbxassetid://203785492` warning is not from our content; it tracks with the Roblox avatar/core scripts.
+- Balance drift in the non-asserted Endless cells (above) needs a seeded harness before it means anything.
