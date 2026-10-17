@@ -708,3 +708,17 @@ Verdict: external (Studio or a plugin), ignored (D-020).
 | Panels | lit Khayyat "Sees hidden thieves: lit by Abu Fares the Watchman's lantern" (`reveal_lit_defender_2026-10-18.jpg`); Natour "Lantern: defenders in its range see hidden thieves / Defenders in his light: 1" (`reveal_natour_panel_2026-10-18.jpg`); after selling the Natour the open Khayyat panel turns to red "Can't see hidden thieves" live (`reveal_after_sell_2026-10-18.jpg`) |
 | Console | no errors from our code |
 | Restore | owner's loadout restored (qahwaji, zaim_akbar, natour, farran, hallaq, saqqa), language en, no lira spent |
+
+### PV-E02 lobby life (2026-10-18, D-032)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 261 specs (new `lobbylife.spec`: Effects tiers, 120-stud gate, sway bound and smoothness, flock on its circle and heading, cat turns the short way without overshoot, ripple stagger, oven trigger/cooldown/flare, config budgets) |
+| `[World] built` | 1,499 parts (was 1,498; +1 crate under the bakery cat), plan cap 2,200. Client-only parts: 6 vines × 12 = 72, 6 birds, 4 ripples, 2 emitter anchors |
+| Play (lobby) | 6/6 vines found their walls; 5 cloths swaying; flock at y 34 moving 4.8 studs/s; spray + steam enabled; the two cats within 24 studs turned to face the player (0° off), farther ones held still; oven light Boost 1.85 → 1.43 over 1.2 s after walking past, cooldown 6 s |
+| Effects | full: vines 6, birds 6, spray/steam on; reduced: vines 6, birds 6, spray/steam off; off: vines 0, birds 0, emitters off |
+| FPS (Studio, square) | 60.0 with Effects off, 60.0 with full |
+| Server | nothing new runs server-side (HaretDebug state unchanged apart from the Effects setting I toggled and restored) |
+| Captures (Effects off = before, full = after, same cameras) | square `[16,11,19]→[0,5,0]` (`pve02_square_*`), fountain `[6,8,7]→[0,6,0]` (`pve02_fountain_*`, ripples + spray), lane `[3,7,44]→[0,11,80]` (`pve02_lane_*`, vines); also `pve02_bakery_cat`, `pve02_samovar_steam`, `pve02_birds`, `pve02_laundry` |
+| Console | no errors from our code; the shard/steam textures logged "Asset content representation is being generated" once (Roblox processing on first use) |
+| Restore | Effects back to full, language en, loadout unchanged, no lira spent |

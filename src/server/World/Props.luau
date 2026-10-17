@@ -130,6 +130,7 @@ end
 -- Clothes line between two points with hanging cloths.
 function Props.laundry(parent: Instance, a: Vector3, b: Vector3, colors: { Color3 }): Model
 	local m = model(parent, "Laundry")
+	m.ModelStreamingMode = Enum.ModelStreamingMode.Atomic -- the client sways it (LobbyLifeController)
 	local mid = (a + b) / 2
 	local len = (b - a).Magnitude
 	part(m, { name = "Rope", size = Vector3.new(0.06, 0.06, len), cf = CFrame.lookAt(mid, b), color = Palette.stoneWarm, material = M.Fabric, collide = false, shadow = false })
@@ -171,6 +172,7 @@ end
 -- A sitting cat (`cf` at ground, facing local -Z).
 function Props.cat(parent: Instance, cf: CFrame, color: Color3): Model
 	local m = model(parent, "Cat")
+	m.ModelStreamingMode = Enum.ModelStreamingMode.Atomic -- the client turns it (LobbyLifeController)
 	part(m, { name = "Body", size = Vector3.new(0.7, 0.8, 1.2), cf = cf * CFrame.new(0, 0.4, 0.15), color = color, material = M.Fabric, collide = false })
 	Kit.ball(m, "Head", (cf * CFrame.new(0, 1.05, -0.35)).Position, 0.62, color, M.Fabric, false)
 	for _, x in { -0.18, 0.18 } do
