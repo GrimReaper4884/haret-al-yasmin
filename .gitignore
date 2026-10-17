@@ -29,3 +29,6 @@ assets/unapproved/**/*.fbm/
 
 # Generated icon variants (provenance: requests.json / jobs.json / urls.txt stay tracked)
 assets/marketing/icons/raw/*.png
+
+# Generated VFX sprite variants (provenance in urls.txt)
+assets/marketing/vfx/raw/*.png

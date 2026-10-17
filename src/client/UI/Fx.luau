@@ -119,6 +119,79 @@ function Fx.release(p: BasePart)
 	end
 end
 
+---------------------------------------------------------------- Particle emitters (PV-B01)
+
+local emitterAnchor: Part? = nil
+local emitters: { [string]: { ParticleEmitter } } = {}
+local emitterCount = 0
+
+-- A pooled ParticleEmitter of sprite `kind` on an Attachment of one invisible anchored part, or nil
+-- when the sprite is not uploaded yet (Config/Vfx.TEXTURES id 0), effects are below "full", or
+-- the pool is at MAX_EMITTERS. Emitters stay disabled (Rate 0) and are used with Emit(n).
+function Fx.emitter(kind: string): ParticleEmitter?
+	local tex = (Vfx.TEXTURES :: any)[kind]
+	if not tex or tex.id == 0 or level ~= "full" then
+		return nil
+	end
+	local list = emitters[kind]
+	if list and #list > 0 then
+		return list[1]
+	end
+	if emitterCount >= Vfx.MAX_EMITTERS then
+		return nil
+	end
+	local anchor = emitterAnchor
+	if not anchor or not anchor.Parent then
+		local p = Instance.new("Part")
+		p.Name = "EmitterAnchor"
+		p.Anchored = true
+		p.CanCollide = false
+		p.CanQuery = false
+		p.CanTouch = false
+		p.Transparency = 1
+		p.Size = Vector3.one * 0.2
+		p.Parent = fxFolder()
+		emitterAnchor = p
+		anchor = p
+	end
+	local att = Instance.new("Attachment")
+	att.Name = kind
+	att.Parent = anchor
+	local e = Instance.new("ParticleEmitter")
+	e.Name = kind
+	e.Texture = "rbxassetid://" .. tostring(tex.id)
+	e.Rate = 0
+	e.Enabled = true
+	e.Lifetime = NumberRange.new(tex.life * 0.8, tex.life)
+	e.Speed = NumberRange.new(tex.speed * 0.5, tex.speed)
+	e.SpreadAngle = Vector2.new(180, 180)
+	e.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, tex.size), NumberSequenceKeypoint.new(1, tex.size * 0.4) })
+	e.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.7, 0.2), NumberSequenceKeypoint.new(1, 1) })
+	e.Rotation = NumberRange.new(0, 360)
+	e.RotSpeed = NumberRange.new(-120, 120)
+	e.LightEmission = tex.light
+	e.Parent = att
+	emitters[kind] = { e }
+	emitterCount += 1
+	return e
+end
+
+-- Emits `n` particles of sprite `kind` at `at` (optionally tinted). False when there is no
+-- emitter (not uploaded, effects reduced/off, pool full): the caller draws its part fallback.
+function Fx.emit(kind: string, at: Vector3, n: number, color: Color3?): boolean
+	local e = Fx.emitter(kind)
+	if not e then
+		return false
+	end
+	local att = e.Parent :: Attachment
+	att.WorldPosition = at
+	if color then
+		e.Color = ColorSequence.new(color)
+	end
+	e:Emit(n)
+	return true
+end
+
 -- Tweens `props` on a pooled part over `t` seconds, then returns it to the pool.
 function Fx.fade(p: BasePart, t: number, props: { [string]: any }, style: Enum.EasingStyle?)
 	local tw = TweenService:Create(p, TweenInfo.new(t, style or Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props)

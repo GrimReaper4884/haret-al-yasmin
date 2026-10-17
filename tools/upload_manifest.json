@@ -50,6 +50,46 @@
       "name": "Haret icon ticket",
       "type": "Image",
       "id": 0
+    },
+    "assets/marketing/vfx/spark.png": {
+      "name": "Haret vfx spark",
+      "type": "Image",
+      "id": 0
+    },
+    "assets/marketing/vfx/dust.png": {
+      "name": "Haret vfx dust",
+      "type": "Image",
+      "id": 0
+    },
+    "assets/marketing/vfx/petal.png": {
+      "name": "Haret vfx petal",
+      "type": "Image",
+      "id": 0
+    },
+    "assets/marketing/vfx/smoke.png": {
+      "name": "Haret vfx smoke",
+      "type": "Image",
+      "id": 0
+    },
+    "assets/marketing/vfx/steam.png": {
+      "name": "Haret vfx steam",
+      "type": "Image",
+      "id": 0
+    },
+    "assets/marketing/vfx/crumb.png": {
+      "name": "Haret vfx crumb",
+      "type": "Image",
+      "id": 0
+    },
+    "assets/marketing/vfx/shard.png": {
+      "name": "Haret vfx shard",
+      "type": "Image",
+      "id": 0
+    },
+    "assets/marketing/vfx/star.png": {
+      "name": "Haret vfx star",
+      "type": "Image",
+      "id": 0
     }
   }
 }

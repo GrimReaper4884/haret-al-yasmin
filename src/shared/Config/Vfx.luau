@@ -7,6 +7,21 @@ return {
 	MAX_LIVE = 80, -- pooled effect parts on screen at once (hard cap)
 	MAX_PER_FRAME = 14, -- pooled parts handed out in one frame; the rest of that frame's effects are skipped
 
+	-- Particle sprites (PV-B01, assets/marketing/vfx/*.png, 256² with alpha). id 0 = not uploaded:
+	-- UI/Fx.emitter returns nil and callers keep their part-based effect. MAX_EMITTERS caps the
+	-- pooled ParticleEmitters (POLISH_PLAN §2: <= 24 in a match).
+	TEXTURES = {
+		spark = { id = 0, size = 1.4, life = 0.25, speed = 6, light = 1 },
+		dust = { id = 0, size = 2.2, life = 0.6, speed = 3, light = 0 },
+		petal = { id = 0, size = 0.6, life = 0.9, speed = 4, light = 0 },
+		smoke = { id = 0, size = 2.4, life = 1.2, speed = 2, light = 0 },
+		steam = { id = 0, size = 1.6, life = 1.4, speed = 1.5, light = 0 },
+		crumb = { id = 0, size = 0.5, life = 0.5, speed = 5, light = 0 },
+		shard = { id = 0, size = 0.45, life = 0.4, speed = 7, light = 0.5 },
+		star = { id = 0, size = 0.8, life = 0.6, speed = 2, light = 1 },
+	},
+	MAX_EMITTERS = 16,
+
 	-- A small spark where a strike lands (every hit; "reduced" and "off" skip it).
 	HIT = { size = 0.8, grow = 2.2, life = 0.18 },
 

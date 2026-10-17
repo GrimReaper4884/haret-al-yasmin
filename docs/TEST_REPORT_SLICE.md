@@ -669,3 +669,12 @@ Verdict: external (Studio or a plugin), ignored (D-020).
 | ×10 summon | 10 cards flipped face up in reading order (StartCorner TopLeft in English, TopRight in Arabic by code); `pvb07_summon_flip_grid_2026-10-18.jpg` (one ×10 pull spent 500 TEST-profile lira) |
 | Toasts | the skip-vote toast slides −12 → +2 → 0 px (Back easing) |
 | Not seen live | the Legendary+ petal burst (no Legendary in the pull), the Diary XP shine (needs an XP gain) and Reduced Motion itself (a user setting scripts cannot change); all go through the same gate, specced |
+
+### PV-B01 particle sprites, code half (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 251 specs (TEXTURES: eight kinds, whole ids, life ≤ 2 s, emitter cap ≤ 24) |
+| Sprites | 8 × 256² PNG with alpha in `assets/marketing/vfx/`, registered (id 0) in `tools/upload_manifest.json`; preview over black and green `docs/art/vfx_sprites_2026-10-18.png` |
+| Emitter path (Studio Client, fresh module copies) | id 0 → `Fx.emitter` nil; id patched → one ParticleEmitter on an Attachment, `rbxassetid://123456`, Rate 0, the same instance on the next call; Effects reduced → nil; `Fx.emit("dust")` with id 0 → false (part fallback) |
+| Open | upload the eight sprites (owner), paste ids into `Config/Vfx.TEXTURES` |

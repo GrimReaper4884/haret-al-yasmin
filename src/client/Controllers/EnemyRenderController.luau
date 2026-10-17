@@ -271,6 +271,10 @@ local function hitSpark(at: Vector3, color: Color3)
 	if not Fx.full() then
 		return
 	end
+	-- The painted spark sprite (PV-B01) once uploaded; the neon ball until then.
+	if Fx.emit("spark", at + Vector3.new(0, 2.5, 0), 6, color:Lerp(Color3.new(1, 1, 1), 0.4)) then
+		return
+	end
 	local s = Fx.part(Enum.PartType.Ball)
 	if not s then
 		return

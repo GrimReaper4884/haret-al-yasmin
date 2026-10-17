@@ -167,6 +167,20 @@ return function(t)
 		end)
 	end)
 
+	t.describe("Particle sprites (PV-B01)", function()
+		t.it("eight sprite kinds with whole ids and sane particle numbers; the emitter pool stays small", function()
+			local n = 0
+			for kind, tex in Vfx.TEXTURES do
+				n += 1
+				t.truthy(tex.id >= 0 and tex.id == math.floor(tex.id), kind .. " id")
+				t.truthy(tex.size > 0 and tex.life > 0 and tex.life <= 2 and tex.speed >= 0, kind .. " numbers")
+				t.truthy(tex.light >= 0 and tex.light <= 1, kind .. " light emission")
+			end
+			t.eq(n, 8)
+			t.truthy(Vfx.MAX_EMITTERS <= 24, "POLISH_PLAN §2 caps live emitters at 24")
+		end)
+	end)
+
 	t.describe("Role impacts (PV-B04)", function()
 		local Units = t.config("Units")
 		t.it("every unit role has an impact entry with a known kind", function()
