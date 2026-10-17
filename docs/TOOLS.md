@@ -107,6 +107,23 @@ This is the **official Blender Lab MCP server**, not `mcp-for-blender`. None of 
 `generate_3d`. Poly Haven / Sketchfab imports and AI concept meshes therefore go through `execute_blender_code`
 (or a separate tool) rather than dedicated MCP tools, and every asset must be logged by hand in `assets/LICENSES.md`.
 
+## Observed behaviour (Phase 0, 2026-10-17)
+
+- `execute_luau` runs in a VM separate from the game (like the command bar): `require` returns a fresh module copy, so
+  drive the live server through `ServerStorage.HaretDebug` and read live state from instances. Some properties are
+  capability-gated (`Lighting.Technology` → "lacking capability RobloxScript"); `Workspace.StreamingMinRadius` is not
+  readable there either.
+- `datamodel_type: "Edit"` is rejected while playing; use `Server`/`Client`. `get_studio_state` lists what is available.
+- A camera set from a Client `execute_luau` is reset by Studio ("The execute_luau changed camera type. Resetting").
+  `screen_capture` with `camera_position` + `look_at_position` works during Play and is the way to stage a shot.
+- `user_keyboard_input` reaches `UserInputService.InputBegan` (the harness keys work) after a single
+  `user_mouse_input` click on the viewport. GUI clicks were not needed and remain unverified.
+- `get_console_output` returns the whole log every time, including Roblox CorePackages warnings; filter by prefix.
+- `search_game_tree` from the root with `max_depth` 3 fills the 60–200 node cap with services; pass `path`.
+- Blender `render_thumbnail_to_path` ignores the directory of `output_path` and writes under Blender's own temp
+  folder (`%TEMP%\blender_<pid>\blender_mcp\<name>.png`); the result reports the real path. `execute_blender_code`
+  must assign a dict to `result`; a bare return is ignored.
+
 ## Differences from the `CLAUDE.md` tool list
 
 1. Blender: the six `mcp-for-blender` tools above do not exist. Use the replacements marked in bold.

@@ -59,9 +59,15 @@ extension, and `rojo serve` is connected to Studio.
   yields: chunk heavy loops with `task.wait()`.
 - `start_stop_play`, `get_console_output`, `screen_capture` (optional camera position/target): the playtest loop.
 - `user_keyboard_input` (Client): drive the Studio-only harness keys (`DebugKeysController`: `1`–`6` screens,
-  `7`/`8` summon ×1/×10, `9` Episode 1 portal, `0` square, `L` loadout, `X` close; in a match `P` place, `U`
-  upgrade, `J` sell, `K` skip, `T` speed, `C` +5000 cash, `G` gate to 1 HP, `H` leave, `V` camera). Mouse clicks
-  inside the game viewport have not registered in this project; keyboard does, after one click to focus.
+  `7`/`8` summon ×1/×10, `9` teleport to the Episode 1 portal, `0` square, `M` create and start an Episode 1
+  Normal party at once, `L` fill the loadout from owned units, `N`/`Y` AFK room enter-leave / fast-forward, `X`
+  close; in a match `P` place at your feet, `B` place at the next road-side debug spot, `U` upgrade, `J` sell,
+  `K` skip, `T` 2× speed, `C` +5000 cash, `G` gate to 1 HP, `H` leave). Verified through MCP on 2026-10-17 after
+  one `user_mouse_input` click on the viewport. Grant units first with `HaretDebug:Invoke("grant", "id,id,…")`.
+- `execute_luau` runs in a separate VM from the game (like the command bar): `require` gives you a fresh copy of a
+  module, so talk to the live server through `ServerStorage.HaretDebug` and to the live client through instances.
+  A camera you set from `execute_luau` is reset by Studio; use `screen_capture` with `camera_position` and
+  `look_at_position` instead (works during Play).
 - `character_navigation` (Client), `user_mouse_input` (Client): try, but don't depend on them.
 - `search_asset`, `insert_asset` (numeric id), `upload_image` (HTTP URLs), `store_image` (local png → image URI).
 - `generate_mesh`, `generate_texture`, `generate_material`, `generate_procedural_model`, `segment_mesh`,
