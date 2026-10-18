@@ -782,3 +782,46 @@ Verdict: external (Studio or a plugin), ignored (D-020).
 | Play (Episode 1, orchard; Natour 4 studs off the road, Khayyat 7 studs from it; 3 then 4 riflemen via `HaretDebug spawn`) | 5.0 s `towerDisabled` Natour → Khayyat `towerReveal` by nil at once; re-sabotaged 7.4 s and 10.0 s; 12.5 s `towerEnabled` → Khayyat lit by the Natour again. Second run the same (48.3 s off, 56.0 s back) |
 | Panel (Device Simulator 844×370, the other session's device) | sabotaged Natour: red "Sabotaged: can't attack for now" and "Lantern out: no hidden thieves revealed" (`lantern_sabotaged_panel_2026-10-18.jpg`); after `towerEnabled` back to "Lantern: defenders in its range see hidden thieves / Defenders in his light: 1" |
 | Restore | owner's loadout restored (qitt, arada, zaim_akbar, pahlawan, umm_hara, zaim), settings unchanged, Studio in Edit |
+
+## MH baseline: the HUD before the mobile refactor (2026-10-18, MH-00)
+
+*Studio Play on the TEST place, Device Simulator in ActualResolution, landscape. Captures in
+`docs/captures/mh/before_*.jpg`; the probe is `tools/studio/hud_audit.luau` (pasted into `execute_luau`,
+Client). The Studio-only log overlay was hidden for most captures. Two Episode 1 matches were started with
+the harness (`M`) and ended by stopping Play (no result, no reward); the result screens are client-only
+`MatchEnd` fires. Simulator reset to FitToWindow and default afterwards.*
+
+| Device (viewport → safe area · UIScale) | Captures |
+|---|---|
+| iPhone 17 Pro (874×402 → 750×382 → 750×324 · 0.979) | `before_iphone17pro_lobby`, `_dialogue`, `_play`, `_units`, `_pass`, `_codes_keyboard`, `_match_ghost`, `_match_panel`, `_result` |
+| Entry phone, custom 640×360 (no "Entry-level" preset in this Studio; 640×340 → 640×282 · 0.842) | `before_entry640_lobby`, `_dialogue`, `_play`, `_units`, `_pass`, `_codes_keyboard`, `_match_ghost`, `_match_panel`, `_result` |
+| iPad 10th Generation (1180×820 → 1180×762 · 1.5) | `before_ipad_lobby`, `_play`, `_match_panel`, `_result` |
+
+Probe output (`visible buttons · undersized < 48 px · corner collisions`, corners bottom-left 160×160 and
+bottom-right 140×140 of the safe area):
+
+| Run | Result |
+|---|---|
+| iPhone 17 Pro, lobby idle | 13 · **4** · **9**. Small: `Coins.Store` 37×37, `Language` 94×43, `Music` 47×47, `Wardrobe` 110×43. Corner: all nine `Menu.*` grid cells (play, event, units, summon, pass, daily, codes, afk, settings) in the left zone |
+| iPhone 17 Pro, match (panel open) | 18 · **12** · **6**. Small: `CameraToggle` 118×43, `MatchHud…Codes` 110×41, `Music` 47×47, `Settings` 41×41, Leave 63×41, Skip/speed 110×47, five `TowerPanel` buttons (101×39 ×2, 147×43, 31×31 close, 55×43) and Upgrade 208×45. Corner: `CameraToggle` and `Codes` (right), four `TowerPanel` buttons (left) |
+| 640×360, lobby idle | 13 · **13** · **9**. Every grid cell is 45×45 (UIScale 0.842 shrinks the 53 px cells), plus Store 32×32, Language 81×37, Music 40×40, Wardrobe 94×37 |
+| 640×360, match (panel open) | 18 · **12** · **9**. As the iPhone plus the first and last hotbar slots inside the corners (`UnitBar` slot 1 at x 135–192, slot 6 at x 447–504) and the tower-panel close at 27×27 |
+
+Measured touch controls: iPhone jump button at x 655–725, y 234–304 of 750×324 (95 px from the right
+edge, 90 px from the bottom); 640×360 jump at x 545–615, y 192–262 of 640×282. The thumbstick is the
+Dynamic Thumbstick: its frame spans the lower-left 40 % of the screen, so the plan's 160×160 fallback is the
+honest left zone. `TopbarInset` = (208, 0)–(width, 58): Roblox's controls take the left 208 px of a 58 px bar.
+
+What the captures show, beyond the probe:
+
+- The thumbstick sits on the lobby grid on every device, the tablet included.
+- The placement cancel X lands on top of "Watchtower view" (iPhone and 640).
+- The tower panel covers the left third of the screen and the thumbstick zone; at 640 it starts under the top bar band.
+- The match result's buttons touch the bottom edge on both phones (the 110 px banner plus the outro).
+- Codes: with the box focused the simulator reports `OnScreenKeyboardVisible = true`, keyboard 181 px tall
+  (iPhone) / 162 px (640) from y 201 / 178: the box and Redeem sit under it. The simulator does not draw the
+  keyboard in a capture.
+- `PreferredInput` reads `Touch` in the simulator until the first synthetic key press, then
+  `KeyboardAndMouse`: harness keys flip the device signal, so touch-profile tests need a Studio-only override.
+- Bugs seen in passing (pre-existing, not in MH scope): an open dialogue stays on screen into the match;
+  Al-Adashari's ultimate button reads the raw key `ult.adashari`.

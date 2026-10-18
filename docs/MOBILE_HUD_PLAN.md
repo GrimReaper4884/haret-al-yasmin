@@ -366,7 +366,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
 
 ### Milestone 0: foundations (no visible change yet)
 
-- [ ] **MH-00 Baseline captures** · deps: none
+- [x] **MH-00 Baseline captures** · deps: none
   - **Goal:** Evidence of the current state so every later task has a before/after.
   - **Do:** Phone captures (both presets) and a tablet capture of: lobby idle, dialogue open, Play panel,
     Units, Pass, Codes with the keyboard up (simulator shows it), match in walk mode with a ghost, the
