@@ -131,6 +131,20 @@ return {
 		telegraph = { color = "#B04CC4", spacing = 3, dash = 1.6, width = 0.45, maxDashes = 14, landRadius = 3 },
 		summon = { color = "#4A5C8C", radius = 5, life = 0.6 },
 		burnPip = 16,
+		-- S1-C03, the batch-2 figures. Health bars by size (px, studs above the head): bosses, people,
+		-- and `small` attackers (snakes) with a short thin bar that sits low. An enraged attacker's bar
+		-- turns `barColor` and, for at most `maxHighlights` at once, a red Highlight wraps the figure
+		-- (Roblox caps Highlights at 31; hit flashes use HIT_FLASH.max). A cart that splits bursts
+		-- with `crumbs` sack-coloured bits and a ring. A sabotaged defender stands in a grey ring with a
+		-- "Pinned!" tag until its towerEnabled.
+		bars = {
+			boss = { w = 90, h = 10, offset = 3.4 },
+			normal = { w = 44, h = 6, offset = 1.6 },
+			small = { w = 24, h = 4, offset = 0.9 },
+		},
+		enrage = { color = "#C0281E", fill = 0.7, outline = 0.3, maxHighlights = 6, barColor = "#FF5A1F" },
+		split = { color = "#8C6B43", radius = 4, life = 0.45, crumbs = 5, crumbSize = 0.5, rise = 2.5 },
+		pinned = { color = "#8A8F96", radius = 2.6, transparency = 0.35, height = 0.15, labelSize = 14, labelColor = "#E8E8E8" },
 	},
 
 	-- Ultimate strikes (EnemyRenderController.ultimateStrike): kept from P1-15.

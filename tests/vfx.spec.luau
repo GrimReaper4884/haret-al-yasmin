@@ -383,6 +383,53 @@ return function(t)
 			t.truthy(S.burnPip * TD.BURN_MAX_STACKS <= 120, "the pips fit under the gate bar")
 		end)
 
+		t.it("health bars by size: bosses large, snakes small and low, people normal (S1-C03)", function()
+			local B = S.bars
+			t.eq(MechanicFx.bar(Enemies.snake, B), B.small)
+			t.eq(MechanicFx.bar(Enemies.colonel, B), B.boss)
+			t.eq(MechanicFx.bar(Enemies.cart, B), B.normal)
+			t.eq(MechanicFx.bar(Enemies.thug, B), B.normal)
+			t.truthy(B.small.w < B.normal.w and B.normal.w < B.boss.w, "widths grow with the figure")
+			t.truthy(B.small.offset < B.normal.offset and B.normal.offset < B.boss.offset, "the bar sits with the head")
+			t.truthy(B.small.h >= 3, "a small bar still reads")
+			for id, def in Enemies do
+				if def.small then
+					t.truthy((def.visual.scale or 1) <= 0.75, id .. " is drawn small")
+				end
+			end
+		end)
+
+		t.it("enraged once wounded past the threshold, never when dead or unhurt", function()
+			local brute = Enemies.brute
+			t.eq(MechanicFx.enraged(brute, 1), false)
+			t.eq(MechanicFx.enraged(brute, brute.enrage.belowHp + 0.01), false)
+			t.eq(MechanicFx.enraged(brute, brute.enrage.belowHp), true)
+			t.eq(MechanicFx.enraged(brute, 0.1), true)
+			t.eq(MechanicFx.enraged(brute, 0), false, "a dead brute is not tinted")
+			t.eq(MechanicFx.enraged(Enemies.thug, 0.1), false, "only attackers that enrage")
+			t.eq(MechanicFx.enraged(Enemies.rival_zaim_enraged, 0.4), true, "the enraged boss too")
+			local slots = {}
+			for _ = 1, S.enrage.maxHighlights do
+				t.eq(MechanicFx.admit(slots, "enrage", S.enrage.maxHighlights), true)
+			end
+			t.eq(MechanicFx.admit(slots, "enrage", S.enrage.maxHighlights), false, "Highlights are capped")
+			t.truthy(S.enrage.maxHighlights + Vfx.HIT_FLASH.max <= 31, "inside Roblox's Highlight cap")
+		end)
+
+		t.it("split bursts and pinned rings are small and well-formed", function()
+			local function hex(c)
+				t.truthy(type(c) == "string" and string.match(c, "^#%x%x%x%x%x%x$"), "hex colour " .. tostring(c))
+			end
+			hex(S.enrage.color)
+			hex(S.enrage.barColor)
+			hex(S.split.color)
+			hex(S.pinned.color)
+			hex(S.pinned.labelColor)
+			t.truthy(S.split.crumbs + 1 <= Vfx.MAX_PER_FRAME, "a burst fits in a frame")
+			t.truthy(S.split.life <= 1, "the burst is short")
+			t.truthy(S.pinned.radius > 1 and S.pinned.radius < 6, "the grey ring hugs the defender")
+		end)
+
 		t.it("the story effects fit inside the effects budget", function()
 			local function hex(c)
 				t.truthy(type(c) == "string" and string.match(c, "^#%x%x%x%x%x%x$"), "hex colour " .. tostring(c))
