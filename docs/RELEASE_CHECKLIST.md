@@ -207,6 +207,16 @@ ownership); pass perks are re-checked on every join from Roblox, not saved in th
 - [ ] All rows ✓ (or failures written down with the Output log lines) · date: ________
 - [ ] Fill §D "Approved by / Date" for every product you created; note the API-access change in §E.
 
+## B3. Schema v3 (S1-S12b, the Cat → Al-Adashari)
+
+- Publishing the build with `Economy.SCHEMA_VERSION = 3` migrates every profile on its next load: the Cat
+  (`qitt`) is replaced by one Al-Adashari with the Cat's trait plus 100 lira, and leaves the loadout.
+- Servers still on v2 refuse a v3 profile (`newer_schema`): **shut down old servers** right after publishing,
+  or a player who loads on a new server and then lands on an old one is kicked.
+- Studio Play on the TEST place uses the real DataStore: one Play with v3 code migrates the owner's own
+  profile, and the published v2 servers then kick the owner until v3 is published.
+- One release later: delete the `QITT` line from `Config/Codes`.
+
 ## C. Before a public release
 
 - [ ] All `COPYRIGHT_REGISTER.md` rows Approved, including a trademark search for the title

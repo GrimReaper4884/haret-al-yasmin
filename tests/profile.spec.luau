@@ -45,6 +45,30 @@ return function(t)
 			t.eq(p.loadout[1], "walad")
 			t.eq(p.pass.season, "s1")
 		end)
+		t.it("v2 → v3: a Cat owner gets Al-Adashari with the Cat's trait and 100 lira; the Cat leaves the loadout", function()
+			local p = ProfileSchema.load({
+				schemaVersion = 2,
+				lira = 40,
+				welcomeLira = true,
+				units = { walad = { copies = 0, trait = "steady", at = 1 }, qitt = { copies = 3, trait = "legend", at = 2 } },
+				loadout = { "qitt", "walad" },
+				stats = { firstJoin = 1, lastJoin = 7, sessions = 2 },
+			}, ctx, 9)
+			t.eq(p.schemaVersion, 3)
+			t.eq(p.units.qitt, nil)
+			t.eq(p.units.adashari.copies, 0)
+			t.eq(p.units.adashari.trait, "legend", "keeps the Cat's trait")
+			t.eq(p.lira, 140)
+			t.eq(#p.loadout, 1)
+			t.eq(p.loadout[1], "walad")
+			-- Owning him already: one copy more. Not owning the Cat: nothing changes.
+			local q = ProfileSchema.load({ schemaVersion = 2, lira = 0, welcomeLira = true, units = { qitt = { copies = 0, trait = "swift", at = 1 }, adashari = { copies = 2, trait = "sharp", at = 1 } } }, ctx, 9)
+			t.eq(q.units.adashari.copies, 3)
+			t.eq(q.units.adashari.trait, "sharp")
+			local r = ProfileSchema.load({ schemaVersion = 2, lira = 5, welcomeLira = true, units = { walad = { copies = 0, trait = "steady", at = 1 } } }, ctx, 9)
+			t.eq(r.units.adashari, nil)
+			t.eq(r.lira, 5)
+		end)
 		t.it("drops unknown units, bad traits and foreign loadout entries", function()
 			local p = ProfileSchema.load({
 				schemaVersion = 2,

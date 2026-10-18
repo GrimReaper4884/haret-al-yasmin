@@ -107,7 +107,6 @@ Icons.portraits = {
 	umm_hara = { id = 95850884167044, model = "AbuIssam" },
 	arada = { id = 112960454245872, model = "Arada" },
 	zaim_akbar = { id = 139294337065178, model = "AbuShehab" },
-	qitt = { id = 110431322219183, model = "Cat" },
 	-- Attackers
 	gendarme = { id = 115451910060448, model = "Gendarme" },
 	corporal_minion = { id = 115451910060448, model = "Gendarme" }, -- same mesh as the gendarme (S1-S05)

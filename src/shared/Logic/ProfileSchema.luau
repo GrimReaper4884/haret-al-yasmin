@@ -36,10 +36,41 @@ local FunnelLogic = sibling("FunnelLogic")
 
 local ProfileSchema = {}
 
+-- Lira paid with the Cat → Al-Adashari swap (v2 → v3).
+local CAT_COMPENSATION_LIRA = 100
+
 -- Migration steps: MIGRATIONS[n] upgrades a version-n profile to version n + 1.
 local MIGRATIONS: { [number]: (any) -> any } = {
 	-- v1 → v2: tower-defense fields. All of them have defaults filled in by sanitize.
 	[1] = function(p: any): any
+		return p
+	end,
+	-- v2 → v3 (S1-S12b, STORY_PLAN §7.7, owner D-048): the Cat (`qitt`) leaves the game. Whoever owned
+	-- it keeps a secret unit: one copy of Al-Adashari with the Cat's trait (a copy more if they already
+	-- have him) plus the compensation lira; the Cat leaves the loadout.
+	[2] = function(p: any): any
+		local units = if type(p.units) == "table" then p.units else nil
+		local cat = units and units.qitt
+		if type(cat) == "table" then
+			units.qitt = nil
+			local owned = units.adashari
+			if type(owned) == "table" then
+				owned.copies = (if type(owned.copies) == "number" then owned.copies else 0) + 1
+			else
+				local at = if type(p.stats) == "table" and type(p.stats.lastJoin) == "number" then p.stats.lastJoin else 0
+				units.adashari = { copies = 0, trait = if type(cat.trait) == "string" then cat.trait else "steady", at = at }
+			end
+			p.lira = (if type(p.lira) == "number" then p.lira else 0) + CAT_COMPENSATION_LIRA
+		end
+		if type(p.loadout) == "table" then
+			local kept = {}
+			for _, id in p.loadout do
+				if id ~= "qitt" then
+					table.insert(kept, id)
+				end
+			end
+			p.loadout = kept
+		end
 		return p
 	end,
 }

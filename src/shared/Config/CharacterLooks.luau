@@ -181,7 +181,6 @@ local Looks: { [string]: Look } = {
 		model = "AbuShehab",
 		anims = { idle = 106622979715660, attack = 134238214440993 },
 	}, -- Al-'Akeed Abu Shehan
-	qitt = { model = "Cat" },
 	-- Al-Adashari, the night guard (S1-S12): primitive until his Meshy model (S1-A05).
 	adashari = { build = "slim", outfit = "qumbaz", beard = "stubble", moustache = "thin", hair = DARK, apron = "#1F1B18" },
 

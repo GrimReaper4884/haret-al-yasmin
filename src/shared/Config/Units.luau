@@ -391,25 +391,7 @@ local Units: { [string]: UnitDef } = {
 		visual = { robe = "#1F1B18", accent = "#C9A13B", skin = "#C68E64", hat = "tarboosh", hatColor = "#A4302A", weapon = "dagger", scale = 1.18 },
 	},
 
-	---------------------------------------------------------------- Secret (codes / events only)
-	qitt = {
-		nameKey = "unit.qitt.name",
-		descKey = "unit.qitt.desc",
-		rarity = "secret",
-		role = "melee",
-		maxPlaced = 1,
-		hitsStealth = true,
-		noBanner = true,
-		levels = {
-			L(50, 30, 7, 0.4),
-			L(50, 60, 7.5, 0.38),
-			L(100, 120, 8, 0.35),
-			L(200, 240, 8.5, 0.32),
-			L(400, 480, 9, 0.3),
-			L(800, 960, 10, 0.25),
-		},
-		visual = { robe = "#C98A4B", accent = "#C98A4B", skin = "#C98A4B", hat = "none", hatColor = "#000000", weapon = "cat", scale = 0.5 },
-	},
+	---------------------------------------------------------------- Secret (story drops only)
 
 	-- The secret unit of Season Story 1 (STORY_PLAN §7.6, S1-S12): the thief of Episodes 1–3, the
 	-- one-armed night guard after his confession. Only from Episode 9 wins (TD.SECRET_DROP).
