@@ -321,4 +321,54 @@ return function(t)
 			end
 		end)
 	end)
+
+	-- The hara kit and the Blender-authored arenas (STORY_PLAN §8, S1-M01..M03): every placed module is
+	-- a real kit module, inside the arena, and no tree canopy or solid piece sits on the road.
+	t.describe("Kit layouts", function()
+		local Arenas = t.config("Arenas")
+		local KitModules = t.config("KitModules")
+		local TD = t.config("TD")
+		local Path = t.logic("Path")
+		-- Pieces that may cross or touch the road: overhead wires, the gates at its ends.
+		local ON_ROAD = { lantern_wire_span = true, gate_rival = true, gate_lane = true, warehouse_door = true }
+		t.it("every kit module has a size and a triangle count within budget", function()
+			local n = 0
+			for id, m in KitModules do
+				n += 1
+				t.eq(#m.size, 3, id .. " size")
+				t.eq(#m.offset, 3, id .. " offset")
+				t.truthy(m.tris > 0 and m.tris <= 6000, id .. " tris")
+			end
+			t.truthy(n >= 37, "the procedural and organic halves")
+		end)
+		t.it("each kit arena's layout uses real modules, stays in bounds and keeps the road clear", function()
+			local checked = 0
+			for id, def in Arenas do
+				if def.kit then
+					checked += 1
+					local layout = t.config("ArenaLayouts/" .. def.kit)
+					t.truthy(#layout > 0, id .. " has modules")
+					local roads = Path.buildAll(def)
+					local b = def.bounds
+					for i, p in layout do
+						local m = KitModules[p.module]
+						local where = id .. " #" .. i .. " " .. p.module
+						t.truthy(m, where .. " is a kit module")
+						t.truthy(p.scale > 0 and p.scale <= 2, where .. " scale")
+						t.truthy(p.x >= b[1] - 4 and p.x <= b[3] + 4 and p.z >= b[2] - 4 and p.z <= b[4] + 4, where .. " in bounds")
+						if m and not ON_ROAD[p.module] then
+							-- the footprint radius of the piece (half its larger side, scaled)
+							local r = math.max(m.size[1], m.size[3]) / 2 * p.scale
+							if string.find(p.module, "olive_tree") then
+								t.truthy(Path.distanceToAll(roads, p.x, p.z) >= TD.PATH_HALF_WIDTH + r * 0.8, where .. " canopy clear of the road")
+							elseif m.size[2] > 1 then
+								t.truthy(Path.distanceToAll(roads, p.x, p.z) >= TD.PATH_HALF_WIDTH, where .. " off the road")
+							end
+						end
+					end
+				end
+			end
+			t.truthy(checked >= 1, "at least the Olive Press")
+		end)
+	end)
 end

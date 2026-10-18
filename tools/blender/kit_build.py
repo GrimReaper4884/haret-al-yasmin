@@ -487,6 +487,8 @@ def olive_tree(b, seed, height):
         a = rng.random() * math.tau
         c = top + Vector((math.cos(a) * 2.4, math.sin(a) * 2.4, rng.uniform(0.6, 1.6)))
         b.sphere(0.18, tuple(c), "basalt", segs=5, rings=3)
+    # Built at a small size, then scaled to a real olive next to 14-stud lane walls (9–12 studs).
+    bmesh.ops.scale(b.bm, vec=(2.0, 2.0, 2.0), verts=list(b.bm.verts))
 
 
 def olive_tree_a(b):

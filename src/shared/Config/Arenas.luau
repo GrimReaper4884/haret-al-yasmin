@@ -14,6 +14,9 @@ export type ArenaDef = {
 	seed: string,
 	theme: string, -- key in Config/ArenaThemes.themes (looks only)
 	wires: { { seg: number, t: number } }?, -- lanterns on wires across road segment `seg` at fraction `t`
+	paths: { { { number } } }?, -- twin gates: every road (merging before the gate); `path` is the first (S1-S07)
+	allySpot: { number }?, -- x, z where a story ally stands (Waves.episodes[id].script, S1-S07)
+	kit: string?, -- Config/ArenaLayouts/<kit>: hara kit modules placed by server/World/KitLayout (S1-M03)
 }
 
 -- The orchard road (Episode 1). "The Rival Lane" (Episode 2) walks the very same road so balance
@@ -75,6 +78,19 @@ local Arenas: { [string]: ArenaDef } = {
 		theme = "orchard",
 		wires = { { seg = 4, t = 0.5 } },
 	},
+	-- BEGIN GENERATED olive_press (tools/blender/export_layout.py from assets/blender/arenas/olive_press.blend)
+	olive_press = {
+		nameKey = "arena.olive_press.name",
+		path = { { -70, 30 }, { -30, 30 }, { -30, -10 }, { 12, -10 }, { 12, 24 }, { 48, 24 }, { 48, -20 } },
+		bounds = { -80, -40, 80, 36 },
+		gateYaw = 180,
+		spawnYaw = 90,
+		playerSpawn = { 30, -32 },
+		seed = "olive_press",
+		theme = "orchard",
+		kit = "olive_press", -- server/World/KitLayout places Config/ArenaLayouts/olive_press
+	},
+	-- END GENERATED olive_press
 }
 
 return Arenas

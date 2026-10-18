@@ -1,1 +1,3 @@
 src/shared/Anim/Clips/
+src/shared/Config/ArenaLayouts/
+src/shared/Config/KitModules.luau

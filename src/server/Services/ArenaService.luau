@@ -14,6 +14,7 @@ local Path = require(Shared.Logic.Path)
 local RigBuilder = require(Shared.Util.RigBuilder)
 local Arena = require(script.Parent.Parent:WaitForChild("World"):WaitForChild("Arena"))
 local PropDressing = require(script.Parent.Parent:WaitForChild("World"):WaitForChild("PropDressing"))
+local KitLayout = require(script.Parent.Parent:WaitForChild("World"):WaitForChild("KitLayout"))
 
 local ArenaService = {}
 
@@ -43,6 +44,8 @@ function ArenaService.allocate(arenaId: string): Slot?
 			local origin = CFrame.new(SLOT_X0 + (i - 1) * SLOT_STEP, 0, 0)
 			local model, gate = Arena.build(folder, arenaId, origin)
 			PropDressing.dressArena(model, arenaId, origin, Arenas[arenaId].path)
+			-- The Blender kit (S1-M03), before the swaps so tagged primitives still get their props.
+			KitLayout.dress(model, arenaId, origin)
 			PropDressing.swap(model)
 			model.Name = string.format("Arena_%d_%s", i, arenaId)
 			local towers = Instance.new("Folder")

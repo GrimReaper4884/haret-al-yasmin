@@ -356,11 +356,14 @@ function AutoBattle.play(modeId: string, difficulty: string, policyId: any, opts
 		table.insert(bots, { key = key, policy = resolvePolicy(list[i] or list[1]), planIndex = 1 })
 	end
 	local scale = WaveLogic.partyScale(TD, party)
-	local episode = if mode.kind == "story" then Waves.episodes[mode.episode] else nil
+	-- Story episodes and events play their wave script (as MatchService does); opts.arena tries the
+	-- mode on another map (e.g. an event on its new arena before the switch).
+	local episode = if mode.kind == "story" then Waves.episodes[mode.episode] elseif mode.kind == "event" then Waves.events[mode.event] else nil
 	local total = if episode then episode.waves else nil
-	local arena = Arenas[mode.arena]
-	local rules = rulesFor(mode.arena)
-	local spots = spotsFor(mode.arena, rules)
+	local arenaId = opts.arena or mode.arena
+	local arena = Arenas[arenaId]
+	local rules = rulesFor(arenaId)
+	local spots = spotsFor(arenaId, rules)
 	local state = TdSim.new(arena.path, keys, math.floor(TD.START_CASH * scale.cash + 0.5), opts.gate or diff.gate, total, TD.PREP_SECONDS, {
 		between = TD.BETWEEN_WAVES,
 		waveBonusBase = TD.WAVE_BONUS_BASE * scale.cash,
