@@ -308,6 +308,21 @@ return function(t)
 			t.truthy(tn2)
 		end)
 
+		t.it("Umm Baki's lamp lights stealth for defenders in range, and she never slows (S1-A03)", function()
+			local q = Units.qabilah
+			t.eq(q.revealsStealth, true)
+			t.eq(q.hitsStealth, true)
+			t.eq(q.rarity, "rare")
+			for _, l in q.levels do
+				t.eq((l :: any).slow, nil, "no slow at any level")
+			end
+			local s = sim(straight, oneThief, 1)
+			local _, _, tk = TdTowers.place(s, "p1", "khayyat", Units.khayyat, 50, 4, 0, nil, rules())
+			local _, _, tq = TdTowers.place(s, "p1", "qabilah", q, 50, 12, 0, nil, rules())
+			t.eq(TdSim.revealerFor(s, tk), tq)
+			t.eq(TdSim.seesStealth(s, tk), true)
+		end)
+
 		t.it("the gate falls → lost, and nothing moves afterwards", function()
 			local s = sim(straight, function()
 				return { spawns = { { at = 0, enemy = "colonel", hpMul = 1, speedMul = 1 } }, count = 1 }
@@ -1600,6 +1615,18 @@ return function(t)
 			t.eq(r2.firstClear, false)
 			local hard = MatchRewards.compute("ep1", Modes.ep1, "hard", won, p, true, TD, never)
 			t.eq(hard.lira, math.floor(TD.STORY_REWARDS.ep1.lira * 1.6 * 2 * 1.25 + 0.5))
+		end)
+		t.it("the first Normal clear of Episode 6 gives Umm Baki, once (S1-A03)", function()
+			local p = profile()
+			local won = { won = true, wavesCleared = 50, totalWaves = 50 }
+			local r = MatchRewards.compute("ep6", Modes.ep6, "normal", won, p, false, TD, never)
+			t.eq(r.unit, "qabilah")
+			MatchRewards.record(p, "ep6", Modes.ep6, "normal", won, 0, TD)
+			t.eq(MatchRewards.compute("ep6", Modes.ep6, "normal", won, p, false, TD, never).unit, nil, "only once")
+			local lost = { won = false, wavesCleared = 40, totalWaves = 50 }
+			t.eq(MatchRewards.compute("ep6", Modes.ep6, "normal", lost, profile(), false, TD, never).unit, nil, "never on a loss")
+			t.eq(MatchRewards.compute("ep5", Modes.ep5, "normal", won, profile(), false, TD, never).unit, nil)
+			t.truthy(Units[TD.STORY_FIRST_CLEAR.ep6.normal.unit], "the gift is a real unit")
 		end)
 		t.it("a loss pays a share by waves reached", function()
 			local p = profile()

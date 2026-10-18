@@ -214,6 +214,10 @@ local function giftEntries(mode: any, modeId: string): { Amount.Entry }
 		if g.beads > 0 then
 			table.insert(out, { icon = IconIds.reward.beads, text = "+" .. tostring(g.beads) })
 		end
+		local unit = g.unit and (Units :: any)[g.unit]
+		if unit then
+			table.insert(out, { text = t(unit.nameKey) })
+		end
 	end
 	return out
 end

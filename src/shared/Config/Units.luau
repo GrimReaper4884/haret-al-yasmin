@@ -134,6 +134,26 @@ local Units: { [string]: UnitDef } = {
 		},
 		visual = { robe = "#4A2E18", accent = "#B87333", skin = "#B97F5A", hat = "hatta", hatColor = "#EFE6D2", weapon = "lantern" },
 	},
+	-- Umm Baki the midwife (STORY_PLAN §7.5, S1-A03): the second lamp after Abu Hares. Her lamp lights
+	-- stealth and disguised attackers for every defender in range; she hits lightly and never slows.
+	-- The first Normal clear of Episode 6 gives her (TD.STORY_FIRST_CLEAR).
+	qabilah = {
+		nameKey = "unit.qabilah.name",
+		descKey = "unit.qabilah.desc",
+		rarity = "rare",
+		role = "ranged",
+		maxPlaced = 4,
+		hitsStealth = true,
+		revealsStealth = true,
+		levels = {
+			L(160, 3, 11, 1.2),
+			L(110, 5, 12, 1.15),
+			L(190, 8, 13, 1.1),
+			L(300, 11, 14, 1.05),
+			L(460, 15, 15, 1.0),
+		},
+		visual = { robe = "#2B3550", accent = "#B5532C", skin = "#C68E64", hat = "scarf", hatColor = "#F4F1EA", weapon = "lantern" },
+	},
 	farran = {
 		nameKey = "unit.farran.name",
 		descKey = "unit.farran.desc",

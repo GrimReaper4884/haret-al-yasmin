@@ -220,6 +220,12 @@
       "prompt": "1930s false blind beggar revealed as a spy, gaunt man ripping a dark blindfold off with one hand, dagger in the other, patched grey cloak flying, bare feet, cruel grin.",
       "texture": "Patched grey cloak, dark blindfold, steel dagger, warm tan skin (not grey), arms straight out to the sides."
     },
+    "qabilah": {
+      "height": 1.6,
+      "prompt": "Elderly 1930s Damascus midwife, round and brisk old woman, white headscarf, long dark house dress with a striped apron, both hands open and empty (nothing held, no lamp, no bundle), arms straight out to the sides, knowing kind expression, modest clothing.",
+      "texture": "White headscarf, dark navy house dress, cream and rust striped apron, tan skin.",
+      "_note": "S1-A03 (Umm Baki): empty hands; her small oil lamp is a held prop (src/shared/Anim/HandProps.luau), like Fawza's broom."
+    },
     "rifleman": {
       "height": 1.8,
       "texture_style": "enemy",
