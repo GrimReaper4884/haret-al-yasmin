@@ -341,7 +341,9 @@ function Arena.build(parent: Instance, arenaId: string, origin: CFrame): (Model,
 	end
 	local path = Path.build(def.path)
 	road(m, origin, def.path, th)
-	gardens(m, origin, def, path, rng, th)
+	if th.gardens ~= false then
+		gardens(m, origin, def, path, rng, th)
+	end
 	local g = gate(m, origin, def, th)
 	kerbProps(m, origin, def, th)
 	wires(m, origin, def)

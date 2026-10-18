@@ -130,5 +130,27 @@ return function(t)
 				t.truthy(sw.height > 0.5 and sw.height < 4, name .. " height is prop-sized")
 			end
 		end)
+
+		t.it("orchard_kit is the orchard look without the generated gardens", function()
+			local o, k = ArenaThemes.themes.orchard, ArenaThemes.themes.orchard_kit
+			t.eq(k.gardens, false)
+			t.eq(o.gardens, nil, "the orchard keeps its gardens")
+			for _, key in
+				{
+					"ground",
+					"groundMaterial",
+					"field",
+					"fieldMaterial",
+					"wall",
+					"road",
+					"kerb",
+					"gateStone",
+					"trees",
+					"houses",
+				}
+			do
+				t.eq(k[key], o[key], key .. " matches the orchard")
+			end
+		end)
 	end)
 end
