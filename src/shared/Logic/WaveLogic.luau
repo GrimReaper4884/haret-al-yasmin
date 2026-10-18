@@ -46,7 +46,7 @@ function WaveLogic.weight(spawns: { Spawn }): number
 	return w
 end
 
-local function finish(spawns: { Spawn }, boss: string?, bossHpMul: number, speedMul: number): Wave
+local function finish(spawns: { Spawn }, boss: string?, bossHpMul: number, speedMul: number, bossRoad: number?): Wave
 	table.sort(spawns, function(a, b)
 		return a.at < b.at
 	end)
@@ -66,7 +66,7 @@ local function finish(spawns: { Spawn }, boss: string?, bossHpMul: number, speed
 	end
 	if boss then
 		local last = if #spawns > 0 then spawns[#spawns].at else 0
-		table.insert(spawns, { at = last + 4, enemy = boss, hpMul = bossHpMul, speedMul = speedMul, boss = true })
+		table.insert(spawns, { at = last + 4, enemy = boss, hpMul = bossHpMul, speedMul = speedMul, boss = true, path = bossRoad })
 	end
 	return { spawns = spawns, boss = boss, count = #spawns }
 end
@@ -108,7 +108,7 @@ function WaveLogic.story(episode: any, wave: number, difficulty: Difficulty, par
 	for _, entry in episode.pool do
 		groupSpawns(spawns, entry, wave, hpMul, speedMul, enemies)
 	end
-	return finish(spawns, episode.bosses[wave], base * (difficulty.boss or 1) * (if party then party.boss else 1), speedMul)
+	return finish(spawns, episode.bosses[wave], base * (difficulty.boss or 1) * (if party then party.boss else 1), speedMul, episode.bossRoad)
 end
 
 -- Endless wave. The curve is already quadratic, so difficulty uses its own (milder) growth

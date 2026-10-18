@@ -378,7 +378,10 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 	local arena = Arenas[mode.arena]
 	-- Bigger parties face tougher enemies (and may split the cash), so 4 players aren't 4× stronger.
 	local scale = WaveLogic.partyScale(TD, #keys)
-	local state = TdSim.new(arena.path, keys, math.floor(TD.START_CASH * scale.cash + 0.5), diff.gate, total, TD.PREP_SECONDS, {
+	-- Twin-road arenas send enemies down both roads only in modes tuned for it (Modes.twinRoads, S1-M05):
+	-- the saha also lists its side alley, but Episodes 4 and 6 were balanced on the stair road alone.
+	local roads = if (mode :: any).twinRoads and arena.paths then arena.paths else arena.path
+	local state = TdSim.new(roads, keys, math.floor(TD.START_CASH * scale.cash + 0.5), diff.gate, total, TD.PREP_SECONDS, {
 		between = TD.BETWEEN_WAVES,
 		waveBonusBase = TD.WAVE_BONUS_BASE * scale.cash,
 		waveBonusPerWave = TD.WAVE_BONUS_PER_WAVE * scale.cash,

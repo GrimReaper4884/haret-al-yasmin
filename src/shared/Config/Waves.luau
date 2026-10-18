@@ -21,6 +21,8 @@ export type Episode = {
 	hpPerWave: number, -- enemy HP multiplier grows by this per wave after the first
 	pool: { PoolEntry },
 	bosses: { [number]: string },
+	bossRoad: number?, -- twin-road arenas: the road every boss walks (default: the spawns' alternation)
+	script: { [number]: any }?, -- scripted beats (TdTowers.runScript): the ally's turn (S1-S07)
 }
 
 local Waves = {

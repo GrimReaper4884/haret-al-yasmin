@@ -20,6 +20,17 @@ return {
 		contrast = 0.05,
 		blend = 2.5, -- seconds
 	},
+	-- Episode 9 opens at dusk and night falls over the waves (STORY_PLAN §8.5, S1-M05): the start look;
+	-- the client tween toward `night` by `nightByWave` is S1-C05.
+	dusk = {
+		density = 0.38,
+		hazeColor = "#C98A5A", -- low sun through dust
+		hazeDecay = "#5A3A40",
+		tint = "#FFE2C8",
+		contrast = 0.03,
+		clockTime = 18.2,
+		nightByWave = 30,
+	},
 	flicker = {
 		min = 0.9, -- lantern brightness swings between min and max of its own value
 		max = 1.1,

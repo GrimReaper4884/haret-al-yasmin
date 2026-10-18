@@ -459,7 +459,9 @@ function AutoBattle.play(modeId: string, difficulty: string, policyId: any, opts
 	local arena = Arenas[arenaId]
 	local rules = rulesFor(arenaId)
 	local spots = spotsFor(arenaId, rules)
-	local state = TdSim.new(arena.path, keys, math.floor(TD.START_CASH * scale.cash + 0.5), opts.gate or diff.gate, total, TD.PREP_SECONDS, {
+	-- Twin roads only where the mode walks them (Modes.twinRoads, as MatchService does).
+	local roads = if mode.twinRoads and arena.paths then arena.paths else arena.path
+	local state = TdSim.new(roads, keys, math.floor(TD.START_CASH * scale.cash + 0.5), opts.gate or diff.gate, total, TD.PREP_SECONDS, {
 		between = TD.BETWEEN_WAVES,
 		waveBonusBase = TD.WAVE_BONUS_BASE * scale.cash,
 		waveBonusPerWave = TD.WAVE_BONUS_PER_WAVE * scale.cash,
