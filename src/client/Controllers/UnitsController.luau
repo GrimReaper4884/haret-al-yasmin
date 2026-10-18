@@ -30,6 +30,11 @@ local ToastController = require(script.Parent.ToastController)
 local UnitsController = {}
 
 local RARITY_RANK = { secret = 6, mythic = 5, legendary = 4, epic = 3, rare = 2 }
+-- Role order for the grid's second sort key and the filter chips (LP-B05).
+local ROLE_ORDER = { "melee", "ranged", "splash", "support", "healer", "farm" }
+local roleFilter: string? = nil -- nil = every role
+local filterRow: Frame
+local filterChips: { [string]: TextButton } = {}
 
 local modal: Modal.Modal
 local loadoutRow: Frame
@@ -64,12 +69,41 @@ local function request(fn: () -> any)
 end
 
 local function build()
-	modal = Modal.create("Units", 640, 250, { fill = true })
+	-- 304: the role filter row (LP-B05) took 54 px from the grid.
+	modal = Modal.create("Units", 640, 304, { fill = true })
 	local body = modal.body
 	loadoutLabel = Theme.label({ TextSize = 14, FontFace = Theme.fontBold, Size = UDim2.new(1, 0, 0, 18), ZIndex = 11, Parent = body })
 	loadoutRow = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, 20), Size = UDim2.new(1, 0, 0, 64), ZIndex = 11, Parent = body })
 	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = loadoutRow })
-	local gridHolder = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, 90), Size = UDim2.new(1, 0, 1, -90), ZIndex = 11, Parent = body })
+	-- Role filter chips (LP-B05): All, then one glyph per role.
+	filterRow = Create("Frame", { Name = "Filters", BackgroundTransparency = 1, Position = UDim2.fromOffset(0, 88), Size = UDim2.new(1, 0, 0, Theme.TOUCH), ZIndex = 11, Parent = body })
+	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 4), SortOrder = Enum.SortOrder.LayoutOrder, Parent = filterRow })
+	local function chip(key: string, order: number, width: number): TextButton
+		local b = Theme.button({ Name = "Filter_" .. key, LayoutOrder = order, Text = "", TextSize = 14, Size = UDim2.fromOffset(width, Theme.TOUCH), BackgroundColor3 = Theme.colors.button, ZIndex = 12, Parent = filterRow })
+		b.Activated:Connect(function()
+			roleFilter = if key == "all" then nil else key
+			UnitsController.render()
+		end)
+		filterChips[key] = b
+		return b
+	end
+	chip("all", 0, 64)
+	for i, role in ROLE_ORDER do
+		local b = chip(role, i, Theme.TOUCH)
+		local pad = b:FindFirstChildOfClass("UIPadding")
+		if pad then
+			pad:Destroy()
+		end
+		local glyph = Create("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(28, 28), BackgroundTransparency = 1, ZIndex = 13, Parent = b })
+		Icons.draw("role_" .. role, glyph)
+		for _, d in glyph:GetDescendants() do
+			if d:IsA("GuiObject") then
+				d.ZIndex = 13
+			end
+		end
+	end
+	local gridTop = 88 + Theme.TOUCH + 6
+	local gridHolder = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, gridTop), Size = UDim2.new(1, 0, 1, -gridTop), ZIndex = 11, Parent = body })
 	grid = Modal.scroller(gridHolder)
 	Create("UIGridLayout", { CellSize = UDim2.fromOffset(96, 124), CellPadding = UDim2.fromOffset(8, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = grid })
 	detail = Create("Frame", { BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 12, Visible = false, Parent = body })
@@ -155,27 +189,54 @@ function renderRates(snapshot: any)
 	end
 end
 
-local function statLine(t: any, def: any, owned: any): string
+-- One line under a card's name: the attack pattern and how many can stand at once (LP-B05).
+local function kindLine(t: any, def: any): string
+	local k = UnitLogic.kind(def)
+	local pattern = if k.splash then t("kind." .. k.pattern, { r = math.floor(k.splash * 10 + 0.5) / 10 }) else t("kind." .. k.pattern)
+	return pattern .. " · " .. t("kind.max", { n = k.maxPlaced })
+end
+
+local function r1(n: number): number
+	return math.floor(n * 10 + 0.5) / 10
+end
+
+-- The detail view's stat block (LP-B05, UnitLogic.statBlock): level 1 → the last level with this
+-- player's stars and trait, the ultimate, the economy, what it reaches, the cap, the cost to max
+-- and the two level-7 paths.
+local function statLine(t: any, unitId: string, def: any, owned: any): string
 	local stars = UnitLogic.stars(owned.copies, TD.STAR_COPIES)
 	local trait = UnitLogic.ownedTrait(owned, Traits.traits, TD.STAR_COPIES, TD.TRAIT2_STARS)
-	local st = UnitLogic.stats(def, 1, stars, trait, TD.STAR_BONUS, Traits.caps)
+	local b = UnitLogic.statBlock(def, stars, trait, TD.STAR_BONUS, Traits.caps, TD.SELL_REFUND, Beads)
+	local k = UnitLogic.kind(def)
 	local lines = {}
-	if st.damage > 0 then
-		table.insert(lines, t("match.stat_damage", { n = math.floor(st.damage + 0.5) }))
-		table.insert(lines, t("match.stat_range", { n = math.floor(st.range * 10 + 0.5) / 10 }))
-		table.insert(lines, t("match.stat_cooldown", { n = math.floor(st.cooldown * 100 + 0.5) / 100 }))
+	if b.dps[1] > 0 then
+		table.insert(lines, t("units.block_dps", { a = math.floor(b.dps[1] + 0.5), b = math.floor(b.dps[2] + 0.5) }))
+		table.insert(lines, t("units.block_range", { a = r1(b.range[1]), b = r1(b.range[2]) }))
+		table.insert(lines, t("units.block_cooldown", { a = math.floor(b.cooldown[1] * 100 + 0.5) / 100, b = math.floor(b.cooldown[2] * 100 + 0.5) / 100 }))
 	end
-	if st.revealsStealth then
-		table.insert(lines, t("match.reveals_stealth"))
+	if k.ability and k.abilityCooldown then
+		table.insert(lines, t("units.block_ability", { name = t("ult." .. unitId), s = k.abilityCooldown }))
 	end
-	if st.income then
-		table.insert(lines, t("match.stat_income", { n = st.income }))
+	if b.income then
+		table.insert(lines, t("units.block_income", { a = b.income[1], b = b.income[2] }))
 	end
-	if st.buff then
-		table.insert(lines, t("match.stat_buff", { n = math.floor((st.buff - 1) * 100 + 0.5) }))
+	if b.bounty then
+		table.insert(lines, t("units.block_bounty", { a = b.bounty[1], b = b.bounty[2] }))
 	end
-	if st.heal then
-		table.insert(lines, t("match.stat_heal", { n = st.heal }))
+	if b.buff then
+		table.insert(lines, t("units.block_buff", { a = math.floor((b.buff[1] - 1) * 100 + 0.5), b = math.floor((b.buff[2] - 1) * 100 + 0.5) }))
+	end
+	if b.heal then
+		table.insert(lines, t("units.block_heal", { a = b.heal[1], b = b.heal[2] }))
+	end
+	for _, r in k.reach do
+		table.insert(lines, t("kind.reach." .. r))
+	end
+	table.insert(lines, t("units.block_placed", { n = k.maxPlaced }))
+	table.insert(lines, t("units.block_cost", { n = b.maxLevel, c = b.costToMax, s = b.sellAtMax }))
+	local sig = b.signature
+	if sig then
+		table.insert(lines, t("units.block_signature", { a = t("unit." .. unitId .. ".sig." .. sig.a .. ".name"), b = t("unit." .. unitId .. ".sig." .. sig.b .. ".name") }))
 	end
 	return table.concat(lines, "\n")
 end
@@ -263,6 +324,7 @@ local function renderDetail(snapshot: any)
 	end
 	detail.Visible = true
 	grid.Visible = false
+	filterRow.Visible = false
 	loadoutRow.Visible = false
 	loadoutLabel.Visible = false
 	local stars = UnitLogic.stars(owned.copies, TD.STAR_COPIES)
@@ -282,7 +344,7 @@ local function renderDetail(snapshot: any)
 	local rarity = Theme.label({ LayoutOrder = 2, Text = t("rarity." .. def.rarity) .. " · " .. t("role." .. def.role) .. " · " .. t("units.stars", { n = stars }), TextSize = 13, TextColor3 = Theme.colors.textMuted, Size = UDim2.new(1, 0, 0, 16), ZIndex = 13, Parent = col })
 	local desc = Theme.label({ LayoutOrder = 3, Text = t(def.descKey), TextSize = 13, Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 13, Parent = col })
 	local statsRow = Create("Frame", { LayoutOrder = 4, BackgroundTransparency = 1, Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, ZIndex = 13, Parent = col })
-	local stats = Theme.label({ Text = statLine(t, def, owned), TextSize = 13, FontFace = Theme.fontBold, Position = UDim2.fromScale(if rtl then 0.5 else 0, 0), Size = UDim2.fromScale(0.5, 0), AutomaticSize = Enum.AutomaticSize.Y, TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 13, Parent = statsRow })
+	local stats = Theme.label({ Text = statLine(t, unitId, def, owned), TextSize = 13, FontFace = Theme.fontBold, Position = UDim2.fromScale(if rtl then 0.5 else 0, 0), Size = UDim2.fromScale(0.5, 0), AutomaticSize = Enum.AutomaticSize.Y, TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 13, Parent = statsRow })
 	local next = 0
 	for _, needed in TD.STAR_COPIES do
 		if owned.copies < needed then
@@ -480,22 +542,38 @@ function UnitsController.render()
 	end
 	local ids = {}
 	for id in snapshot.units do
-		if (Units :: any)[id] then
+		local def = (Units :: any)[id]
+		if def and (roleFilter == nil or def.role == roleFilter) then
 			table.insert(ids, id)
 		end
 	end
+	-- Rarity first, then role (the chips' order), then the id (LP-B05).
 	table.sort(ids, function(a, b)
-		local ra, rb = RARITY_RANK[(Units :: any)[a].rarity] or 0, RARITY_RANK[(Units :: any)[b].rarity] or 0
+		local da, db = (Units :: any)[a], (Units :: any)[b]
+		local ra, rb = RARITY_RANK[da.rarity] or 0, RARITY_RANK[db.rarity] or 0
 		if ra ~= rb then
 			return ra > rb
 		end
+		local oa, ob = table.find(ROLE_ORDER, da.role) or 99, table.find(ROLE_ORDER, db.role) or 99
+		if oa ~= ob then
+			return oa < ob
+		end
 		return a < b
 	end)
+	for key, b in filterChips do
+		local on = (key == "all" and roleFilter == nil) or key == roleFilter
+		b.BackgroundColor3 = if on then Theme.colors.gold else Theme.colors.button
+		if key == "all" then
+			b.Text = t("units.filter_all")
+		end
+	end
+	filterRow.Visible = true
 	for i, id in ids do
 		local def = (Units :: any)[id]
 		local owned = snapshot.units[id]
 		local inLoadout = table.find(snapshot.loadout, id) ~= nil
-		local card = UnitCard.create(id, { LayoutOrder = i }, { name = t(def.nameKey), stars = UnitLogic.stars(owned.copies, TD.STAR_COPIES), selected = inLoadout, sub = t("rarity." .. def.rarity) })
+		local kind = UnitLogic.kind(def)
+		local card = UnitCard.create(id, { LayoutOrder = i }, { name = t(def.nameKey), stars = UnitLogic.stars(owned.copies, TD.STAR_COPIES), selected = inLoadout, sub = kindLine(t, def), role = def.role, reach = kind.reach })
 		card.Parent = grid
 		local hit = Create("TextButton", { Text = "", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 13, Parent = card })
 		Juice.press(hit)

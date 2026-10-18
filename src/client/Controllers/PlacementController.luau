@@ -937,7 +937,6 @@ local function refreshBar()
 	for _, slot in slots do
 		local afford = cash >= slot.price
 		slot.cost.TextColor3 = if afford then Color3.fromHex("#FFD970") else Color3.fromHex("#FF6B5E")
-		slot.dim.Visible = not afford
 		local placed = 0
 		for _, rec in towers do
 			if rec.owner == me and rec.unitId == slot.unitId then
@@ -947,6 +946,8 @@ local function refreshBar()
 		local def = (Units :: any)[slot.unitId]
 		slot.count.Text = placed .. "/" .. def.maxPlaced
 		slot.count.TextColor3 = if placed >= def.maxPlaced then Color3.fromHex("#FF6B5E") else Color3.new(1, 1, 1)
+		-- Dim when it can't be placed now: too dear, or all of them already stand (LP-B05).
+		slot.dim.Visible = not afford or placed >= def.maxPlaced
 	end
 end
 
@@ -1018,6 +1019,14 @@ local function slotFor(i: number, unitId: string): Slot
 		-- Gold gem (PV-C04): this defender has an ultimate.
 		local badge = Create("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(1, -9, 0, 9), Size = UDim2.fromOffset(24, 24), BackgroundTransparency = 1, ZIndex = 7, Parent = frame })
 		Icons.draw("gem", badge, "#" .. Theme.lira:ToHex())
+	end
+	-- Role glyph (LP-B05): bottom-right over the cost row, so the bar says what each defender does.
+	local glyph = Create("Frame", { Name = "Role", AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -4, 1, -22), Size = UDim2.fromOffset(18, 18), BackgroundTransparency = 1, ZIndex = 7, Parent = frame })
+	Icons.draw("role_" .. def.role, glyph)
+	for _, d in glyph:GetDescendants() do
+		if d:IsA("GuiObject") then
+			d.ZIndex = 7
+		end
 	end
 	if UserInputService.KeyboardEnabled and i <= 9 then
 		-- Number key that picks this slot (bottom-left; the count is top-left, the ultimate badge top-right)

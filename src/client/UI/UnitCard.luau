@@ -17,6 +17,7 @@ local Create = require(script.Parent.Create)
 local Theme = require(script.Parent.Theme)
 local Juice = require(script.Parent.Juice)
 local Fx = require(script.Parent.Fx)
+local Icons = require(script.Parent.Icons)
 
 local UnitCard = {}
 
@@ -28,6 +29,16 @@ export type Options = {
 	selected: boolean?,
 	dim: boolean?,
 	zindex: number?,
+	role: string?, -- draws the role glyph in the top-left corner (LP-B05)
+	reach: { string }?, -- small marks over the portrait's foot: "stealth" | "lantern" | "douse"
+}
+
+-- The mark drawn for each reach (UnitLogic.kind): eye (sees stealth), a gold eye (lights a lantern
+-- for others), fire (douses the gate's burn).
+local REACH_ICON: { [string]: { icon: string, color: string? } } = {
+	stealth = { icon = "eye" },
+	lantern = { icon = "eye", color = "#F2C14E" },
+	douse = { icon = "mech_burn" },
 }
 
 -- Imported (Meshy) figures sit in their T-pose bind pose unless a clip plays, and an Animator only
@@ -242,6 +253,31 @@ function UnitCard.create(unitId: string, props: { [string]: any }, opts: Options
 			Parent = card,
 		})
 		stars.TextXAlignment = Enum.TextXAlignment.Right
+	end
+	if o.role then
+		local glyph = Create("Frame", { Name = "Role", Position = UDim2.fromOffset(4, 4), Size = UDim2.fromOffset(20, 20), BackgroundTransparency = 1, ZIndex = z + 2, Parent = card })
+		Icons.draw("role_" .. o.role, glyph)
+		for _, d in glyph:GetDescendants() do
+			if d:IsA("GuiObject") then
+				d.ZIndex = z + 2
+			end
+		end
+	end
+	if o.reach and #o.reach > 0 then
+		local marks = Create("Frame", { Name = "Reach", Position = UDim2.new(0, 4, 0.62, -18), Size = UDim2.new(1, -8, 0, 16), BackgroundTransparency = 1, ZIndex = z + 2, Parent = card })
+		Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 2), Parent = marks })
+		for _, r in o.reach do
+			local spec = REACH_ICON[r]
+			if spec then
+				local m = Create("Frame", { Size = UDim2.fromOffset(16, 16), BackgroundColor3 = Color3.fromHex("#2A1E14"), BackgroundTransparency = 0.3, ZIndex = z + 2, Parent = marks }, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+				Icons.draw(spec.icon, m, spec.color)
+				for _, d in m:GetDescendants() do
+					if d:IsA("GuiObject") then
+						d.ZIndex = z + 3
+					end
+				end
+			end
+		end
 	end
 	if hasText then
 		local name = Theme.display({

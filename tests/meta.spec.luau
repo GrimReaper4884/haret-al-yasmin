@@ -549,4 +549,62 @@ return function(t)
 			t.eq(ceilings.extra_slot, TD.FREE_SPEED)
 		end)
 	end)
+
+	-- LP-B05: what kind of defender each unit is, and the Units screen's stat block.
+	t.describe("Unit kinds and stat blocks (LP-B05)", function()
+		local Beads = t.config("Beads")
+		local ROLES = { melee = true, ranged = true, splash = true, support = true, farm = true, healer = true }
+		local PATTERNS = { single = true, splash = true, trap = true, none = true }
+		t.it("every unit has a complete kind and stat block (no missing fields)", function()
+			local n = 0
+			for id, def in Units do
+				n += 1
+				local k = UnitLogic.kind(def)
+				t.truthy(ROLES[k.role], id .. " role " .. tostring(k.role))
+				t.truthy(PATTERNS[k.pattern], id .. " pattern")
+				t.truthy(k.maxPlaced >= 1, id .. " maxPlaced")
+				t.truthy(type(k.reach) == "table", id .. " reach")
+				if k.pattern == "splash" or k.pattern == "trap" then
+					t.truthy(type(k.splash) == "number" and k.splash > 0, id .. " splash radius")
+				end
+				local b = UnitLogic.statBlock(def, 0, nil, TD.STAR_BONUS, Traits.caps, TD.SELL_REFUND, Beads)
+				t.eq(b.maxLevel, #def.levels, id)
+				for _, key in { "damage", "dps", "range", "cooldown" } do
+					t.eq(#b[key], 2, id .. " " .. key)
+					t.truthy(b[key][1] >= 0 and b[key][2] >= 0, id .. " " .. key .. " not negative")
+				end
+				t.truthy(b.range[2] >= b.range[1], id .. " range grows")
+				t.truthy(b.costToMax > 0, id .. " cost")
+				t.eq(b.sellAtMax, math.floor(b.costToMax * TD.SELL_REFUND), id .. " sell value")
+				t.eq(#b.beads, 3, id .. " three bead kinds")
+				if def.signature then
+					t.truthy(b.signature and b.signature.a and b.signature.b, id .. " signature keys")
+				end
+				if k.pattern == "none" then
+					t.eq(b.dps[1], 0, id .. " no attack, no DPS")
+				else
+					t.truthy(b.dps[2] >= b.dps[1] and b.dps[1] > 0, id .. " DPS grows")
+				end
+			end
+			t.truthy(n >= 20, "the whole roster")
+		end)
+		t.it("reads the roles the cards show", function()
+			t.eq(UnitLogic.kind(Units.hummus).economy.kind, "bounty", "Abu Samih's bounty finally shows")
+			t.eq(UnitLogic.statBlock(Units.hummus, 0, nil, TD.STAR_BONUS, Traits.caps, TD.SELL_REFUND, Beads).bounty[1], Units.hummus.levels[1].bounty)
+			t.eq(UnitLogic.kind(Units.qahwaji).economy.kind, "income")
+			t.eq(UnitLogic.kind(Units.iskafi).pattern, "trap", "the cat's slowing patch")
+			t.eq(UnitLogic.kind(Units.mukhtar).pattern, "none", "Abu Bader does not attack at level 1")
+			t.truthy(UnitLogic.statBlock(Units.mukhtar, 0, nil, TD.STAR_BONUS, Traits.caps, TD.SELL_REFUND, Beads).buff[2] > 1)
+			t.truthy(table.find(UnitLogic.kind(Units.natour).reach, "lantern"), "the watchman's lantern")
+			t.truthy(table.find(UnitLogic.kind(Units.natour).reach, "stealth"))
+			t.eq(UnitLogic.kind(Units.zaim).ability, "shabriyeh")
+			t.eq(UnitLogic.kind(Units.walad).pattern, "single")
+		end)
+		t.it("stars and a trait feed the block the same way the match does", function()
+			local base = UnitLogic.statBlock(Units.zaim, 0, nil, TD.STAR_BONUS, Traits.caps, TD.SELL_REFUND, Beads)
+			local starred = UnitLogic.statBlock(Units.zaim, 2, nil, TD.STAR_BONUS, Traits.caps, TD.SELL_REFUND, Beads)
+			t.truthy(starred.damage[2] > base.damage[2])
+			t.eq(starred.damage[2], UnitLogic.stats(Units.zaim, #Units.zaim.levels, 2, nil, TD.STAR_BONUS, Traits.caps).damage)
+		end)
+	end)
 end

@@ -218,6 +218,108 @@ function UnitLogic.stats(def: any, level: number, stars: number, trait: any?, st
 	}
 end
 
+-- What kind of defender a unit is (LP-B05, LOOK_AND_PLAY_PLAN §6.3), derived from its config so the
+-- cards and the hotbar can say it: role, attack pattern at level 1 (single target, splash radius, a
+-- slowing trap patch, or no attack), what it can reach (stealth, a lantern for others, dousing the
+-- gate's fire), its ultimate, its economy (income per wave or bounty per kill in range) and how
+-- many can stand at once.
+export type Kind = {
+	role: string,
+	pattern: "single" | "splash" | "trap" | "none",
+	splash: number?, -- radius (studs) for splash and trap
+	reach: { string }, -- "stealth" | "lantern" | "douse", in that order
+	ability: string?, -- "shabriyeh" | "sweep" | "mark"
+	abilityCooldown: number?,
+	economy: { kind: "income" | "bounty", amount: number }?,
+	maxPlaced: number,
+}
+
+function UnitLogic.kind(def: any): Kind
+	local lv = def.levels[1]
+	local pattern: "single" | "splash" | "trap" | "none" = "single"
+	if lv.damage <= 0 then
+		pattern = "none"
+	elseif lv.splash and lv.slow then
+		pattern = "trap"
+	elseif lv.splash then
+		pattern = "splash"
+	end
+	local reach = {}
+	if def.hitsStealth then
+		table.insert(reach, "stealth")
+	end
+	if def.revealsStealth then
+		table.insert(reach, "lantern")
+	end
+	if def.douse or lv.douse then
+		table.insert(reach, "douse")
+	end
+	local economy: { kind: "income" | "bounty", amount: number }? = nil
+	if lv.income then
+		economy = { kind = "income", amount = lv.income }
+	elseif lv.bounty then
+		economy = { kind = "bounty", amount = lv.bounty }
+	end
+	return {
+		role = def.role,
+		pattern = pattern,
+		splash = if pattern == "splash" or pattern == "trap" then lv.splash else nil,
+		reach = reach,
+		ability = if def.ability then def.ability.kind else nil,
+		abilityCooldown = if def.ability then def.ability.cooldown else nil,
+		economy = economy,
+		maxPlaced = def.maxPlaced,
+	}
+end
+
+-- The Units screen's stat block (LP-B05, the genre's per-level table, condensed): level 1 against
+-- the last level, with the player's stars and trait (`stars` 0 / `trait` nil = the base unit).
+-- dps: damage ÷ cooldown on one target (0 for a unit that does not attack); costToMax: every level's
+-- price (trait discount applied); sellAtMax: what selling it at the last level returns.
+export type StatBlock = {
+	maxLevel: number,
+	damage: { number }, -- { level 1, last level }
+	dps: { number },
+	range: { number },
+	cooldown: { number },
+	costToMax: number,
+	sellAtMax: number,
+	income: { number }?,
+	bounty: { number }?,
+	buff: { number }?,
+	heal: { number }?,
+	beads: { string },
+	signature: { a: string, b: string }?, -- the two path keys
+}
+
+function UnitLogic.statBlock(def: any, stars: number, trait: any?, starBonus: number, caps: any?, sellRefund: number, beads: any): StatBlock
+	local n = #def.levels
+	local a = UnitLogic.stats(def, 1, stars, trait, starBonus, caps)
+	local b = UnitLogic.stats(def, n, stars, trait, starBonus, caps)
+	local function dps(st: Stats): number
+		return if st.damage > 0 then st.damage / st.cooldown else 0
+	end
+	local cost = 0
+	for _, lv in def.levels do
+		cost += UnitLogic.costFor(lv.cost, trait)
+	end
+	return {
+		maxLevel = n,
+		damage = { a.damage, b.damage },
+		dps = { dps(a), dps(b) },
+		range = { a.range, b.range },
+		cooldown = { a.cooldown, b.cooldown },
+		costToMax = cost,
+		sellAtMax = math.floor(cost * sellRefund),
+		income = if a.income and b.income then { a.income, b.income } else nil,
+		bounty = if a.bounty and b.bounty then { a.bounty, b.bounty } else nil,
+		buff = if a.buff and b.buff then { a.buff, b.buff } else nil,
+		heal = if a.heal and b.heal then { a.heal, b.heal } else nil,
+		beads = UnitLogic.beadKinds(def, beads),
+		signature = if def.signature then { a = def.signature.a.key, b = def.signature.b.key } else nil,
+	}
+end
+
 -- Rolls a trait id with the configured weights. rng() → [0, 1).
 function UnitLogic.rollTrait(traits: { [string]: { weight: number } }, order: { string }, rng: () -> number): string
 	local total = 0

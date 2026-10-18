@@ -1009,3 +1009,19 @@ column on the tablet and the 1080p desktop, at most two on the short desktop. St
 | iPad 6th gen 1024×768 | one column above the jump button | `b04_ipad_rail_four.jpg` |
 | Phone 844×390 | two columns (Speed, Tower / Skip, Defenders) | `b02_phone_844x390_rail.jpg` |
 | 640×282 phone (spec) | four single-button columns on the right half (the jump zone leaves one row), as three did before | — |
+
+### LP-B05 unit types on cards, the hotbar and the detail stat block
+
+*Play Solo (lobby, `1` opens Units; `Z` to Arabic and back, `settings.language` confirmed `en` afterwards),
+then `HaretDebug match ep1,normal` for the hotbar (stopped in prep, nothing paid). `tests/meta.spec` checks
+`UnitLogic.kind` and `UnitLogic.statBlock` for every unit id (no missing field, DPS grows, sell value =
+⌊cost × refund⌋, three bead kinds, signature keys).*
+
+| Check | Result | Capture |
+|---|---|---|
+| Grid | every card: role glyph top-left, reach marks (eye = sees stealth, gold eye = lantern, fire = douses), kind line "Single · ×1", "Splash 7 · ×1", "No attack · ×1"; sorted rarity, then role | `docs/captures/lp/b05_units_grid_kinds.jpg` |
+| Filter chips | All + six role glyphs; Farm shows Abu Samih and Abu Hazem only | `b05_filter_farm.jpg` |
+| Detail stat block | Abu Samih: DPS 4 → 18, Range 9 → 11, every 1.2 s → 1 s, **+6 for every kill in range → +24** (the bounty, shown nowhere before), up to 3 at once, to level 5 $2260 · sells for $1356 | `b05_detail_abu_samih_bounty.jpg` |
+| Arabic | detail and grid right-to-left with the Arabic kind lines | `b05_detail_ar.jpg`, `b05_grid_ar.jpg` |
+| Hotbar | a role glyph bottom-right on every slot; the za'im (2/2) and the 'Arada (1/1) dim at their cap | `b05_hotbar_glyphs_cap_dim.jpg` |
+| Console | no errors or warnings from our code | — |
