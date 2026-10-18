@@ -245,6 +245,9 @@ local function wires(m: Instance, origin: CFrame, def: any)
 		light.Brightness = w.brightness
 		light.Shadows = false
 		light.Parent = glass
+		g:SetAttribute("SwapProp", "hanging_lantern") -- PV-E04: the Meshy lantern hangs from the chain
+		g:SetAttribute("SwapCFrame", CFrame.new(mid - Vector3.new(0, w.drop + 0.6, 0)))
+		g:SetAttribute("SwapReplace", "Cap,Glass")
 		decorative(g)
 	end
 end

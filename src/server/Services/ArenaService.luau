@@ -43,6 +43,7 @@ function ArenaService.allocate(arenaId: string): Slot?
 			local origin = CFrame.new(SLOT_X0 + (i - 1) * SLOT_STEP, 0, 0)
 			local model, gate = Arena.build(folder, arenaId, origin)
 			PropDressing.dressArena(model, arenaId, origin, Arenas[arenaId].path)
+			PropDressing.swap(model)
 			model.Name = string.format("Arena_%d_%s", i, arenaId)
 			local towers = Instance.new("Folder")
 			towers.Name = "Towers"

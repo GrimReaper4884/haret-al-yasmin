@@ -191,6 +191,21 @@
       "prompt": "Small courtyard fountain of an old Damascus house: octagonal stone basin with black-and-white inlaid stone pattern, a central spout with water, potted jasmine at its rim.",
       "texture": "Limestone and basalt inlay, turquoise tiles inside the basin, clear water, green jasmine with white flowers.",
       "polycount": 5000
+    },
+    "hanging_lantern": {
+      "prompt": "Hanging oil lantern from an old Damascus lane: hexagonal brass frame with amber glass panes, a pointed domed cap with a ring on top, hanging from a short black iron chain, a small flame glowing inside.",
+      "texture": "Aged brass, black iron chain, warm amber glass glow.",
+      "polycount": 1500
+    },
+    "market_bundle": {
+      "prompt": "Market bundle from a 1930s Damascus lane: a wooden crate full of oranges and pomegranates with two tied burlap sacks of grain leaning against it and a small copper jug in front.",
+      "texture": "Pale weathered wood, bright orange and deep red fruit, beige burlap with rope ties, shiny copper.",
+      "polycount": 2000
+    },
+    "jasmine_pot": {
+      "prompt": "Large terracotta pot with a climbing white jasmine plant from an old Damascus courtyard: rounded clay pot with a painted blue band, a bushy dark green jasmine with many small white star flowers, a few tendrils curling over the rim.",
+      "texture": "Warm terracotta, cobalt blue band, dark glossy green leaves, white flowers.",
+      "polycount": 2000
     }
   }
 }

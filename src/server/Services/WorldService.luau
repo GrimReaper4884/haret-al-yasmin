@@ -80,6 +80,7 @@ function WorldService.build()
 	Skyline.build(map)
 	Extras.build(map)
 	PropDressing.dressLobby(map)
+	PropDressing.swap(map)
 	bounds(map)
 	map.Parent = Workspace
 

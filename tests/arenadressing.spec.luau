@@ -10,6 +10,7 @@ return function(t)
 	local ArenaThemes = t.config("ArenaThemes")
 	local Modes = t.config("Modes")
 	local TD = t.config("TD")
+	local PropPlacements = t.config("PropPlacements")
 
 	t.describe("ArenaDressing", function()
 		t.it("every arena names a complete theme", function()
@@ -118,6 +119,15 @@ return function(t)
 				local before = (s.x - cx) ^ 2 + (s.z - cz) ^ 2
 				local after = (s.x + lx - cx) ^ 2 + (s.z + lz - cz) ^ 2
 				t.truthy(after < before, "front faces the field")
+			end
+		end)
+
+		t.it("Meshy prop swaps (PV-E04) name the three new props with sane heights", function()
+			local want = { "hanging_lantern", "market_bundle", "jasmine_pot" }
+			for _, name in want do
+				local sw = PropPlacements.swaps[name]
+				t.truthy(sw ~= nil, name .. " has a swap")
+				t.truthy(sw.height > 0.5 and sw.height < 4, name .. " height is prop-sized")
 			end
 		end)
 	end)
