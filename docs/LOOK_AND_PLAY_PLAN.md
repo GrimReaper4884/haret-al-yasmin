@@ -648,6 +648,8 @@ Meshy budget: ≈ 330 credits (240 for four NPC looks + 90 for the merchant and 
 
 ## 10. STOP list for the owner (batch these)
 
+*Owner approved this list in chat on 2026-10-19 (DECISIONS D-091): names and Abu Brahim approved, Fast Mode kept and reworded (§3.3 option a), tier-20 gift in, ≈ 330 Meshy credits allowed task by task. Items 5–7 remain live STOPs when their task reaches them.*
+
 1. Approve the §4.2 names table and the merchant unit (Abu Brahim / أبو براهيم, id `tajir`) and his lore.
 2. Fast Mode pass: keep (renamed "3×–5×") or retire; speed stays host-gated.
 3. Meshy credits: ≈ 240 (four NPC looks) + ≈ 90 (the merchant, chest and cloth props).
