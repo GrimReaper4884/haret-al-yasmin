@@ -208,10 +208,11 @@ local Looks: { [string]: Look } = {
 		moustache = "thick",
 		hair = DARK,
 		cloak = "#4A3B30",
+		model = "Bandit",
 	},
-	thug = { build = "stout", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK },
-	rider = { build = "normal", outfit = "uniform", beard = "none", moustache = "handlebar", hair = DARK },
-	sapper = { build = "stout", outfit = "uniform", beard = "short", moustache = "thick", hair = DARK },
+	thug = { build = "stout", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK, model = "Thug" },
+	rider = { build = "normal", outfit = "uniform", beard = "none", moustache = "handlebar", hair = DARK, model = "Rider" },
+	sapper = { build = "stout", outfit = "uniform", beard = "short", moustache = "thick", hair = DARK, model = "Sapper" },
 	spy = {
 		build = "slim",
 		outfit = "qumbaz",
@@ -222,7 +223,7 @@ local Looks: { [string]: Look } = {
 		model = "Nims",
 		anims = { walk = 118280743752950 },
 	},
-	sergeant = { build = "broad", outfit = "uniform", beard = "none", moustache = "handlebar", hair = DARK },
+	sergeant = { build = "broad", outfit = "uniform", beard = "none", moustache = "handlebar", hair = DARK, model = "Sergeant" },
 	chief_thief = {
 		build = "broad",
 		outfit = "qumbaz",
@@ -243,7 +244,7 @@ local Looks: { [string]: Look } = {
 		model = "AbuNar",
 		anims = { walk = 100088303835625 },
 	},
-	colonel = { build = "giant", outfit = "uniform", beard = "none", moustache = "handlebar", hair = GREY },
+	colonel = { build = "giant", outfit = "uniform", beard = "none", moustache = "handlebar", hair = GREY, model = "Commandant" },
 }
 
 return Looks

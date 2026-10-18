@@ -111,15 +111,15 @@ Icons.portraits = {
 	-- Attackers
 	gendarme = { id = 115451910060448, model = "Gendarme" },
 	thief = { id = 102539531902290, model = "Thief" },
-	bandit = { id = 110754698230332, model = "" },
-	thug = { id = 100673785539358, model = "" },
-	rider = { id = 113278610530097, model = "" },
-	sapper = { id = 126394558384791, model = "" },
+	bandit = { id = 120949810630957, model = "Bandit" },
+	thug = { id = 135478284152010, model = "Thug" },
+	rider = { id = 101117813202159, model = "Rider" },
+	sapper = { id = 101949803501935, model = "Sapper" },
 	spy = { id = 117876863565509, model = "Nims" },
-	sergeant = { id = 72473338937682, model = "" },
+	sergeant = { id = 73566511528622, model = "Sergeant" },
 	chief_thief = { id = 131496373841818, model = "Idaashari" },
 	rival_zaim = { id = 93232597039986, model = "AbuNar" },
-	colonel = { id = 92643285514202, model = "" },
+	colonel = { id = 106285960688999, model = "Commandant" },
 } :: { [string]: Portrait }
 
 -- Reward table key (SeasonPass, Daily, Events, Codes rewards) → icon name. `item` uses the item's

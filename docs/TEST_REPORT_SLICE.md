@@ -762,3 +762,14 @@ Verdict: external (Studio or a plugin), ignored (D-020).
 | Timing (cached Studio join, no hold) | `[Loading] done in 2.32 s` (hand-over; gone after the 0.4 s fade); the wait is the character spawning, the screen's own minimum is 1.2 s |
 | Bugs found and fixed in the run | `ColorSequence.new(): table is too long` (40 stripes = 80 keypoints) and `ColorSequence must end at time=1.0` |
 | Restore | Device Simulator back to default, `DebugHoldLoading` removed, Studio in Edit |
+
+## PV-A02/A03: the last six attackers (2026-10-18)
+
+| Check | Evidence |
+|---|---|
+| Models synced | `ReplicatedStorage.CharacterModels` lists 27 models; Thug, Bandit, Rider, Sapper, Sergeant, Commandant each have their skinned `Mesh_0` |
+| Tris | thug 5,628 · bandit 5,604 · rider 5,603 · sapper 5,616 (≤ 6k) · sergeant 8,067 · colonel 8,300 (≤ 12k) |
+| Live match, Episode 1 Normal | wave 7: 2 thugs imported; wave 10: the Sergeant as the Meshy figure with his new portrait on the boss bar (`docs/art/pva02_sergeant_boss_bar_2026-10-18.jpg`); wave 12: bandit, 5 thugs, 9 gendarmes, 8 thieves, all imported, no primitive enemy |
+| Walk clips | all six built by `RigBuilder` and walking on their baked clips (`docs/art/pva02_six_attackers_walk_2026-10-18.jpg`) |
+| Console | `[HaretAlYasmin] server ready`; no errors from our code (UIBlox and D-020 noise only) |
+| Specs | `tools/check.ps1` green, 276 passed (clips spec now requires all 11 attackers; icons spec checks every portrait matches its model) |

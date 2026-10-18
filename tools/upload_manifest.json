@@ -457,42 +457,6 @@
       "id": 102539531902290,
       "uploaded": "2026-10-18"
     },
-    "assets/marketing/portraits/bandit_primitive.png": {
-      "name": "Haret portrait bandit_primitive",
-      "type": "Image",
-      "id": 110754698230332,
-      "uploaded": "2026-10-18"
-    },
-    "assets/marketing/portraits/colonel_primitive.png": {
-      "name": "Haret portrait colonel_primitive",
-      "type": "Image",
-      "id": 92643285514202,
-      "uploaded": "2026-10-18"
-    },
-    "assets/marketing/portraits/rider_primitive.png": {
-      "name": "Haret portrait rider_primitive",
-      "type": "Image",
-      "id": 113278610530097,
-      "uploaded": "2026-10-18"
-    },
-    "assets/marketing/portraits/sapper_primitive.png": {
-      "name": "Haret portrait sapper_primitive",
-      "type": "Image",
-      "id": 126394558384791,
-      "uploaded": "2026-10-18"
-    },
-    "assets/marketing/portraits/sergeant_primitive.png": {
-      "name": "Haret portrait sergeant_primitive",
-      "type": "Image",
-      "id": 72473338937682,
-      "uploaded": "2026-10-18"
-    },
-    "assets/marketing/portraits/thug_primitive.png": {
-      "name": "Haret portrait thug_primitive",
-      "type": "Image",
-      "id": 100673785539358,
-      "uploaded": "2026-10-18"
-    },
     "assets/marketing/banners/mode_ep1.png": {
       "name": "Haret banner ep1",
       "type": "Image",
@@ -557,6 +521,42 @@
       "name": "Haret logo wordmark text",
       "type": "Image",
       "id": 124741548596324,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Bandit.png": {
+      "name": "Haret portrait Bandit",
+      "type": "Image",
+      "id": 120949810630957,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Thug.png": {
+      "name": "Haret portrait Thug",
+      "type": "Image",
+      "id": 135478284152010,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Rider.png": {
+      "name": "Haret portrait Rider",
+      "type": "Image",
+      "id": 101117813202159,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Sapper.png": {
+      "name": "Haret portrait Sapper",
+      "type": "Image",
+      "id": 101949803501935,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Sergeant.png": {
+      "name": "Haret portrait Sergeant",
+      "type": "Image",
+      "id": 73566511528622,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Commandant.png": {
+      "name": "Haret portrait Commandant",
+      "type": "Image",
+      "id": 106285960688999,
       "uploaded": "2026-10-18"
     }
   }

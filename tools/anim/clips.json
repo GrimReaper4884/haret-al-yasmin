@@ -47,7 +47,11 @@
     "run3": 15,
     "runfast": 16,
     "riflecharge": 511,
-    "quickwalk": 115
+    "quickwalk": 115,
+    "walkfight": 21,
+    "injuredwalk": 111,
+    "redcarpet": 117,
+    "stagewalk": 55
   },
   "characters": {
     "qahwaji": {
@@ -169,6 +173,70 @@
       "death": {
         "clip": "knockdown",
         "yaw": 0
+      }
+    },
+    "thug": {
+      "walk": "walkfight",
+      "hit": "hitreact",
+      "death": {
+        "clip": "knockdown",
+        "yaw": 0
+      }
+    },
+    "bandit": {
+      "walk": "orc",
+      "hit": "hitreact",
+      "death": {
+        "clip": "dyingback",
+        "yaw": 0
+      }
+    },
+    "rider": {
+      "walk": "run2",
+      "hit": "hitreact",
+      "death": {
+        "clip": "flyup",
+        "yaw": 0
+      }
+    },
+    "sapper": {
+      "walk": "injuredwalk",
+      "hit": "hitreact",
+      "death": {
+        "clip": "knockdown1",
+        "yaw": 0
+      }
+    },
+    "sergeant": {
+      "walk": "stagewalk",
+      "hit": "hitreact",
+      "death": {
+        "clip": "knockdown",
+        "yaw": 0
+      },
+      "intro": {
+        "clip": "chestpound",
+        "yaw": 0
+      },
+      "stagger": {
+        "clip": "waisthit",
+        "to": 24
+      }
+    },
+    "colonel": {
+      "walk": "redcarpet",
+      "hit": "hitreact",
+      "death": {
+        "clip": "dyingback",
+        "yaw": 0
+      },
+      "intro": {
+        "clip": "swordshout",
+        "yaw": 0
+      },
+      "stagger": {
+        "clip": "waisthit",
+        "to": 24
       }
     }
   }

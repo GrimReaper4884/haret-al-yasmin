@@ -6,8 +6,8 @@
 
 local fs = require("@lune/fs")
 
--- PV-A02: meshed, rigged and imported after the owner approves the concepts.
-local AWAITING_MODEL = { thug = true, bandit = true, rider = true, sapper = true, sergeant = true, colonel = true }
+-- Attackers still waiting for their Meshy model (none since PV-A02 imported the last six).
+local AWAITING_MODEL: { [string]: boolean } = {}
 
 local B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
@@ -46,7 +46,7 @@ return function(t)
 					checked += 1
 				end
 			end
-			t.truthy(checked >= 5, "the five imported attackers are covered")
+			t.truthy(checked >= 11, "all eleven imported attackers are covered")
 		end)
 
 		t.it("each slot is well-formed: frames, fps, rotations for every bone, hips per frame", function()
