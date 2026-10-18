@@ -130,5 +130,60 @@ return function(t)
 				t.truthy(sw.height > 0.5 and sw.height < 4, name .. " height is prop-sized")
 			end
 		end)
+
+		t.it("orchard_kit is the orchard look without the generated gardens", function()
+			local o, k = ArenaThemes.themes.orchard, ArenaThemes.themes.orchard_kit
+			t.eq(k.gardens, false)
+			t.eq(o.gardens, nil, "the orchard keeps its gardens")
+			for _, key in
+				{
+					"ground",
+					"groundMaterial",
+					"field",
+					"fieldMaterial",
+					"wall",
+					"road",
+					"kerb",
+					"gateStone",
+					"trees",
+					"houses",
+				}
+			do
+				t.eq(k[key], o[key], key .. " matches the orchard")
+			end
+		end)
+
+		t.it(
+			"twin-gate arenas: kerb props keep off every road, houses keep clear of every entrance",
+			function()
+				local road1 = { { -60, -30 }, { -60, 10 }, { 0, 10 }, { 40, 10 }, { 40, -30 } }
+				local road2 = { { 0, -38 }, { 0, 10 }, { 40, 10 }, { 40, -30 } } -- merges into road1 at {0, 10}
+				local k = ArenaThemes.kerb
+				local spots = ArenaDressing.kerbSpots(road1, k, nil, { road2 })
+				local p2 = Path.build(road2)
+				local alone = ArenaDressing.kerbSpots(road1, k, nil)
+				t.truthy(#spots <= #alone, "the second road only removes spots")
+				for _, sp in spots do
+					t.truthy(Path.distanceTo(p2, sp.x, sp.z) >= k.inset - 1e-6, "off the second road")
+				end
+				local h = ArenaThemes.houses
+				local bounds = { -70, -40, 70, 30 }
+				local houses = ArenaDressing.houseSpots(
+					bounds,
+					road1,
+					h.every,
+					8,
+					h.clearStart,
+					h.clearEnd,
+					{ road2[1] }
+				)
+				for _, hs in houses do
+					t.truthy(
+						(hs.x - road2[1][1]) ^ 2 + (hs.z - road2[1][2]) ^ 2 >= h.clearStart ^ 2,
+						"second entrance stays open"
+					)
+				end
+			end
+		)
 	end)
 end

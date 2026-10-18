@@ -67,7 +67,7 @@ local function road(m: Instance, origin: CFrame, pts: { { number } }, th: any)
 end
 
 -- Orchard plots in the spaces the road doesn't use: low garden walls, trees, a well.
-local function gardens(m: Instance, origin: CFrame, def: any, path: Path.Path, rng: Random, th: any)
+local function gardens(m: Instance, origin: CFrame, def: any, roads: { Path.Path }, rng: Random, th: any)
 	local b = def.bounds
 	local sp = def.playerSpawn
 	local step = 14
@@ -75,7 +75,7 @@ local function gardens(m: Instance, origin: CFrame, def: any, path: Path.Path, r
 	while x < b[3] do
 		local z = b[2] + step / 2
 		while z < b[4] do
-			local d = Path.distanceTo(path, x, z)
+			local d = Path.distanceToAll(roads, x, z)
 			local nearSpawn = math.abs(x - sp[1]) < 12 and math.abs(z - sp[2]) < 12
 			if d > 9 and not nearSpawn then
 				local r = rng:NextNumber()
@@ -110,7 +110,7 @@ local function gardens(m: Instance, origin: CFrame, def: any, path: Path.Path, r
 	end
 	-- A well near the middle of the field
 	local wx, wz = (b[1] + b[3]) / 2, (b[2] + b[4]) / 2
-	if Path.distanceTo(path, wx, wz) > 9 then
+	if Path.distanceToAll(roads, wx, wz) > 9 then
 		local pos = (origin * CFrame.new(wx, 0, wz)).Position
 		Kit.column(m, "WellRim", pos, 1.6, 4, Palette.basalt, M.Basalt)
 		Kit.disc(m, "WellWater", pos + Vector3.new(0, 1.3, 0), 3.2, 0.2, Palette.water, M.Glass, false)
@@ -204,7 +204,14 @@ end
 local function kerbProps(m: Instance, origin: CFrame, def: any, th: any)
 	local k = Kit.model(m, "KerbProps")
 	local sack = hex(ArenaThemes.kerb.sack)
-	for i, s in ArenaDressing.kerbSpots(def.path, ArenaThemes.kerb, def.playerSpawn) do
+	-- Kerb props line the first road only, but keep clear of every other road (twin-gate arenas)
+	local others = {}
+	for k, pts in def.paths or {} do
+		if k > 1 then
+			table.insert(others, pts)
+		end
+	end
+	for i, s in ArenaDressing.kerbSpots(def.path, ArenaThemes.kerb, def.playerSpawn, others) do
 		local cf = origin * CFrame.new(s.x, 0, s.z) * CFrame.Angles(0, s.yaw, 0)
 		local kind = i % 3
 		if kind == 1 then
@@ -257,7 +264,11 @@ local function houses(m: Instance, origin: CFrame, def: any, th: any, rng: Rando
 	local h = ArenaThemes.houses
 	local g = Kit.model(m, "Houses")
 	local out = 2.2 + 1.2 + h.depth / 2
-	for i, s in ArenaDressing.houseSpots(def.bounds, def.path, h.every, out, h.clearStart, h.clearEnd) do
+	local starts = {}
+	for _, pts in def.paths or {} do
+		table.insert(starts, pts[1])
+	end
+	for i, s in ArenaDressing.houseSpots(def.bounds, def.path, h.every, out, h.clearStart, h.clearEnd, starts) do
 		local height = h.minH + rng:NextNumber() * (h.maxH - h.minH)
 		local cf = origin * CFrame.new(s.x, 0, s.z) * CFrame.Angles(0, s.yaw, 0)
 		local plaster = hex(h.plaster[1 + rng:NextInteger(0, #h.plaster - 1)])
@@ -339,16 +350,24 @@ function Arena.build(parent: Instance, arenaId: string, origin: CFrame): (Model,
 		local fence = Kit.part(m, { name = "Fence", size = Vector3.new(s[3], 40, s[4]), cf = origin * CFrame.new(s[1], 20, s[2]), color = Palette.plaster, material = M.SmoothPlastic, transparency = 1, shadow = false })
 		fence.CanQuery = false
 	end
-	local path = Path.build(def.path)
-	road(m, origin, def.path, th)
-	gardens(m, origin, def, path, rng, th)
+	-- Every road (twin-gate arenas have several, `paths`; S1-S07), each with its haze below
+	local roadPts: { { { number } } } = def.paths or { def.path }
+	local roads = Path.buildAll(def)
+	for _, pts in roadPts do
+		road(m, origin, pts, th)
+	end
+	if th.gardens ~= false then
+		gardens(m, origin, def, roads, rng, th)
+	end
 	local g = gate(m, origin, def, th)
 	kerbProps(m, origin, def, th)
 	wires(m, origin, def)
 	if th.houses then
 		houses(m, origin, def, th, rng)
 	end
-	haze(m, origin, def.path)
+	for _, pts in roadPts do
+		haze(m, origin, pts)
+	end
 	-- Party spawn pad
 	local sp = def.playerSpawn
 	Kit.part(m, { name = "SpawnPad", size = Vector3.new(10, 0.3, 10), cf = origin * CFrame.new(sp[1], 0.15, sp[2]), color = Palette.stoneLight, material = M.Pavement, shadow = false })

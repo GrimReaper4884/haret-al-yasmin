@@ -16,6 +16,7 @@ export type Theme = {
 	produce: { string }, -- crate fruit colours in the field and on the kerb
 	trees: boolean, -- orchard trees in the field (false: pots and low walls only)
 	houses: boolean, -- a ring of house blocks outside the field wall
+	gardens: boolean?, -- the generated garden plots and well (nil = on; false when a kit brings its own)
 }
 
 return {
@@ -33,6 +34,22 @@ return {
 			produce = { "#E8892B", "#A8322A" },
 			trees = true,
 			houses = false,
+		},
+		-- The orchard palette for arenas whose imported kit (World/KitLayout, Config/ArenaLayouts) brings
+		-- its own trees and plots: the generated gardens and the well are left out (Olive Press).
+		orchard_kit = {
+			ground = "#9F8A5A",
+			groundMaterial = "Ground",
+			field = "#7F9A4A",
+			fieldMaterial = "Grass",
+			wall = "#E6D5B8", -- Palette.stoneLight (the orchard keeps its pre-PV-E03 colours)
+			road = "#D9BF94", -- Palette.stoneWarm
+			kerb = "#E6D5B8",
+			gateStone = "#D9BF94",
+			produce = { "#E8892B", "#A8322A" },
+			trees = true,
+			houses = false,
+			gardens = false,
 		},
 		-- "The Rival Lane" (Episode 2): a paved street of the next quarter, cooler stone and plaster,
 		-- house fronts all round, basalt bands.
