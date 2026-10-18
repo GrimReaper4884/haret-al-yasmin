@@ -396,6 +396,7 @@ local ERR_KEYS = {
 	max_level = "match.err.max_level",
 	match_over = "match.err.match_over",
 	bad_path = "match.err.bad_path",
+	bad_request = "notify.error",
 }
 
 local function call(fnName: string, ...: any)
@@ -855,7 +856,7 @@ end
 
 function PlacementController.start()
 	build()
-	upgradeButton.Activated:Connect(function()
+	local function pressUpgrade()
 		local rec = selected and towers[selected]
 		if not rec then
 			return
@@ -870,7 +871,25 @@ function PlacementController.start()
 			return
 		end
 		call(Net.Functions.UpgradeTower, selected)
-	end)
+	end
+	upgradeButton.Activated:Connect(pressUpgrade)
+	-- Studio harness (DebugKeysController): open a defender's panel, cycle the path card, press
+	-- Upgrade, or send a wrong path through the same call (its refusal shows the error toast).
+	if RunService:IsStudio() then
+		PlacementController.debugSelect = function(id: number)
+			selectTower(id)
+		end
+		PlacementController.debugPick = function()
+			sigPick = if sigPick == "a" then "b" else "a"
+			renderTowerPanel()
+		end
+		PlacementController.debugPress = pressUpgrade
+		PlacementController.debugWrongPath = function()
+			if selected then
+				call(Net.Functions.UpgradeTower, selected, "c")
+			end
+		end
+	end
 	for pathKey, card in sigCards do
 		card.Activated:Connect(function()
 			sigPick = pathKey

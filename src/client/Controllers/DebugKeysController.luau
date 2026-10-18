@@ -7,7 +7,9 @@
 --   Hakawati's room (AFK) · Y add 30 minutes of sitting there · Q the Play panel's Story tab (each
 --   press selects the next episode) · Z switch English / Arabic
 --   In a match: P place the next loadout unit at your feet · B place it at a road-side spot · U upgrade the last tower you placed
---   · K vote skip · J sell the last tower · T set speed 2x · C +5000 match cash · H leave · G set the gate to 1 HP.
+--   · K vote skip · J sell the last tower · T set speed 2x · C +5000 match cash · H leave · G set the gate to 1 HP
+--   · O open the last tower's panel and cycle its level-7 path card · I press Upgrade · - send a wrong path.
+--   In the lobby: R a unit's detail (cycles owned units) · F its bead picker (next slot) · = pick the first kind.
 -- Never created outside Studio.
 
 local Players = game:GetService("Players")
@@ -29,6 +31,7 @@ local CodesController = require(script.Parent.CodesController)
 local DailyController = require(script.Parent.DailyController)
 local MatchController = require(script.Parent.MatchController)
 local PlayController = require(script.Parent.PlayController)
+local PlacementController = require(script.Parent.PlacementController)
 local LocaleController = require(script.Parent.LocaleController)
 local Story = require(Shared.Config.Story)
 local Modal = require(script.Parent.Parent.UI.Modal)
@@ -39,6 +42,7 @@ local lastTower: number? = nil
 local placeIndex = 1
 local spotIndex = 1
 local storyIndex = 0
+local unitIndex = 0
 -- Road-side spots in the orchard arena (local coords), for the B key
 local SPOTS = { { 18, 0 }, { 18, 10 }, { 6, -10 }, { -22, 0 }, { -34, 4 }, { 44, 12 }, { 56, 0 }, { -58, -10 } }
 
@@ -110,6 +114,13 @@ function DebugKeysController.start()
 				Net.event(Net.Events.LeaveMatch):FireServer()
 			elseif k == Enum.KeyCode.G then
 				Net.event(Net.Events.DebugCommand):FireServer("gate", 1)
+			elseif k == Enum.KeyCode.O and lastTower and (PlacementController :: any).debugSelect then
+				(PlacementController :: any).debugSelect(lastTower);
+				(PlacementController :: any).debugPick()
+			elseif k == Enum.KeyCode.I and (PlacementController :: any).debugPress then
+				(PlacementController :: any).debugPress()
+			elseif k == Enum.KeyCode.Minus and (PlacementController :: any).debugWrongPath then
+				(PlacementController :: any).debugWrongPath()
 			end
 			return
 		end
@@ -134,6 +145,32 @@ function DebugKeysController.start()
 			PlayController.openAt("story", Story.order[storyIndex])
 		elseif k == Enum.KeyCode.Z then
 			LocaleController.toggle()
+		elseif k == Enum.KeyCode.R then
+			-- Owned units with a level-7 signature first (they have the most to show), then the rest.
+			local snapshot = StateController.get()
+			if snapshot then
+				local ids = {}
+				for id in snapshot.units do
+					if (Units :: any)[id] then
+						table.insert(ids, id)
+					end
+				end
+				table.sort(ids, function(a, b)
+					local sa, sb = (Units :: any)[a].signature ~= nil, (Units :: any)[b].signature ~= nil
+					if sa ~= sb then
+						return sa
+					end
+					return a < b
+				end)
+				if #ids > 0 then
+					unitIndex = (unitIndex % #ids) + 1
+					UnitsController.debugOpen(ids[unitIndex])
+				end
+			end
+		elseif k == Enum.KeyCode.F then
+			UnitsController.debugPicker()
+		elseif k == Enum.KeyCode.Equals then
+			UnitsController.debugChoose()
 		elseif k == Enum.KeyCode.M then
 			-- Play menu shortcut: create an Episode 1 (normal) party and start it at once.
 			task.spawn(function()

@@ -497,6 +497,27 @@ function UnitsController.open()
 	UnitsController.render()
 end
 
+-- Studio harness (DebugKeysController): open a unit's detail, its bead picker, and pick a kind.
+local pickerSlot = 0
+function UnitsController.debugOpen(unitId: string)
+	selected = unitId
+	modal.setVisible(true)
+	UnitsController.render()
+end
+function UnitsController.debugPicker()
+	local snapshot = StateController.get()
+	if snapshot and selected then
+		pickerSlot = (pickerSlot % Beads.slots) + 1
+		openBeadPicker(snapshot, selected, pickerSlot)
+	end
+end
+function UnitsController.debugChoose()
+	local first = beadList:FindFirstChildWhichIsA("TextButton")
+	if selected and first and pickerSlot > 0 then
+		setBead(selected, pickerSlot, first.Name)
+	end
+end
+
 function UnitsController.start()
 	build()
 	StateController.Changed:Connect(UnitsController.render)
