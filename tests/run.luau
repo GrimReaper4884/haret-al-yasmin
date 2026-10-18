@@ -145,6 +145,7 @@ local specs = {
 	require("./storycards.spec"),
 	require("./version.spec"),
 	require("./upgradeview.spec"),
+	require("./hud.spec"),
 }
 for _, spec in specs do
 	spec(t)

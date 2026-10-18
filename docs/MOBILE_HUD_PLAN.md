@@ -366,7 +366,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
 
 ### Milestone 0: foundations (no visible change yet)
 
-- [x] **MH-00 Baseline captures** · deps: none
+- [x] 9a97e45 **MH-00 Baseline captures** · deps: none
   - **Goal:** Evidence of the current state so every later task has a before/after.
   - **Do:** Phone captures (both presets) and a tablet capture of: lobby idle, dialogue open, Play panel,
     Units, Pass, Codes with the keyboard up (simulator shows it), match in walk mode with a ghost, the
@@ -379,7 +379,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
   - **Accept:** captures exist; the probe output (count of undersized buttons, list of corner collisions)
     is pasted into the report section. No code change.
 
-- [ ] **MH-01 `Config/Hud` and `Logic/HudLayout`** · deps: MH-00
+- [x] **MH-01 `Config/Hud` and `Logic/HudLayout`** · deps: MH-00
   - **Goal:** Every mobile number in one pure config; the profile and scale maths pure and tested.
   - **Create:** `src/shared/Config/Hud.luau` with: `TOUCH_MIN = 48`, `PRIMARY = 56`, `TEXT_MIN = 14`,
     `NUMBER_MIN = 18`; `SCALE = { base = 390, touchMin = 1.0, desktopMin = 0.9, max = 1.5, presets =
