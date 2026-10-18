@@ -73,7 +73,7 @@ local ghost: Model? = nil
 local ring: Part? = nil
 local selected: number? = nil
 local selectedRing: Part? = nil
-local towers: { [number]: { unitId: string, level: number, owner: string, x: number, z: number, range: number, targeting: string, readyAt: number, buff: number?, revealedBy: string?, revealedByTower: number? } } = {}
+local towers: { [number]: { unitId: string, level: number, owner: string, x: number, z: number, range: number, targeting: string, readyAt: number, buff: number?, revealedBy: string?, revealedByTower: number?, sabotaged: boolean? } } = {}
 local arenaPath: Path.Path? = nil
 local arenaPaths: { Path.Path } = {} -- every road: the ghost keeps clear of all of them (S1-S07)
 local origin: CFrame? = nil
@@ -464,7 +464,12 @@ local function renderTowerPanel()
 		end
 		table.insert(lines, string.format('<font color="%s">%s</font>', if sees then GAIN else LOSS, seesText))
 	end
-	if st.revealsStealth then
+	if rec.sabotaged then
+		table.insert(lines, '<font color="' .. LOSS .. '">' .. t("match.sabotaged") .. "</font>")
+	end
+	if st.revealsStealth and rec.sabotaged then
+		table.insert(lines, '<font color="' .. LOSS .. '">' .. t("match.lantern_out") .. "</font>")
+	elseif st.revealsStealth then
 		local n = 0
 		for _, other in towers do
 			if other.revealedByTower == selected then
@@ -759,6 +764,16 @@ local function onEvents(events: { any })
 			towers[e.id].buff = if type(e.buff) == "number" and e.buff > 1 then e.buff else nil
 			if selected == e.id then
 				renderTowerPanel()
+			end
+		elseif e.type == "towerDisabled" or e.type == "towerEnabled" then
+			-- A saboteur's shot (its lantern goes dark too) and the tower coming back (D-038)
+			local id = if e.type == "towerDisabled" then e.tower else e.id
+			local rec = towers[id]
+			if rec then
+				rec.sabotaged = e.type == "towerDisabled"
+				if selected == id then
+					renderTowerPanel()
+				end
 			end
 		elseif e.type == "towerReveal" and towers[e.id] then
 			local rec = towers[e.id]

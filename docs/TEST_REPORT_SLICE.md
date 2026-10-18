@@ -773,3 +773,12 @@ Verdict: external (Studio or a plugin), ignored (D-020).
 | Walk clips | all six built by `RigBuilder` and walking on their baked clips (`docs/art/pva02_six_attackers_walk_2026-10-18.jpg`) |
 | Console | `[HaretAlYasmin] server ready`; no errors from our code (UIBlox and D-020 noise only) |
 | Specs | `tools/check.ps1` green, 276 passed (clips spec now requires all 11 attackers; icons spec checks every portrait matches its model) |
+
+### Sabotaged lantern goes dark (2026-10-18, D-038)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | green, 328 specs (new: revealerFor returns nil while the Natour's `disabledUntil` runs and the lantern again once it passes) |
+| Play (Episode 1, orchard; Natour 4 studs off the road, Khayyat 7 studs from it; 3 then 4 riflemen via `HaretDebug spawn`) | 5.0 s `towerDisabled` Natour → Khayyat `towerReveal` by nil at once; re-sabotaged 7.4 s and 10.0 s; 12.5 s `towerEnabled` → Khayyat lit by the Natour again. Second run the same (48.3 s off, 56.0 s back) |
+| Panel (Device Simulator 844×370, the other session's device) | sabotaged Natour: red "Sabotaged: can't attack for now" and "Lantern out: no hidden thieves revealed" (`lantern_sabotaged_panel_2026-10-18.jpg`); after `towerEnabled` back to "Lantern: defenders in its range see hidden thieves / Defenders in his light: 1" |
+| Restore | owner's loadout restored (qitt, arada, zaim_akbar, pahlawan, umm_hara, zaim), settings unchanged, Studio in Edit |

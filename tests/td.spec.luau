@@ -262,6 +262,18 @@ return function(t)
 			t.eq(count(ev, "reached"), 1)
 		end)
 
+		t.it("a sabotaged Natour's lantern is dark until the sabotage wears off", function()
+			local s = sim(straight, oneThief, 1)
+			local _, _, tk = TdTowers.place(s, "p1", "khayyat", Units.khayyat, 50, 4, 0, nil, rules())
+			local _, _, tn = TdTowers.place(s, "p1", "natour", Units.natour, 50, 14, 0, nil, rules())
+			t.eq(TdSim.revealerFor(s, tk), tn, "lit")
+			tn.disabledUntil = s.time + 5
+			t.eq(TdSim.revealerFor(s, tk), nil, "dark while sabotaged")
+			t.eq(TdSim.seesStealth(s, tk), false)
+			s.time += 5
+			t.eq(TdSim.revealerFor(s, tk), tn, "lit again once it is back")
+		end)
+
 		t.it("Natour's lantern lets defenders inside his range target stealth enemies", function()
 			local function attacksBy(ev, towerId)
 				local n = 0
