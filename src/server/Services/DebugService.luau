@@ -4,6 +4,7 @@
 -- Never created outside Studio.
 --   local D = game.ServerStorage.HaretDebug
 --   print(D:Invoke("state"))         -- live profile as JSON (first player)
+--   print(D:Invoke("match", "ep4,normal")) -- start a match past the requires chain (no unlock written)
 --   print(D:Invoke("peek"))          -- what the (mock) store holds
 --   print(D:Invoke("ledger"))        -- audit ledger (Logic/Ledger) as JSON, newest last
 --   print(D:Invoke("funnel"))        -- onboarding funnel rows with seconds since join (P2-16)
@@ -127,6 +128,15 @@ function DebugService.start()
 				return "bad arg"
 			end
 			return MatchService.debugAlly(player, unitId, tonumber(lvl) :: number)
+		elseif cmd == "match" then
+			-- "mode,difficulty": start that match for you alone, past the requires chain (S1-S04 checks
+			-- of episodes the profile has not unlocked; leave with H before the end to keep rewards out)
+			local modeId, diff = string.match(tostring(arg), "^([%w_]+),(%a+)$")
+			if not modeId then
+				return "bad arg"
+			end
+			local match, err = MatchService.create(modeId, diff :: string, { player }, player)
+			return if match then "ok" else tostring(err)
 		elseif cmd == "spawn" then
 			-- "id,id,…": queue these attackers into the running wave, one per second (S1-S03 checks)
 			return MatchService.debugSpawn(player, string.split(tostring(arg), ","), 1)
