@@ -547,7 +547,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
 
 ### Milestone 5: lobby chrome
 
-- [x] **MH-11 Lobby bottom bar, More sheet, top row** · deps: MH-03
+- [x] 59a3374 **MH-11 Lobby bottom bar, More sheet, top row** · deps: MH-03
   - **Goal:** B6 bar and top row.
   - **Change:** `LobbyMenuController.build` builds the grid (tablet/desktop; raised above the reserved
     zone, 64 px cells, 13 px captions) or the bottom bar (touch-phone; Play, Units, Summon, Diary, More)
@@ -561,7 +561,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
     (`HaretDebug` can grant or roll the day); tablet capture shows the raised grid; desktop unchanged
     apart from sizes; DECISIONS row B9-5.
 
-- [ ] **MH-12 Errand chip, dialogue width, queue panel** · deps: MH-11
+- [x] **MH-12 Errand chip, dialogue width, queue panel** · deps: MH-11
   - **Goal:** The rest of B6.
   - **Change:** `HudController` errand tracker: chip mode on touch-phone (one line, 48 px tall, tap to
     expand 6 s); `DialogueController` panel width capped to `Device.freeBand()` on touch; the errand

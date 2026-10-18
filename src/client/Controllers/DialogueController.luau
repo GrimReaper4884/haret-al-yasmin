@@ -11,6 +11,7 @@ local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
 local Root = require(UI.Root)
+local Device = require(UI.Device)
 local LocaleController = require(script.Parent.LocaleController)
 
 type Payload = { npcId: string, nodeId: string, textKey: string, choices: { string } }
@@ -89,12 +90,28 @@ local function build()
 	Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = choiceList })
 end
 
+-- On touch the panel fits the band between Roblox's thumbstick and jump zones (B6), else the old
+-- 0.92-wide centred panel capped at 620 px.
+local function fit()
+	if Device.isTouch() and next(Device.reserved()) ~= nil then
+		local band = Device.freeBand()
+		local scale = Device.scale()
+		local w = math.min(620, (band.x1 - band.x0) / scale - 8)
+		panel.Size = UDim2.fromOffset(w, 0)
+		panel.Position = UDim2.new(0, (band.x0 + band.x1) / 2 / scale, 1, -12)
+	else
+		panel.Size = UDim2.fromScale(0.92, 0)
+		panel.Position = UDim2.new(0.5, 0, 1, -12)
+	end
+end
+
 local function render()
 	local p = current
 	if not p then
 		panel.Visible = false
 		return
 	end
+	fit()
 	local t = LocaleController.t
 	local rtl = LocaleController.isRtl()
 	local npc = (Npcs :: any)[p.npcId]
@@ -160,6 +177,11 @@ function DialogueController.start()
 		DialogueController.hide(false)
 	end)
 	LocaleController.Changed:Connect(render)
+	Device.Changed:Connect(function()
+		if current then
+			fit()
+		end
+	end)
 end
 
 return DialogueController

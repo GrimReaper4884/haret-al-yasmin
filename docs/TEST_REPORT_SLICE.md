@@ -92,7 +92,7 @@ over adb (screenshots, taps, thumbstick swipes)*
 
 - **Real DataStores:** everything above ran on the in-memory mock (the place is unpublished). Session-lock contention between two servers needs a published **test** experience (`game.JobId` is empty in Studio).
 - **Multi-client:** the two-player test (cosmetic visible to others, no cross-talk) has not been run yet.
-- **Phone dialogue:** on the phone, the right edge of the dialogue panel slightly overlaps the jump button, and it covers the errand tracker while open.
+- ~~**Phone dialogue:** on the phone, the right edge of the dialogue panel slightly overlaps the jump button, and it covers the errand tracker while open.~~ Fixed by MOBILE_HUD_PLAN MH-12 (2026-10-18): on touch the panel fits the band between the thumbstick and jump zones and the tracker hides while it is open (`docs/captures/mh/mh12_iphone17pro_dialogue_between_corners.jpg`).
 - **Analytics:** events log "fired" in Studio; delivery to the Creator Dashboard is unverified.
 - **Unrelated assets in the Toolbox:** the account's Toolbox ("My Models") contains models named after *Bab al-Hara* characters (`tower_abu_issam`, `tower_abu_shehab`, `tower_motaz`, …). They are not used by this project and must not be (see COPYRIGHT_REGISTER §1).
 

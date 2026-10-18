@@ -17,6 +17,7 @@ local ShopController = require(script.Parent.ShopController)
 local WardrobeController = require(script.Parent.WardrobeController)
 local SettingsController = require(script.Parent.SettingsController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
+local Device = require(UI.Device)
 
 local HudController = {}
 
@@ -30,6 +31,14 @@ local langButton: TextButton
 local wardrobeButton: TextButton
 local testBadge: TextLabel
 local lastQirsh: number? = nil
+local tracker: Frame
+local trackerTap: TextButton
+-- On a phone the errand tracker is a one-line chip; a tap opens the full card for CHIP_OPEN_S
+-- (MOBILE_HUD_PLAN B6), another tap closes it.
+local CHIP_OPEN_S = 6
+local chipOpenUntil = 0
+local chipToken = 0
+local render: () -> ()
 
 local function build()
 	local root = Root.get()
@@ -62,7 +71,7 @@ local function build()
 	end
 	storeButton.Activated:Connect(ShopController.openStore)
 
-	local tracker = Theme.panel({
+	tracker = Theme.panel({
 		Name = "Errand",
 		AnchorPoint = Vector2.new(1, 0.5),
 		Position = UDim2.new(1, -12, 0.45, 0),
@@ -112,6 +121,33 @@ local function build()
 		Visible = false,
 		Parent = tracker,
 	})
+	-- The whole tracker is one tap target (chip mode on a phone): a transparent button laid over it
+	-- (a sibling, since the tracker's list layout would place a child).
+	trackerTap = Create("TextButton", { Name = "ErrandTap", Text = "", BackgroundTransparency = 1, AnchorPoint = tracker.AnchorPoint, Position = tracker.Position, ZIndex = 5, Visible = false, Parent = root })
+	local function follow()
+		local scale = Device.scale()
+		trackerTap.Size = UDim2.fromOffset(tracker.AbsoluteSize.X / scale, tracker.AbsoluteSize.Y / scale)
+		trackerTap.Visible = tracker.Visible and Device.isPhone()
+	end
+	tracker:GetPropertyChangedSignal("AbsoluteSize"):Connect(follow)
+	tracker:GetPropertyChangedSignal("Visible"):Connect(follow)
+	Device.Changed:Connect(follow)
+	trackerTap.Activated:Connect(function()
+		chipToken += 1
+		if os.clock() < chipOpenUntil then
+			chipOpenUntil = 0
+		else
+			chipOpenUntil = os.clock() + CHIP_OPEN_S
+			local token = chipToken
+			task.delay(CHIP_OPEN_S, function()
+				if token == chipToken then
+					chipOpenUntil = 0
+					render()
+				end
+			end)
+		end
+		render()
+	end)
 
 	langButton = Theme.button({
 		Name = "Language",
@@ -205,7 +241,7 @@ local function clueJournal(questId: string): string
 	return table.concat(lines, "\n")
 end
 
-local function render()
+render = function()
 	local t = LocaleController.t
 	local rtl = LocaleController.isRtl()
 	local snapshot = StateController.get()
@@ -239,6 +275,20 @@ local function render()
 		questClues.Text = ""
 	end
 	questClues.Visible = questClues.Text ~= ""
+	-- Phone chip: one 48 px line "Episode 1 · title" until tapped open.
+	local chip = Device.isPhone() and os.clock() >= chipOpenUntil
+	trackerTap.Visible = tracker.Visible and Device.isPhone()
+	questHeader.Visible = not chip
+	questObjective.Visible = not chip
+	if chip then
+		questClues.Visible = false
+		questTitle.Text = questHeader.Text .. " · " .. questTitle.Text
+	end
+	questTitle.TextWrapped = not chip
+	questTitle.TextTruncate = if chip then Enum.TextTruncate.AtEnd else Enum.TextTruncate.None
+	questTitle.AutomaticSize = if chip then Enum.AutomaticSize.None else Enum.AutomaticSize.Y
+	questTitle.Size = if chip then UDim2.new(1, 0, 0, 30) else UDim2.fromScale(1, 0)
+	tracker.Size = UDim2.fromOffset(if Device.isPhone() then 220 else 250, 0)
 	for _, l in { questHeader, questTitle, questObjective, questClues } do
 		Theme.align(l, rtl)
 	end
@@ -253,6 +303,7 @@ function HudController.start()
 	render()
 	StateController.Changed:Connect(render)
 	LocaleController.Changed:Connect(render)
+	Device.Changed:Connect(render)
 end
 
 return HudController

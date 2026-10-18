@@ -260,6 +260,9 @@ local function applyVisibility()
 				w.Visible = not away and snapshot ~= nil and not snapshot.persistent
 			elseif PHONE_HIDDEN[name] then
 				w.Visible = not away and not phone
+			elseif name == "Errand" then
+				-- The tracker steps aside while someone talks (the dialogue takes the screen's bottom).
+				w.Visible = not away and not dialogueOpen
 			else
 				w.Visible = not away
 			end
