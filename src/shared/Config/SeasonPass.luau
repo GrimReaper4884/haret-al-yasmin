@@ -44,7 +44,7 @@ return {
 	season = "s1",
 	nameKey = "pass.season.s1.name",
 	-- 2026-11-30 00:00 UTC. Nothing happens automatically at the end: the owner ships season 2.
-	endsAt = 1764460800,
+	endsAt = 1795996800,
 	levels = LEVELS,
 	tiers = tiers,
 	XP_PER_LEVEL_SKIP = 1, -- product `pass_skip_10` grants 10 levels
