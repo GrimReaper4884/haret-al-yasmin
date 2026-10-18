@@ -1,7 +1,8 @@
 --!strict
 -- Turns a wave script (Config/Waves) into a concrete spawn list for one wave. Pure.
 
-export type Spawn = { at: number, enemy: string, hpMul: number, speedMul: number, boss: boolean? }
+-- swarm: a swarm enemy (Enemies[id].swarm): counts SWARM_WEIGHT toward MAX_PER_WAVE.
+export type Spawn = { at: number, enemy: string, hpMul: number, speedMul: number, boss: boolean?, swarm: boolean? }
 export type Wave = { spawns: { Spawn }, boss: string?, count: number }
 
 type PoolEntry = { enemy: string, from: number, to: number?, base: number, perWave: number, gap: number, delay: number? }
@@ -11,24 +12,55 @@ local WaveLogic = {}
 local MAX_PER_GROUP = 40
 local MAX_PER_WAVE = 90
 local MAX_SPEED_MUL = 1.6
+-- Swarms (pickpockets, grave snakes) are many tiny enemies: bigger groups, half weight in the cap.
+local SWARM_PER_GROUP = 60
+local SWARM_WEIGHT = 0.5
 
-local function groupSpawns(out: { Spawn }, entry: PoolEntry, wave: number, hpMul: number, speedMul: number)
+WaveLogic.MAX_PER_WAVE = MAX_PER_WAVE
+WaveLogic.MAX_SPEED_MUL = MAX_SPEED_MUL
+WaveLogic.SWARM_PER_GROUP = SWARM_PER_GROUP
+WaveLogic.SWARM_WEIGHT = SWARM_WEIGHT
+
+local function groupSpawns(out: { Spawn }, entry: PoolEntry, wave: number, hpMul: number, speedMul: number, enemies: { [string]: any }?)
 	if wave < entry.from or (entry.to ~= nil and wave > entry.to) then
 		return
 	end
-	local count = math.clamp(math.floor(entry.base + entry.perWave * (wave - entry.from) + 0.5), 1, MAX_PER_GROUP)
+	local def = enemies and enemies[entry.enemy]
+	local swarm = def ~= nil and def.swarm == true
+	local count = math.clamp(math.floor(entry.base + entry.perWave * (wave - entry.from) + 0.5), 1, if swarm then SWARM_PER_GROUP else MAX_PER_GROUP)
 	local delay = entry.delay or 0
 	for k = 0, count - 1 do
-		table.insert(out, { at = delay + k * entry.gap, enemy = entry.enemy, hpMul = hpMul, speedMul = speedMul })
+		table.insert(out, { at = delay + k * entry.gap, enemy = entry.enemy, hpMul = hpMul, speedMul = speedMul, swarm = if swarm then true else nil })
 	end
+end
+
+-- The wave's weight toward MAX_PER_WAVE (swarm spawns count SWARM_WEIGHT, bosses are extra).
+function WaveLogic.weight(spawns: { Spawn }): number
+	local w = 0
+	for _, s in spawns do
+		if not s.boss then
+			w += if s.swarm then SWARM_WEIGHT else 1
+		end
+	end
+	return w
 end
 
 local function finish(spawns: { Spawn }, boss: string?, bossHpMul: number, speedMul: number): Wave
 	table.sort(spawns, function(a, b)
 		return a.at < b.at
 	end)
-	if #spawns > MAX_PER_WAVE then
-		local trimmed = table.move(spawns, 1, MAX_PER_WAVE, 1, {})
+	-- Keep the earliest spawns up to MAX_PER_WAVE of weight (swarm spawns weigh SWARM_WEIGHT).
+	local w, keep = 0, 0
+	for i, s in spawns do
+		local add = if s.swarm then SWARM_WEIGHT else 1
+		if w + add > MAX_PER_WAVE then
+			break
+		end
+		w += add
+		keep = i
+	end
+	if keep < #spawns then
+		local trimmed = table.move(spawns, 1, keep, 1, {})
 		spawns = trimmed
 	end
 	if boss then
@@ -66,20 +98,21 @@ end
 -- per-wave HP growth, so harder difficulties stay playable early and bite late; boss (default 1)
 -- multiplies the boss's HP on top; party (default: solo) is the party-size scaling
 -- (WaveLogic.partyScale): party.hp on regular enemies, party.boss on the boss instead.
-function WaveLogic.story(episode: any, wave: number, difficulty: Difficulty, party: PartyScale?): Wave
+-- enemies (Config/Enemies, optional): lets swarm enemies use the swarm group size and cap weight.
+function WaveLogic.story(episode: any, wave: number, difficulty: Difficulty, party: PartyScale?, enemies: { [string]: any }?): Wave
 	local base = difficulty.hp * (1 + episode.hpPerWave * (difficulty.growth or 1) * (wave - 1))
 	local hpMul = base * (if party then party.hp else 1)
 	local speedMul = math.min(difficulty.speed, MAX_SPEED_MUL)
 	local spawns: { Spawn } = {}
 	for _, entry in episode.pool do
-		groupSpawns(spawns, entry, wave, hpMul, speedMul)
+		groupSpawns(spawns, entry, wave, hpMul, speedMul, enemies)
 	end
 	return finish(spawns, episode.bosses[wave], base * (difficulty.boss or 1) * (if party then party.boss else 1), speedMul)
 end
 
 -- Endless wave. The curve is already quadratic, so difficulty uses its own (milder) growth
--- multiplier `endless` here (default 1). party: as in WaveLogic.story.
-function WaveLogic.infinite(cfg: any, wave: number, difficulty: Difficulty, party: PartyScale?): Wave
+-- multiplier `endless` here (default 1). party, enemies: as in WaveLogic.story.
+function WaveLogic.infinite(cfg: any, wave: number, difficulty: Difficulty, party: PartyScale?, enemies: { [string]: any }?): Wave
 	local base = difficulty.hp * (1 + (difficulty.endless or 1) * (cfg.hpPerWave * wave + cfg.hpPerWaveSq * wave * wave))
 	-- Past `lateFrom` HP also compounds, so even a maxed team meets a wall (≈ wave 100 on Normal).
 	if cfg.lateFrom and cfg.lateGrowth and wave > cfg.lateFrom then
@@ -89,7 +122,7 @@ function WaveLogic.infinite(cfg: any, wave: number, difficulty: Difficulty, part
 	local speedMul = math.min(difficulty.speed * (1 + cfg.speedPerWave * wave), MAX_SPEED_MUL)
 	local spawns: { Spawn } = {}
 	for _, entry in cfg.pool do
-		groupSpawns(spawns, entry, wave, hpMul, speedMul)
+		groupSpawns(spawns, entry, wave, hpMul, speedMul, enemies)
 	end
 	local boss: string? = nil
 	if wave % cfg.bossEvery == 0 then

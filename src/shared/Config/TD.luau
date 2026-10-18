@@ -12,6 +12,13 @@ return {
 	PREP_SECONDS = 15, -- before wave 1
 	STUN_CHAIN_MAX = 6, -- seconds a chain of stuns can hold an enemy (stun-locks end) …
 	STUN_IMMUNITY = 3, -- … then it ignores stuns for this long (an enemy walks at least a third of the time)
+	-- Burning gate (torchbearers, Enemies[id].burn; STORY_PLAN §5.2 ep5): each stack costs the gate
+	-- BURN_DAMAGE HP every BURN_TICK seconds for BURN_SECONDS after the newest stack, at most
+	-- BURN_MAX_STACKS; dousing defenders (Units[id].douse) take stacks off; a cleared wave puts it out.
+	BURN_MAX_STACKS = 5,
+	BURN_TICK = 2,
+	BURN_DAMAGE = 1,
+	BURN_SECONDS = 20,
 	BETWEEN_WAVES = 9, -- countdown between waves
 	TICK = 1 / 20, -- simulation step (seconds of game time)
 	POSITION_RATE = 0.1, -- seconds between enemy position broadcasts

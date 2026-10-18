@@ -14,7 +14,8 @@
 -- applied for slowFor seconds; buff = damage multiplier granted to towers in range (support);
 -- income = cash per cleared wave (farm); heal = gate HP per cleared wave (healer).
 -- revealsStealth = the unit's light lets every other defender inside its range target stealth
--- enemies too (Natour's lantern; TdSim.revealerFor).
+-- enemies too (Natour's lantern; TdSim.revealerFor), and unmasks disguised enemies inside it.
+-- douse = burn stacks the unit takes off the gate with every attack (water on the flames).
 
 export type Rarity = "rare" | "epic" | "legendary" | "mythic" | "secret"
 export type Role = "melee" | "ranged" | "splash" | "support" | "farm" | "healer"
@@ -58,6 +59,7 @@ export type UnitDef = {
 	maxPlaced: number,
 	hitsStealth: boolean?,
 	revealsStealth: boolean?,
+	douse: number?,
 	levels: { Level },
 	ability: Ability?,
 	visual: Visual,
@@ -132,6 +134,7 @@ local Units: { [string]: UnitDef } = {
 		rarity = "rare",
 		role = "splash",
 		maxPlaced = 5,
+		douse = 1, -- her water puts out the torchbearers' fire on the gate
 		levels = {
 			L(300, 6, 12, 1.5, { splash = 4, slow = 0.7, slowFor = 1.5 }),
 			L(200, 9, 13, 1.45, { splash = 4.2, slow = 0.65, slowFor = 1.8 }),

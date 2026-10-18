@@ -18,6 +18,7 @@ export type Stats = {
 	cash: number, -- kill reward multiplier
 	hitsStealth: boolean,
 	revealsStealth: boolean,
+	douse: number?, -- burn stacks taken off the gate per attack
 	ability: any?,
 	maxLevel: number,
 }
@@ -54,6 +55,7 @@ function UnitLogic.stats(def: any, level: number, stars: number, trait: any?, st
 		cash = if trait and trait.cash then trait.cash else 1,
 		hitsStealth = def.hitsStealth == true,
 		revealsStealth = def.revealsStealth == true,
+		douse = def.douse,
 		ability = def.ability,
 		maxLevel = #def.levels,
 	}

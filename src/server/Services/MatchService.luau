@@ -109,6 +109,7 @@ local function stateSnapshot(match: Match, player: Player): { [string]: any }
 		countdown = TdSim.countdown(s),
 		gateHp = s.gateHp,
 		gateMax = s.gateMax,
+		gateBurn = s.gateBurn.stacks,
 		cash = if me then me.cash else 0,
 		speed = match.speed,
 		votes = votes,
@@ -367,11 +368,16 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 		enemies = Enemies :: any,
 		stunChainMax = TD.STUN_CHAIN_MAX,
 		stunImmunity = TD.STUN_IMMUNITY,
+		maxSpeedMul = WaveLogic.MAX_SPEED_MUL,
+		burnMax = TD.BURN_MAX_STACKS,
+		burnTick = TD.BURN_TICK,
+		burnDamage = TD.BURN_DAMAGE,
+		burnFor = TD.BURN_SECONDS,
 	}, function(wave: number)
 		if episode then
-			return WaveLogic.story(episode, wave, diff, scale)
+			return WaveLogic.story(episode, wave, diff, scale, Enemies :: any)
 		end
-		return WaveLogic.infinite(Waves.infinite, wave, diff, scale)
+		return WaveLogic.infinite(Waves.infinite, wave, diff, scale, Enemies :: any)
 	end)
 
 	local match: Match = {
@@ -637,7 +643,7 @@ local function stepMatch(match: Match, dt: number)
 				match.votes = {}
 				changed = true
 				queueEvent(match, e)
-			elseif t == "waveEnd" or t == "reached" then
+			elseif t == "waveEnd" or t == "reached" or t == "gateBurn" then
 				changed = true
 				queueEvent(match, e)
 				if t == "waveEnd" then

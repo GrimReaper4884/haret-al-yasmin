@@ -15,6 +15,12 @@ export type EnemyDef = {
 	armor: number?,
 	stealth: boolean?,
 	boss: boolean?,
+	-- Story mechanics (docs/STORY_PLAN.md §10.1, TdSim / WaveLogic):
+	swarm: boolean?, -- tiny and many: groups up to WaveLogic.SWARM_PER_GROUP, half weight in the wave cap
+	aura: { speed: number, radius: number }?, -- other enemies within radius walk speed× faster (best one, capped)
+	shield: { radius: number, reduce: number }?, -- enemies within radius (itself too) take (1 - reduce) damage; not stacking
+	burn: number?, -- burn stacks laid on the gate when it reaches it (TD.BURN_*)
+	disguised: boolean?, -- untargetable and splash-immune until a lantern lights it or a lit defender's single hit lands
 	visual: {
 		robe: string,
 		accent: string,

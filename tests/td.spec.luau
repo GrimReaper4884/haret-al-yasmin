@@ -596,6 +596,239 @@ return function(t)
 		end)
 	end)
 
+	-- Season Story 1 mechanics, batch 1 (docs/STORY_PLAN.md §10.1, S1-S01). The enemies that carry
+	-- these flags arrive with S1-S03, so the specs use stand-in defs on top of the real ones.
+	t.describe("Story mechanics (S1-S01)", function()
+		local straight = { { 0, 0 }, { 100, 0 } }
+		local function V()
+			return Enemies.gendarme.visual
+		end
+		local E = setmetatable({
+			swarmer = { nameKey = "x", hp = 16, speed = 9.5, reward = 6, gateDamage = 1, swarm = true, visual = V() },
+			drummer = { nameKey = "x", hp = 110, speed = 5, reward = 28, gateDamage = 1, aura = { speed = 1.25, radius = 7 }, visual = V() },
+			bigdrum = { nameKey = "x", hp = 110, speed = 5, reward = 28, gateDamage = 1, aura = { speed = 3, radius = 7 }, visual = V() },
+			porter = { nameKey = "x", hp = 260, speed = 3.6, reward = 45, gateDamage = 2, shield = { radius = 6, reduce = 0.3 }, visual = V() },
+			torch = { nameKey = "x", hp = 70, speed = 50, reward = 20, gateDamage = 1, burn = 1, visual = V() },
+			tank = { nameKey = "x", hp = 1e9, speed = 1, reward = 0, gateDamage = 0, visual = V() },
+			neighbour = { nameKey = "x", hp = 1e6, speed = 2, reward = 32, gateDamage = 2, disguised = true, visual = V() },
+		}, { __index = Enemies })
+		local function simE(points, waveFn, totalWaves)
+			return TdSim.new(points, { "p1" }, 100000, 100, totalWaves, 1, {
+				between = 2,
+				waveBonusBase = TD.WAVE_BONUS_BASE,
+				waveBonusPerWave = TD.WAVE_BONUS_PER_WAVE,
+				rewardMul = 1,
+				enemies = E,
+				maxSpeedMul = WaveLogic.MAX_SPEED_MUL,
+				burnMax = TD.BURN_MAX_STACKS,
+				burnTick = TD.BURN_TICK,
+				burnDamage = TD.BURN_DAMAGE,
+				burnFor = TD.BURN_SECONDS,
+			}, waveFn)
+		end
+		local function waveOf(list)
+			return function()
+				local spawns = {}
+				for _, s in list do
+					table.insert(spawns, { at = s[2] or 0, enemy = s[1], hpMul = 1, speedMul = s[3] or 1 })
+				end
+				return { spawns = spawns, count = #spawns }
+			end
+		end
+		local function find(state, enemyId)
+			for _, e in state.enemies do
+				if e.enemyId == enemyId then
+					return e
+				end
+			end
+			return nil
+		end
+		local function attacksBy(ev, towerId)
+			local n = 0
+			for _, e in ev do
+				if e.type == "attack" and e.tower == towerId then
+					n += 1
+				end
+			end
+			return n
+		end
+
+		t.it("swarm: a 12-group spawns whole, groups go to 60, and swarms weigh half in the 90 cap", function()
+			local ep = { hpPerWave = 0, bosses = {}, pool = { { enemy = "swarmer", from = 1, base = 12, perWave = 0, gap = 0.2 } } }
+			local w = WaveLogic.story(ep, 1, NORMAL, nil, E)
+			t.eq(w.count, 12)
+			t.truthy(w.spawns[1].swarm)
+			local big = { hpPerWave = 0, bosses = {}, pool = { { enemy = "swarmer", from = 1, base = 100, perWave = 0, gap = 0.1 } } }
+			t.eq(WaveLogic.story(big, 1, NORMAL, nil, E).count, WaveLogic.SWARM_PER_GROUP)
+			local plain = { hpPerWave = 0, bosses = {}, pool = { { enemy = "gendarme", from = 1, base = 100, perWave = 0, gap = 0.1 } } }
+			t.eq(WaveLogic.story(plain, 1, NORMAL, nil, E).count, 40, "regular groups keep 40")
+			t.eq(WaveLogic.story(big, 1, NORMAL).count, 40, "without the enemy table nothing is a swarm")
+			local mixed = {
+				hpPerWave = 0,
+				bosses = { [1] = "sergeant" },
+				pool = {
+					{ enemy = "gendarme", from = 1, base = 40, perWave = 0, gap = 0.5 },
+					{ enemy = "thug", from = 1, base = 40, perWave = 0, gap = 0.5 },
+					{ enemy = "swarmer", from = 1, base = 60, perWave = 0, gap = 0.2 },
+				},
+			}
+			local m = WaveLogic.story(mixed, 1, NORMAL, nil, E)
+			local weight = WaveLogic.weight(m.spawns)
+			t.truthy(weight <= WaveLogic.MAX_PER_WAVE, "cap holds: " .. weight)
+			t.truthy(weight > WaveLogic.MAX_PER_WAVE - 1, "the cap is filled, not under-filled")
+			t.truthy(#m.spawns - 1 > WaveLogic.MAX_PER_WAVE, "more bodies than the old 90 because swarms weigh half")
+			t.eq(m.spawns[#m.spawns].enemy, "sergeant", "the boss still closes the wave")
+		end)
+
+		t.it("aura: drummers speed others up (not themselves), never stack, never past MAX_SPEED_MUL", function()
+			local s = simE(straight, waveOf({ { "drummer" }, { "drummer" }, { "gendarme" }, { "gendarme", 0, 1.5 } }), 1)
+			run(s, 1.05)
+			local muls = TdSim.auraMuls(s)
+			local g1, g2
+			for _, e in s.enemies do
+				if e.enemyId == "gendarme" then
+					if e.speed == Enemies.gendarme.speed then
+						g1 = e
+					else
+						g2 = e
+					end
+				end
+			end
+			t.eq(muls[g1], 1.25, "two drummers: the best aura, not 1.25²")
+			t.eq(muls[find(s, "drummer")], 1.25, "a drummer is sped up by the other drummer")
+			local cap = WaveLogic.MAX_SPEED_MUL / 1.5
+			t.truthy(math.abs(muls[g2] - math.min(1.25, cap)) < 1e-9, "a fast gendarme is held at the cap")
+			local lone = simE(straight, waveOf({ { "drummer" } }), 1)
+			run(lone, 1.05)
+			t.eq(TdSim.auraMuls(lone)[find(lone, "drummer")], nil, "a lone drummer doesn't speed itself")
+			local huge = simE(straight, waveOf({ { "bigdrum" }, { "gendarme" } }), 1)
+			run(huge, 1.05)
+			local g = find(huge, "gendarme")
+			t.truthy(math.abs(TdSim.auraMuls(huge)[g] * g.speed - g.baseSpeed * WaveLogic.MAX_SPEED_MUL) < 1e-9, "a ×3 aura is capped")
+			local d0 = g.dist
+			run(huge, 1)
+			t.truthy(g.dist - d0 <= g.baseSpeed * WaveLogic.MAX_SPEED_MUL + 1e-6, "it really walks no faster than the cap")
+			local far = simE(straight, waveOf({ { "drummer" }, { "gendarme", 3 } }), 1)
+			run(far, 4.2)
+			t.eq(TdSim.auraMuls(far)[find(far, "gendarme")], nil, "out of the radius: no boost")
+		end)
+
+		t.it("shield: one porter takes 30 % off, two porters still 30 %, the porter covers itself", function()
+			local s = simE(straight, waveOf({ { "porter" }, { "gendarme" } }), 1)
+			run(s, 1.05)
+			t.eq(TdSim.shieldFor(s, find(s, "gendarme")), 0.3)
+			t.eq(TdSim.shieldFor(s, find(s, "porter")), 0.3)
+			local s2 = simE(straight, waveOf({ { "porter" }, { "porter" }, { "gendarme" } }), 1)
+			run(s2, 1.05)
+			t.eq(TdSim.shieldFor(s2, find(s2, "gendarme")), 0.3, "not stacking")
+			local s3 = simE(straight, waveOf({ { "porter" }, { "gendarme", 0, 4 } }), 1)
+			run(s3, 2.5)
+			t.eq(TdSim.shieldFor(s3, find(s3, "gendarme")), 0, "outside the radius")
+			-- The damage itself: a single hit on a shielded gendarme loses 30 %.
+			local s4 = simE(straight, waveOf({ { "porter" }, { "gendarme" } }), 1)
+			local _, _, tw = TdTowers.place(s4, "p1", "walad", Units.walad, 6, 4, 0, nil, rules())
+			tw.targeting = "close"
+			local ev = run(s4, 1.1)
+			local g = find(s4, "gendarme")
+			local p = find(s4, "porter")
+			local lost = (g.maxHp - g.hp) + (p.maxHp - p.hp)
+			t.truthy(attacksBy(ev, tw.id) >= 1)
+			t.truthy(math.abs(lost - attacksBy(ev, tw.id) * Units.walad.levels[1].damage * 0.7) < 1e-9, "damage × 0.7")
+		end)
+
+		t.it("burn: stacks cap at 5, tick 1 HP per stack per 2 s, a douser takes them off, a cleared wave puts it out", function()
+			local spawns = { { "tank" } }
+			for _ = 1, 7 do
+				table.insert(spawns, { "torch" })
+			end
+			local s = simE(straight, waveOf(spawns), 2)
+			run(s, 1 + 100 / 50 + 0.1)
+			t.eq(s.gateBurn.stacks, TD.BURN_MAX_STACKS, "7 torches, 5 stacks")
+			t.eq(s.gateHp, 100 - 7, "each torch still hits for its gate damage")
+			local ev = run(s, TD.BURN_TICK)
+			t.eq(s.gateHp, 100 - 7 - TD.BURN_MAX_STACKS * TD.BURN_DAMAGE, "one tick: stacks × damage")
+			t.truthy(count(ev, "gateBurn") >= 1)
+			-- The stacks expire BURN_SECONDS after the newest one.
+			run(s, TD.BURN_SECONDS)
+			t.eq(s.gateBurn.stacks, 0)
+			local hp = s.gateHp
+			run(s, 5)
+			t.eq(s.gateHp, hp, "nothing burns once the stacks are gone")
+
+			-- A douser (Fawza) takes a stack off with each attack; the tank keeps the wave going.
+			local d = simE(straight, waveOf(spawns), 2)
+			run(d, 1 + 100 / 50 + 0.1)
+			t.eq(d.gateBurn.stacks, 5)
+			local _, _, fz = TdTowers.place(d, "p1", "saqqa", Units.saqqa, 4, 4, 0, nil, rules())
+			t.eq(fz.stats.douse, 1)
+			ev = run(d, Units.saqqa.levels[1].cooldown + 0.1)
+			local doused = 0
+			for _, e in ev do
+				if e.type == "gateBurn" and e.doused == fz.id then
+					doused += 1
+				end
+			end
+			t.eq(doused, 2)
+			t.eq(d.gateBurn.stacks, 3, "two attacks, two stacks gone")
+
+			-- No burning between waves: the last enemy dies, the stacks go out with the wave.
+			local w = simE(straight, waveOf({ { "torch" }, { "torch" } }), 3)
+			run(w, 1 + 100 / 50 + 0.1)
+			t.eq(w.phase, "prep", "the wave ended")
+			t.eq(w.gateBurn.stacks, 0)
+			hp = w.gateHp
+			run(w, 1.5)
+			t.eq(w.gateHp, hp)
+		end)
+
+		t.it("disguised: no target for a Lane Boy, a lantern unmasks it, a lit single hit unmasks it, splash never", function()
+			local function one()
+				return simE(straight, waveOf({ { "neighbour" } }), 1)
+			end
+			-- The Lane Boy (hitsStealth, no lantern) cannot target one.
+			local s = one()
+			local _, _, w = TdTowers.place(s, "p1", "walad", Units.walad, 20, 4, 0, nil, rules())
+			t.eq(attacksBy(run(s, 12), w.id), 0)
+			t.eq(find(s, "neighbour").disguised, true)
+			-- Abu Fares's lantern covers the road: revealed, and then everyone can hit it.
+			local s2 = one()
+			local _, _, w2 = TdTowers.place(s2, "p1", "walad", Units.walad, 20, 4, 0, nil, rules())
+			local _, _, n2 = TdTowers.place(s2, "p1", "natour", Units.natour, 40, -6, 0, nil, rules()) -- too far to light the boy
+			t.eq(TdSim.seesDisguised(s2, w2), false, "the boy is outside the light")
+			local ev = run(s2, 20)
+			local revealedBy = nil
+			for _, e in ev do
+				if e.type == "revealed" then
+					revealedBy = e.by
+				end
+			end
+			t.eq(revealedBy, n2.id, "the lantern revealed it")
+			t.eq(find(s2, "neighbour").disguised, false)
+			t.truthy(attacksBy(ev, w2.id) > 0, "after the reveal the Lane Boy attacks")
+			-- A lantern whose light misses the road still lights the tailor next to it; the tailor's
+			-- single hit is what unmasks the neighbour.
+			local s3 = one()
+			local _, _, k3 = TdTowers.place(s3, "p1", "khayyat", Units.khayyat, 20, 4, 0, nil, rules())
+			TdTowers.place(s3, "p1", "natour", Units.natour, 20, 14, 0, nil, rules())
+			t.eq(TdSim.seesDisguised(s3, k3), true)
+			ev = run(s3, 12)
+			local by = nil
+			for _, e in ev do
+				if e.type == "revealed" then
+					by = by or e.by
+				end
+			end
+			t.eq(by, k3.id, "revealed by the tailor's hit")
+			-- A lit splash defender still cannot touch an unrevealed one.
+			local s4 = one()
+			local _, _, f4 = TdTowers.place(s4, "p1", "saqqa", Units.saqqa, 20, 4, 0, nil, rules())
+			TdTowers.place(s4, "p1", "natour", Units.natour, 20, 14, 0, nil, rules())
+			t.eq(TdSim.seesDisguised(s4, f4), false)
+			t.eq(attacksBy(run(s4, 12), f4.id), 0)
+			t.eq(find(s4, "neighbour").hp, find(s4, "neighbour").maxHp, "splash-immune")
+		end)
+	end)
+
 	-- The balance targets (docs/TOWER_DEFENSE.md §5), played by the auto-battler on the real config.
 	-- Full report: `lune run tests/balance`.
 	t.describe("Balance (auto-battler)", function()
@@ -603,6 +836,36 @@ return function(t)
 		local function play(mode, diff, policy)
 			return AutoBattle.play(mode, diff, policy, { maxWaves = 120 })
 		end
+
+		-- Season Story 1 must not move Episodes 1–3 (STORY_PLAN §11): every cell of their
+		-- `lune run tests/balance --md` rows, frozen on 2026-10-18 (after D-031). Re-freeze only with
+		-- a TUNE row in DECISIONS.
+		t.it("Episodes 1–3 rows stay frozen (STORY_PLAN §11)", function()
+			local FROZEN = {
+				["ep1/normal"] = { re6 = "lost w14", re4up = "WIN 100/100", re6up = "WIN 100/100", re10up = "WIN 100/100", leg6 = "lost w19", leg10up = "WIN 100/100", myth12up = "WIN 100/100", whale = "WIN 100/100" },
+				["ep1/hard"] = { re6 = "lost w10", re4up = "lost w18", re6up = "lost w14", re10up = "WIN 14/60", leg6 = "lost w11", leg10up = "WIN 57/60", myth12up = "WIN 54/60", whale = "WIN 60/60" },
+				["ep1/nightmare"] = { re6 = "lost w9", re4up = "lost w10", re6up = "lost w10", re10up = "lost w10", leg6 = "lost w10", leg10up = "lost w10", myth12up = "WIN 32/35", whale = "WIN 35/35" },
+				["ep2/normal"] = { re6 = "lost w11", re4up = "lost w19", re6up = "WIN 88/100", re10up = "WIN 88/100", leg6 = "lost w15", leg10up = "WIN 90/100", myth12up = "WIN 80/100", whale = "WIN 96/100" },
+				["ep2/hard"] = { re6 = "lost w9", re4up = "lost w10", re6up = "lost w10", re10up = "lost w10", leg6 = "lost w10", leg10up = "WIN 40/60", myth12up = "WIN 33/60", whale = "WIN 50/60" },
+				["ep2/nightmare"] = { re6 = "lost w7", re4up = "lost w7", re6up = "lost w8", re10up = "lost w8", leg6 = "lost w8", leg10up = "lost w10", myth12up = "WIN 3/35", whale = "WIN 22/35" },
+				["ep3/normal"] = { re6 = "lost w11", re4up = "lost w15", re6up = "lost w13", re10up = "lost w20", leg6 = "lost w14", leg10up = "WIN 94/100", myth12up = "WIN 83/100", whale = "WIN 96/100" },
+				["ep3/hard"] = { re6 = "lost w10", re4up = "lost w10", re6up = "lost w10", re10up = "lost w10", leg6 = "lost w10", leg10up = "lost w20", myth12up = "WIN 26/60", whale = "WIN 56/60" },
+				["ep3/nightmare"] = { re6 = "lost w8", re4up = "lost w8", re6up = "lost w8", re10up = "lost w8", leg6 = "lost w8", leg10up = "lost w10", myth12up = "lost w10", whale = "WIN 29/35" },
+			}
+			local drift = {}
+			for row, cells in FROZEN do
+				local mode, diff = string.match(row, "^(%w+)/(%w+)$")
+				for policy, want in cells do
+					local r = AutoBattle.play(mode, diff, policy, { maxWaves = 150 })
+					local got = if r.won then string.format("WIN %d/%d", r.gateHp, r.gateMax) else string.format("lost w%d", r.wavesCleared + 1)
+					if got ~= want then
+						table.insert(drift, row .. " " .. policy .. ": " .. want .. " → " .. got)
+					end
+				end
+			end
+			table.sort(drift)
+			t.eq(#drift, 0, "balance drift: " .. table.concat(drift, "; "))
+		end)
 
 		t.it("Episode 1 Normal: 4–6 upgraded Rare/Epic win; without upgrades the wave-10 boss breaks you", function()
 			t.truthy(play("ep1", "normal", "re4up").won, "4 R/E + upgrades")

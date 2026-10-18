@@ -326,11 +326,16 @@ function AutoBattle.play(modeId: string, difficulty: string, policyId: any, opts
 		enemies = Enemies,
 		stunChainMax = TD.STUN_CHAIN_MAX,
 		stunImmunity = TD.STUN_IMMUNITY,
+		maxSpeedMul = WaveLogic.MAX_SPEED_MUL,
+		burnMax = TD.BURN_MAX_STACKS,
+		burnTick = TD.BURN_TICK,
+		burnDamage = TD.BURN_DAMAGE,
+		burnFor = TD.BURN_SECONDS,
 	}, function(wave)
 		if episode then
-			return WaveLogic.story(episode, wave, diff, scale)
+			return WaveLogic.story(episode, wave, diff, scale, Enemies)
 		end
-		return WaveLogic.infinite(Waves.infinite, wave, diff, scale)
+		return WaveLogic.infinite(Waves.infinite, wave, diff, scale, Enemies)
 	end)
 	local turn = 0
 	local maxWaves = opts.maxWaves or 150

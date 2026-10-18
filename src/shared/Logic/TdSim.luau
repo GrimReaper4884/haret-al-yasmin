@@ -29,6 +29,11 @@ export type Enemy = {
 	stunImmuneUntil: number,
 	armor: number,
 	stealth: boolean,
+	disguised: boolean, -- not yet revealed (Enemies[id].disguised); stays false once revealed
+	baseSpeed: number, -- the def's speed before difficulty, for the aura speed cap
+	aura: { speed: number, radius: number }?, -- speeds up other enemies nearby (drummer)
+	shield: { radius: number, reduce: number }?, -- enemies nearby (itself too) take less damage (porter)
+	burn: number?, -- burn stacks it lays on the gate when it reaches it (torchbearer)
 	reward: number,
 	gateDamage: number,
 	boss: boolean,
@@ -58,6 +63,12 @@ export type Event = { type: string, [string]: any }
 
 export type PathData = { pts: { { number } }, cum: { number }, length: number }
 
+-- Burn stacks on the gate: each stack costs cfg.burnDamage gate HP every cfg.burnTick seconds
+-- until `untilT` (refreshed by every new stack); defenders with `douse` remove stacks as they attack.
+export type GateBurn = { stacks: number, untilT: number, nextTick: number }
+
+export type Shield = { x: number, z: number, r2: number, reduce: number }
+
 export type State = {
 	path: PathData,
 	time: number,
@@ -69,6 +80,8 @@ export type State = {
 	waveStartedAt: number,
 	gateHp: number,
 	gateMax: number,
+	gateBurn: GateBurn,
+	shields: { Shield }?, -- this step's shield bearers (nil = none alive)
 	enemies: { Enemy },
 	towers: { Tower },
 	players: { [string]: PlayerState },
@@ -83,6 +96,11 @@ export type State = {
 		enemies: { [string]: any },
 		stunChainMax: number?, -- longest unbroken chain of stuns an enemy can be held in (nil = no cap) …
 		stunImmunity: number?, -- … after which it ignores stuns for this long
+		maxSpeedMul: number?, -- an aura never pushes an enemy past baseSpeed × this (nil = no cap)
+		burnMax: number?, -- most burn stacks on the gate (nil = burning is off)
+		burnTick: number?, -- seconds between burn damage ticks
+		burnDamage: number?, -- gate HP per stack per tick
+		burnFor: number?, -- seconds the stacks last after the newest one
 	},
 	buildWave: (number) -> any, -- wave number → WaveLogic.Wave
 }
@@ -105,6 +123,7 @@ function TdSim.new(pathPoints: { { number } }, players: { string }, startCash: n
 		waveStartedAt = 0,
 		gateHp = gateHp,
 		gateMax = gateHp,
+		gateBurn = { stacks = 0, untilT = 0, nextTick = 0 },
 		enemies = {},
 		towers = {},
 		players = ps,
@@ -161,6 +180,11 @@ local function spawnDue(state: State, events: { Event })
 				stunImmuneUntil = 0,
 				armor = def.armor or 0,
 				stealth = def.stealth == true,
+				disguised = def.disguised == true,
+				baseSpeed = def.speed,
+				aura = def.aura,
+				shield = def.shield,
+				burn = def.burn,
 				reward = def.reward,
 				gateDamage = def.gateDamage,
 				boss = def.boss == true,
@@ -171,24 +195,142 @@ local function spawnDue(state: State, events: { Event })
 	end
 end
 
+local function dist2(ax: number, az: number, bx: number, bz: number): number
+	local dx, dz = ax - bx, az - bz
+	return dx * dx + dz * dz
+end
+
+type Bearer = { e: Enemy, x: number, z: number, r2: number, mul: number }
+
+-- Speed auras (drummers): the best aura covering each other enemy, never stacking, capped so no
+-- enemy walks faster than baseSpeed × cfg.maxSpeedMul. nil when no aura bearer is alive (the usual
+-- case costs one pass). O(n · k), k = live aura bearers.
+local function auraMuls(state: State): { [Enemy]: number }?
+	local bearers: { Bearer } = {}
+	for _, e in state.enemies do
+		local a = e.aura
+		if e.alive and a then
+			local x, z = Path.position(state.path, e.dist)
+			table.insert(bearers, { e = e, x = x, z = z, r2 = a.radius * a.radius, mul = a.speed })
+		end
+	end
+	if #bearers == 0 then
+		return nil
+	end
+	local cap = state.cfg.maxSpeedMul
+	local out: { [Enemy]: number } = {}
+	for _, e in state.enemies do
+		if e.alive then
+			local ex, ez = Path.position(state.path, e.dist)
+			local best = 1
+			for _, b in bearers do
+				if b.e ~= e and b.mul > best and dist2(ex, ez, b.x, b.z) <= b.r2 then
+					best = b.mul
+				end
+			end
+			if best > 1 then
+				if cap then
+					best = math.max(1, math.min(best, cap * e.baseSpeed / e.speed))
+				end
+				out[e] = best
+			end
+		end
+	end
+	return out
+end
+TdSim.auraMuls = auraMuls
+
+local function addBurn(state: State, stacks: number, events: { Event })
+	local max = state.cfg.burnMax
+	if not max or stacks <= 0 then
+		return
+	end
+	local b = state.gateBurn
+	if b.stacks == 0 then
+		b.nextTick = state.time + (state.cfg.burnTick or 0)
+	end
+	b.stacks = math.min(max, b.stacks + stacks)
+	b.untilT = state.time + (state.cfg.burnFor or 0)
+	table.insert(events, { type = "gateBurn", stacks = b.stacks, gateHp = state.gateHp })
+end
+
+local function clearBurn(state: State, events: { Event })
+	if state.gateBurn.stacks > 0 then
+		state.gateBurn.stacks = 0
+		table.insert(events, { type = "gateBurn", stacks = 0, gateHp = state.gateHp })
+	end
+end
+
+-- The burning gate loses stacks × burnDamage every burnTick until the stacks run out.
+local function burnGate(state: State, events: { Event })
+	local b = state.gateBurn
+	if b.stacks == 0 then
+		return
+	end
+	local tick = state.cfg.burnTick or 0
+	while tick > 0 and state.time >= b.nextTick and b.nextTick <= b.untilT do
+		local dmg = b.stacks * (state.cfg.burnDamage or 0)
+		state.gateHp = math.max(0, state.gateHp - dmg)
+		b.nextTick += tick
+		table.insert(events, { type = "gateBurn", stacks = b.stacks, damage = dmg, gateHp = state.gateHp })
+	end
+	if state.time >= b.untilT then
+		clearBurn(state, events)
+	end
+end
+
 local function moveEnemies(state: State, dt: number, events: { Event })
+	local auras = auraMuls(state)
 	for _, e in state.enemies do
 		if e.alive and state.time >= e.stunUntil then
 			local mul = if state.time < e.slowUntil then e.slowMul else 1
+			if auras and auras[e] then
+				mul *= auras[e]
+			end
 			e.dist += e.speed * mul * dt
 			if e.dist >= state.path.length then
 				e.alive = false
 				state.gateHp = math.max(0, state.gateHp - e.gateDamage)
 				table.insert(events, { type = "reached", id = e.id, damage = e.gateDamage, gateHp = state.gateHp })
+				if e.burn then
+					addBurn(state, e.burn, events)
+				end
 			end
 		end
 	end
 end
 
-local function dist2(ax: number, az: number, bx: number, bz: number): number
-	local dx, dz = ax - bx, az - bz
-	return dx * dx + dz * dz
+-- This step's shield bearers (porters) for hit(); nil when none is alive.
+local function gatherShields(state: State)
+	local list: { Shield }? = nil
+	for _, e in state.enemies do
+		local s = e.shield
+		if e.alive and s then
+			local x, z = Path.position(state.path, e.dist)
+			local l = list or {}
+			table.insert(l, { x = x, z = z, r2 = s.radius * s.radius, reduce = s.reduce })
+			list = l
+		end
+	end
+	state.shields = list
 end
+
+-- The best shield reduction covering an enemy (shields never stack; a bearer covers itself): 0 if none.
+local function shieldFor(state: State, e: Enemy): number
+	local list = state.shields
+	if not list then
+		return 0
+	end
+	local ex, ez = Path.position(state.path, e.dist)
+	local best = 0
+	for _, s in list do
+		if s.reduce > best and dist2(ex, ez, s.x, s.z) <= s.r2 then
+			best = s.reduce
+		end
+	end
+	return best
+end
+TdSim.shieldFor = shieldFor
 
 -- Best buff multiplier from support/healer towers whose range covers the tower.
 local function buffFor(state: State, t: Tower): number
@@ -227,13 +369,60 @@ local function seesStealth(state: State, t: Tower): boolean
 end
 TdSim.seesStealth = seesStealth
 
+-- Can this defender land a single-target hit on a disguised enemy that is not revealed yet? Only a
+-- lantern bearer or a defender its lantern lights (the hit then reveals it); splash never can.
+local function seesDisguised(state: State, t: Tower): boolean
+	return not t.stats.splash and (t.stats.revealsStealth or revealerFor(state, t) ~= nil)
+end
+TdSim.seesDisguised = seesDisguised
+
+local function reveal(e: Enemy, by: number, events: { Event })
+	e.disguised = false
+	table.insert(events, { type = "revealed", id = e.id, by = by })
+end
+
+-- Lanterns (revealsStealth) unmask every disguised enemy inside their range; they stay revealed.
+local function revealInLight(state: State, events: { Event })
+	local hidden = false
+	for _, e in state.enemies do
+		if e.alive and e.disguised then
+			hidden = true
+			break
+		end
+	end
+	if not hidden then
+		return
+	end
+	for _, s in state.towers do
+		if s.stats.revealsStealth then
+			local r2 = s.stats.range * s.stats.range
+			for _, e in state.enemies do
+				if e.alive and e.disguised then
+					local ex, ez = Path.position(state.path, e.dist)
+					if dist2(ex, ez, s.x, s.z) <= r2 then
+						reveal(e, s.id, events)
+					end
+				end
+			end
+		end
+	end
+end
+
 local function pickTarget(state: State, t: Tower, sees: boolean): (Enemy?, number, number)
 	local r2 = t.stats.range * t.stats.range
 	local best: Enemy? = nil
 	local bestScore = -math.huge
 	local bx, bz = 0, 0
+	local lit: boolean? = nil -- seesDisguised, worked out only once a disguised enemy shows up
 	for _, e in state.enemies do
-		if e.alive and (sees or not e.stealth) then
+		local ok = e.alive and (sees or not e.stealth)
+		if ok and e.disguised then
+			if lit == nil then
+				lit = seesDisguised(state, t)
+			end
+			ok = lit == true
+		end
+		if ok then
 			local ex, ez = Path.position(state.path, e.dist)
 			local d2 = dist2(ex, ez, t.x, t.z)
 			if d2 <= r2 then
@@ -256,11 +445,18 @@ local function pickTarget(state: State, t: Tower, sees: boolean): (Enemy?, numbe
 	return best, bx, bz
 end
 
-local function hit(state: State, t: Tower, e: Enemy, damage: number, events: { Event })
+-- single: a single-target hit (not splash). Only those reveal a disguised enemy; splash skips it.
+local function hit(state: State, t: Tower, e: Enemy, damage: number, events: { Event }, single: boolean?)
 	if not e.alive then
 		return
 	end
-	e.hp -= damage * (1 - e.armor)
+	if e.disguised then
+		if not single then
+			return
+		end
+		reveal(e, t.id, events)
+	end
+	e.hp -= damage * (1 - e.armor) * (1 - shieldFor(state, e))
 	if t.stats.slow and t.stats.slowFor then
 		e.slowMul = math.min(e.slowMul, t.stats.slow)
 		e.slowUntil = math.max(e.slowUntil, state.time + t.stats.slowFor)
@@ -296,7 +492,7 @@ end
 local function splashHits(state: State, t: Tower, cx: number, cz: number, radius: number, damage: number, sees: boolean, events: { Event })
 	local r2 = radius * radius
 	for _, e in state.enemies do
-		if e.alive and (sees or not e.stealth) then
+		if e.alive and not e.disguised and (sees or not e.stealth) then
 			local ex, ez = Path.position(state.path, e.dist)
 			if dist2(ex, ez, cx, cz) <= r2 then
 				hit(state, t, e, damage, events)
@@ -337,11 +533,17 @@ local function towersAct(state: State, events: { Event })
 					if st.splash then
 						splashHits(state, t, tx, tz, st.splash, damage, sees, events)
 					else
-						hit(state, t, target, damage, events)
+						hit(state, t, target, damage, events, true)
 					end
 				end
+				-- Water on the flames: every attack of a dousing defender takes stacks off the gate.
+				local douse = st.douse
+				if douse and state.gateBurn.stacks > 0 then
+					state.gateBurn.stacks = math.max(0, state.gateBurn.stacks - douse)
+					table.insert(events, { type = "gateBurn", stacks = state.gateBurn.stacks, doused = t.id, gateHp = state.gateHp })
+				end
 				-- `damage`: what the primary target lost (after armour), for the client's damage numbers.
-				local shown = math.floor(perHit * (1 - target.armor) + 0.5)
+				local shown = math.floor(perHit * (1 - target.armor) * (1 - shieldFor(state, target)) + 0.5)
 				table.insert(events, { type = "attack", tower = t.id, target = target.id, ability = ability, x = tx, z = tz, damage = shown })
 			end
 		end
@@ -360,6 +562,7 @@ end
 
 local function endWave(state: State, events: { Event })
 	state.wavesCleared = state.wave
+	clearBurn(state, events) -- no burning between waves
 	local bonus = math.floor(state.cfg.waveBonusBase + state.cfg.waveBonusPerWave * state.wave + 0.5)
 	for _, p in state.players do
 		p.cash += bonus
@@ -407,6 +610,9 @@ function TdSim.step(state: State, dt: number): { Event }
 	end
 	spawnDue(state, events)
 	moveEnemies(state, dt, events)
+	burnGate(state, events)
+	revealInLight(state, events)
+	gatherShields(state)
 	towersAct(state, events)
 	compact(state)
 	if state.gateHp <= 0 then
