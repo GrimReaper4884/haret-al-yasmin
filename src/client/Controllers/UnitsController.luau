@@ -297,7 +297,8 @@ local function renderDetail(snapshot: any)
 		Theme.align(l, rtl)
 	end
 	-- Shabriyeh beads: three slots under the stats; a tap opens the picker for that slot.
-	local beadRow = Create("Frame", { Name = "Beads", BackgroundTransparency = 1, Position = UDim2.fromOffset(x, 160), Size = UDim2.new(0.5, -80, 0, 42), ZIndex = 13, Parent = detail })
+	-- Always right of the card (the card stays on the left in Arabic too); only the order mirrors.
+	local beadRow = Create("Frame", { Name = "Beads", BackgroundTransparency = 1, Position = UDim2.fromOffset(160, 160), Size = UDim2.new(0.5, -80, 0, 42), ZIndex = 13, Parent = detail })
 	Create("UIListLayout", {
 		FillDirection = Enum.FillDirection.Horizontal,
 		HorizontalAlignment = if rtl then Enum.HorizontalAlignment.Right else Enum.HorizontalAlignment.Left,

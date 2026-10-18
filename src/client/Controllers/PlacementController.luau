@@ -110,7 +110,7 @@ local function build()
 	towerStats = Theme.label({ LayoutOrder = 3, TextSize = 14, FontFace = Theme.fontBold, RichText = true, Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, LineHeight = 1.15, ZIndex = 4, Parent = towerPanel })
 	-- Level 7 (STORY_PLAN §7.1): at the last level a unit with a signature offers two path cards; one
 	-- tap picks, Upgrade confirms (UpgradeTower with the path; the server re-checks everything).
-	sigRow = Create("Frame", { Name = "Signature", LayoutOrder = 4, Size = UDim2.new(1, 0, 0, 104), BackgroundTransparency = 1, Visible = false, ZIndex = 4, Parent = towerPanel })
+	sigRow = Create("Frame", { Name = "Signature", LayoutOrder = 4, Size = UDim2.new(1, 0, 0, 92), BackgroundTransparency = 1, Visible = false, ZIndex = 4, Parent = towerPanel })
 	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = sigRow })
 	for i, pathKey in { "a", "b" } do
 		local card = Theme.button({ Name = "Path_" .. pathKey, LayoutOrder = i, Text = "", Size = UDim2.new(0.5, -3, 1, 0), BackgroundColor3 = Theme.colors.button, ZIndex = 4, Parent = sigRow })
@@ -463,8 +463,10 @@ local function renderTowerPanel()
 	local maxLevel = #def.levels
 	local shown = math.min(rec.level, maxLevel)
 	local sig = if rec.path and def.signature then def.signature[rec.path] else nil
-	towerLevel.Text = t("match.level", { n = shown }) .. " / " .. maxLevel .. "  " .. string.rep("●", shown) .. string.rep("○", maxLevel - shown)
-		.. (if sig then "  ★ " .. t("unit." .. rec.unitId .. ".sig." .. sig.key .. ".name") else "")
+	-- With a signature the dots give way to its name (the line is one row wide).
+	towerLevel.Text = if sig
+		then t("match.level", { n = shown }) .. " / " .. maxLevel .. "  ★ " .. t("unit." .. rec.unitId .. ".sig." .. sig.key .. ".name")
+		else t("match.level", { n = shown }) .. " / " .. maxLevel .. "  " .. string.rep("●", shown) .. string.rep("○", maxLevel - shown)
 	towerOwner.Visible = not mine
 	towerOwner.Text = rec.owner
 
@@ -525,6 +527,8 @@ local function renderTowerPanel()
 	local cash = if state then state.cash else 0
 	local step = UpgradeView.step(def, rec.level, rec.path)
 	sigRow.Visible = mine and step == "choose"
+	-- While choosing, the cards say what changes; the stat lines step aside so the panel fits a phone.
+	towerStats.Visible = not sigRow.Visible
 	if step == "choose" then
 		-- The two path cards; the tapped one glows gold, Upgrade confirms it at its price.
 		local trait = myTrait(rec.unitId)

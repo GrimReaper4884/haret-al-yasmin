@@ -654,6 +654,18 @@ Tag legend in the flag column: **MEANING** may say the wrong thing · **DIALECT*
 |---|-----|---------|------------------|-------------|------------|-----|
 | 1 | `match.pinned` | Pinned! | مثبّت! | Tag over a defender a rifleman has pinned down; alternative «محاصَر!». |  |  |
 
+## 22. Season Story 1: level 7 and beads (S1-C04)
+
+| # | Key | English | Arabic (current) | Claude flag | Correction | OK? |
+|---|-----|---------|------------------|-------------|------------|-----|
+| 1 | `match.sig_pick` | Pick a path | اختار طريق |  |  |  |
+| 2 | `match.sig_confirm` | Choose · ${n} | اختار · ${n} |  |  |  |
+| 3 | `units.beads_title` | Beads | خرزات |  |  |  |
+| 4 | `units.bead_empty` | Empty | فاضي |  |  |  |
+| 5 | `units.bead_pick` | Slot {n}: thread a bead (1 bead) | الخانة {n}: لضم خرزة (خرزة وحدة) | «لضم» = to thread (a bead on a string). |  |  |
+| 6 | `units.err.no_beads` | No beads yet: win Episode 5 or 7–9 on Hard. | ما عندك خرزات لسّا: اربح الحلقة ٥ أو ٧–٩ عالصعب. |  |  |  |
+| 7 | `units.err.same_bead` | That bead is already on this slot. | هالخرزة أصلاً على هالخانة. |  |  |  |
+
 ## Sign-off
 
 | Reviewer | Dialect / country | Date | Sections reviewed | Notes |
