@@ -573,7 +573,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
 
 ### Milestone 6: modals and screens
 
-- [x] **MH-13 `Modal` sheet mode and the common screens** · deps: MH-11
+- [x] 290dfec **MH-13 `Modal` sheet mode and the common screens** · deps: MH-11
   - **Goal:** B7 for every screen that needs only sizes and the sheet.
   - **Change:** `Modal.create(name, maxWidth, bodyHeight, opts?)`: on touch-phone the panel is a sheet
     (safe area minus `SHEET_MARGIN`, body fills and scrolls, 48 px close, swipe-down on the header
@@ -588,7 +588,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
     phone preset (loop through them with the debug keys 1–6 and the openers); phone captures of Units,
     Pass, Settings and the match result; the Arabic Settings labels still right-aligned.
 
-- [ ] **MH-14 Play panel two-step on phones** · deps: MH-13
+- [x] **MH-14 Play panel two-step on phones** · deps: MH-13
   - **Goal:** B7 Play.
   - **Change:** `PlayController.build` renders the list step (tab strip Story · Endless · Event + the
     cards: the nine episode cards with their 18 px mechanic icons and "Coming soon" state, or the mode

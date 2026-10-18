@@ -983,7 +983,9 @@ local function layoutSheet()
 	local scale = Device.scale()
 	local d = Device.designSize()
 	local lo, hi = Hud.HOTBAR.margin, d.x - Hud.HOTBAR.margin
-	if Device.isTouch() then
+	-- On a phone the thumbstick and jump hide while the sheet is open (syncSheet), so it takes the
+	-- whole width; a tablet keeps them and the sheet stays between its corners.
+	if Device.isTouch() and not Device.isPhone() then
 		local band = Device.freeBand()
 		local reserved = Device.reserved()
 		lo = if reserved.left then band.x0 / scale else lo
@@ -996,8 +998,10 @@ local function layoutSheet()
 	local top = d.y - Hud.HOTBAR.bottom - sheet.AbsoluteSize.Y / scale
 	local cash = MatchController.cashPill()
 	if cash and sheet.Visible then
-		cash.AnchorPoint = Vector2.new(0, 1)
-		cash.Position = UDim2.fromOffset((lo + hi) / 2 - w / 2, top - 2)
+		-- On a phone the pill moves to the top-left corner (above the sheet it would cover the gate
+		-- bar on a short screen); elsewhere it rides on the sheet's top edge.
+		cash.AnchorPoint = Vector2.new(0, if Device.isPhone() then 0 else 1)
+		cash.Position = if Device.isPhone() then UDim2.fromOffset(Hud.HOTBAR.margin, Hud.TOP_CLEAR) else UDim2.fromOffset((lo + hi) / 2 - w / 2, top - 2)
 	end
 	-- The rail stays above the sheet (its inner columns may reach over the band).
 	MatchController.setRailFloor(if sheet.Visible then top else nil)
@@ -1009,6 +1013,7 @@ syncSheet = function()
 	if MatchController.active() and #slots > 0 then
 		bar.Visible = not open
 	end
+	Device.blockTouchControls("panel", open and Device.isPhone())
 	if open then
 		layoutSheet()
 	else

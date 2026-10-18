@@ -77,6 +77,7 @@ local skipButton: TextButton
 local speedButton: TextButton
 local viewButton: TextButton
 local menuButton: TextButton
+local railContainer: Frame -- holds the rail buttons (hidden while a defender sheet leaves no room)
 local railLabels: { [TextButton]: TextLabel } = {}
 local result: Modal.Modal
 local resultBanner: ImageLabel
@@ -131,6 +132,10 @@ local function layoutRail()
 		end
 	end
 	local side = SettingsController.get("railSide") or "right"
+	-- A defender sheet that leaves no 56 px between the menu button and its top hides the rail
+	-- until it closes (short phones).
+	local room = if railFloor then railFloor - Hud.RAIL.gap - (Hud.TOP_CLEAR + Hud.RAIL.menu + Hud.RAIL.gap) else math.huge
+	railContainer.Visible = room >= Hud.RAIL.button
 	local r = HudLayout.rail(Hud, Device.profile(), Device.scale(), Device.safeSize(), side, #shown, Device.reserved(), railFloor)
 	for i, b in shown do
 		local p = r.buttons[i]
@@ -152,7 +157,7 @@ end
 
 -- A square rail button: icon on top, a short outlined label under it.
 local function railButtonOf(name: string, color: Color3, iconName: string): TextButton
-	local b = Theme.button({ Name = "Rail_" .. name, Text = "", Size = UDim2.fromOffset(Hud.RAIL.button, Hud.RAIL.button), BackgroundColor3 = color, ZIndex = 3, Parent = hud })
+	local b = Theme.button({ Name = "Rail_" .. name, Text = "", Size = UDim2.fromOffset(Hud.RAIL.button, Hud.RAIL.button), BackgroundColor3 = color, ZIndex = 3, Parent = railContainer })
 	local pad = b:FindFirstChildOfClass("UIPadding")
 	if pad then
 		pad:Destroy()
@@ -201,6 +206,7 @@ local function build()
 
 	-- The rail (B2): Skip (prep only), Speed (host only), View (walk / watchtower, MatchCameraController),
 	-- placed by layoutRail; everything else lives behind the `≡` match menu.
+	railContainer = Create("Frame", { Name = "Rail", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 3, Parent = hud })
 	skipButton = railButtonOf("skip", Theme.colors.confirm, "act_skip")
 	speedButton = railButtonOf("speed", Theme.colors.gold, "act_speed")
 	viewButton = railButtonOf("view", Theme.colors.textMuted, "ui_view")

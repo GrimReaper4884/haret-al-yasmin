@@ -5,6 +5,10 @@
 -- difficulty, waves, rewards, an enemy and boss preview, Create party, and the open parties of
 -- that mode to join. Everything shown is a preview; the server re-checks unlocks and sizes.
 --
+-- On a phone (MOBILE_HUD_PLAN B7) the three columns become two steps inside the sheet: a tab strip
+-- over the full-width mode list, and a tap on a mode slides to its detail (a 48 px back button,
+-- difficulty, rewards, enemies, Create party 56 px, open parties with Join).
+--
 -- The Story tab (STORY_PLAN §10.3, S1-C01) lists the nine episodes of Config/Story (Logic/StoryCards):
 -- the ones not built yet show as "Coming soon". Each card carries the icons of the mechanics the
 -- episode introduces; the detail tells the Hakawati's intro, the first-clear gifts still to earn and,
@@ -34,6 +38,7 @@ local Amount = require(UI.Amount)
 local Modal = require(UI.Modal)
 local Juice = require(UI.Juice)
 local Icons = require(UI.Icons)
+local Device = require(UI.Device)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
@@ -46,11 +51,16 @@ local TAB_COLORS = { story = Theme.colors.danger, infinite = Color3.fromHex("#3B
 local INTRO_COLOR = Color3.fromHex("#5A3E22") -- the Hakawati's voice: warm brown on the plaster panel
 local SECRET_COLOR = Color3.fromHex("#7A3FA0")
 local CARD_ICON = 18 -- px, mechanic icons on a card
-local PARTY_ROW = 37 -- px per open party row (34 + gap); the box under the detail grows with them
+local PARTY_ROW = Theme.TOUCH + 7 -- px per open party row (row + gap); the box under the detail grows with them
 local PARTIES_MIN = 48 -- px, at least the Create button's height (it sits beside the box)
 
 local modal: Modal.Modal
 local tabButtons: { [string]: TextButton } = {}
+local tabsFrame: Frame
+local tabsLayout: UIListLayout
+local listHolder: Frame
+local backButton: TextButton
+local step = "list" -- phones only: "list" or "detail"
 local list: ScrollingFrame
 local detail: Frame
 local info: ScrollingFrame
@@ -257,7 +267,28 @@ local render: () -> ()
 local function pick(modeId: string?)
 	selected = modeId
 	difficulty = "normal"
+	step = "detail"
 	render()
+end
+
+-- Three columns on tablets and desktop, the two-step sheet on a phone (re-run on Device changes).
+local function shapePlay()
+	if not tabsFrame then
+		return
+	end
+	local phone = Device.isPhone()
+	tabsLayout.FillDirection = if phone then Enum.FillDirection.Horizontal else Enum.FillDirection.Vertical
+	tabsFrame.Size = if phone then UDim2.new(1, 0, 0, Theme.TOUCH) else UDim2.new(0, 104, 1, 0)
+	for _, b in tabButtons do
+		b.Size = if phone then UDim2.new(1 / #TABS, -4, 1, 0) else UDim2.new(1, 0, 0, 52)
+	end
+	listHolder.Position = if phone then UDim2.fromOffset(0, Theme.TOUCH + 6) else UDim2.fromOffset(112, 0)
+	listHolder.Size = if phone then UDim2.new(1, 0, 1, -(Theme.TOUCH + 6)) else UDim2.new(0, 210, 1, 0)
+	detail.Position = if phone then UDim2.new() else UDim2.fromOffset(330, 0)
+	detail.Size = if phone then UDim2.fromScale(1, 1) else UDim2.new(1, -330, 1, 0)
+	backButton.Visible = phone
+	infoHolder.Position = if phone then UDim2.fromOffset(Theme.TOUCH + 8, 0) else UDim2.new()
+	createButton.Size = UDim2.new(0.38, 0, 0, if phone then Theme.PRIMARY else Theme.TOUCH)
 end
 
 local function card(id: string, i: number, number: number?): TextButton
@@ -352,7 +383,7 @@ end
 
 local function partyRow(p: any, i: number)
 	local t = LocaleController.t
-	local row = Create("Frame", { LayoutOrder = i, BackgroundColor3 = Theme.colors.panelStroke, BackgroundTransparency = 0.85, Size = UDim2.new(1, 0, 0, 34), ZIndex = 12, Parent = partiesList }, { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) })
+	local row = Create("Frame", { LayoutOrder = i, BackgroundColor3 = Theme.colors.panelStroke, BackgroundTransparency = 0.85, Size = UDim2.new(1, 0, 0, Theme.TOUCH + 4), ZIndex = 12, Parent = partiesList }, { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) })
 	local label = Theme.label({
 		Text = string.format("%s  ·  %s  ·  %d/%d  ·  %ds", t("play.party_of", { name = p.host }), t("difficulty." .. p.difficulty), p.count, p.max, p.countdown),
 		TextSize = 13,
@@ -362,7 +393,7 @@ local function partyRow(p: any, i: number)
 		Parent = row,
 	})
 	Theme.align(label, LocaleController.isRtl())
-	local join = Theme.button({ Text = t("play.join"), TextSize = 13, AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -3, 0.5, 0), Size = UDim2.fromOffset(84, 30), BackgroundColor3 = Theme.colors.confirm, ZIndex = 13, Parent = row })
+	local join = Theme.button({ Text = t("play.join"), TextSize = 13, AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -3, 0.5, 0), Size = UDim2.fromOffset(84, Theme.TOUCH), BackgroundColor3 = Theme.colors.confirm, ZIndex = 13, Parent = row })
 	join.Activated:Connect(function()
 		if busy then
 			return
@@ -416,7 +447,13 @@ render = function()
 	end
 	emptyLabel.Visible = #ids == 0
 	emptyLabel.Text = if tab == "event" then t("play.event_none") else ""
-	detail.Visible = selected ~= nil
+	local phone = Device.isPhone()
+	if phone and selected == nil then
+		step = "list"
+	end
+	tabsFrame.Visible = not phone or step == "list"
+	listHolder.Visible = not phone or step == "list"
+	detail.Visible = selected ~= nil and (not phone or step == "detail")
 	local id = selected
 	if not id then
 		return
@@ -499,7 +536,8 @@ render = function()
 	-- The parties box takes only the room its rows need; the detail stack gets the rest.
 	local partiesHeight = math.max(PARTIES_MIN, 18 + n * PARTY_ROW)
 	partiesBox.Size = UDim2.new(0.6, 0, 0, partiesHeight)
-	infoHolder.Size = UDim2.new(1, 0, 1, -(partiesHeight + 4))
+	-- (on a phone the back button stands left of the stack)
+	infoHolder.Size = UDim2.new(1, if phone then -(Theme.TOUCH + 8) else 0, 1, -(partiesHeight + 4))
 end
 
 -- A wrapped label that grows with its text, for the detail stack.
@@ -514,41 +552,48 @@ local function stackLabel(order: number, props: { [string]: any }): TextLabel
 end
 
 local function build()
-	modal = Modal.create("Play", 780, 252)
-	modal.panel:SetAttribute(Theme.LEGACY_ATTR, true) -- pre-touch sizes until MOBILE_HUD_PLAN MH-14
+	modal = Modal.create("Play", 780, 252, { fill = true })
 	local body = modal.body
 
-	-- Tabs
+	-- Tabs (a column on desktop, a strip on a phone: shapePlay)
 	local tabs = Create("Frame", { BackgroundTransparency = 1, Size = UDim2.new(0, 104, 1, 0), ZIndex = 11, Parent = body })
-	Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = tabs })
+	tabsFrame = tabs
+	tabsLayout = Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = tabs })
 	for i, key in TABS do
 		local b = Theme.button({ LayoutOrder = i, TextSize = 15, Size = UDim2.new(1, 0, 0, 52), ZIndex = 12, Parent = tabs })
 		tabButtons[key] = b
 		b.Activated:Connect(function()
 			tab = key
 			selected = nil
+			step = "list"
 			render()
 		end)
 	end
 
 	-- Mode list
-	local listHolder = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(112, 0), Size = UDim2.new(0, 210, 1, 0), ZIndex = 11, Parent = body })
+	listHolder = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(112, 0), Size = UDim2.new(0, 210, 1, 0), ZIndex = 11, Parent = body })
 	list = Modal.scroller(listHolder)
 	Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = list })
 	emptyLabel = Theme.label({ TextSize = 13, TextColor3 = Theme.colors.textMuted, Size = UDim2.new(1, -8, 0, 60), ZIndex = 12, Visible = false, Parent = listHolder })
 
 	-- Detail: a scrolling stack above the Create button and the open parties.
 	detail = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(330, 0), Size = UDim2.new(1, -330, 1, 0), ZIndex = 11, Parent = body })
+	-- Phones: back to the mode list.
+	backButton = Theme.button({ Name = "Back", Text = "<", TextSize = 20, Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH), BackgroundColor3 = Theme.colors.quest, Visible = false, ZIndex = 12, Parent = detail })
+	backButton.Activated:Connect(function()
+		step = "list"
+		render()
+	end)
 	infoHolder = Create("Frame", { Name = "Info", BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, -(PARTIES_MIN + 4)), ZIndex = 11, Parent = detail })
 	info = Modal.scroller(infoHolder)
 	Create("UIListLayout", { Padding = UDim.new(0, 4), SortOrder = Enum.SortOrder.LayoutOrder, Parent = info })
 	dName = Theme.display({ LayoutOrder = 1, TextSize = 20, Size = UDim2.new(1, -10, 0, 24), ZIndex = 12, Parent = info })
 	dMech = Amount.row({ Name = "Mechanics", LayoutOrder = 2, Size = UDim2.new(1, -10, 0, 24), ZIndex = 12, Parent = info }, {})
 	dDesc = stackLabel(3, { TextSize = 13, TextColor3 = Theme.colors.textMuted })
-	diffRow = Create("Frame", { LayoutOrder = 4, BackgroundTransparency = 1, Size = UDim2.new(1, -10, 0, 32), ZIndex = 12, Parent = info })
+	diffRow = Create("Frame", { LayoutOrder = 4, BackgroundTransparency = 1, Size = UDim2.new(1, -10, 0, Theme.TOUCH), ZIndex = 12, Parent = info })
 	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = diffRow })
 	for i, d in TD.DIFFICULTY_ORDER do
-		local b = Theme.button({ LayoutOrder = i, TextSize = 13, Size = UDim2.fromOffset(126, 32), ZIndex = 12, Parent = diffRow })
+		local b = Theme.button({ LayoutOrder = i, TextSize = 13, Size = UDim2.fromOffset(126, Theme.TOUCH), ZIndex = 12, Parent = diffRow })
 		diffButtons[d] = b
 		-- Difficulty ribbon (PV-C06) at the leading edge, the label shifted past it.
 		local ribbon = Create("Frame", { Name = "Ribbon", BackgroundTransparency = 1, AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 4, 0.5, 0), Size = UDim2.fromOffset(24, 24), ZIndex = 13, Parent = b })
@@ -570,7 +615,7 @@ local function build()
 	dSecret = stackLabel(8, { TextSize = 12, FontFace = Theme.fontBold, TextColor3 = SECRET_COLOR })
 	dEnemies = stackLabel(9, { TextSize = 12, TextColor3 = Theme.colors.textMuted })
 
-	createButton = Theme.button({ TextSize = 16, AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(0.38, 0, 0, 44), BackgroundColor3 = Theme.colors.confirm, ZIndex = 12, Parent = detail })
+	createButton = Theme.button({ TextSize = 16, AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(0.38, 0, 0, Theme.TOUCH), BackgroundColor3 = Theme.colors.confirm, ZIndex = 12, Parent = detail })
 	createButton.Activated:Connect(function()
 		local modeId = selected
 		if busy or inParty or not modeId then
@@ -602,6 +647,7 @@ function PlayController.open(tabKey: string?)
 		tab = tabKey
 		selected = nil
 	end
+	step = "list"
 	modal.setVisible(true)
 	render()
 end
@@ -610,6 +656,7 @@ end
 function PlayController.openAt(tabKey: string, id: string?)
 	tab = tabKey
 	selected = id
+	step = if id then "detail" else "list"
 	modal.setVisible(true)
 	render()
 	if info then
@@ -651,6 +698,11 @@ end
 
 function PlayController.start()
 	build()
+	shapePlay()
+	Device.Changed:Connect(function()
+		shapePlay()
+		render()
+	end)
 	LobbyMenuController.register("play", function()
 		PlayController.open()
 	end)

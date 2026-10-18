@@ -36,7 +36,7 @@ local SWIPE_PX = 50
 local openModals: { [Frame]: boolean } = {}
 local overlays: { GuiObject } = {}
 local closers: { [Frame]: () -> () } = {}
-type Shape = { panel: Frame, content: ScrollingFrame, body: Frame, limit: UISizeConstraint, maxWidth: number, bodyHeight: number, fill: boolean }
+type Shape = { panel: Frame, content: ScrollingFrame, list: UIListLayout, body: Frame, limit: UISizeConstraint, maxWidth: number, bodyHeight: number, fill: boolean }
 local shapes: { Shape } = {}
 
 function Modal.closed(f: Frame)
@@ -96,8 +96,10 @@ local function applyShape(s: Shape)
 		s.limit.MaxSize = Vector2.new(s.maxWidth, math.huge)
 		s.panel.Size = UDim2.fromScale(0.94, 0)
 		s.panel.AutomaticSize = Enum.AutomaticSize.Y
-		s.content.Size = UDim2.fromScale(1, 0)
-		s.content.AutomaticSize = Enum.AutomaticSize.Y
+		-- As tall as its rows (a plain height: a parent's AutomaticSize does not count its padding
+		-- around an auto-sized ScrollingFrame).
+		s.content.AutomaticSize = Enum.AutomaticSize.None
+		s.content.Size = UDim2.new(1, 0, 0, s.list.AbsoluteContentSize.Y / math.max(Device.scale(), 0.01))
 		s.content.ScrollingEnabled = false
 		s.content.CanvasPosition = Vector2.zero
 		s.body.Size = UDim2.new(1, 0, 0, s.bodyHeight)
@@ -169,7 +171,7 @@ function Modal.create(name: string, maxWidth: number, bodyHeight: number?, opts:
 		ZIndex = 11,
 		Parent = panel,
 	})
-	Create("UIListLayout", { Padding = UDim.new(0, GAP), SortOrder = Enum.SortOrder.LayoutOrder, Parent = content })
+	local contentList = Create("UIListLayout", { Padding = UDim.new(0, GAP), SortOrder = Enum.SortOrder.LayoutOrder, Parent = content })
 	local body = Create("Frame", {
 		Name = "Body",
 		LayoutOrder = 2,
@@ -233,11 +235,16 @@ function Modal.create(name: string, maxWidth: number, bodyHeight: number?, opts:
 		end
 	end)
 	Modal.track(panel)
-	local shape = { panel = panel, content = content, body = body, limit = limit, maxWidth = maxWidth, bodyHeight = bodyHeight or Modal.BODY_HEIGHT, fill = opts ~= nil and opts.fill == true }
+	local shape = { panel = panel, content = content, list = contentList, body = body, limit = limit, maxWidth = maxWidth, bodyHeight = bodyHeight or Modal.BODY_HEIGHT, fill = opts ~= nil and opts.fill == true }
 	table.insert(shapes, shape)
 	applyShape(shape)
 	content:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
 		if shape.fill and Device.isPhone() then
+			applyShape(shape)
+		end
+	end)
+	contentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		if not Device.isPhone() then
 			applyShape(shape)
 		end
 	end)

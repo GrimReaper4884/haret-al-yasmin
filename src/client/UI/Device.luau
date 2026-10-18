@@ -44,7 +44,7 @@ local slotCount = TD.LOADOUT_SLOTS
 -- they had so the hotbar does not jump, and Place / Cancel take those corners.
 local aimHold = false
 local lastJump: HudLayout.Rect? = nil
--- Who wants Roblox's thumbstick and jump hidden right now ("overhead", "aim", "sheet"); they show
+-- Who wants Roblox's thumbstick and jump hidden right now ("overhead", "aim", "sheet", "panel"); they show
 -- only when nobody does. A sheet keeps the corners reserved, like aiming, so nothing moves under it.
 local blocks: { [string]: true } = {}
 local started = false
@@ -101,7 +101,7 @@ local function recompute()
 	if legacy then
 		scale = math.min(scale, safe.x / legacy[1], safe.y / legacy[2])
 	end
-	local hold = aimHold or blocks.sheet == true
+	local hold = aimHold or blocks.sheet == true or blocks.panel == true
 	local touchControls = GuiService.TouchControlsEnabled or hold
 	local measured: HudLayout.Measured = {}
 	local jump = jumpButton()

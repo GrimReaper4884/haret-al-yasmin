@@ -20,11 +20,10 @@ return {
 		desktopMin = 0.9,
 		max = 1.5,
 		presets = { small = 0.85, default = 1, large = 1.15, huge = 1.3 },
-		-- Bridge while the screens are moved to the touch layout (MH-02 … MH-14): the scale also keeps
-		-- at least this design canvas (w, h), about the one the pre-MH layouts were fitted to (an iPhone's
-		-- 750×324 safe area at 1.0), so a 360 px Android does not overflow before its screens are
-		-- rebuilt. Removed (nil) once the audit passes at 640×360 (DECISIONS, MH-02).
-		legacyCanvas = { 740, 316 } :: { number }?,
+		-- Bridge used while the screens moved to the touch layout (MH-02 … MH-14): a minimum design
+		-- canvas (w, h) kept for the pre-MH layouts. nil since MH-14: every screen fits a 640×282 safe
+		-- area at 1.0 (DECISIONS D-073, D-082).
+		legacyCanvas = nil :: { number }?,
 	},
 
 	-- Roblox's thumbstick (bottom-left) and jump button (bottom-right) zones in screen px, used while those

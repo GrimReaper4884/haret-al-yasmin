@@ -247,6 +247,9 @@ local function applyVisibility()
 	local root = Root.get()
 	local dialogue = root:FindFirstChild("Dialogue")
 	local dialogueOpen = dialogue ~= nil and (dialogue :: Frame).Visible
+	-- On a phone the party countdown panel needs the screen's middle; the bar waits under it.
+	local queue = root:FindFirstChild("Queue")
+	local queued = queue ~= nil and (queue :: Frame).Visible
 	local away = inMatch or inAfk
 	for _, name in LOBBY_WIDGETS do
 		local w = root:FindFirstChild(name)
@@ -254,7 +257,7 @@ local function applyVisibility()
 			if name == "Menu" then
 				w.Visible = not away and not dialogueOpen and not phone
 			elseif name == "LobbyBar" then
-				w.Visible = not away and not dialogueOpen and phone
+				w.Visible = not away and not dialogueOpen and not queued and phone
 			elseif name == "TestMode" then
 				local snapshot = StateController.get()
 				w.Visible = not away and snapshot ~= nil and not snapshot.persistent
@@ -386,6 +389,10 @@ function LobbyMenuController.start()
 		local dialogue = Root.get():WaitForChild("Dialogue", 10)
 		if dialogue and dialogue:IsA("GuiObject") then
 			dialogue:GetPropertyChangedSignal("Visible"):Connect(applyVisibility)
+		end
+		local queue = Root.get():WaitForChild("Queue", 10)
+		if queue and queue:IsA("GuiObject") then
+			queue:GetPropertyChangedSignal("Visible"):Connect(applyVisibility)
 		end
 	end)
 end
