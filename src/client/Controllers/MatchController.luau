@@ -123,8 +123,10 @@ local function layoutRail()
 	if not hud then
 		return
 	end
+	-- View first, Skip last: the buttons that come and go (Skip between waves) fill the inner column, so
+	-- View never moves under a thumb when Skip appears or hides.
 	local shown = {}
-	for _, b in { skipButton, speedButton, viewButton } do
+	for _, b in { viewButton, speedButton, skipButton } do
 		if b.Visible then
 			table.insert(shown, b)
 		end

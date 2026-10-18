@@ -513,7 +513,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
 
 ### Milestone 3: defender panel
 
-- [x] **MH-09 Bottom sheet defender panel** · deps: MH-08
+- [x] 7074899 **MH-09 Bottom sheet defender panel** · deps: MH-08
   - **Goal:** B4.
   - **Change:** `PlacementController.build` builds both panels (side, bottom) from one `renderTowerPanel`
     data step (title, level or signature name, stats lines incl. sabotaged / lantern-out, the
@@ -532,7 +532,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
 
 ### Milestone 4: camera
 
-- [ ] **MH-10 Watchtower pan and pinch** · deps: MH-04
+- [x] **MH-10 Watchtower pan and pinch** · deps: MH-04
   - **Goal:** B5.
   - **Change:** `MatchCameraController`: in overhead mode, `TouchPan` (ignore when `gameProcessedEvent`)
     moves the look-at point by `totalTranslation` deltas × `Hud.CAMERA.PAN_STUDS_PER_PX` × zoom, clamped
