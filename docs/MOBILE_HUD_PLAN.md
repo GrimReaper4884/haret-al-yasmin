@@ -651,12 +651,23 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
 
 Found in the MH-18 Part D run (TEST_REPORT_SLICE "MH after"), fixed one task per commit on `main`.
 
-- [x] **MH-19 Dialogue closes when a match starts** · deps: MH-12
+- [x] 20e5011 **MH-19 Dialogue closes when a match starts** · deps: MH-12
   - **Goal:** an NPC dialogue left open on the portal pad does not cover the match HUD.
   - **Change:** `DialogueController` subscribes to `MatchController.Started` and calls `hide(true)`, which
     also fires `DialogueClose` so `DialogueService` drops the session.
   - **Accept:** iPhone 17 Pro: the Qahwaji's dialogue open in the lobby, `M` starts Episode 1, the
     dialogue is gone at wave 1/20 (`mh19_iphone17pro_*`); the match audit 9 · 0 · 0; no console errors.
+
+- [x] **MH-20 Lane Diary shows both tracks without a scroll on phones** · deps: MH-13
+  - **Goal:** the premium Claim row is on screen when the Diary opens on a phone.
+  - **Change:** the Pass modal uses `opts.fill`; on touch-phone `shapePass` packs a 48 px top row (level,
+    XP bar and season end beside Premium 180 / Skip 140), a 60 px Free · Premium legend and 116 px tier
+    columns whose 48 px claim buttons carry the reward on their top line: 182 px, inside the 188 px
+    content window of a 640×282 sheet. The strip opens on `PassLogic.firstClaimable` (new, specced in
+    `meta.spec`), else the current level. Tablet and desktop keep the 262 px body.
+  - **Accept:** content window = canvas (710×230 iPhone, 600×188 at 640, no sheet scroll); the premium
+    buttons end at y 244 of a 262 content edge at 640; audit 22 · 0 (iPhone) / 20 · 0 (640); desktop
+    capture unchanged (`mh20_*`).
 
 ---
 

@@ -903,3 +903,4 @@ behind it). The one Episode 1 match was ended by stopping Play at wave 1 (nothin
 | Task · preset | Check | Probe (buttons · undersized · corner) | Capture |
 |---|---|---|---|
 | MH-19 · iPhone 17 Pro (750×324) | Qahwaji dialogue open in the lobby, `M` starts Episode 1: dialogue hidden at wave 1/20; lobby with controls up / match | 7 · 0 · 0 / 9 · 0 · 0 | `mh19_iphone17pro_dialogue_open_in_lobby`, `_match_start_dialogue_closed` |
+| MH-20 · iPhone 17 Pro / 640×360 entry (640×282) | Lane Diary: free and premium rows on screen, content window = canvas (230 / 188, no sheet scroll), premium buttons end at 244 of 262 (640); desktop shape unchanged | 22 · 0 / 20 · 0 (controls hidden) | `mh20_iphone17pro_pass_both_tracks`, `mh20_640_pass_both_tracks`, `mh20_desktop_pass_unchanged` |

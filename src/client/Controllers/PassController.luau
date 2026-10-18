@@ -14,6 +14,7 @@ local Theme = require(UI.Theme)
 local Juice = require(UI.Juice)
 local Modal = require(UI.Modal)
 local Amount = require(UI.Amount)
+local Device = require(UI.Device)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
@@ -28,9 +29,18 @@ local xpLabel: TextLabel
 local lastXp: number? = nil
 local endsLabel: TextLabel
 local strip: ScrollingFrame
+local holder: Frame
+local legend: Frame
+local buttonRow: Frame
 local premiumButton: TextButton
 local skipButton: TextButton
 local busy = false
+
+-- Phone sheet (MH-20): a 48 px top row (level, XP bar and season end beside Premium and Skip), then
+-- tier columns whose 48 px claim buttons carry the reward, so both tracks show without scrolling
+-- the sheet at 640x282 (head + two buttons + gap = PHONE.column; PHONE.strip adds the strip's bar).
+local PHONE = { legend = 60, head = 16, gap = 4, column = 116, strip = 128, premium = 180, skip = 140 }
+local COLUMN_W, COLUMN_GAP = 118, 6
 
 local function claim(tier: number, track: string)
 	if busy then
@@ -46,7 +56,8 @@ local function claim(tier: number, track: string)
 end
 
 local function build()
-	modal = Modal.create("Pass", 720, 262)
+	-- fill: on a phone the body is the sheet's height and shapePass packs both tracks into it.
+	modal = Modal.create("Pass", 720, 262, { fill = true })
 	local body = modal.body
 	-- Top: the level and the season end on the left, Premium and Skip (48 px) on the right (MOBILE_HUD_PLAN B7).
 	levelLabel = Theme.label({ TextSize = 16, FontFace = Theme.fontBold, Size = UDim2.new(1, -400, 0, 22), ZIndex = 11, Parent = body })
@@ -56,10 +67,17 @@ local function build()
 	xpFill = Create("Frame", { Size = UDim2.fromScale(0, 1), BackgroundColor3 = Theme.colors.quest, BorderSizePixel = 0, ZIndex = 12, Parent = xpBar }, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
 	xpLabel = Theme.label({ TextSize = 11, FontFace = Theme.fontBold, Size = UDim2.fromScale(1, 1), ZIndex = 13, Parent = xpBar })
 	xpLabel.TextXAlignment = Enum.TextXAlignment.Center
-	local holder = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, Theme.TOUCH + 24), Size = UDim2.new(1, 0, 0, 190), ZIndex = 11, Parent = body })
+	holder = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, Theme.TOUCH + 24), Size = UDim2.new(1, 0, 0, 190), ZIndex = 11, Parent = body })
 	strip = Modal.scroller(holder, true)
-	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = strip })
+	-- Phones: the track names stand once at the left of the strip instead of in every column.
+	legend = Create("Frame", { Name = "Legend", BackgroundTransparency = 1, Size = UDim2.new(0, PHONE.legend, 1, 0), Visible = false, ZIndex = 11, Parent = holder })
+	for i, track in { "free", "premium" } do
+		local y = PHONE.head + (i - 1) * (Theme.TOUCH + PHONE.gap)
+		Theme.label({ Name = track, TextSize = 12, FontFace = Theme.fontBold, TextWrapped = true, Position = UDim2.fromOffset(0, y), Size = UDim2.new(1, -4, 0, Theme.TOUCH), TextColor3 = if track == "premium" then Theme.rarity.legendary else Theme.colors.text, ZIndex = 12, Parent = legend })
+	end
+	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, COLUMN_GAP), SortOrder = Enum.SortOrder.LayoutOrder, Parent = strip })
 	local row = Create("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromOffset(392, Theme.TOUCH), ZIndex = 11, Parent = body })
+	buttonRow = row
 	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = row })
 	premiumButton = Theme.button({ LayoutOrder = 1, TextSize = 14, Size = UDim2.fromOffset(210, Theme.TOUCH), BackgroundColor3 = Theme.rarity.legendary, ZIndex = 11, Parent = row })
 	skipButton = Theme.button({ LayoutOrder = 2, TextSize = 14, Size = UDim2.fromOffset(170, Theme.TOUCH), BackgroundColor3 = Theme.colors.quest, ZIndex = 11, Parent = row })
@@ -71,19 +89,59 @@ local function build()
 	end)
 end
 
+-- Phone: the top row and the compact strip; elsewhere the original 262 px body.
+local function shapePass()
+	if not holder then
+		return
+	end
+	local phone = Device.isPhone()
+	local rowW = if phone then PHONE.premium + PHONE.skip + 8 else 392
+	levelLabel.TextSize = if phone then 14 else 16
+	levelLabel.Size = UDim2.new(1, -(rowW + 8), 0, if phone then 18 else 22)
+	endsLabel.TextSize = if phone then 12 else 13
+	endsLabel.Position = UDim2.fromOffset(0, if phone then 35 else 24)
+	endsLabel.Size = UDim2.new(1, -(rowW + 8), 0, if phone then 13 else 18)
+	xpBar.Position = UDim2.fromOffset(0, if phone then 21 else Theme.TOUCH + 4)
+	xpBar.Size = if phone then UDim2.new(1, -(rowW + 8), 0, 12) else UDim2.new(1, 0, 0, 14)
+	buttonRow.Size = UDim2.fromOffset(rowW, Theme.TOUCH)
+	premiumButton.Size = UDim2.fromOffset(if phone then PHONE.premium else 210, Theme.TOUCH)
+	skipButton.Size = UDim2.fromOffset(if phone then PHONE.skip else 170, Theme.TOUCH)
+	holder.Position = UDim2.fromOffset(0, if phone then Theme.TOUCH + 6 else Theme.TOUCH + 24)
+	holder.Size = UDim2.new(1, 0, 0, if phone then PHONE.strip else 190)
+	legend.Visible = phone
+	strip.Position = UDim2.fromOffset(if phone then PHONE.legend else 0, 0)
+	strip.Size = UDim2.new(1, if phone then -PHONE.legend else 0, 1, 0)
+end
+
 local function tierColumn(t: any, snapshot: any, tier: number, level: number)
 	local def = SeasonPass.tiers[tier]
-	local col = Create("Frame", { LayoutOrder = tier, Size = UDim2.fromOffset(118, 186), BackgroundColor3 = if tier <= level then Theme.colors.quest else Theme.colors.panelStroke, BackgroundTransparency = if tier <= level then 0.8 else 0.9, BorderSizePixel = 0, ZIndex = 11, Parent = strip }, { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) })
-	local head = Theme.label({ Text = t("pass.level", { n = tier }), TextSize = 13, FontFace = Theme.fontBold, Size = UDim2.new(1, 0, 0, 18), ZIndex = 12, Parent = col })
+	local phone = Device.isPhone()
+	local col = Create("Frame", { LayoutOrder = tier, Size = UDim2.fromOffset(COLUMN_W, if phone then PHONE.column else 186), BackgroundColor3 = if tier <= level then Theme.colors.quest else Theme.colors.panelStroke, BackgroundTransparency = if tier <= level then 0.8 else 0.9, BorderSizePixel = 0, ZIndex = 11, Parent = strip }, { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) })
+	local head = Theme.label({ Text = t("pass.level", { n = tier }), TextSize = if phone then 12 else 13, FontFace = Theme.fontBold, Size = UDim2.new(1, 0, 0, if phone then PHONE.head else 18), ZIndex = 12, Parent = col })
 	head.TextXAlignment = Enum.TextXAlignment.Center
 	local function trackBlock(y: number, track: string, reward: any)
 		local claimed = (if track == "free" then snapshot.pass.claimedFree else snapshot.pass.claimedPremium)[tostring(tier)] == true
 		local lockedPremium = track == "premium" and not snapshot.pass.premium
+		local text = if claimed then t("pass.claimed") elseif tier > level then t("pass.locked") elseif lockedPremium then t("pass.premium") else t("pass.claim")
+		local enabled = not claimed and tier <= level and not lockedPremium
+		if phone then
+			-- The reward on the button's top line, its state under it (the legend names the track).
+			local pb = Theme.button({ Name = track, Text = text, TextSize = 12, TextYAlignment = Enum.TextYAlignment.Bottom, Position = UDim2.fromOffset(6, y), Size = UDim2.new(1, -12, 0, Theme.TOUCH), BackgroundColor3 = if enabled then Theme.colors.button else Theme.colors.buttonDisabled, AutoButtonColor = enabled, ZIndex = 12, Parent = col })
+			local pad = pb:FindFirstChildOfClass("UIPadding")
+			if pad then
+				pad.PaddingBottom = UDim.new(0, 4)
+			end
+			Amount.row({ Position = UDim2.fromOffset(-10, 3), Size = UDim2.new(1, 20, 0, 20), ZIndex = 13, Parent = pb }, Amount.reward(t, reward), { iconSize = 18, textSize = 11, zIndex = 13, rtl = LocaleController.isRtl() })
+			pb.Activated:Connect(function()
+				if enabled then
+					claim(tier, track)
+				end
+			end)
+			return
+		end
 		local label = Theme.label({ Text = t("pass." .. track), TextSize = 11, Position = UDim2.fromOffset(4, y), Size = UDim2.new(1, -8, 0, 12), TextYAlignment = Enum.TextYAlignment.Top, TextColor3 = if track == "premium" then Theme.rarity.legendary else Theme.colors.text, ZIndex = 12, Parent = col })
 		label.TextXAlignment = Enum.TextXAlignment.Center
 		Amount.row({ Position = UDim2.fromOffset(2, y + 12), Size = UDim2.new(1, -4, 0, 22), ZIndex = 12, Parent = col }, Amount.reward(t, reward), { iconSize = 22, textSize = 12, rtl = LocaleController.isRtl() })
-		local text = if claimed then t("pass.claimed") elseif tier > level then t("pass.locked") elseif lockedPremium then t("pass.premium") else t("pass.claim")
-		local enabled = not claimed and tier <= level and not lockedPremium
 		local b = Theme.button({ Text = text, TextSize = 12, Position = UDim2.fromOffset(6, y + 36), Size = UDim2.new(1, -12, 0, Theme.TOUCH), BackgroundColor3 = if enabled then Theme.colors.button else Theme.colors.buttonDisabled, AutoButtonColor = enabled, ZIndex = 12, Parent = col })
 		b.Activated:Connect(function()
 			if enabled then
@@ -91,8 +149,13 @@ local function tierColumn(t: any, snapshot: any, tier: number, level: number)
 			end
 		end)
 	end
-	trackBlock(20, "free", def.free)
-	trackBlock(102, "premium", def.premium)
+	if phone then
+		trackBlock(PHONE.head, "free", def.free)
+		trackBlock(PHONE.head + Theme.TOUCH + PHONE.gap, "premium", def.premium)
+	else
+		trackBlock(20, "free", def.free)
+		trackBlock(102, "premium", def.premium)
+	end
 end
 
 function PassController.render()
@@ -119,6 +182,12 @@ function PassController.render()
 	premiumButton.Text = if snapshot.pass.premium then t("pass.premium") .. " ✓" else t("pass.buy_premium")
 	premiumButton.AutoButtonColor = not snapshot.pass.premium
 	skipButton.Text = t("pass.skip")
+	for _, track in { "free", "premium" } do
+		local l = legend:FindFirstChild(track) :: TextLabel?
+		if l then
+			l.Text = t("pass." .. track)
+		end
+	end
 	-- Both pay lira/stones for Robux: not sold where paid random items are restricted
 	-- (MonetizationLogic.fundsRandomItems; the server refuses the prompt too).
 	premiumButton.Visible = snapshot.pass.premium or not snapshot.restricted
@@ -131,8 +200,9 @@ function PassController.render()
 	for tier = 1, SeasonPass.levels do
 		tierColumn(t, snapshot, tier, level)
 	end
-	-- Scroll to the current level
-	strip.CanvasPosition = Vector2.new(math.max(0, (level - 1) * 124), 0)
+	-- Scroll to the oldest tier with a claim waiting, else the current level (MH-20).
+	local focus = PassLogic.firstClaimable(snapshot, SeasonPass.tiers) or level
+	strip.CanvasPosition = Vector2.new(math.max(0, (focus - 1) * (COLUMN_W + COLUMN_GAP)), 0)
 end
 
 function PassController.open()
@@ -142,6 +212,11 @@ end
 
 function PassController.start()
 	build()
+	shapePass()
+	Device.Changed:Connect(function()
+		shapePass()
+		PassController.render()
+	end)
 	StateController.Changed:Connect(PassController.render)
 	LocaleController.Changed:Connect(PassController.render)
 	LobbyMenuController.register("pass", PassController.open)

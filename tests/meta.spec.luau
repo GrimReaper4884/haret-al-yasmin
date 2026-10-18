@@ -358,6 +358,20 @@ return function(t)
 			t.eq(PassLogic.claim(p, "1", "free", SeasonPass.tiers, c), false)
 			t.eq(PassLogic.claim(p, 2, "vip", SeasonPass.tiers, c), false)
 		end)
+		t.it("finds the first claimable tier on either track (MH-20)", function()
+			local p = profile()
+			t.eq(PassLogic.firstClaimable(p, SeasonPass.tiers), nil)
+			p.pass.xp = 210 -- level 2
+			t.eq(PassLogic.firstClaimable(p, SeasonPass.tiers), 1)
+			p.pass.xp = 100 + 110 + 120
+			p.pass.claimedFree["1"] = true
+			t.eq(PassLogic.firstClaimable(p, SeasonPass.tiers), 2)
+			p.pass.claimedFree["2"] = true
+			p.pass.claimedFree["3"] = true
+			t.eq(PassLogic.firstClaimable(p, SeasonPass.tiers), nil)
+			p.pass.premium = true
+			t.eq(PassLogic.firstClaimable(p, SeasonPass.tiers), 1)
+		end)
 		t.it("level skips add exactly the xp of the next levels", function()
 			local p = profile()
 			p.pass.xp = 30

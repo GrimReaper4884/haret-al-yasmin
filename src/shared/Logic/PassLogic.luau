@@ -68,6 +68,18 @@ function PassLogic.canClaim(profile: any, tier: any, track: any, tiers: { any })
 	return true, nil
 end
 
+-- The lowest tier with a reward the player can claim now on either track (nil when none); the
+-- Lane Diary opens its strip there (MH-20). Takes anything with a `pass` field (profile or snapshot).
+function PassLogic.firstClaimable(profile: any, tiers: { any }): number?
+	local level = PassLogic.level(profile.pass.xp, tiers)
+	for tier = 1, level do
+		if PassLogic.canClaim(profile, tier, "free", tiers) or PassLogic.canClaim(profile, tier, "premium", tiers) then
+			return tier
+		end
+	end
+	return nil
+end
+
 function PassLogic.claim(profile: any, tier: any, track: any, tiers: { any }, ctx: any): (boolean, string?, any?)
 	local ok, err = PassLogic.canClaim(profile, tier, track, tiers)
 	if not ok then
