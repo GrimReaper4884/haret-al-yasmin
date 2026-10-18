@@ -18,6 +18,7 @@ local Net = require(Shared.Net)
 local Enemies = require(Shared.Config.Enemies)
 local Units = require(Shared.Config.Units)
 local Arenas = require(Shared.Config.Arenas)
+local Modes = require(Shared.Config.Modes)
 local Vfx = require(Shared.Config.Vfx)
 local Path = require(Shared.Logic.Path)
 local HitFx = require(Shared.Logic.HitFx)
@@ -77,6 +78,8 @@ local towerPos: { [number]: Vector3 } = {}
 local towerUnit: { [number]: string } = {}
 local arenaPath: Path.Path? = nil
 local arenaPaths: { Path.Path } = {} -- every road (twin-gate arenas have two; S1-S07)
+local walked: { Path.Path } = {} -- the roads this mode sends attackers down (Modes.twinRoads, S1-M05)
+local spawnMarks: { BasePart } = {} -- a red mark at each walked road's spawn on twin-road modes (S1-C05)
 local origin: CFrame? = nil
 local selectedTower: number? = nil -- PlacementController tells us; its target gets the flash
 local ringCounts: { [string]: number } = {} -- ground rings in use per kind (Vfx.STORY caps)
@@ -132,6 +135,10 @@ local function clear()
 	towerPos = {}
 	towerUnit = {}
 	glowCount = {}
+	for _, mark in spawnMarks do
+		mark:Destroy()
+	end
+	spawnMarks = {}
 	for _, ring in pins do
 		ring:Destroy()
 	end
@@ -386,18 +393,24 @@ local function bossRing(at: Vector3, radius: number, life: number)
 end
 
 local function bossTelegraph()
-	local o, path = origin, arenaPath
-	if not Fx.full() or not o or not path then
+	local o = origin
+	if not Fx.full() or not o or #walked == 0 then
 		return
 	end
-	local x, z = Path.position(path, 0)
-	local at = (o * CFrame.new(x, 0, z)).Position
+	-- Every road the mode walks (a twin-road boss may come from either gate).
+	local spots = {}
+	for _, road in walked do
+		local x, z = Path.position(road, 0)
+		table.insert(spots, (o * CFrame.new(x, 0, z)).Position)
+	end
 	task.spawn(function()
 		for i = 1, Vfx.BOSS.pulses do
 			if not MatchController.active() then
 				return
 			end
-			bossRing(at, Vfx.BOSS.pulseRadius, Vfx.BOSS.pulseLife)
+			for _, at in spots do
+				bossRing(at, Vfx.BOSS.pulseRadius, Vfx.BOSS.pulseLife)
+			end
 			if i < Vfx.BOSS.pulses then
 				task.wait(Vfx.BOSS.pulseEvery)
 			end
@@ -933,7 +946,7 @@ local function onEvents(events: { any })
 		if t == "spawn" then
 			spawn(e)
 			if e.boss and Fx.any() then
-				local p = arenaPath :: Path.Path
+				local p = arenaPaths[if type(e.path) == "number" then e.path else 1] or arenaPath :: Path.Path
 				local x, z = Path.position(p, 0)
 				bossRing((origin :: CFrame * CFrame.new(x, 0, z)).Position, Vfx.BOSS.spawnRadius, Vfx.BOSS.spawnLife)
 			end
@@ -1162,6 +1175,30 @@ function EnemyRenderController.start()
 		arenaPath = Path.build(Arenas[info.arenaId].path)
 		arenaPaths = Path.buildAll(Arenas[info.arenaId] :: any)
 		origin = CFrame.new(info.origin)
+		local mode = (Modes :: any)[info.modeId]
+		walked = if mode and mode.twinRoads and #arenaPaths > 1 then arenaPaths else { arenaPath :: Path.Path }
+		if #walked > 1 then
+			-- Both gates spawn: a red mark on the ground at each (S1-C05), for the whole match.
+			local cfg = Vfx.STORY.spawnMark
+			for i, road in walked do
+				local x, z = Path.position(road, 0)
+				table.insert(spawnMarks, Create("Part", {
+					Name = "SpawnMark_" .. i,
+					Shape = Enum.PartType.Cylinder,
+					Anchored = true,
+					CanCollide = false,
+					CanQuery = false,
+					CanTouch = false,
+					CastShadow = false,
+					Material = Enum.Material.Neon,
+					Color = Color3.fromHex(cfg.color),
+					Transparency = cfg.transparency,
+					Size = Vector3.new(cfg.height, cfg.radius * 2, cfg.radius * 2),
+					CFrame = CFrame.new(info.origin) * CFrame.new(x, 0.1, z) * CFrame.Angles(0, 0, math.rad(90)),
+					Parent = folder,
+				}))
+			end
+		end
 	end)
 	MatchController.Ended:Connect(function()
 		bossId = nil

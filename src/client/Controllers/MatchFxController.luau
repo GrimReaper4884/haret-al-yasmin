@@ -16,6 +16,7 @@ local Units = require(Shared.Config.Units)
 local Vfx = require(Shared.Config.Vfx)
 local LightLook = require(Shared.Config.Lighting)
 local Arenas = require(Shared.Config.Arenas)
+local Story = require(Shared.Config.Story)
 local Locale = require(Shared.Util.Locale)
 local MatchMoments = require(Shared.Logic.MatchMoments)
 local UI = script.Parent.Parent.UI
@@ -41,6 +42,8 @@ local bannerToken = 0
 local dayClock = 15.6
 local dayBrightness = 2.4
 local night = false
+local duskMode = false -- this match opens at dusk and falls to night (Config/Lighting.dusk, S1-C05)
+local allyMarks: { [number]: BasePart } = {} -- story allies: tower id → gold ring (with the nameplate)
 
 local function build()
 	-- A dark band across the screen (faded at both ends) carrying a big outlined title.
@@ -109,8 +112,8 @@ local function setNight(on: boolean)
 		dayBrightness = Lighting.Brightness
 	end
 	TweenService:Create(Lighting, TweenInfo.new(2.5, Enum.EasingStyle.Sine), {
-		ClockTime = if on then 19.4 else dayClock,
-		Brightness = if on then 1.4 else dayBrightness,
+		ClockTime = if on then LightLook.night.clockTime else dayClock,
+		Brightness = if on then LightLook.night.brightness else dayBrightness,
 	}):Play()
 	-- PV-E01: denser haze and a slightly cool grade at night (client only; Config/Lighting).
 	local N = LightLook.night
@@ -135,6 +138,82 @@ local function setNight(on: boolean)
 		TintColor = if on then Color3.fromHex(N.tint) else Color3.new(1, 1, 1),
 		Contrast = if on then N.contrast else 0,
 	}):Play()
+end
+
+-- Episode 9's light (S1-C05): `f` = 0 is dusk (Config/Lighting.dusk), 1 is the match night; each
+-- wave start moves it on (MatchMoments.nightFraction). setNight(false) restores the day after.
+local function setDuskMix(f: number)
+	if not night then
+		night = true
+		dayClock = Lighting.ClockTime
+		dayBrightness = Lighting.Brightness
+	end
+	local D, N = LightLook.dusk, LightLook.night
+	local function lerp(a: number, b: number): number
+		return a + (b - a) * f
+	end
+	local tw = TweenInfo.new(N.blend, Enum.EasingStyle.Sine)
+	TweenService:Create(Lighting, tw, { ClockTime = lerp(D.clockTime, N.clockTime), Brightness = lerp(D.brightness, N.brightness) }):Play()
+	local haze = Lighting:FindFirstChild("LaneHaze")
+	if haze and haze:IsA("Atmosphere") then
+		TweenService:Create(haze, tw, {
+			Density = lerp(D.density, N.density),
+			Color = Color3.fromHex(D.hazeColor):Lerp(Color3.fromHex(N.hazeColor), f),
+			Decay = Color3.fromHex(D.hazeDecay):Lerp(Color3.fromHex(N.hazeDecay), f),
+		}):Play()
+	end
+	local grade = Lighting:FindFirstChild("NightGrade")
+	if not grade then
+		local n = Instance.new("ColorCorrectionEffect")
+		n.Name = "NightGrade"
+		n.Parent = Lighting
+		grade = n
+	end
+	TweenService:Create(grade :: ColorCorrectionEffect, tw, {
+		TintColor = Color3.fromHex(D.tint):Lerp(Color3.fromHex(N.tint), f),
+		Contrast = lerp(D.contrast, N.contrast),
+	}):Play()
+end
+
+-- A story ally (Al-Adashari): a gold ring at his feet and his name over him, for the match.
+local function allyMark(id: number, unitId: string, at: Vector3)
+	if allyMarks[id] then
+		return
+	end
+	local t = LocaleController.t
+	local cfg = Vfx.STORY.ally
+	local ring = Create("Part", {
+		Name = "AllyRing_" .. id,
+		Shape = Enum.PartType.Cylinder,
+		Anchored = true,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+		CastShadow = false,
+		Material = Enum.Material.Neon,
+		Color = Color3.fromHex(cfg.color),
+		Transparency = cfg.transparency,
+		Size = Vector3.new(cfg.height, cfg.radius * 2, cfg.radius * 2),
+		CFrame = CFrame.new(at + Vector3.new(0, 0.12, 0)) * CFrame.Angles(0, 0, math.rad(90)),
+		Parent = Workspace,
+	})
+	-- The nameplate hangs on an attachment over his head (a flat ring's own frame points sideways).
+	local over = Create("Attachment", { Name = "Name", Parent = ring })
+	over.WorldCFrame = CFrame.new(at + Vector3.new(0, cfg.nameHeight, 0))
+	local gui = Create("BillboardGui", { Adornee = over, Size = UDim2.fromOffset(220, 40), AlwaysOnTop = false, LightInfluence = 0, MaxDistance = 180, Parent = ring })
+	local def = (Units :: any)[unitId]
+	local name = Theme.display({ Text = if def then t(def.nameKey) else unitId, TextSize = cfg.nameSize, TextColor3 = Color3.fromHex(cfg.color), Size = UDim2.new(1, 0, 0, 22), Parent = gui })
+	name.TextXAlignment = Enum.TextXAlignment.Center
+	local role = Theme.display({ Text = t("match.ally"), TextSize = 12, TextColor3 = Color3.fromHex("#FFF1D0"), Position = UDim2.fromOffset(0, 22), Size = UDim2.new(1, 0, 0, 16), Parent = gui })
+	role.TextXAlignment = Enum.TextXAlignment.Center
+	allyMarks[id] = ring
+end
+
+local function clearAllies()
+	for _, ring in allyMarks do
+		ring:Destroy()
+	end
+	allyMarks = {}
 end
 
 -- Finds this match's gate doors in the arena model nearest the origin.
@@ -664,6 +743,26 @@ local function playMoment(mo: MatchMoments.Moment)
 			local m = Vfx.MOMENTS
 			MatchCameraController.push(spawnAt, m.bossPush, m.pushDistance, m.pushHeight)
 		end
+	elseif mo.kind == "allyTurn" then
+		-- He reaches our gate… and turns (Episode 8): the Hakawati's line, a gold pulse at him, and
+		-- the camera pushed toward him (not with cutscenes off or Reduced Motion).
+		local at = if mo.id then towerAt[mo.id] else nil
+		MatchFxController.banner(t(mo.line or ""), t("play.hakawati"), Vfx.MOMENTS.allyLineHold, Theme.colors.gold)
+		if at and Fx.any() then
+			local cfg = Vfx.STORY.ally
+			local pulse = Fx.part(Enum.PartType.Cylinder, true)
+			if pulse then
+				pulse.Color = Color3.fromHex(cfg.color)
+				pulse.Transparency = 0.1
+				pulse.Size = Vector3.new(0.3, 2, 2)
+				pulse.CFrame = CFrame.new(at + Vector3.new(0, 0.3, 0)) * CFrame.Angles(0, 0, math.rad(90))
+				Fx.fade(pulse, cfg.pulseLife, { Size = Vector3.new(0.3, cfg.pulse * 2, cfg.pulse * 2), Transparency = 1 })
+			end
+		end
+		if mo.camera and at then
+			local m = Vfx.MOMENTS
+			MatchCameraController.push(at, m.allyPush, m.allyPushDistance, m.allyPushHeight)
+		end
 	elseif mo.kind == "finalWave" then
 		if mo.fx and info then
 			finalWave(info.origin)
@@ -705,6 +804,9 @@ local function onEvents(events: { any })
 			if e.owner == Players.LocalPlayer.Name then
 				PlacementController.popSlot(e.unitId)
 			end
+			if e.ally == true and type(e.unitId) == "string" and towerAt[e.id] then
+				allyMark(e.id, e.unitId, towerAt[e.id])
+			end
 		elseif e.type == "towerUpgraded" then
 			towerUpgraded(e.id, if type(e.level) == "number" then e.level else 1)
 		elseif e.type == "towerSold" then
@@ -717,17 +819,22 @@ local function onEvents(events: { any })
 			towerAt[e.id] = nil
 		elseif e.type == "attack" and e.ability then
 			ultimate(e)
-		elseif e.type == "waveStart" or e.type == "waveEnd" or e.type == "won" or e.type == "lost" then
+		elseif e.type == "waveStart" or e.type == "waveEnd" or e.type == "won" or e.type == "lost" or e.type == "ally" then
 			if e.type == "waveEnd" then
 				AudioController.music("match")
 			end
+			if e.type == "waveStart" and duskMode and type(e.wave) == "number" then
+				setDuskMix(MatchMoments.nightFraction(e.wave, LightLook.dusk.nightByWave))
+			end
 			local info = MatchController.info()
+			local ep = if info then (Story.episodes :: any)[info.modeId] else nil
 			local ctx: MatchMoments.Ctx = {
 				-- The live state carries the wave total (Info.totalWaves is optional).
 				totalWaves = (MatchController.state() or {}).totalWaves or (if info then info.totalWaves else nil),
 				cutscenes = SettingsController.get("cutscenes") ~= false,
 				effects = Fx.level(),
 				reducedMotion = reducedMotion(),
+				allyLine = if ep and ep.moments then ep.moments.ally_turn else nil,
 			}
 			for _, mo in MatchMoments.fromEvent(e, ctx) do
 				playMoment(mo)
@@ -743,7 +850,13 @@ function MatchFxController.start()
 	MatchController.Started:Connect(function(info: MatchController.Info)
 		local t = LocaleController.t
 		towerInfo = {}
-		setNight(true)
+		clearAllies()
+		duskMode = LightLook.dusk.modes[info.modeId] == true
+		if duskMode then
+			setDuskMix(0)
+		else
+			setNight(true)
+		end
 		AudioController.music("match")
 		closeGate(info.origin)
 		task.delay(0.6, function()
@@ -754,6 +867,8 @@ function MatchFxController.start()
 	MatchController.Ended:Connect(function()
 		task.delay(3, function()
 			restoreMoments()
+			clearAllies()
+			duskMode = false
 			setNight(false)
 			AudioController.music("lobby")
 		end)
