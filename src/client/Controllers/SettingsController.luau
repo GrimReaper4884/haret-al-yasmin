@@ -14,6 +14,7 @@ local Signal = require(Shared.Util.Signal)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
+local Haptics = require(UI.Haptics)
 local Modal = require(UI.Modal)
 local Fx = require(UI.Fx)
 local Icons = require(UI.Icons)
@@ -43,6 +44,8 @@ local function apply(key: string, value: any)
 		Fx.set(value)
 	elseif key == "uiScale" then
 		Device.setPreset(value)
+	elseif key == "sfx" then
+		Haptics.setEnabled(value ~= false)
 	end
 	SettingsController.Changed:Fire(key, value)
 	if key == "music" then

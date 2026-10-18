@@ -87,6 +87,8 @@ return {
 	-- that ended it, usually Redeem, lands before the panel moves back), and the window in which a
 	-- second Redeem (the button's own Activated after the focus-loss tap) is ignored.
 	KEYBOARD = { restoreS = 0.4, redeemDebounceS = 0.5 },
+	-- Haptics (B8): at most one gate-hit buzz per this many seconds.
+	HAPTICS = { notifyGapS = 0.3 },
 	-- The defender bottom sheet (B4) is never wider than this (desktop with panelSide = bottom).
 	SHEET_MAX_W = 640,
 }

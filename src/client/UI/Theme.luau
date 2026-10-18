@@ -12,7 +12,7 @@ local Hud = require(ReplicatedStorage:WaitForChild("Shared").Config.Hud)
 local Create = require(script.Parent.Create)
 local Juice = require(script.Parent.Juice)
 local Icons = require(script.Parent.Icons)
-local Root = require(script.Parent.Root)
+local Haptics = require(script.Parent.Haptics)
 
 local Theme = {}
 
@@ -152,8 +152,9 @@ local function insideLegacy(parent: Instance?): boolean
 	return false
 end
 
--- A pressed-in look while a finger or the mouse holds the button (no hover exists on touch): the
--- shading flips so the top reads darker by the lip's depth (MH-16 applies it through Juice.press).
+-- A pressed-in look while a finger holds the button (touch has no hover, so the squash of
+-- Juice.press alone is easy to miss under a thumb): the shading flips so the top reads darker.
+-- Touch only; the mouse keeps the hover grow (MOBILE_HUD_PLAN MH-16).
 function Theme.lip(button: GuiButton)
 	local shade = button:FindFirstChild("Shade")
 	if not (shade and shade:IsA("UIGradient")) then
@@ -161,34 +162,17 @@ function Theme.lip(button: GuiButton)
 	end
 	local normal = shade.Rotation
 	local function down(input: InputObject)
-		local t = input.UserInputType
-		if t == Enum.UserInputType.Touch or t == Enum.UserInputType.MouseButton1 then
+		if input.UserInputType == Enum.UserInputType.Touch then
 			shade.Rotation = normal + 180
 		end
 	end
 	local function up(input: InputObject)
-		local t = input.UserInputType
-		if t == Enum.UserInputType.Touch or t == Enum.UserInputType.MouseButton1 then
+		if input.UserInputType == Enum.UserInputType.Touch then
 			shade.Rotation = normal
 		end
 	end
 	button.InputBegan:Connect(down)
 	button.InputEnded:Connect(up)
-end
-
--- One UIClick haptic shared by every button (GuiButton.PressHapticEffect plays it on press; inert
--- where the device has no haptics).
-local clickHaptic: HapticEffect? = nil
-function Theme.clickHaptic(): HapticEffect
-	if clickHaptic and clickHaptic.Parent then
-		return clickHaptic
-	end
-	local h = Instance.new("HapticEffect")
-	h.Name = "UIClickHaptic"
-	h.Type = Enum.HapticEffectType.UIClick
-	h.Parent = Root.get()
-	clickHaptic = h
-	return h
 end
 
 -- A touch-legal button: at least Hud.TOUCH_MIN on both axes unless `props.compact` (desktop-only
@@ -213,10 +197,11 @@ function Theme.button(props: { [string]: any }): TextButton
 	border(b, 2.5)
 	Theme.outline(b, 1.6)
 	Juice.press(b)
+	Theme.lip(b)
 	if not legacy then
 		Theme.touchPad(b)
 	end
-	b.PressHapticEffect = Theme.clickHaptic()
+	Haptics.bind(b) -- the UIClick buzz on press, while sfx is on
 	return b
 end
 

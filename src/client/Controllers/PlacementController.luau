@@ -36,6 +36,7 @@ local Root = require(UI.Root)
 local UnitCard = require(UI.UnitCard)
 local TowerPanelView = require(UI.TowerPanelView)
 local Juice = require(UI.Juice)
+local Haptics = require(UI.Haptics)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local MatchController = require(script.Parent.MatchController)
@@ -753,9 +754,9 @@ local function run(event: PlaceFlow.Event, flags: PlaceFlow.Flags)
 			lastScreen = a.screen
 			updateGhost()
 		elseif a.kind == "commit" and a.unitId and a.x and a.z then
-			pcall(function()
-				Theme.clickHaptic():Play()
-			end)
+			if event.type == "tap" then
+				Haptics.click() -- a quick place tap on the ground (the Place button buzzes on its own)
+			end
 			placeCall(a.unitId, a.x, a.z, function(ok: boolean, reason: string?)
 				run({ type = "done", ok = ok, reason = if reason and ERR_KEYS[reason] then reason else nil }, flags)
 			end)
@@ -1232,6 +1233,7 @@ function PlacementController.start()
 					if not rec or UpgradeView.step((Units :: any)[rec.unitId], rec.level, rec.path) ~= "level" then
 						break -- holding never buys a signature: that is a choice
 					end
+					Haptics.click()
 					call(Net.Functions.UpgradeTower, selected)
 					task.wait(0.3)
 				end

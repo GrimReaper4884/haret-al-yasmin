@@ -25,6 +25,7 @@ local Theme = require(UI.Theme)
 local Root = require(UI.Root)
 local Modal = require(UI.Modal)
 local Juice = require(UI.Juice)
+local Haptics = require(UI.Haptics)
 local Icons = require(UI.Icons)
 local Amount = require(UI.Amount)
 local Device = require(UI.Device)
@@ -337,6 +338,7 @@ local function gateHitFlash()
 	flash.BackgroundTransparency = 0.45
 	TweenService:Create(flash, TweenInfo.new(0.5, Enum.EasingStyle.Quad), { BackgroundTransparency = 1 }):Play()
 	Juice.shake(gateMeter.frame)
+	Haptics.notify()
 end
 
 local lastCash: number? = nil

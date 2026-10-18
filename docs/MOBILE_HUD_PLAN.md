@@ -601,7 +601,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
     detail (odds line), pick Endless, change difficulty, Create, see the queue panel, Leave the queue;
     phone captures of both steps; desktop capture unchanged in shape.
 
-- [x] **MH-15 Codes and the on-screen keyboard** · deps: MH-13
+- [x] 5a4a474 **MH-15 Codes and the on-screen keyboard** · deps: MH-13
   - **Goal:** B7 Codes.
   - **Change:** `CodesController`: on touch, `TextBox.Focused` anchors the sheet to the top of the safe
     area and `FocusLost` restores it; use `UserInputService.OnScreenKeyboardVisible` and
@@ -612,7 +612,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
 
 ### Milestone 7: feedback, telemetry, evidence
 
-- [ ] **MH-16 Haptics and press states** · deps: MH-03, MH-07, MH-09
+- [x] **MH-16 Haptics and press states** · deps: MH-03, MH-07, MH-09
   - **Goal:** B8 feel.
   - **Change:** `UIClick` effects on Place, Upgrade, Sell, Summon, Claim; `UINotification` on gate hit
     (`MatchController.gateHitFlash`); all gated by the `sfx` setting; `Theme.lip` press state applied
