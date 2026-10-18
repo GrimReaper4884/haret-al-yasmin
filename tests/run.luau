@@ -142,6 +142,7 @@ local specs = {
 	require("./lobbylife.spec"),
 	require("./arenadressing.spec"),
 	require("./loading.spec"),
+	require("./storycards.spec"),
 }
 for _, spec in specs do
 	spec(t)

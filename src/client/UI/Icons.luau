@@ -285,6 +285,119 @@ local drawers: { [string]: (Frame, Color3) -> () } = {
 		rectO(h, Color3.fromHex("#6B4FA0"), 0.5, 0.5, 0.36, 0.36, 1)
 		rect(h, Palette.ink, 0.5, 0.5, 0.15, 0.15, 1)
 	end,
+	-- Story mechanics on the Play panel (S1-C01, Config/Icons.mechanics) until painted versions exist.
+	mech_armor = function(h, _c)
+		local steel = Color3.fromHex("#AEB6BF")
+		rectO(h, steel, 0.27, 0.3, 0.26, 0.2, 0.4)
+		rectO(h, steel, 0.73, 0.3, 0.26, 0.2, 0.4)
+		rectO(h, steel, 0.5, 0.56, 0.56, 0.64, 0.3)
+		rect(h, Color3.fromHex("#6E7782"), 0.5, 0.56, 0.08, 0.52, 0.5)
+	end,
+	mech_fast = function(h, _c)
+		for _, x in { 0.3, 0.52, 0.74 } do
+			rectO(h, GOLD, x, 0.37, 0.1, 0.34, 0.5, -40)
+			rectO(h, GOLD, x, 0.63, 0.1, 0.34, 0.5, 40)
+		end
+	end,
+	mech_sapper = function(h, _c)
+		rectO(h, Palette.basalt, 0.44, 0.6, 0.56, 0.56, 1)
+		rect(h, WHITE, 0.34, 0.5, 0.12, 0.12, 1)
+		rect(h, Palette.wood, 0.7, 0.3, 0.07, 0.26, 0.5, 35)
+		rectO(h, GOLD, 0.8, 0.16, 0.16, 0.16, 1)
+	end,
+	mech_swarm = function(h, _c)
+		local red = Color3.fromHex("#9A3B2E")
+		for _, p in { { 0.25, 0.3 }, { 0.62, 0.22 }, { 0.42, 0.55 }, { 0.78, 0.55 }, { 0.24, 0.78 }, { 0.6, 0.82 } } do
+			rectO(h, red, p[1], p[2], 0.2, 0.2, 1)
+		end
+	end,
+	mech_drum = function(h, _c)
+		rect(h, Palette.wood, 0.3, 0.2, 0.06, 0.34, 0.5, -35)
+		rect(h, Palette.wood, 0.7, 0.2, 0.06, 0.34, 0.5, 35)
+		rectO(h, Palette.fabricRed, 0.5, 0.64, 0.7, 0.42, 0.2)
+		rectO(h, Color3.fromHex("#EADFC8"), 0.5, 0.44, 0.7, 0.18, 1)
+	end,
+	mech_roads = function(h, _c)
+		local sand = Color3.fromHex("#D9C29A")
+		rectO(h, sand, 0.32, 0.32, 0.16, 0.52, 0.3, -32)
+		rectO(h, sand, 0.68, 0.32, 0.16, 0.52, 0.3, 32)
+		rectO(h, sand, 0.5, 0.74, 0.18, 0.44, 0.3)
+		rect(h, sand, 0.5, 0.54, 0.24, 0.16, 0.3)
+	end,
+	mech_burn = function(h, _c)
+		local orange = Color3.fromHex("#E8642C")
+		rectO(h, orange, 0.5, 0.36, 0.16, 0.36, 1)
+		rectO(h, orange, 0.5, 0.62, 0.48, 0.48, 0.45, 45)
+		rect(h, Color3.fromHex("#F7C948"), 0.5, 0.68, 0.22, 0.22, 0.45, 45)
+	end,
+	mech_disguise = function(h, _c)
+		rectO(h, Color3.fromHex("#5B5368"), 0.5, 0.56, 0.7, 0.76, 0.45)
+		rect(h, Palette.ink, 0.5, 0.46, 0.46, 0.34, 0.45)
+		Create("TextLabel", {
+			BackgroundTransparency = 1,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.47),
+			Size = UDim2.fromScale(0.4, 0.36),
+			Text = "?",
+			TextScaled = true,
+			Font = Enum.Font.GothamBlack,
+			TextColor3 = GOLD,
+			ZIndex = h.ZIndex,
+			Parent = h,
+		})
+	end,
+	mech_teleport = function(h, _c)
+		local violet = Color3.fromHex("#7B5CC4")
+		for _, x in { 0.16, 0.34, 0.52 } do
+			rect(h, violet, x, 0.5, 0.12, 0.12, 0.5)
+		end
+		rectO(h, violet, 0.74, 0.38, 0.1, 0.3, 0.5, -45)
+		rectO(h, violet, 0.74, 0.62, 0.1, 0.3, 0.5, 45)
+	end,
+	mech_sabotage = function(h, _c)
+		local red = Color3.fromHex("#C0281E")
+		local ring = rect(h, red, 0.5, 0.5, 0.7, 0.7, 1)
+		ring.BackgroundTransparency = 1
+		Create("UIStroke", { Color = red, Thickness = 2.5, Parent = ring })
+		rect(h, red, 0.5, 0.5, 0.06, 0.92, 0.5)
+		rect(h, red, 0.5, 0.5, 0.92, 0.06, 0.5)
+		rect(h, red, 0.5, 0.5, 0.14, 0.14, 1)
+	end,
+	mech_summon = function(h, _c)
+		local blue = Color3.fromHex("#4A5C8C")
+		for _, p in { { 0.24, 0.13 }, { 0.76, 0.13 }, { 0.5, 0.17 } } do
+			local big = p[1] == 0.5
+			rectO(h, blue, p[1], 0.78, if big then 0.32 else 0.24, 0.3, 0.4)
+			rectO(h, Color3.fromHex("#E2B98F"), p[1], 0.52, p[2] * 1.6, p[2] * 1.6, 1)
+		end
+		rectO(h, GOLD, 0.82, 0.22, 0.24, 0.07, 0.5)
+		rectO(h, GOLD, 0.82, 0.22, 0.07, 0.24, 0.5)
+	end,
+	mech_split = function(h, _c)
+		rectO(h, Palette.wood, 0.5, 0.46, 0.76, 0.36, 0.15)
+		rect(h, Palette.woodDark, 0.5, 0.46, 0.06, 0.36, 0)
+		rectO(h, Palette.basalt, 0.28, 0.74, 0.24, 0.24, 1)
+		rectO(h, Palette.basalt, 0.72, 0.74, 0.24, 0.24, 1)
+	end,
+	mech_heal = function(h, _c)
+		local green = Color3.fromHex("#3FA05A")
+		rectO(h, green, 0.5, 0.5, 0.3, 0.8, 0.2)
+		rectO(h, green, 0.5, 0.5, 0.8, 0.3, 0.2)
+		rect(h, green, 0.5, 0.5, 0.28, 0.28, 0)
+	end,
+	bead = function(h, _c)
+		rect(h, Palette.woodDark, 0.5, 0.5, 0.06, 0.9, 0.5)
+		rectO(h, Color3.fromHex("#2F7FB8"), 0.5, 0.5, 0.62, 0.62, 1)
+		rect(h, Color3.fromHex("#BFE3F7"), 0.4, 0.38, 0.18, 0.18, 1)
+	end,
+	mech_ally = function(h, _c)
+		local ring = rect(h, GOLD, 0.5, 0.5, 0.84, 0.84, 1)
+		ring.BackgroundTransparency = 1
+		Create("UIStroke", { Color = GOLD, Thickness = 3, Parent = ring })
+		rectO(h, Palette.woodDark, 0.5, 0.26, 0.2, 0.08, 0.3)
+		rectO(h, Color3.fromHex("#F2A93B"), 0.5, 0.5, 0.3, 0.38, 0.35)
+		rect(h, Color3.fromHex("#FFF0B8"), 0.5, 0.5, 0.12, 0.18, 0.5)
+	end,
 	-- Placeholders for the PV-C03 currency kit until the painted images are uploaded.
 	qirsh = function(h, _c)
 		rectO(h, Palette.copper, 0.5, 0.5, 0.62, 0.62, 1)

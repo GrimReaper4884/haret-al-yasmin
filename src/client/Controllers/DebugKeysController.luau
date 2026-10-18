@@ -4,7 +4,8 @@
 --   9 teleport to the Episode 1 portal · M create + start an Episode 1 party · 0 teleport to the
 --   square · L fill the loadout with the
 --   best owned units (imported-model units first) · X close every screen · N enter / leave the
---   Hakawati's room (AFK) · Y add 30 minutes of sitting there
+--   Hakawati's room (AFK) · Y add 30 minutes of sitting there · Q the Play panel's Story tab (each
+--   press selects the next episode) · Z switch English / Arabic
 --   In a match: P place the next loadout unit at your feet · B place it at a road-side spot · U upgrade the last tower you placed
 --   · K vote skip · J sell the last tower · T set speed 2x · C +5000 match cash · H leave · G set the gate to 1 HP.
 -- Never created outside Studio.
@@ -27,6 +28,9 @@ local PassController = require(script.Parent.PassController)
 local CodesController = require(script.Parent.CodesController)
 local DailyController = require(script.Parent.DailyController)
 local MatchController = require(script.Parent.MatchController)
+local PlayController = require(script.Parent.PlayController)
+local LocaleController = require(script.Parent.LocaleController)
+local Story = require(Shared.Config.Story)
 local Modal = require(script.Parent.Parent.UI.Modal)
 
 local DebugKeysController = {}
@@ -34,6 +38,7 @@ local DebugKeysController = {}
 local lastTower: number? = nil
 local placeIndex = 1
 local spotIndex = 1
+local storyIndex = 0
 -- Road-side spots in the orchard arena (local coords), for the B key
 local SPOTS = { { 18, 0 }, { 18, 10 }, { 6, -10 }, { -22, 0 }, { -34, 4 }, { 44, 12 }, { 56, 0 }, { -58, -10 } }
 
@@ -124,6 +129,11 @@ function DebugKeysController.start()
 			ShopController.openStore()
 		elseif k == Enum.KeyCode.Nine then
 			Net.event(Net.Events.DebugCommand):FireServer("tp", "ep1")
+		elseif k == Enum.KeyCode.Q then
+			storyIndex = (storyIndex % #Story.order) + 1
+			PlayController.openAt("story", Story.order[storyIndex])
+		elseif k == Enum.KeyCode.Z then
+			LocaleController.toggle()
 		elseif k == Enum.KeyCode.M then
 			-- Play menu shortcut: create an Episode 1 (normal) party and start it at once.
 			task.spawn(function()

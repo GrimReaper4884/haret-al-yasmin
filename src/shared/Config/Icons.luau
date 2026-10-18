@@ -64,6 +64,24 @@ Icons.images = {
 	shield = { id = 80380706316361 },
 	eye = { id = 114096895353976 },
 
+	-- Story mechanics on the Play panel (S1-C01, Icons.mechanics); primitive drawers until painted
+	mech_armor = { id = 0 },
+	mech_fast = { id = 0 },
+	mech_sapper = { id = 0 },
+	mech_swarm = { id = 0 },
+	mech_drum = { id = 0 },
+	mech_roads = { id = 0 },
+	mech_burn = { id = 0 },
+	mech_disguise = { id = 0 },
+	mech_teleport = { id = 0 },
+	mech_sabotage = { id = 0 },
+	mech_summon = { id = 0 },
+	mech_split = { id = 0 },
+	mech_heal = { id = 0 },
+	mech_ally = { id = 0 },
+	-- A shabriyeh bead (Config/Beads), until a painted one exists
+	bead = { id = 0 },
+
 	-- Wardrobe items (Items[].icon): pale painted pieces recoloured by Items[].iconColor
 	basket = { id = 132706876306427 },
 	tarboosh = { id = 82053544513629, recolor = true },
@@ -84,6 +102,26 @@ Icons.modes = {
 	ev_olive = { id = 119222103493381 },
 	infinite = { id = 108697701587533 },
 } :: { [string]: Icon }
+
+-- Story mechanics (Config/Story.episodes[id].mechanics) → the icon drawn for each on the Play panel.
+Icons.mechanics = {
+	stealth = "eye",
+	armor = "mech_armor",
+	fast = "mech_fast",
+	sapper = "mech_sapper",
+	swarm = "mech_swarm",
+	aura = "mech_drum",
+	two_paths = "mech_roads",
+	burn = "mech_burn",
+	shield = "shield",
+	disguised = "mech_disguise",
+	teleport = "mech_teleport",
+	sabotage = "mech_sabotage",
+	summon = "mech_summon",
+	split = "mech_split",
+	heal = "mech_heal",
+	ally = "mech_ally",
+} :: { [string]: string }
 
 -- Character portraits (PV-C05): unit or enemy id → 128² head-and-shoulders image, rendered from the
 -- figure by tools/icons/portrait_render.luau + portraits.py. `model` is the CharacterLooks model it was
@@ -130,6 +168,7 @@ Icons.reward = {
 	lira = "lira",
 	qirsh = "qirsh",
 	traitStones = "stone",
+	beads = "bead",
 	xp = "xp",
 	matchCash = "cash",
 	item = "@item",

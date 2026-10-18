@@ -3,7 +3,9 @@
 -- nine episodes. Pure data: every value is a key into Config/Strings (EN + AR), checked by
 -- tests/config.spec. intro/outro are three lines each (Play panel card and result screen); boss
 -- maps an enemy id to the line the Hakawati says when that boss arrives in this episode; moments
--- are scripted beats (Episode 8's ally turn).
+-- are scripted beats (Episode 8's ally turn); mechanics are what the episode introduces, drawn as
+-- icons on its Play panel card (keys of Config/Icons.mechanics and Strings "mech.<key>"; checked
+-- against the episode's enemies and arena by tests/storycards.spec).
 --
 -- The text names roles ("the thief", "the sergeant"), never a character name: names follow the
 -- one-letter-off table in STORY_PLAN §3 once the owner approves it (S1-N01).
@@ -14,6 +16,7 @@ export type Episode = {
 	outro: { string },
 	boss: { [string]: string },
 	moments: { [string]: string }?,
+	mechanics: { string },
 }
 
 local function lines(prefix: string): { string }
@@ -29,30 +32,32 @@ local function bosses(ids: { string }): { [string]: string }
 	return out
 end
 
-local function episode(id: string, bossIds: { string }, moments: { [string]: string }?): Episode
+local function episode(id: string, mechanics: { string }, bossIds: { string }, moments: { [string]: string }?): Episode
 	return {
 		titleKey = "story." .. id .. ".title",
 		intro = lines("story." .. id .. ".intro"),
 		outro = lines("story." .. id .. ".outro"),
 		boss = bosses(bossIds),
 		moments = moments,
+		mechanics = mechanics,
 	}
 end
 
 local episodes: { [string]: Episode } = {
-	ep1 = episode("ep1", { "sergeant", "chief_thief" }),
-	ep2 = episode("ep2", { "sergeant", "chief_thief", "rival_zaim" }),
-	ep3 = episode("ep3", { "sergeant", "chief_thief", "rival_zaim", "colonel" }),
-	ep4 = episode("ep4", { "corporal", "sergeant", "abu_jawdan" }),
-	ep5 = episode("ep5", { "sergeant", "abu_shatour", "rival_zaim" }),
-	ep6 = episode("ep6", { "corporal", "abu_jawdan", "sergeant", "lateef", "spy" }),
-	ep7 = episode("ep7", { "corporal", "sergeant", "abu_jawdan", "colonel" }),
+	ep1 = episode("ep1", { "stealth" }, { "sergeant", "chief_thief" }),
+	ep2 = episode("ep2", { "armor", "fast" }, { "sergeant", "chief_thief", "rival_zaim" }),
+	ep3 = episode("ep3", { "sapper" }, { "sergeant", "chief_thief", "rival_zaim", "colonel" }),
+	ep4 = episode("ep4", { "swarm", "aura", "two_paths" }, { "corporal", "sergeant", "abu_jawdan" }),
+	ep5 = episode("ep5", { "burn", "shield" }, { "sergeant", "abu_shatour", "rival_zaim" }),
+	ep6 = episode("ep6", { "disguised", "teleport" }, { "corporal", "abu_jawdan", "sergeant", "lateef", "spy" }),
+	ep7 = episode("ep7", { "sabotage", "summon" }, { "corporal", "sergeant", "abu_jawdan", "colonel" }),
 	ep8 = episode(
 		"ep8",
+		{ "two_paths", "split", "heal" },
 		{ "fakhr", "abu_zira", "rival_zaim", "rival_zaim_enraged" },
 		{ ally_turn = "story.moment.ally_turn" }
 	),
-	ep9 = episode("ep9", { "abu_shatour", "lateef", "abu_zira", "fakhr", "rival_zaim", "colonel" }),
+	ep9 = episode("ep9", { "ally", "swarm", "stealth" }, { "abu_shatour", "lateef", "abu_zira", "fakhr", "rival_zaim", "colonel" }),
 }
 
 return {

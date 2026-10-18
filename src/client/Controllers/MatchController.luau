@@ -12,6 +12,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared.Net)
 local TD = require(Shared.Config.TD)
 local Modes = require(Shared.Config.Modes)
+local Story = require(Shared.Config.Story)
 local IconIds = require(Shared.Config.Icons)
 local Signal = require(Shared.Util.Signal)
 local PartyLogic = require(Shared.Logic.PartyLogic)
@@ -54,6 +55,8 @@ local leaveButton: TextButton
 local codesButton: TextButton
 local result: Modal.Modal
 local resultBanner: ImageLabel
+local resultOutro: TextLabel
+local resultOutroShade: Frame
 local resultBody: TextLabel
 local resultAmounts: Frame
 local resultExtra: TextLabel
@@ -175,6 +178,34 @@ local function build()
 		Parent = result.panel,
 	}, { Create("UICorner", { CornerRadius = UDim.new(0, 10) }) })
 	Theme.border(resultBanner, 2.5)
+	-- The Hakawati's outro over the bottom of the banner after a story win (S1-C01, Config/Story).
+	resultOutroShade = Create("Frame", {
+		Name = "OutroShade",
+		BackgroundColor3 = Color3.new(0, 0, 0),
+		BorderSizePixel = 0,
+		AnchorPoint = Vector2.new(0, 1),
+		Position = UDim2.fromScale(0, 1),
+		Size = UDim2.fromScale(1, 0.72),
+		ZIndex = 11,
+		Parent = resultBanner,
+	}, { Create("UICorner", { CornerRadius = UDim.new(0, 10) }) })
+	Create("UIGradient", {
+		Rotation = 90,
+		Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.35, 0.35), NumberSequenceKeypoint.new(1, 0.2) }),
+		Parent = resultOutroShade,
+	})
+	resultOutro = Theme.display({
+		Name = "Outro",
+		TextSize = 13,
+		TextColor3 = Color3.fromHex("#FFF1D0"),
+		AnchorPoint = Vector2.new(0.5, 1),
+		Position = UDim2.new(0.5, 0, 1, -6),
+		Size = UDim2.new(1, -20, 0.68, 0),
+		TextYAlignment = Enum.TextYAlignment.Bottom,
+		ZIndex = 12,
+		Parent = resultBanner,
+	})
+	resultOutro.TextXAlignment = Enum.TextXAlignment.Center
 	result.body.LayoutOrder = 3
 	-- Waves held and the "Rewards" header, then the rewards as icon + number, then first clear and
 	-- event currency (three stacked pieces so the icon row never overlaps text).
@@ -310,10 +341,20 @@ local function showResult(payload: any)
 	nextButton.Text = t("match.next")
 	local modeId = if info then info.modeId else nil
 	local art = if modeId then IconIds.modes[modeId] else nil
-	resultBanner.Visible = art ~= nil and art.id > 0
-	if art and art.id > 0 then
-		resultBanner.Image = "rbxassetid://" .. tostring(art.id)
+	local hasArt = art ~= nil and art.id > 0
+	local ep = if modeId and payload.won and not payload.left then (Story.episodes :: any)[modeId] else nil
+	local outro = {}
+	for _, key in if ep then ep.outro else {} do
+		table.insert(outro, t(key))
 	end
+	resultOutro.Text = table.concat(outro, " ")
+	resultOutroShade.Visible = #outro > 0
+	resultOutro.Visible = #outro > 0
+	-- Without a painted banner the outro sits on a plain dark plate.
+	resultBanner.Visible = hasArt or #outro > 0
+	resultBanner.Image = if art and hasArt then "rbxassetid://" .. tostring(art.id) else ""
+	resultBanner.BackgroundTransparency = if hasArt then 1 else 0
+	resultBanner.BackgroundColor3 = Theme.colors.text
 	local snapshot: any = StateController.get()
 	replayButton.Visible = not payload.left and modeId ~= nil
 	nextButton.Visible = not payload.left
