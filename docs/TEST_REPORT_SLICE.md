@@ -980,3 +980,17 @@ place`, stopped at wave 2 (nothing paid). Desktop 1636×584 (UIScale 1.273) and 
 | Phone 844×390 | rail in two columns (Speed, Tower / Skip, Defenders); the sheet takes the bottom band: two full rows of 48 px buttons, cash in the header, the hotbar, cash pill and thumbstick hidden; closing brings them back (`UnitBar`, `Cash` visible) | `b02_phone_844x390_rail.jpg`, `b02_phone_844x390_sheet.jpg` |
 | Portrait tap (phone) | the panel closes, the watchtower view swings to the 'Arada and his own sheet opens | `b02_phone_portrait_focus.jpg` |
 | Console | no errors or warnings from our code | — |
+
+### LP-B03 Defenders header: Auto all, sort, Sell all, lock, ready glow
+
+*Play Solo, `HaretDebug match ep1,normal`, nine defenders (five with an ultimate), stopped at wave 2 (nothing
+paid). Counts from the server's `MatchEvents` in the Client VM; attackers added with `HaretDebug spawn`.*
+
+| Check | Result | Capture |
+|---|---|---|
+| Auto all (all on → off) | `towerAuto` 9, 8, 7, 2, 1 = false, sent one at a time; 30 s of fighting with 8 extra attackers: **0** ultimates (11 attacks) | — |
+| Auto all again (→ on) | the same five = true; 30 s with 8 attackers: 2 ultimates | — |
+| Sort chips | Cost: akeed (1500) › 'Arada › Al-Adashari › za'im 2 › za'im 1 › Abu Hissam › Abu Ghadeb 5, 4, 3 (ties newest first); the chip turns gold | — |
+| Ready glow | rows whose ultimate is ready glow gold (pulsing when motion is allowed) | `docs/captures/lp/b03_header_ready_glow.jpg` |
+| Lock + Sell all | the 'Arada locked (gold lock, Sell greyed); Sell all → "Farms only" sold nothing (no farm in this loadout); → "Everything" sold 9, 7, 6, 5, 4, 3, 2, 1 and kept the locked 8; cash 34,560 → 37,862, "1 / 20 placed" | `b03_lock_and_sell_all_confirm.jpg`, `b03_after_sell_all_locked_kept.jpg` |
+| Console | no errors or warnings from our code | — |

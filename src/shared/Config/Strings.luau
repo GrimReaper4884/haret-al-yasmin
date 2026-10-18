@@ -320,6 +320,14 @@ local en: { [string]: string } = {
 	["defenders.max"] = "Max",
 	["defenders.sell"] = "Sell",
 	["defenders.sell_sure"] = "Sure? ${n}",
+	["defenders.auto_all"] = "Auto all\n{state}",
+	["defenders.sort_placed"] = "Newest",
+	["defenders.sort_cost"] = "Cost",
+	["defenders.sort_level"] = "Level",
+	["defenders.sell_all"] = "Sell all",
+	["defenders.sell_farms"] = "Farms only",
+	["defenders.sell_every"] = "Everything",
+	["defenders.locked"] = "Unlock it first.",
 
 	-- Enemies
 	["enemy.gendarme.name"] = "Gendarme",
@@ -1213,6 +1221,14 @@ local ar: { [string]: string } = {
 	["defenders.max"] = "الأعلى",
 	["defenders.sell"] = "بيع",
 	["defenders.sell_sure"] = "أكيد؟ ${n}",
+	["defenders.auto_all"] = "تلقائي للكل\n{state}",
+	["defenders.sort_placed"] = "الأحدث",
+	["defenders.sort_cost"] = "الكلفة",
+	["defenders.sort_level"] = "المستوى",
+	["defenders.sell_all"] = "بيع الكل",
+	["defenders.sell_farms"] = "المزارع بس",
+	["defenders.sell_every"] = "كلّن",
+	["defenders.locked"] = "افتح القفل أوّل.",
 
 	-- Enemies
 	["enemy.gendarme.name"] = "دركي",

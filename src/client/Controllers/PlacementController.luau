@@ -1251,6 +1251,7 @@ end
 export type TowerInfo = {
 	id: number,
 	unitId: string,
+	role: string, -- Config/Units role ("farm" for Sell all's farms-only choice)
 	level: number, -- shown as the panel does: at most maxLevel (a signature is marked by `signature`)
 	maxLevel: number,
 	signature: string?, -- the level-7 path's name key
@@ -1290,6 +1291,7 @@ function PlacementController.list(): { TowerInfo }
 			table.insert(out, {
 				id = id,
 				unitId = rec.unitId,
+				role = def.role,
 				level = math.min(rec.level, #def.levels),
 				maxLevel = #def.levels,
 				signature = if rec.path and def.signature and def.signature[rec.path] then "unit." .. rec.unitId .. ".sig." .. def.signature[rec.path].key .. ".name" else nil,
@@ -1369,6 +1371,11 @@ function PlacementController.sell(id: number)
 	if towers[id] then
 		call(Net.Functions.SellTower, id)
 	end
+end
+
+-- A sale or upgrade request is still waiting for the server (Sell all waits between its sales).
+function PlacementController.busy(): boolean
+	return busy
 end
 
 function PlacementController.cycleTarget(id: number)

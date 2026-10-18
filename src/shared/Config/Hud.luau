@@ -59,13 +59,15 @@ return {
 	DEFENDERS = {
 		width = 400, -- desktop column
 		heightFrac = 0.8, -- touch sheet: at most this share of the safe height (it may cover the wave pill)
-		header = 40,
+		header = 54, -- title, count and the close button; the controls line sits under it
 		row = { desktop = 86, touch = 100 },
 		button = { desktop = 40, touch = 48 },
 		line = { desktop = 34, touch = 40 }, -- name and level over the stat line
 		portrait = { desktop = 56, touch = 64 },
 		gap = 6,
 		sellConfirmS = 3, -- the red "Sure?" state of Sell lasts this long
+		batchGapS = 0.15, -- "Auto: all" and Sell all send one request per defender this far apart (LP-B03)
+		pulseS = 1.2, -- a row whose ultimate is ready glows gold on this period
 	},
 	-- The speed sheet beside the rail's Speed button (LP-A03): one chip per TD.SPEEDS entry.
 	SPEED_SHEET = { chip = 52, gap = 6, pad = 10, title = 18, caption = 16, lock = 16 },
