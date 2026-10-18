@@ -331,6 +331,40 @@ return function(t)
 		local Path = t.logic("Path")
 		-- Pieces that may cross or touch the road: overhead wires, the gates at its ends.
 		local ON_ROAD = { lantern_wire_span = true, gate_rival = true, gate_lane = true, warehouse_door = true }
+		-- World/Arena.gate builds the lane gate's wall just past the road's end: 0–4 studs further on,
+		-- 6–40 studs to either side of the opening. No road may run under it (player report 2026-10-18:
+		-- "there is a wall in the middle of the road" on the warehouse yard).
+		t.it("the gate wall stands clear of every road", function()
+			local bad = {}
+			for id, def in Arenas do
+				local last, prev = def.path[#def.path], def.path[#def.path - 1]
+				local ux, uz = last[1] - prev[1], last[2] - prev[2]
+				local len = math.sqrt(ux * ux + uz * uz)
+				ux, uz = ux / len, uz / len
+				for r, road in def.paths or { def.path } do
+					for i = 1, #road - 1 do
+						local a, b = road[i], road[i + 1]
+						local seg = math.sqrt((b[1] - a[1]) ^ 2 + (b[2] - a[2]) ^ 2)
+						for step = 0, math.ceil(seg * 2) do
+							local f = if seg > 0 then math.min(1, step / (seg * 2)) else 0
+							local x, z = a[1] + (b[1] - a[1]) * f - last[1], a[2] + (b[2] - a[2]) * f - last[2]
+							local along, across = x * ux + z * uz, math.abs(x * uz - z * ux)
+							local dt = math.max(-along, 0, along - 4)
+							local ds = math.max(6 - across, 0, across - 40)
+							if math.sqrt(dt * dt + ds * ds) < TD.PATH_HALF_WIDTH then
+								bad[string.format("%s road %d leg %d", id, r, i)] = true
+							end
+						end
+					end
+				end
+			end
+			local list = {}
+			for k in bad do
+				table.insert(list, k)
+			end
+			table.sort(list)
+			t.eq(#list, 0, "road under the gate wall: " .. table.concat(list, ", "))
+		end)
 		t.it("every kit module has a size and a triangle count within budget", function()
 			local n = 0
 			for id, m in KitModules do

@@ -284,7 +284,7 @@ with level-7 signatures), **myth12up+beads** (beads at 2 of 3 slots), **whale2**
 | **ep8** | 55 | 0.10 | myth12up+beads | whale2 | whale2 at ≤ 10/35 gate (a coin flip by design) |
 | **ep9** | 60 | 0.10 (+ ally) | myth12up+beads | whale2 | whale2 + the ally (the only cell where the ally decides it) |
 
-Achieved (S1-S04, D-057): ep4 leg10up / leg10up / whale; ep5 leg10up with Fawza / leg10up (needs her) / whale;
+Achieved (S1-S04, D-057): ep4 leg10up / leg10up / whale; ep5 leg10up / leg10up / whale (Fawza helps, isn't required: D-058);
 ep6 leg10up+sig with two lanterns / myth12up (coin flip) → myth12up+beads / whale2. Table in `TOWER_DEFENSE.md` §5.
 
 Rules for tuning: every cell one tier harder than the one above it; **no episode is won by the tier below

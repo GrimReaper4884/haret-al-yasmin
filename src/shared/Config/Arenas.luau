@@ -109,7 +109,7 @@ local Arenas: { [string]: ArenaDef } = {
 	-- BEGIN GENERATED warehouse (tools/blender/export_layout.py from assets/blender/arenas/warehouse.blend)
 	warehouse = {
 		nameKey = "arena.warehouse.name",
-		path = { { -70, -30 }, { -70, 20 }, { -40, 20 }, { -40, -14 }, { -6, -14 }, { -6, 14 }, { 20, 14 }, { 20, -24 }, { 44, -24 }, { 44, 12 } },
+		path = { { -70, -30 }, { -70, 20 }, { -40, 20 }, { -40, -14 }, { -6, -14 }, { -6, 14 }, { 20, 14 }, { 20, -24 }, { 44, -24 }, { 44, 26 } },
 		bounds = { -80, -36, 66, 32 },
 		gateYaw = 0,
 		spawnYaw = 0,

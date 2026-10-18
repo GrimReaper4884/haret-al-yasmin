@@ -56,17 +56,18 @@ ARENAS = {
         "scatter": [("rubble", 3, 11, (0.8, 1.0), 4.0), ("sack_pile", 4, 12, (1.0, 1.0), 2.5)],
     },
     # The warehouse yard (Episode 5, §8.5): an orchard road with two tight bends under lantern wires,
-    # ending at the 'akeed's warehouse door.
+    # ending at the 'akeed's warehouse door. The last leg runs past the z = 14 leg so the gate wall
+    # (40 studs either side of the end) stands clear of the road (player report 2026-10-18).
     "warehouse": {
         "name_key": "arena.warehouse.name",
         "theme": "orchard",
-        "roads": [[(-70, -30), (-70, 20), (-40, 20), (-40, -14), (-6, -14), (-6, 14), (20, 14), (20, -24), (44, -24), (44, 12)]],
+        "roads": [[(-70, -30), (-70, 20), (-40, 20), (-40, -14), (-6, -14), (-6, 14), (20, 14), (20, -24), (44, -24), (44, 26)]],
         "bounds": (-80, -36, 66, 32),
         "party": (58, -28),
         "modules": [
-            ("gate_rival", -70, -35, 0), ("warehouse_door", 44, 17, 0), ("warehouse_block", 44, 30, 0),
+            ("gate_rival", -70, -35, 0), ("warehouse_door", 44, 28, 0), ("warehouse_block", 44, 36, 0),
             ("lantern_wire_span", -6, -14, 45), ("lantern_wire_span", 20, 14, -45),
-            ("sack_pile", 34, 18, 30), ("sack_pile", 54, 18, 300), ("oil_jar_cluster", 30, 24, 0),
+            ("sack_pile", 34, 20, 30), ("sack_pile", 54, 20, 300), ("oil_jar_cluster", 30, 24, 0),
             ("oil_jar_cluster", 58, 22, 90), ("well", -56, -6, 0), ("ladder", -28, 4, 10),
         ]
         + [("orchard_wall_low", -76 + i * 8.2, 31, 180) for i in range(9)]

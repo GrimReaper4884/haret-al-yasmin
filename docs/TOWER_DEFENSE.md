@@ -190,14 +190,15 @@ Episodes 1–3 and Infinite are unchanged (frozen in `tests/td.spec.luau`).
 | ep4 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | WIN 31/60 | WIN 31/60 | WIN 35/60 | WIN 40/60 | WIN 60/60 | WIN 60/60 |
 | ep4 | nightmare | lost w8 | lost w9 | lost w8 | lost w8 | lost w6 | lost w10 | lost w10 | lost w8 | lost w20 | WIN 30/35 | WIN 35/35 |
 | ep5 | normal | lost w12 | lost w17 | lost w30 | lost w30 | lost w13 | WIN 98/100 | WIN 98/100 | WIN 78/100 | WIN 87/100 | WIN 98/100 | WIN 99/100 |
-| ep5 | hard | lost w9 | lost w9 | lost w12 | lost w12 | lost w10 | WIN 27/60 | WIN 27/60 | lost w9 | WIN 6/60 | WIN 58/60 | WIN 60/60 |
+| ep5 | hard | lost w9 | lost w9 | lost w12 | lost w12 | lost w10 | WIN 24/60 | WIN 24/60 | lost w9 | WIN 6/60 | WIN 58/60 | WIN 60/60 |
 | ep5 | nightmare | lost w7 | lost w6 | lost w7 | lost w7 | lost w7 | lost w6 | lost w6 | lost w7 | lost w8 | WIN 29/35 | WIN 34/35 |
 | ep6 | normal | lost w11 | lost w13 | lost w25 | lost w50 | lost w13 | lost w50 | WIN 80/100 | WIN 78/100 | WIN 83/100 | WIN 96/100 | WIN 100/100 |
 | ep6 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | WIN 9/60 | WIN 19/60 | WIN 51/60 | WIN 58/60 |
 | ep6 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w7 | lost w8 | lost w50 | WIN 35/35 |
 
 Reading it: Episode 4 (the saha, two roads) is the Legendary wall at Abu Jawdan's first visit on wave 20;
-Episode 5 needs Fawza (Hard leg10up without her loses to Abu Shatour's torch on wave 45); Episode 6 needs two
+Episode 5's torchbearers and Abu Shatour burn the door, but in the harness the burn costs less than the
+loadout slot Fawza takes, so the bot wins Episode 5 without her (D-058); Episode 6 needs two
 lanterns and, on Normal, the level-7 signatures to get Lateef down before his jump. Nightmare stays
 whale territory (whale2 only in Episode 6): the frozen Nightmare multipliers (boss ×1.8, growth ×4.5) put a
 boss ~6× further from Normal than the step between two loadouts, so no single boss HP could make
