@@ -666,6 +666,12 @@ Tag legend in the flag column: **MEANING** may say the wrong thing · **DIALECT*
 | 6 | `units.err.no_beads` | No beads yet: win Episode 5 or 7–9 on Hard. | ما عندك خرزات لسّا: اربح الحلقة ٥ أو ٧–٩ عالصعب. |  |  |  |
 | 7 | `units.err.same_bead` | That bead is already on this slot. | هالخرزة أصلاً على هالخانة. |  |  |  |
 
+## 23. Season Story 1: the ally (S1-C05)
+
+| # | Key | English | Arabic (current) | Claude flag | Correction | OK? |
+|---|-----|---------|------------------|-------------|------------|-----|
+| 1 | `match.ally` | Ally | حليف | Under Al-Adashari's name in a match. |  |  |
+
 ## Sign-off
 
 | Reviewer | Dialect / country | Date | Sections reviewed | Notes |

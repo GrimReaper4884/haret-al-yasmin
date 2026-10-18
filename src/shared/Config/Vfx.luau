@@ -149,7 +149,7 @@ return {
 		split = { color = "#8C6B43", radius = 4, life = 0.45, crumbs = 5, crumbSize = 0.5, rise = 2.5 },
 		-- S1-C05: a story ally stands in a gold ring with its name over it; on twin-road modes every
 		-- walked road's spawn carries a red ground mark for the whole match, and boss pulses fire at each.
-		ally = { color = "#F2C14E", radius = 3.2, transparency = 0.25, height = 0.15, nameHeight = 6, nameSize = 16, pulse = 6, pulseLife = 0.9 },
+		ally = { color = "#F2C14E", radius = 3.2, transparency = 0.45, height = 0.15, nameHeight = 6, nameSize = 16, pulse = 6, pulseLife = 0.9 },
 		spawnMark = { color = "#B8322A", radius = 4, transparency = 0.55, height = 0.12 },
 		pinned = { color = "#8A8F96", radius = 2.6, transparency = 0.35, height = 0.15, labelSize = 16, labelColor = "#E8E8E8", labelHeight = 5 },
 	},
