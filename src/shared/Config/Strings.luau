@@ -367,8 +367,6 @@ local en: { [string]: string } = {
 	["unit.arada.desc"] = "Sword and shield dancers of the wedding procession. Their swing cuts a wide arc.",
 	["unit.zaim_akbar.name"] = "Al-'Akeed Abu Shehan",
 	["unit.zaim_akbar.desc"] = "The 'akeed the whole lane swears by. One drawn shabriyeh and the road is silent.",
-	["unit.qitt.name"] = "Cat of the Lane",
-	["unit.qitt.desc"] = "Nobody owns the cat. The cat owns the lane. (Secret)",
 
 	["rarity.rare"] = "Rare",
 	["rarity.epic"] = "Epic",
@@ -1199,8 +1197,6 @@ local ar: { [string]: string } = {
 	["unit.arada.desc"] = "رقّاصين السيف والترس بالزفّة. ضربتهم بتقطع قوس واسع.",
 	["unit.zaim_akbar.name"] = "العكيد أبو شهان",
 	["unit.zaim_akbar.desc"] = "العكيد اللي الحارة كلها بتحلف بإسمه. شبرية وحدة والطريق بيسكت.",
-	["unit.qitt.name"] = "بسّة الحارة",
-	["unit.qitt.desc"] = "ما حدا بيملك البسّة. البسّة بتملك الحارة. (سرّي)",
 
 	["rarity.rare"] = "نادر",
 	["rarity.epic"] = "ملحمي",

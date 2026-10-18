@@ -118,6 +118,7 @@
       "texture": "Red fez, crisp white apron and shirt, black waistcoat with thin gold trim, dark brown trousers, tan skin."
     },
     "qitt": {
+      "retired": "S1-S12b (2026-10-18, D-052): the unit left the game; Cat.rbxm stays as the lane's cat prop",
       "height": 0.5,
       "pose": false,
       "rig": false,

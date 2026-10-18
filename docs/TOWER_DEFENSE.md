@@ -79,7 +79,7 @@ The simulation is pure (`TdSim.step(state, dt)` returns events) and covered by `
 | umm_hara | Abu Hissam, the Barber-Hakim | Legendary | healer | repairs the gate, small aura |
 | arada | The 'Arada Troupe | Mythic | splash | wide sweep |
 | zaim_akbar | Al-'Akeed Abu Shehan | Mythic | melee | shabriyeh ×15; season-1 pass level 50 |
-| qitt | Cat of the Lane | Secret | melee | code `QITT`, never from a banner |
+| adashari | Al-Adashari, the Night Guard | Secret | melee | the only secret unit: Episode 9 wins (1 / 2.5 / 6 %, pity 40, first Nightmare clear guarantees him), never from a banner. The Cat (`qitt`) retired in S1-S12b (D-052) |
 
 Copies → stars (+5 % damage each; 1/2/4/7/11 extra copies). Each owned unit has one **trait**, and a second
 slot from 3 stars (traits v2, D-041; `Config/Traits`: steady, swift, keen, sharp, golden, hawk, za'im's blood,

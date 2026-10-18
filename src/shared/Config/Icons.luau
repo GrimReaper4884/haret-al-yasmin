@@ -160,7 +160,6 @@ Icons.portraits = {
 	umm_hara = { id = 95850884167044, model = "AbuIssam" },
 	arada = { id = 112960454245872, model = "Arada" },
 	zaim_akbar = { id = 139294337065178, model = "AbuShehab" },
-	qitt = { id = 110431322219183, model = "Cat" },
 	-- Season Story 1 (S1-A05, S1-A07)
 	adashari = { id = 129480120172448, model = "Adashari" },
 	hammam = { id = 94554642685040, model = "AbuBasim" },

@@ -19,8 +19,9 @@ local Codes: { [string]: CodeDef } = {
 	YASMIN = { lira = 100, expiresAt = 1798675200 },
 	HARA = { lira = 50, qirsh = 150, expiresAt = 1798675200 },
 	SHABRIYEH = { lira = 150, expiresAt = 1798675200 },
-	-- Secret unit, announced on the community channels
-	QITT = { unit = "qitt", expiresAt = 1798675200 },
+	-- The Cat was retired for Al-Adashari (S1-S12b, 2026-10-18): the code expired at the deploy and its
+	-- unit no longer exists (Grants skips it). Remove this line one release later (STORY_PLAN §7.7).
+	QITT = { unit = "qitt", expiresAt = 1792281600 },
 	-- Season 1 pass preview
 	DIARY = { traitStones = 1, lira = 40, expiresAt = 1764460800 },
 	-- Testers: every defender. Hand out privately, never post publicly (expires 2026-11-17).

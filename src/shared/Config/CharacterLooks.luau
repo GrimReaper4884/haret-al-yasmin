@@ -191,7 +191,6 @@ local Looks: { [string]: Look } = {
 		model = "AbuShehab",
 		anims = { idle = 106622979715660, attack = 134238214440993 },
 	}, -- Al-'Akeed Abu Shehan
-	qitt = { model = "Cat" },
 	-- Al-Adashari, the night guard (S1-S12, model S1-A05): one-armed; the left forearm is cut from the mesh
 	-- (tools/anim/dropbones.py) and the bake pins the empty sleeve to his side.
 	adashari = { build = "slim", outfit = "qumbaz", beard = "stubble", moustache = "thin", hair = DARK, apron = "#1F1B18", model = "Adashari" },

@@ -392,8 +392,11 @@ return function(t)
 			local late = ctx(seq({ 0 }), 9e9)
 			ok, err = CodesLogic.redeem(p, "HARA", Codes, late)
 			t.eq(err, "expired")
-			t.truthy(CodesLogic.redeem(p, "QITT", Codes, c))
-			t.truthy(p.units.qitt, "secret unit from a code")
+			-- A unit code (the secret QITT code retired with the Cat, S1-S12b): grants a Rare.
+			t.truthy(CodesLogic.redeem(p, "RARE", { RARE = { unit = "natour" } }, c))
+			t.truthy(p.units.natour, "a unit from a code")
+			ok, err = CodesLogic.redeem(p, "QITT", Codes, ctx(seq({ 0 }), Codes.QITT.expiresAt + 1))
+			t.eq(err, "expired", "QITT expired with the Cat")
 		end)
 		t.it("an allUnits code grants every missing defender once, and respects onlyUserIds", function()
 			local p = profile()
@@ -409,7 +412,7 @@ return function(t)
 			end
 			t.eq(#granted.units, total - 1)
 			t.eq(p.units.walad.copies, 2)
-			t.eq(p.units.qitt.copies, 0)
+			t.eq(p.units.adashari.copies, 0, "the secret unit too, for testers")
 			ok, err = CodesLogic.redeem(profile(), "MINE", codes, c)
 			t.eq(err, "unknown_code")
 			c.userId = 42
@@ -420,7 +423,8 @@ return function(t)
 				t.truthy(string.match(code, "^[%u%d_]+$"), code .. " upper-case")
 				t.truthy(def.lira or def.qirsh or def.traitStones or def.unit or def.allUnits or def.matchCash, code .. " grants")
 				if def.unit then
-					t.truthy(Units[def.unit], code .. " unit")
+					-- A code for a retired unit (the Cat, S1-S12b) must already be expired.
+					t.truthy(Units[def.unit] or (def.expiresAt and def.expiresAt <= 1792281600), code .. " unit")
 				end
 			end
 		end)
