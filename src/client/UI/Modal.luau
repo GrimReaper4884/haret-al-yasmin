@@ -10,6 +10,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Hud = require(ReplicatedStorage:WaitForChild("Shared").Config.Hud)
+local HudLayout = require(ReplicatedStorage.Shared.Logic.HudLayout)
 local Create = require(script.Parent.Create)
 local Theme = require(script.Parent.Theme)
 local Root = require(script.Parent.Root)
@@ -26,17 +27,32 @@ export type Modal = {
 	setVisible: (boolean) -> (),
 	isOpen: () -> boolean,
 	onClose: (() -> ())?,
+	-- Touch text entry: keep the panel above the on-screen keyboard (`kbTop` in design px from the
+	-- safe area's top, nil = no keyboard reported) and scroll `focus` into view; `on` false restores.
+	setKeyboard: (on: boolean, kbTop: number?, focus: GuiObject?) -> (),
 }
 
 Modal.BODY_HEIGHT = 236 -- px at UIScale 1
 
 local PAD_TOP, PAD_BOTTOM, GAP = 10, 12, 8
 local SWIPE_PX = 50
+local SCROLL_BAR = 10 -- px, the content's scroll bar while it can scroll
 
 local openModals: { [Frame]: boolean } = {}
 local overlays: { GuiObject } = {}
 local closers: { [Frame]: () -> () } = {}
-type Shape = { panel: Frame, content: ScrollingFrame, list: UIListLayout, body: Frame, limit: UISizeConstraint, maxWidth: number, bodyHeight: number, fill: boolean }
+type Shape = {
+	panel: Frame,
+	header: Frame,
+	content: ScrollingFrame,
+	list: UIListLayout,
+	body: Frame,
+	limit: UISizeConstraint,
+	maxWidth: number,
+	bodyHeight: number,
+	fill: boolean,
+	keyboard: { on: boolean, kbTop: number? }?,
+}
 local shapes: { Shape } = {}
 
 function Modal.closed(f: Frame)
@@ -87,6 +103,7 @@ local function applyShape(s: Shape)
 		s.content.AutomaticSize = Enum.AutomaticSize.None
 		s.content.Size = UDim2.new(1, 0, 1, -(Theme.TOUCH + GAP))
 		s.content.ScrollingEnabled = true
+		s.content.ScrollBarThickness = SCROLL_BAR
 		-- A body built around its own scroller fills the sheet; any other keeps its height and the
 		-- sheet scrolls it (room left for the bar).
 		local window = s.content.AbsoluteSize.Y / math.max(Device.scale(), 0.01)
@@ -97,12 +114,27 @@ local function applyShape(s: Shape)
 		s.panel.Size = UDim2.fromScale(0.94, 0)
 		s.panel.AutomaticSize = Enum.AutomaticSize.Y
 		-- As tall as its rows (a plain height: a parent's AutomaticSize does not count its padding
-		-- around an auto-sized ScrollingFrame).
+		-- around an auto-sized ScrollingFrame), rounded up so no sub-pixel remainder shows a bar.
 		s.content.AutomaticSize = Enum.AutomaticSize.None
-		s.content.Size = UDim2.new(1, 0, 0, s.list.AbsoluteContentSize.Y / math.max(Device.scale(), 0.01))
+		s.content.Size = UDim2.new(1, 0, 0, math.ceil(s.list.AbsoluteContentSize.Y / math.max(Device.scale(), 0.01)))
 		s.content.ScrollingEnabled = false
+		s.content.ScrollBarThickness = 0
 		s.content.CanvasPosition = Vector2.zero
 		s.body.Size = UDim2.new(1, 0, 0, s.bodyHeight)
+	end
+	-- Typing on touch: anchored to the top of the safe area, ending above the keyboard.
+	local kb = s.keyboard
+	local fit = if kb then HudLayout.keyboardFit(Hud, Device.designSize().y, kb.kbTop, PAD_TOP + PAD_BOTTOM, Theme.TOUCH + GAP) else nil
+	s.panel.AnchorPoint = Vector2.new(0.5, if kb then 0 else 0.5)
+	s.panel.Position = if kb then UDim2.new(0.5, 0, 0, Hud.SHEET_MARGIN) else UDim2.fromScale(0.5, 0.5)
+	s.header.Visible = fit == nil or fit.header
+	if fit then
+		s.panel.AutomaticSize = Enum.AutomaticSize.None
+		s.panel.Size = if Device.isPhone() then UDim2.new(1, -2 * Hud.SHEET_MARGIN, 0, fit.height) else UDim2.new(0.94, 0, 0, fit.height)
+		s.content.AutomaticSize = Enum.AutomaticSize.None
+		s.content.Size = UDim2.new(1, 0, 1, if fit.header then -(Theme.TOUCH + GAP) else 0)
+		s.content.ScrollingEnabled = true
+		s.content.ScrollBarThickness = SCROLL_BAR
 	end
 end
 
@@ -164,7 +196,7 @@ function Modal.create(name: string, maxWidth: number, bodyHeight: number?, opts:
 		CanvasSize = UDim2.new(),
 		AutomaticCanvasSize = Enum.AutomaticSize.Y,
 		ScrollingDirection = Enum.ScrollingDirection.Y,
-		ScrollBarThickness = 10,
+		ScrollBarThickness = SCROLL_BAR,
 		ScrollBarImageColor3 = Theme.colors.panelStroke,
 		ElasticBehavior = Enum.ElasticBehavior.Always,
 		ScrollingEnabled = false,
@@ -191,6 +223,7 @@ function Modal.create(name: string, maxWidth: number, bodyHeight: number?, opts:
 			return panel.Visible
 		end,
 		onClose = nil,
+		setKeyboard = function() end,
 	}
 	self.setVisible = function(v: boolean)
 		if v then
@@ -235,9 +268,31 @@ function Modal.create(name: string, maxWidth: number, bodyHeight: number?, opts:
 		end
 	end)
 	Modal.track(panel)
-	local shape = { panel = panel, content = content, list = contentList, body = body, limit = limit, maxWidth = maxWidth, bodyHeight = bodyHeight or Modal.BODY_HEIGHT, fill = opts ~= nil and opts.fill == true }
+	local shape: Shape = {
+		panel = panel,
+		header = header,
+		content = content,
+		list = contentList,
+		body = body,
+		limit = limit,
+		maxWidth = maxWidth,
+		bodyHeight = bodyHeight or Modal.BODY_HEIGHT,
+		fill = opts ~= nil and opts.fill == true,
+		keyboard = nil,
+	}
 	table.insert(shapes, shape)
 	applyShape(shape)
+	self.setKeyboard = function(on: boolean, kbTop: number?, focus: GuiObject?)
+		shape.keyboard = if on then { on = true, kbTop = kbTop } else nil
+		applyShape(shape)
+		if on and focus then
+			-- Scroll the focused row to the top of the content window.
+			task.defer(function()
+				local dy = (focus.AbsolutePosition.Y - content.AbsolutePosition.Y) / math.max(Device.scale(), 0.01)
+				content.CanvasPosition = Vector2.new(0, math.max(0, content.CanvasPosition.Y + dy))
+			end)
+		end
+	end
 	content:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
 		if shape.fill and Device.isPhone() then
 			applyShape(shape)

@@ -180,6 +180,23 @@ return function(t)
 			end
 		end)
 
+		t.it("fits a panel above the on-screen keyboard and drops the header only when it must", function()
+			local m = Hud.SHEET_MARGIN
+			t.eq(HudLayout.keyboardFit(Hud, 282, nil, 22, 56), nil, "no keyboard")
+			t.eq(HudLayout.keyboardFit(Hud, 282, 282, 22, 56), nil, "keyboard covers nothing")
+			-- 640x360 entry preset: the keyboard top is 120 px into a 282 px safe area.
+			local small = HudLayout.keyboardFit(Hud, 282, 120, 22, 56)
+			t.eq(small and small.height, 120 - 2 * m)
+			t.eq(small and small.header, false, "104 - 22 - 56 leaves less than a 48 px row")
+			-- A taller safe area keeps the header.
+			local big = HudLayout.keyboardFit(Hud, 324, 200, 22, 56)
+			t.eq(big and big.header, true)
+			t.eq(big and big.height, 200 - 2 * m)
+			-- Never shorter than one touch row plus the padding.
+			local tiny = HudLayout.keyboardFit(Hud, 282, 20, 22, 56)
+			t.eq(tiny and tiny.height, Hud.TOUCH_MIN + 22)
+		end)
+
 		t.it("recognises taps by slop and time", function()
 			local slop, tmax = Hud.PLACE.TAP_SLOP_PX, Hud.PLACE.TAP_MAX_S
 			t.truthy(HudLayout.isTap(Hud, 0, 0, 0))

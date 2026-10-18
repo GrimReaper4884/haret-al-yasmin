@@ -83,6 +83,10 @@ return {
 
 	-- Sheet modals on phones (B7): margin to the safe area's edges.
 	SHEET_MARGIN = 8,
+	-- Codes on touch (B7): seconds the above-the-keyboard layout stays after typing ends (so the tap
+	-- that ended it, usually Redeem, lands before the panel moves back), and the window in which a
+	-- second Redeem (the button's own Activated after the focus-loss tap) is ignored.
+	KEYBOARD = { restoreS = 0.4, redeemDebounceS = 0.5 },
 	-- The defender bottom sheet (B4) is never wider than this (desktop with panelSide = bottom).
 	SHEET_MAX_W = 640,
 }

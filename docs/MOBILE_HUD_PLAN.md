@@ -588,7 +588,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
     phone preset (loop through them with the debug keys 1–6 and the openers); phone captures of Units,
     Pass, Settings and the match result; the Arabic Settings labels still right-aligned.
 
-- [x] **MH-14 Play panel two-step on phones** · deps: MH-13
+- [x] be76bdd **MH-14 Play panel two-step on phones** · deps: MH-13
   - **Goal:** B7 Play.
   - **Change:** `PlayController.build` renders the list step (tab strip Story · Endless · Event + the
     cards: the nine episode cards with their 18 px mechanic icons and "Coming soon" state, or the mode
@@ -601,7 +601,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
     detail (odds line), pick Endless, change difficulty, Create, see the queue panel, Leave the queue;
     phone captures of both steps; desktop capture unchanged in shape.
 
-- [ ] **MH-15 Codes and the on-screen keyboard** · deps: MH-13
+- [x] **MH-15 Codes and the on-screen keyboard** · deps: MH-13
   - **Goal:** B7 Codes.
   - **Change:** `CodesController`: on touch, `TextBox.Focused` anchors the sheet to the top of the safe
     area and `FocusLost` restores it; use `UserInputService.OnScreenKeyboardVisible` and

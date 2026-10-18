@@ -208,6 +208,20 @@ function HudLayout.placePair(cfg: any, scale: number, safeSize: Size, bar: Rect,
 	return { place = box(right), cancel = box(not right) }
 end
 
+-- A sheet or panel that must stay above the on-screen keyboard (MOBILE_HUD_PLAN B7, Codes): it
+-- anchors to the top of the safe area and ends SHEET_MARGIN above `kbTop` (design px from the safe
+-- area's top). `chrome` is the panel's padding; `header` its title row plus gap. The header hides
+-- when keeping it would leave less than one TOUCH_MIN row for the content. nil when the keyboard is
+-- not up or covers nothing.
+function HudLayout.keyboardFit(cfg: any, safeHeight: number, kbTop: number?, chrome: number, header: number): { height: number, header: boolean }?
+	if kbTop == nil or kbTop >= safeHeight then
+		return nil
+	end
+	local m = cfg.SHEET_MARGIN
+	local height = math.max(kbTop - 2 * m, cfg.TOUCH_MIN + chrome)
+	return { height = height, header = height - chrome - header >= cfg.TOUCH_MIN }
+end
+
 -- A touch that moved at most TAP_SLOP_PX and lasted at most TAP_MAX_S is a tap.
 function HudLayout.isTap(cfg: any, dx: number, dy: number, dt: number): boolean
 	return dx * dx + dy * dy <= cfg.PLACE.TAP_SLOP_PX * cfg.PLACE.TAP_SLOP_PX and dt <= cfg.PLACE.TAP_MAX_S
