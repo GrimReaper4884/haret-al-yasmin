@@ -827,7 +827,7 @@ are used by S1-C01 (fallback drawers if absent, as always).
 ## 13. Checklist (tick with the commit hash)
 
 - [x] S1-N01 1eb2504 · [x] S1-N02 f86d874
-- [x] S1-S01 4472de1 · [x] S1-S02 663db30 (+ 4eddbf7) · [x] S1-S03 2f1bc1e · [x] S1-S04 · [x] S1-S05 74b5873 · [x] S1-S06 1352b05 · [x] S1-S07 712104f · [x] S1-S08 da22b7d · [ ] S1-S09 · [x] S1-S10 83fd17a · [x] S1-S11 112114e · [~] S1-S12 3a76001 (S1-S12a done; S1-S12b Cat migration held for the owner) · [ ] S1-S13
+- [x] S1-S01 4472de1 · [x] S1-S02 663db30 (+ 4eddbf7) · [x] S1-S03 2f1bc1e · [x] S1-S04 5703dfa (+ fb5f6fe) · [x] S1-S05 74b5873 · [x] S1-S06 1352b05 · [x] S1-S07 712104f · [x] S1-S08 da22b7d · [ ] S1-S09 · [x] S1-S10 83fd17a · [x] S1-S11 112114e · [~] S1-S12 3a76001 (S1-S12a done; S1-S12b Cat migration held for the owner) · [ ] S1-S13
 - [~] S1-A01 0707cdc (concepts done; owner reviews the sheet) · [ ] S1-A02 · [ ] S1-A03 · [ ] S1-A04 · [ ] S1-A05 · [ ] S1-A06 · [ ] S1-A07 · [ ] S1-A08
 - [x] S1-M01 d267b4e · [ ] S1-M02 · [ ] S1-M03 · [ ] S1-M04 · [ ] S1-M05 · [ ] S1-M06
 - [ ] S1-C01 · [ ] S1-C02 · [ ] S1-C03 · [ ] S1-C04 · [ ] S1-C05 · [ ] S1-C06
