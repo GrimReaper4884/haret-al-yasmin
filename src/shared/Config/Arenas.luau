@@ -87,7 +87,7 @@ local Arenas: { [string]: ArenaDef } = {
 		spawnYaw = 90,
 		playerSpawn = { 30, -32 },
 		seed = "olive_press",
-		theme = "orchard",
+		theme = "orchard_kit",
 		kit = "olive_press", -- server/World/KitLayout places Config/ArenaLayouts/olive_press
 	},
 	-- END GENERATED olive_press

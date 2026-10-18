@@ -8,7 +8,7 @@ ARENAS = {
     # The Olive Harvest event map (§8.4).
     "olive_press": {
         "name_key": "arena.olive_press.name",
-        "theme": "orchard",
+        "theme": "orchard_kit",
         "roads": [[(-70, 30), (-30, 30), (-30, -10), (12, -10), (12, 24), (48, 24), (48, -20)]],
         "bounds": (-80, -40, 80, 36),
         "party": (30, -32),

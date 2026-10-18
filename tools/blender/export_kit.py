@@ -72,7 +72,9 @@ def export(obj, path):
         export_apply=True,
         export_yup=True,
         export_image_format="AUTO",
-        export_vertex_color="ACTIVE",
+        # No vertex colours in the GLB: Roblox multiplies them with the atlas, which squares every swatch
+        # (canopies went black, D-061). The colours stay in the .blend as the Workbench fallback.
+        export_vertex_color="NONE",
     )
     obj.location = keep
 
