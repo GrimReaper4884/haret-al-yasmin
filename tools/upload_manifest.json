@@ -540,6 +540,24 @@
       "type": "Image",
       "id": 119398560683518,
       "uploaded": "2026-10-18"
+    },
+    "assets/marketing/logo/mark_256.png": {
+      "name": "Haret logo mark",
+      "type": "Image",
+      "id": 94560000612541,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/logo/logo_wide_1600x400.png": {
+      "name": "Haret logo wordmark",
+      "type": "Image",
+      "id": 89973783873794,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/logo/wordmark.png": {
+      "name": "Haret logo wordmark text",
+      "type": "Image",
+      "id": 124741548596324,
+      "uploaded": "2026-10-18"
     }
   }
 }

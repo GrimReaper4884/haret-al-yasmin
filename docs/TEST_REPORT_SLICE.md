@@ -748,3 +748,17 @@ Verdict: external (Studio or a plugin), ignored (D-020).
 | `tools/check.ps1` | green, 267 specs (new: swap config names the three props with prop-sized heights) |
 | Captures | `pve04_lane_bundle_lanterns_*` (bundle on the kerb, brass lanterns on their brackets), `pve04_lane_jasmine_pots_*`, `pve04_arena_kerb_bundles_*` |
 | Console | no errors from our code |
+
+### PV-D01 logo and PV-D05 loading screen (2026-10-18, D-036)
+
+| Check | Result |
+|---|---|
+| Logo | 4 generated marks (`logo_mark_variants_2026-10-18.jpg`), owner picked variant 3; set composed with the shaped Arabic + English wordmark (`logo_set_v2_2026-10-18.jpg`); readable at 150 px on light and dark |
+| Uploads | mark 94560000612541, wide logo 89973783873794, text wordmark 124741548596324 (Open Cloud, in moderation at upload) |
+| `tools/check.ps1` | my specs green (loading.spec: bar progress and easing, finish rule, cached ≤ 2.5 s with the fade, 30 s cap under the 60 s join rule, line cycling, stripe stops within ColorSequence rules, copied colours = Palette, petal id = Vfx, logo ids = manifest). Two failures belong to another session's in-progress PV-A02/A03 attacker work (Icons portraits, Baked clips) |
+| Sync | `script_grep RemoveDefaultLoadingScreen` finds `ReplicatedFirst.LoadingScreen` (after restarting `rojo serve` for the new tree) |
+| Desktop | fallback mark, petals, ablaq bands and bar, bilingual line (`pvd05_loading_fallback_desktop_2026-10-18.jpg`, held 12 s with `DebugHoldLoading`) |
+| Phone (Device Simulator, iPhone 17 Pro, viewport 750×381) | the uploaded mark and wordmark swapped in, full bleed after `ScreenInsets = None` (the first capture showed the world round the safe area) (`pvd05_loading_iphone17pro_2026-10-18.jpg`) |
+| Timing (cached Studio join, no hold) | `[Loading] done in 2.32 s` (hand-over; gone after the 0.4 s fade); the wait is the character spawning, the screen's own minimum is 1.2 s |
+| Bugs found and fixed in the run | `ColorSequence.new(): table is too long` (40 stripes = 80 keypoints) and `ColorSequence must end at time=1.0` |
+| Restore | Device Simulator back to default, `DebugHoldLoading` removed, Studio in Edit |
