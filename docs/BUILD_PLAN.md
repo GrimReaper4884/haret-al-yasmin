@@ -270,6 +270,14 @@ dressing (PV-E). Branch `phase/polish`; tick tasks in that file's §9.
 
 ---
 
+## Phase S1: Season Story 1 (runs after Phase V; queue in `docs/STORY_PLAN.md`)
+
+Nine-episode story following the lane drama's first-part arc with one-letter-off names, 17 new attackers, unit
+signatures/traits v2/beads with declared caps, Al-Adashari as the secret unit (the Cat retired), and arenas built
+from a Blender kit. Tasks S1-N/S/A/M/C with Accept lines and the owner's STOP list are in that file; tick them there.
+
+---
+
 ## Phase 6: Live ops
 
 ### Update template (every update)
