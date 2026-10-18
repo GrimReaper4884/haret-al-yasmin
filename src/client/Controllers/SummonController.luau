@@ -25,6 +25,7 @@ local UnitCard = require(UI.UnitCard)
 local SummonSequence = require(UI.SummonSequence)
 local Juice = require(UI.Juice)
 local Fx = require(UI.Fx)
+local Device = require(UI.Device)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
@@ -40,6 +41,9 @@ local bannerLabel: TextLabel
 local rotateLabel: TextLabel
 local liraLabel: TextLabel
 local featured: Frame
+local bottomFrame: Frame
+local buttonRow: Frame
+local buttonLayout: UIListLayout
 local oneButton: TextButton
 local tenButton: TextButton
 local ratesButton: TextButton
@@ -83,14 +87,16 @@ local function build()
 	featured = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, 24), Size = UDim2.new(1, 0, 0, 150), ZIndex = 11, Parent = body })
 	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder, Parent = featured })
 
-	local bottom = Create("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(1, 0, 0, 68), ZIndex = 11, Parent = body })
+	local bottom = Create("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(1, 0, 0, Theme.TOUCH + 22), ZIndex = 11, Parent = body })
+	bottomFrame = bottom
 	liraLabel = Theme.label({ TextSize = 15, FontFace = Theme.fontBold, TextColor3 = Theme.lira, Size = UDim2.new(1, 0, 0, 18), ZIndex = 11, Parent = bottom })
 	liraLabel.TextXAlignment = Enum.TextXAlignment.Center
-	local row = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, 22), Size = UDim2.new(1, 0, 0, Theme.TOUCH - 4), ZIndex = 11, Parent = bottom })
-	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = row })
-	oneButton = Theme.button({ LayoutOrder = 1, TextSize = 14, Size = UDim2.fromOffset(170, Theme.TOUCH - 4), ZIndex = 11, Parent = row })
-	tenButton = Theme.button({ LayoutOrder = 2, TextSize = 14, Size = UDim2.fromOffset(170, Theme.TOUCH - 4), BackgroundColor3 = Theme.rarity.legendary, ZIndex = 11, Parent = row })
-	ratesButton = Theme.button({ LayoutOrder = 3, TextSize = 14, Size = UDim2.fromOffset(90, Theme.TOUCH - 4), BackgroundColor3 = Theme.colors.quest, ZIndex = 11, Parent = row })
+	local row = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, 22), Size = UDim2.new(1, 0, 0, Theme.TOUCH), ZIndex = 11, Parent = bottom })
+	buttonRow = row
+	buttonLayout = Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = row })
+	oneButton = Theme.button({ LayoutOrder = 1, TextSize = 14, Size = UDim2.fromOffset(170, Theme.TOUCH), ZIndex = 11, Parent = row })
+	tenButton = Theme.button({ LayoutOrder = 2, TextSize = 14, Size = UDim2.fromOffset(170, Theme.TOUCH), BackgroundColor3 = Theme.rarity.legendary, ZIndex = 11, Parent = row })
+	ratesButton = Theme.button({ LayoutOrder = 3, TextSize = 14, Size = UDim2.fromOffset(90, Theme.TOUCH), BackgroundColor3 = Theme.colors.quest, ZIndex = 11, Parent = row })
 
 	-- Rates panel (covers the body)
 	ratesPanel = Theme.panel({ Name = "Rates", Size = UDim2.fromScale(1, 1), ZIndex = 12, Visible = false, Parent = body })
@@ -98,7 +104,7 @@ local function build()
 	local ratesTitle = Theme.label({ Name = "Title", TextSize = 16, FontFace = Theme.fontBold, Size = UDim2.new(1, 0, 0, 22), ZIndex = 13, Parent = ratesPanel })
 	ratesText = Theme.label({ TextSize = 15, Position = UDim2.fromOffset(0, 26), Size = UDim2.new(1, 0, 0, 120), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 13, Parent = ratesPanel })
 	pityText = Theme.label({ TextSize = 13, TextColor3 = Theme.colors.textMuted, Position = UDim2.fromOffset(0, 150), Size = UDim2.new(1, 0, 0, 40), ZIndex = 13, Parent = ratesPanel })
-	local ratesClose = Theme.button({ Text = "X", TextSize = 16, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromOffset(40, 40), BackgroundColor3 = Theme.colors.danger, ZIndex = 13, Parent = ratesPanel })
+	local ratesClose = Theme.button({ Text = "X", TextSize = 16, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH), BackgroundColor3 = Theme.colors.danger, ZIndex = 13, Parent = ratesPanel })
 	ratesClose.Activated:Connect(function()
 		ratesPanel.Visible = false
 	end)
@@ -359,8 +365,27 @@ function SummonController.open()
 	render()
 end
 
+-- On a phone the buttons stand in a column beside the featured cards, so the sheet needs no scroll
+-- to reach them (MOBILE_HUD_PLAN B7); elsewhere they sit in a row under the cards.
+local function shapeSummon()
+	if not bottomFrame then
+		return
+	end
+	local side = Device.isPhone()
+	local columnH = 22 + 3 * Theme.TOUCH + 2 * 8
+	featured.Size = if side then UDim2.new(0.5, 0, 0, 150) else UDim2.new(1, 0, 0, 150)
+	bottomFrame.AnchorPoint = if side then Vector2.new(1, 0) else Vector2.new(0, 1)
+	bottomFrame.Position = if side then UDim2.new(1, 0, 0, 24) else UDim2.fromScale(0, 1)
+	bottomFrame.Size = if side then UDim2.new(0.5, 0, 0, columnH) else UDim2.new(1, 0, 0, Theme.TOUCH + 22)
+	buttonRow.Size = if side then UDim2.new(1, 0, 0, columnH - 22) else UDim2.new(1, 0, 0, Theme.TOUCH)
+	buttonLayout.FillDirection = if side then Enum.FillDirection.Vertical else Enum.FillDirection.Horizontal
+	ratesButton.Size = UDim2.fromOffset(if side then 170 else 90, Theme.TOUCH)
+end
+
 function SummonController.start()
 	build()
+	shapeSummon()
+	Device.Changed:Connect(shapeSummon)
 	oneButton.Activated:Connect(function()
 		doSummon(1)
 	end)

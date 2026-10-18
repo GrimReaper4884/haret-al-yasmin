@@ -44,6 +44,9 @@ local slotCount = TD.LOADOUT_SLOTS
 -- they had so the hotbar does not jump, and Place / Cancel take those corners.
 local aimHold = false
 local lastJump: HudLayout.Rect? = nil
+-- Who wants Roblox's thumbstick and jump hidden right now ("overhead", "aim", "sheet"); they show
+-- only when nobody does. A sheet keeps the corners reserved, like aiming, so nothing moves under it.
+local blocks: { [string]: true } = {}
 local started = false
 local queued = false
 local jumpConns: { RBXScriptConnection } = {}
@@ -98,13 +101,14 @@ local function recompute()
 	if legacy then
 		scale = math.min(scale, safe.x / legacy[1], safe.y / legacy[2])
 	end
-	local touchControls = GuiService.TouchControlsEnabled or aimHold
+	local hold = aimHold or blocks.sheet == true
+	local touchControls = GuiService.TouchControlsEnabled or hold
 	local measured: HudLayout.Measured = {}
 	local jump = jumpButton()
 	if jump and jump.Visible and jump.AbsoluteSize.X > 0 and GuiService.TouchControlsEnabled then
 		measured.jump = rectOf(jump, gui.AbsolutePosition)
 		lastJump = measured.jump
-	elseif aimHold then
+	elseif hold then
 		measured.jump = lastJump
 	end
 	local reserved = HudLayout.reserved(Hud, profile, touchControls, safe, measured)
@@ -193,6 +197,17 @@ function Device.setPreset(p: string)
 		preset = p
 		schedule()
 	end
+end
+
+-- Hides Roblox's touch controls while any reason holds (the watchtower view, aiming, an open sheet).
+function Device.blockTouchControls(reason: string, on: boolean)
+	if on then
+		blocks[reason] = true
+	else
+		blocks[reason] = nil
+	end
+	GuiService.TouchControlsEnabled = next(blocks) == nil
+	schedule()
 end
 
 -- PlacementController holds the corners while it aims on touch (see aimHold).

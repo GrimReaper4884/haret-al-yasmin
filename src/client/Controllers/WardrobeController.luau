@@ -5,11 +5,14 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Hud = require(Shared.Config.Hud)
 local Net = require(Shared.Net)
 local Items = require(Shared.Config.Items)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
+local Device = require(UI.Device)
+local Modal = require(UI.Modal)
 local Root = require(UI.Root)
 local ItemPreview = require(UI.ItemPreview)
 local StateController = require(script.Parent.StateController)
@@ -18,7 +21,7 @@ local LocaleController = require(script.Parent.LocaleController)
 local WardrobeController = {}
 
 local SLOT_ORDER = { head = 1, torso = 2, legs = 3, waist = 4, back = 5 }
-local CARD = Vector2.new(124, 178)
+local CARD = Vector2.new(124, 190) -- room for the 48 px Equip button under the name
 
 local panel: Frame
 local title: TextLabel
@@ -40,7 +43,6 @@ local function build()
 		Parent = Root.get(),
 	})
 	Create("UISizeConstraint", { MaxSize = Vector2.new(600, math.huge), Parent = panel })
-	panel:SetAttribute(Theme.LEGACY_ATTR, true) -- pre-touch sizes until MOBILE_HUD_PLAN MH-13
 	Create("UIPadding", {
 		PaddingTop = UDim.new(0, 12),
 		PaddingBottom = UDim.new(0, 14),
@@ -53,7 +55,7 @@ local function build()
 	local header = Create("Frame", {
 		LayoutOrder = 1,
 		BackgroundTransparency = 1,
-		Size = UDim2.new(1, 0, 0, Theme.TOUCH - 8),
+		Size = UDim2.new(1, 0, 0, Theme.TOUCH),
 		Parent = panel,
 	})
 	title = Theme.label({
@@ -67,7 +69,7 @@ local function build()
 		TextSize = 18,
 		AnchorPoint = Vector2.new(1, 0),
 		Position = UDim2.fromScale(1, 0),
-		Size = UDim2.fromOffset(Theme.TOUCH - 8, Theme.TOUCH - 8),
+		Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH),
 		BackgroundColor3 = Theme.colors.danger,
 		Parent = header,
 	})
@@ -139,7 +141,7 @@ local function card(order: number, itemId: string, snapshot: any)
 			TextSize = 14,
 			AnchorPoint = Vector2.new(0.5, 1),
 			Position = UDim2.new(0.5, 0, 1, -6),
-			Size = UDim2.new(1, -12, 0, 34),
+			Size = UDim2.new(1, -12, 0, Theme.TOUCH),
 			BackgroundColor3 = if worn then Theme.colors.buttonDisabled else Theme.colors.button,
 			Parent = c,
 		})
@@ -239,8 +241,24 @@ function WardrobeController.toggle()
 	end
 end
 
+-- On a short screen the list gives up height so the panel stays inside the safe area (MOBILE_HUD_PLAN
+-- B7: these panels fit like sheets on phones); never below 120 px, never above its normal height.
+local function fitList()
+	if not panel or not grid then
+		return
+	end
+	local scale = Device.scale()
+	local room = Device.designSize().y - 2 * Hud.SHEET_MARGIN
+	local others = panel.AbsoluteSize.Y / scale - grid.Size.Y.Offset
+	grid.Size = UDim2.new(1, 0, 0, math.clamp(room - others, 120, 220))
+end
+
 function WardrobeController.start()
 	build()
+	fitList()
+	Modal.track(panel)
+	Device.Changed:Connect(fitList)
+	panel:GetPropertyChangedSignal("Visible"):Connect(fitList)
 	StateController.Changed:Connect(function()
 		render()
 	end)

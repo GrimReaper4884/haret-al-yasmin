@@ -515,6 +515,7 @@ end
 
 local function build()
 	modal = Modal.create("Play", 780, 252)
+	modal.panel:SetAttribute(Theme.LEGACY_ATTR, true) -- pre-touch sizes until MOBILE_HUD_PLAN MH-14
 	local body = modal.body
 
 	-- Tabs

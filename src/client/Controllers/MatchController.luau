@@ -3,7 +3,6 @@
 -- (wave, countdown, gate HP, cash, the rail: skip / speed / view, the `≡` match menu) and the result
 -- screen. Other controllers subscribe to MatchController.Started / Updated / Events / Ended.
 
-local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -244,13 +243,13 @@ local function build()
 	-- The mode's painted banner (PV-C06) between the title and the rewards.
 	resultBanner = Create("ImageLabel", {
 		Name = "Banner",
-		LayoutOrder = 2,
+		LayoutOrder = 1,
 		BackgroundTransparency = 1,
 		Size = UDim2.new(1, 0, 0, 110),
 		ScaleType = Enum.ScaleType.Crop,
 		ZIndex = 11,
 		Visible = false,
-		Parent = result.panel,
+		Parent = result.content,
 	}, { Create("UICorner", { CornerRadius = UDim.new(0, 10) }) })
 	Theme.border(resultBanner, 2.5)
 	-- The Hakawati's outro over the bottom of the banner after a story win (S1-C01, Config/Story).
@@ -400,6 +399,21 @@ local function render()
 	end
 end
 
+-- On a phone the result sheet puts the banner beside the rewards and buttons so everything fits
+-- without scrolling (MOBILE_HUD_PLAN B7); elsewhere the banner stays above them.
+local function shapeResult()
+	local layout = result.content:FindFirstChildOfClass("UIListLayout")
+	local side = Device.isPhone() and resultBanner.Visible
+	if layout then
+		layout.FillDirection = if side then Enum.FillDirection.Horizontal else Enum.FillDirection.Vertical
+	end
+	resultBanner.Size = if side then UDim2.new(0.42, 0, 0, 150) else UDim2.new(1, 0, 0, 110)
+	result.body.Size = if side then UDim2.new(0.58, -20, 0, 150) else UDim2.new(1, if Device.isPhone() then -12 else 0, 0, 150)
+	replayButton.Size = UDim2.fromOffset(if side then 112 else 130, Theme.TOUCH)
+	nextButton.Size = UDim2.fromOffset(if side then 112 else 130, Theme.TOUCH)
+	backButton.Size = UDim2.fromOffset(if side then 130 else 150, Theme.TOUCH)
+end
+
 local function showResult(payload: any)
 	local t = LocaleController.t
 	result.title.Text = if payload.won then t("match.victory") else t("match.defeat")
@@ -455,6 +469,7 @@ local function showResult(payload: any)
 		and modeId ~= nil
 		and PartyLogic.nextMode(Modes :: any, modeId) ~= nil
 		and (payload.won == true or (snapshot ~= nil and snapshot.td.cleared[modeId] ~= nil))
+	shapeResult()
 	result.setVisible(true)
 end
 
@@ -476,7 +491,8 @@ local function backToLobby()
 	MatchMenuController.close()
 	ToastController.setTop(nil)
 	LobbyMenuController.setInMatch(false)
-	GuiService.TouchControlsEnabled = true
+	Device.blockTouchControls("overhead", false)
+	Device.blockTouchControls("aim", false)
 	render()
 end
 
@@ -524,6 +540,7 @@ function MatchController.start()
 	end)
 	LocaleController.Changed:Connect(render)
 	Device.Changed:Connect(layoutRail)
+	Device.Changed:Connect(shapeResult)
 	SettingsController.Changed:Connect(function(key: string)
 		if key == "railSide" then
 			layoutRail()

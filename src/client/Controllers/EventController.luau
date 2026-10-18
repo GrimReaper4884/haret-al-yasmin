@@ -35,7 +35,7 @@ local nameLabel: TextLabel
 local descLabel: TextLabel
 local timeLabel: TextLabel
 local currencyLabel: TextLabel
-local shopList: Frame
+local shopList: ScrollingFrame
 local playButton: TextButton
 local busy = false
 
@@ -93,7 +93,7 @@ local function render()
 	for i, entry in def.shop do
 		local bought = if rec and rec.bought[entry.key] then rec.bought[entry.key] else 0
 		local soldOut = bought >= entry.stock
-		local row = Create("Frame", { LayoutOrder = i, BackgroundColor3 = Theme.colors.panelStroke, BackgroundTransparency = 0.85, Size = UDim2.new(1, 0, 0, 38), ZIndex = 12, Parent = shopList }, { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) })
+		local row = Create("Frame", { LayoutOrder = i, BackgroundColor3 = Theme.colors.panelStroke, BackgroundTransparency = 0.85, Size = UDim2.new(1, -12, 0, Theme.TOUCH + 4), ZIndex = 12, Parent = shopList }, { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) })
 		local name = entry.nameKey
 		local label = Theme.label({
 			Text = t(name) .. "   ·   " .. t("event.stock", { n = entry.stock - bought, max = entry.stock }),
@@ -114,7 +114,7 @@ local function render()
 			TextSize = 13,
 			AnchorPoint = Vector2.new(1, 0.5),
 			Position = UDim2.new(1, -4, 0.5, 0),
-			Size = UDim2.fromOffset(128, 32),
+			Size = UDim2.fromOffset(128, Theme.TOUCH),
 			BackgroundColor3 = if soldOut or not afford then Theme.colors.buttonDisabled else Theme.colors.confirm,
 			ZIndex = 13,
 			Parent = row,
@@ -148,17 +148,20 @@ local function render()
 end
 
 local function build()
-	modal = Modal.create("Event", 620, 250)
+	modal = Modal.create("Event", 620, 250, { fill = true })
 	local body = modal.body
 	nameLabel = Theme.display({ TextSize = 20, Size = UDim2.new(0.6, 0, 0, 24), ZIndex = 12, Parent = body })
 	timeLabel = Theme.display({ TextSize = 14, TextColor3 = Color3.fromHex("#FFD970"), AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(0.4, 0, 0, 24), ZIndex = 12, Parent = body })
 	descLabel = Theme.label({ TextSize = 13, TextColor3 = Theme.colors.textMuted, Position = UDim2.fromOffset(0, 26), Size = UDim2.new(1, 0, 0, 32), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 12, Parent = body })
 	currencyLabel = Theme.display({ TextSize = 16, TextColor3 = Color3.fromHex("#C8E07A"), Position = UDim2.fromOffset(0, 60), Size = UDim2.new(0.6, 0, 0, 22), ZIndex = 12, Parent = body })
-	playButton = Theme.button({ TextSize = 15, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, 0, 0, 56), Size = UDim2.fromOffset(170, 38), BackgroundColor3 = Color3.fromHex("#2F7D6B"), ZIndex = 12, Parent = body })
+	playButton = Theme.button({ TextSize = 15, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, 0, 0, 56), Size = UDim2.fromOffset(170, Theme.TOUCH), BackgroundColor3 = Color3.fromHex("#2F7D6B"), ZIndex = 12, Parent = body })
 	playButton.Activated:Connect(function()
 		PlayController.open("event")
 	end)
-	shopList = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, 100), Size = UDim2.new(1, 0, 1, -100), ZIndex = 12, Parent = body })
+	-- The shop scrolls once its 52 px rows outgrow the body (MOBILE_HUD_PLAN B7).
+	local shopHolder = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, 110), Size = UDim2.new(1, 0, 1, -110), ZIndex = 12, Parent = body })
+	shopList = Modal.scroller(shopHolder)
+	shopList.ZIndex = 12
 	Create("UIListLayout", { Padding = UDim.new(0, 4), SortOrder = Enum.SortOrder.LayoutOrder, Parent = shopList })
 end
 

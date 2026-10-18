@@ -22,6 +22,7 @@ local HudLayout = require(Shared.Logic.HudLayout)
 local Hud = require(Shared.Config.Hud)
 local UI = script.Parent.Parent.UI
 local Fx = require(UI.Fx)
+local Device = require(UI.Device)
 local MatchController = require(script.Parent.MatchController)
 local LocaleController = require(script.Parent.LocaleController)
 local SettingsController = require(script.Parent.SettingsController)
@@ -80,7 +81,8 @@ local function apply()
 	end
 	-- On foot the phone keeps its thumbstick and jump button; the watchtower view hides them so
 	-- taps go to placement, and so does aiming a defender on touch (MatchController.aiming).
-	GuiService.TouchControlsEnabled = not overhead and not MatchController.aiming()
+	Device.blockTouchControls("overhead", overhead)
+	Device.blockTouchControls("aim", MatchController.aiming())
 	if overhead then
 		local target = overheadCFrame()
 		if target then
@@ -259,7 +261,7 @@ function MatchCameraController.start()
 	end)
 	button, label = MatchController.railButton("view")
 	MatchController.AimingChanged:Connect(function()
-		GuiService.TouchControlsEnabled = not overhead and not MatchController.aiming()
+		Device.blockTouchControls("aim", MatchController.aiming())
 	end)
 	button.Activated:Connect(onViewButton)
 	watchPanZoom()

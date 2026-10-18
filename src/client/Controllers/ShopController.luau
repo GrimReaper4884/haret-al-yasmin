@@ -11,6 +11,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Hud = require(Shared.Config.Hud)
 local Net = require(Shared.Net)
 local Items = require(Shared.Config.Items)
 local Shops = require(Shared.Config.Shops)
@@ -21,6 +22,8 @@ local MonetizationLogic = require(Shared.Logic.MonetizationLogic)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
+local Device = require(UI.Device)
+local Modal = require(UI.Modal)
 local Root = require(UI.Root)
 local Icons = require(UI.Icons)
 local ItemPreview = require(UI.ItemPreview)
@@ -53,7 +56,6 @@ local function build()
 		Parent = Root.get(),
 	})
 	Create("UISizeConstraint", { MaxSize = Vector2.new(440, math.huge), Parent = panel })
-	panel:SetAttribute(Theme.LEGACY_ATTR, true) -- pre-touch sizes until MOBILE_HUD_PLAN MH-13
 	Create("UIPadding", {
 		PaddingTop = UDim.new(0, 12),
 		PaddingBottom = UDim.new(0, 14),
@@ -66,7 +68,7 @@ local function build()
 	local header = Create("Frame", {
 		LayoutOrder = 1,
 		BackgroundTransparency = 1,
-		Size = UDim2.new(1, 0, 0, Theme.TOUCH - 8),
+		Size = UDim2.new(1, 0, 0, Theme.TOUCH),
 		Parent = panel,
 	})
 	title = Theme.label({
@@ -80,7 +82,7 @@ local function build()
 		TextSize = 18,
 		AnchorPoint = Vector2.new(1, 0),
 		Position = UDim2.fromScale(1, 0),
-		Size = UDim2.fromOffset(Theme.TOUCH - 8, Theme.TOUCH - 8),
+		Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH),
 		BackgroundColor3 = Theme.colors.danger,
 		Parent = header,
 	})
@@ -206,7 +208,7 @@ local function row(spec: RowSpec)
 		TextSize = 15,
 		AnchorPoint = Vector2.new(if rtl then 0 else 1, 1),
 		Position = UDim2.new(if rtl then 0 else 1, if rtl then 8 else -8, 1, -8),
-		Size = UDim2.fromOffset(116, Theme.TOUCH - 4),
+		Size = UDim2.fromOffset(116, Theme.TOUCH),
 		BackgroundColor3 = if spec.enabled then Theme.colors.button else Theme.colors.buttonDisabled,
 		AutoButtonColor = spec.enabled,
 		Parent = r,
@@ -395,8 +397,24 @@ local function watchRange()
 	end
 end
 
+-- On a short screen the list gives up height so the panel stays inside the safe area (MOBILE_HUD_PLAN
+-- B7: these panels fit like sheets on phones); never below 120 px, never above its normal height.
+local function fitList()
+	if not panel or not list then
+		return
+	end
+	local scale = Device.scale()
+	local room = Device.designSize().y - 2 * Hud.SHEET_MARGIN
+	local others = panel.AbsoluteSize.Y / scale - list.Size.Y.Offset
+	list.Size = UDim2.new(1, 0, 0, math.clamp(room - others, 120, LIST_HEIGHT))
+end
+
 function ShopController.start()
 	build()
+	fitList()
+	Modal.track(panel)
+	Device.Changed:Connect(fitList)
+	panel:GetPropertyChangedSignal("Visible"):Connect(fitList)
 	Net.event(Net.Events.ShopShow).OnClientEvent:Connect(function(id: string)
 		mode = "shop"
 		shopId = id

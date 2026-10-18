@@ -561,7 +561,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
     (`HaretDebug` can grant or roll the day); tablet capture shows the raised grid; desktop unchanged
     apart from sizes; DECISIONS row B9-5.
 
-- [x] **MH-12 Errand chip, dialogue width, queue panel** · deps: MH-11
+- [x] 0f94ca0 **MH-12 Errand chip, dialogue width, queue panel** · deps: MH-11
   - **Goal:** The rest of B6.
   - **Change:** `HudController` errand tracker: chip mode on touch-phone (one line, 48 px tall, tap to
     expand 6 s); `DialogueController` panel width capped to `Device.freeBand()` on touch; the errand
@@ -573,7 +573,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
 
 ### Milestone 6: modals and screens
 
-- [ ] **MH-13 `Modal` sheet mode and the common screens** · deps: MH-11
+- [x] **MH-13 `Modal` sheet mode and the common screens** · deps: MH-11
   - **Goal:** B7 for every screen that needs only sizes and the sheet.
   - **Change:** `Modal.create(name, maxWidth, bodyHeight, opts?)`: on touch-phone the panel is a sheet
     (safe area minus `SHEET_MARGIN`, body fills and scrolls, 48 px close, swipe-down on the header

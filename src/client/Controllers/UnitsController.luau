@@ -64,7 +64,7 @@ local function request(fn: () -> any)
 end
 
 local function build()
-	modal = Modal.create("Units", 640, 250)
+	modal = Modal.create("Units", 640, 250, { fill = true })
 	local body = modal.body
 	loadoutLabel = Theme.label({ TextSize = 14, FontFace = Theme.fontBold, Size = UDim2.new(1, 0, 0, 18), ZIndex = 11, Parent = body })
 	loadoutRow = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, 20), Size = UDim2.new(1, 0, 0, 64), ZIndex = 11, Parent = body })
@@ -76,22 +76,23 @@ local function build()
 	-- Trait reroll rates (paid random item: trait stones are sold for Robux). Covers the detail view.
 	ratesPanel = Theme.panel({ Name = "TraitRates", Size = UDim2.fromScale(1, 1), ZIndex = 14, Visible = false, Parent = body })
 	Create("UIPadding", { PaddingTop = UDim.new(0, 8), PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12), PaddingBottom = UDim.new(0, 8), Parent = ratesPanel })
-	ratesTitle = Theme.label({ TextSize = 16, FontFace = Theme.fontBold, Size = UDim2.new(1, -48, 0, 22), ZIndex = 15, Parent = ratesPanel })
-	ratesText = Theme.label({ TextSize = 14, Position = UDim2.fromOffset(0, 44), Size = UDim2.new(0.5, -6, 0, 116), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 15, Parent = ratesPanel })
-	ratesText2 = Theme.label({ TextSize = 14, Position = UDim2.new(0.5, 6, 0, 44), Size = UDim2.new(0.5, -6, 0, 116), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 15, Parent = ratesPanel })
-	ratesSwitch = Theme.button({ TextSize = 13, Position = UDim2.fromOffset(0, 164), Size = UDim2.fromOffset(120, 32), BackgroundColor3 = Theme.colors.quest, ZIndex = 15, Visible = false, Parent = ratesPanel })
+	-- Header: title, the slot switch (when two traits are open) and the close button, all 48 px tall.
+	ratesTitle = Theme.label({ TextSize = 16, FontFace = Theme.fontBold, Size = UDim2.new(1, -(Theme.TOUCH + 156), 0, Theme.TOUCH), ZIndex = 15, Parent = ratesPanel })
+	ratesText = Theme.label({ TextSize = 14, Position = UDim2.fromOffset(0, Theme.TOUCH + 6), Size = UDim2.new(0.5, -6, 0, 116), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 15, Parent = ratesPanel })
+	ratesText2 = Theme.label({ TextSize = 14, Position = UDim2.new(0.5, 6, 0, Theme.TOUCH + 6), Size = UDim2.new(0.5, -6, 0, 116), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 15, Parent = ratesPanel })
+	ratesSwitch = Theme.button({ TextSize = 13, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -(Theme.TOUCH + 6), 0, 0), Size = UDim2.fromOffset(150, Theme.TOUCH), BackgroundColor3 = Theme.colors.quest, ZIndex = 15, Visible = false, Parent = ratesPanel })
 	ratesNote = Theme.label({ TextSize = 12, TextColor3 = Theme.colors.textMuted, AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(1, 0, 0, 44), TextYAlignment = Enum.TextYAlignment.Bottom, ZIndex = 15, Parent = ratesPanel })
-	local close = Theme.button({ Text = "X", TextSize = 16, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromOffset(40, 40), BackgroundColor3 = Theme.colors.danger, ZIndex = 15, Parent = ratesPanel })
+	local close = Theme.button({ Text = "X", TextSize = 16, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH), BackgroundColor3 = Theme.colors.danger, ZIndex = 15, Parent = ratesPanel })
 	close.Activated:Connect(function()
 		ratesPanel.Visible = false
 	end)
 	-- Bead picker: the unit's kinds for one slot.
 	beadPanel = Theme.panel({ Name = "BeadPicker", Size = UDim2.fromScale(1, 1), ZIndex = 14, Visible = false, Parent = body })
 	Create("UIPadding", { PaddingTop = UDim.new(0, 8), PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12), PaddingBottom = UDim.new(0, 8), Parent = beadPanel })
-	beadTitle = Theme.label({ TextSize = 16, FontFace = Theme.fontBold, Size = UDim2.new(1, -48, 0, 40), ZIndex = 15, Parent = beadPanel })
-	beadList = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, 48), Size = UDim2.new(1, 0, 1, -48), ZIndex = 15, Parent = beadPanel })
+	beadTitle = Theme.label({ TextSize = 16, FontFace = Theme.fontBold, Size = UDim2.new(1, -(Theme.TOUCH + 8), 0, Theme.TOUCH), ZIndex = 15, Parent = beadPanel })
+	beadList = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, Theme.TOUCH + 6), Size = UDim2.new(1, 0, 1, -(Theme.TOUCH + 6)), ZIndex = 15, Parent = beadPanel })
 	Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = beadList })
-	local closeBeads = Theme.button({ Text = "X", TextSize = 16, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromOffset(40, 40), BackgroundColor3 = Theme.colors.danger, ZIndex = 15, Parent = beadPanel })
+	local closeBeads = Theme.button({ Text = "X", TextSize = 16, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH), BackgroundColor3 = Theme.colors.danger, ZIndex = 15, Parent = beadPanel })
 	closeBeads.Activated:Connect(function()
 		beadPanel.Visible = false
 	end)
@@ -144,10 +145,11 @@ function renderRates(snapshot: any)
 	ratesNote.Text = t("units.rates_note")
 	ratesSwitch.Text = t("units.rates_switch")
 	ratesSwitch.Visible = open
-	-- Columns start below the close button; in Arabic the first column sits on the right, and so does the switch.
-	ratesText.Position = if rtl then UDim2.new(0.5, 6, 0, 44) else UDim2.fromOffset(0, 44)
-	ratesText2.Position = if rtl then UDim2.fromOffset(0, 44) else UDim2.new(0.5, 6, 0, 44)
-	ratesSwitch.Position = if rtl then UDim2.new(1, -120, 0, 164) else UDim2.fromOffset(0, 164)
+	-- Columns start below the header; in Arabic the first column sits on the right. The switch stays
+	-- in the header beside the close button.
+	local top = Theme.TOUCH + 6
+	ratesText.Position = if rtl then UDim2.new(0.5, 6, 0, top) else UDim2.fromOffset(0, top)
+	ratesText2.Position = if rtl then UDim2.fromOffset(0, top) else UDim2.new(0.5, 6, 0, top)
 	for _, l in { ratesTitle, ratesText, ratesText2, ratesNote } do
 		Theme.align(l, rtl)
 	end
@@ -223,7 +225,7 @@ local function openBeadPicker(snapshot: any, unitId: string, slot: number)
 			LayoutOrder = i,
 			Text = t((Beads.kinds :: any)[choice.kind].nameKey) .. (if choice.current then "  ✓" else ""),
 			TextSize = 14,
-			Size = UDim2.new(1, 0, 0, Theme.TOUCH - 4),
+			Size = UDim2.new(1, 0, 0, Theme.TOUCH),
 			BackgroundColor3 = if choice.current then Theme.colors.buttonDisabled else Theme.colors.button,
 			ZIndex = 15,
 			Parent = beadList,
@@ -267,10 +269,20 @@ local function renderDetail(snapshot: any)
 	local card = UnitCard.create(unitId, { Position = UDim2.fromOffset(0, 0), Size = UDim2.fromOffset(150, 210) }, { stars = stars, spin = true, zindex = 12 })
 	card.Parent = detail
 	local x = if rtl then 0 else 160
-	local name = Theme.label({ Text = t(def.nameKey), TextSize = 18, FontFace = Theme.fontBold, TextColor3 = Theme.rarityColor(def.rarity), Position = UDim2.fromOffset(x, 0), Size = UDim2.new(1, -160, 0, 22), ZIndex = 13, Parent = detail })
-	local rarity = Theme.label({ Text = t("rarity." .. def.rarity) .. " · " .. t("role." .. def.role) .. " · " .. t("units.stars", { n = stars }), TextSize = 13, TextColor3 = Theme.colors.textMuted, Position = UDim2.fromOffset(x, 22), Size = UDim2.new(1, -160, 0, 16), ZIndex = 13, Parent = detail })
-	local desc = Theme.label({ Text = t(def.descKey), TextSize = 13, Position = UDim2.fromOffset(x, 40), Size = UDim2.new(1, -160, 0, 44), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 13, Parent = detail })
-	local stats = Theme.label({ Text = statLine(t, def, owned), TextSize = 13, FontFace = Theme.fontBold, Position = UDim2.fromOffset(x, 86), Size = UDim2.new(0.5, -80, 0, 70), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 13, Parent = detail })
+	-- Right of the card, one scrolling column (name, rarity, description, stats and traits, beads,
+	-- rates) over a fixed bottom row (Add/Remove, reroll, back), so the 48 px buttons never collide
+	-- whatever the sheet's height (MOBILE_HUD_PLAN B7).
+	local col = Modal.scroller(detail)
+	col.Position = UDim2.fromOffset(160, 0)
+	col.Size = UDim2.new(1, -160, 1, -(Theme.TOUCH + 6))
+	col.ZIndex = 13
+	Create("UIListLayout", { Padding = UDim.new(0, 4), SortOrder = Enum.SortOrder.LayoutOrder, Parent = col })
+	Create("UIPadding", { PaddingRight = UDim.new(0, 12), Parent = col })
+	local name = Theme.label({ LayoutOrder = 1, Text = t(def.nameKey), TextSize = 18, FontFace = Theme.fontBold, TextColor3 = Theme.rarityColor(def.rarity), Size = UDim2.new(1, 0, 0, 22), ZIndex = 13, Parent = col })
+	local rarity = Theme.label({ LayoutOrder = 2, Text = t("rarity." .. def.rarity) .. " · " .. t("role." .. def.role) .. " · " .. t("units.stars", { n = stars }), TextSize = 13, TextColor3 = Theme.colors.textMuted, Size = UDim2.new(1, 0, 0, 16), ZIndex = 13, Parent = col })
+	local desc = Theme.label({ LayoutOrder = 3, Text = t(def.descKey), TextSize = 13, Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 13, Parent = col })
+	local statsRow = Create("Frame", { LayoutOrder = 4, BackgroundTransparency = 1, Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, ZIndex = 13, Parent = col })
+	local stats = Theme.label({ Text = statLine(t, def, owned), TextSize = 13, FontFace = Theme.fontBold, Position = UDim2.fromScale(if rtl then 0.5 else 0, 0), Size = UDim2.fromScale(0.5, 0), AutomaticSize = Enum.AutomaticSize.Y, TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 13, Parent = statsRow })
 	local next = 0
 	for _, needed in TD.STAR_COPIES do
 		if owned.copies < needed then
@@ -286,19 +298,20 @@ local function renderDetail(snapshot: any)
 		else t("units.trait2_empty")
 	local traitLine = Theme.label({
 		Text = t("units.trait", { trait = t(traitDef.nameKey) }) .. "\n" .. second .. (if next > 0 then "\n" .. t("units.copies", { n = next }) else ""),
-		TextSize = 12,
-		Position = UDim2.new(0.5, if rtl then -160 else 0, 0, 86),
-		Size = UDim2.new(0.5, 0, 0, 44),
+		TextSize = 13,
+		Position = UDim2.fromScale(if rtl then 0 else 0.5, 0),
+		Size = UDim2.fromScale(0.5, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
 		TextYAlignment = Enum.TextYAlignment.Top,
 		ZIndex = 13,
-		Parent = detail,
+		Parent = statsRow,
 	})
 	for _, l in { name, rarity, desc, stats, traitLine } do
 		Theme.align(l, rtl)
 	end
 	-- Shabriyeh beads: three slots under the stats; a tap opens the picker for that slot.
 	-- Always right of the card (the card stays on the left in Arabic too); only the order mirrors.
-	local beadRow = Create("Frame", { Name = "Beads", BackgroundTransparency = 1, Position = UDim2.fromOffset(160, 160), Size = UDim2.new(0.5, -80, 0, 42), ZIndex = 13, Parent = detail })
+	local beadRow = Create("Frame", { Name = "Beads", LayoutOrder = 5, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, Theme.TOUCH), ZIndex = 13, Parent = col })
 	Create("UIListLayout", {
 		FillDirection = Enum.FillDirection.Horizontal,
 		HorizontalAlignment = if rtl then Enum.HorizontalAlignment.Right else Enum.HorizontalAlignment.Left,
@@ -307,7 +320,7 @@ local function renderDetail(snapshot: any)
 		SortOrder = Enum.SortOrder.LayoutOrder,
 		Parent = beadRow,
 	})
-	local beadLabel = Theme.label({ LayoutOrder = 0, Text = t("units.beads_title") .. " (" .. tostring(snapshot.beads or 0) .. ")", TextSize = 12, FontFace = Theme.fontBold, Size = UDim2.fromOffset(78, 40), ZIndex = 13, Parent = beadRow })
+	local beadLabel = Theme.label({ LayoutOrder = 0, Text = t("units.beads_title") .. " (" .. tostring(snapshot.beads or 0) .. ")", TextSize = 13, FontFace = Theme.fontBold, Size = UDim2.fromOffset(84, Theme.TOUCH), ZIndex = 13, Parent = beadRow })
 	Theme.align(beadLabel, rtl)
 	for _, bs in UpgradeView.beadSlots(owned, Beads.slots, Beads.kinds) do
 		local slotButton = Theme.button({
@@ -315,7 +328,7 @@ local function renderDetail(snapshot: any)
 			LayoutOrder = if rtl then -bs.slot else bs.slot,
 			Text = if bs.kind then "" else "+",
 			TextSize = 18,
-			Size = UDim2.fromOffset(40, 40),
+			Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH),
 			BackgroundColor3 = if bs.kind then Theme.colors.panelStroke else Theme.colors.buttonDisabled,
 			ZIndex = 13,
 			Parent = beadRow,
@@ -333,14 +346,16 @@ local function renderDetail(snapshot: any)
 	end
 
 	-- Rates first: the reroll is a paid random item.
+	local ratesRow = Create("Frame", { LayoutOrder = 6, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, Theme.TOUCH), ZIndex = 13, Parent = col })
 	local rates = Theme.button({
 		Text = t("units.rates"),
-		TextSize = 13,
-		Position = UDim2.new(0.5, if rtl then -160 else 0, 0, 130),
-		Size = UDim2.fromOffset(120, 32),
+		TextSize = 14,
+		AnchorPoint = Vector2.new(if rtl then 1 else 0, 0),
+		Position = UDim2.fromScale(if rtl then 1 else 0, 0),
+		Size = UDim2.fromOffset(140, Theme.TOUCH),
 		BackgroundColor3 = Theme.colors.quest,
 		ZIndex = 13,
-		Parent = detail,
+		Parent = ratesRow,
 	})
 	rates.Activated:Connect(function()
 		renderRates(snapshot)
@@ -358,7 +373,7 @@ local function renderDetail(snapshot: any)
 		TextSize = 14,
 		AnchorPoint = Vector2.new(0, 1),
 		Position = UDim2.new(0, x, 1, 0),
-		Size = UDim2.fromOffset(170, Theme.TOUCH - 6),
+		Size = UDim2.fromOffset(170, Theme.TOUCH),
 		BackgroundColor3 = if inLoadout then Theme.colors.danger else (if full then Theme.colors.buttonDisabled else Theme.colors.button),
 		ZIndex = 13,
 		Parent = detail,
@@ -384,16 +399,16 @@ local function renderDetail(snapshot: any)
 		traitLine.Text = t("units.trait", { trait = t(traitDef.nameKey) }) .. "\n" .. second .. stones .. (if next > 0 then "\n" .. t("units.copies", { n = next }) else "")
 	end
 	local slotsOpen = if open then 2 else 1
-	local width = if open then 112 else 230
+	local width = if open then 108 else 222 -- clear of the 48 px back button at a 616 px body
 	for slot = 1, slotsOpen do
 		local label = if not open then t("units.reroll") .. stones else t(if slot == 1 then "units.reroll1" else "units.reroll2")
 		local reroll = Theme.button({
 			Text = label,
-			TextSize = if open then 11 else 13,
+			TextSize = 13,
 			TextWrapped = true,
 			AnchorPoint = Vector2.new(0, 1),
 			Position = UDim2.new(0, x + 180 + (slot - 1) * (width + 6), 1, 0),
-			Size = UDim2.fromOffset(width, Theme.TOUCH - 6),
+			Size = UDim2.fromOffset(width, Theme.TOUCH),
 			BackgroundColor3 = if snapshot.traitStones > 0 then Theme.rarity.epic else Theme.colors.buttonDisabled,
 			ZIndex = 13,
 			Parent = detail,
@@ -406,7 +421,7 @@ local function renderDetail(snapshot: any)
 			end
 		end)
 	end
-	local back = Theme.button({ Text = "<", TextSize = 16, AnchorPoint = Vector2.new(1, 1), Position = UDim2.fromScale(1, 1), Size = UDim2.fromOffset(44, Theme.TOUCH - 6), BackgroundColor3 = Theme.colors.quest, ZIndex = 13, Parent = detail })
+	local back = Theme.button({ Text = "<", TextSize = 16, AnchorPoint = Vector2.new(1, 1), Position = UDim2.fromScale(1, 1), Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH), BackgroundColor3 = Theme.colors.quest, ZIndex = 13, Parent = detail })
 	back.Activated:Connect(function()
 		selected = nil
 		UnitsController.render()

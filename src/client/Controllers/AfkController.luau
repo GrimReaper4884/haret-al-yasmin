@@ -393,7 +393,7 @@ end
 -- Opens the read-only list of the season's tales (the Tales button in the room; Studio harness T).
 function AfkController.openTales()
 	if not talesModal then
-		local m = Modal.create("AfkTales", 560, 250)
+		local m = Modal.create("AfkTales", 560, 250, { fill = true })
 		talesList = Modal.scroller(m.body)
 		Create("UIListLayout", { Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder, Parent = talesList })
 		talesModal = m

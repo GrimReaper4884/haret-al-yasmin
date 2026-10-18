@@ -130,9 +130,53 @@ local ROWS: { Row } = {
 		labelKey = "settings.autoAfk",
 		options = { { value = true, textKey = "settings.on" }, { value = false, textKey = "settings.off" } },
 	},
+	-- Touch HUD (MOBILE_HUD_PLAN B7): UI size, where the defender panel opens, tap-to-place on touch,
+	-- which edge holds the match rail and Place; and the language (its own remote, not a setting).
+	{
+		key = "uiScale",
+		labelKey = "settings.uiScale",
+		options = {
+			{ value = "small", textKey = "settings.uiScale.small" },
+			{ value = "default", textKey = "settings.uiScale.default" },
+			{ value = "large", textKey = "settings.uiScale.large" },
+			{ value = "huge", textKey = "settings.uiScale.huge" },
+		},
+	},
+	{
+		key = "panelSide",
+		labelKey = "settings.panelSide",
+		options = {
+			{ value = "auto", textKey = "settings.panelSide.auto" },
+			{ value = "side", textKey = "settings.panelSide.side" },
+			{ value = "bottom", textKey = "settings.panelSide.bottom" },
+		},
+	},
+	{
+		key = "quickPlace",
+		labelKey = "settings.quickPlace",
+		options = { { value = true, textKey = "settings.on" }, { value = false, textKey = "settings.off" } },
+	},
+	{
+		key = "railSide",
+		labelKey = "settings.railSide",
+		options = { { value = "right", textKey = "settings.railSide.right" }, { value = "left", textKey = "settings.railSide.left" } },
+	},
+	{
+		key = "language",
+		labelKey = "settings.language",
+		options = { { value = "en", textKey = "settings.language.en" }, { value = "ar", textKey = "settings.language.ar" } },
+	},
 }
 
-local MAX_BODY = 280 -- px
+-- The value a row shows as selected (the language lives in LocaleController, not in Settings).
+local function rowValue(key: string): any
+	if key == "language" then
+		return LocaleController.lang()
+	end
+	return values[key]
+end
+
+local MAX_BODY = 300 -- px
 local modal: Modal.Modal
 local rowLabels: { [string]: TextLabel } = {}
 local optionButtons: { [string]: { { b: TextButton, value: any, textKey: string } } } = {}
@@ -152,7 +196,7 @@ local function render()
 		Theme.align(l, rtl)
 		for _, o in optionButtons[row.key] do
 			o.b.Text = t(o.textKey)
-			local on = values[row.key] == o.value
+			local on = rowValue(row.key) == o.value
 			o.b.BackgroundColor3 = if on then Theme.colors.confirm else Theme.colors.buttonDisabled
 		end
 	end
@@ -161,23 +205,34 @@ local function render()
 end
 
 local function build()
-	-- The rows scroll once they outgrow a landscape phone (390 px tall at UIScale 1).
-	modal = Modal.create("Settings", 520, math.min(#ROWS * 46 + 48, MAX_BODY))
+	-- The rows scroll once they outgrow the body (a sheet on phones).
+	modal = Modal.create("Settings", 560, math.min(#ROWS * (Theme.TOUCH + 6) + 48, MAX_BODY), { fill = true })
 	local body = Modal.scroller(modal.body)
 	Create("UIPadding", { PaddingTop = UDim.new(0, 3), PaddingBottom = UDim.new(0, 3), PaddingRight = UDim.new(0, 12), Parent = body })
 	Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = body })
 	for i, row in ROWS do
-		local line = Create("Frame", { LayoutOrder = i, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 40), ZIndex = 11, Parent = body })
+		local line = Create("Frame", { LayoutOrder = i, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, Theme.TOUCH), ZIndex = 11, Parent = body })
 		rowLabels[row.key] = Theme.label({ TextSize = 15, FontFace = Theme.fontBold, Size = UDim2.fromScale(0.38, 1), ZIndex = 11, Parent = line })
 		local opts = Create("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromScale(0.62, 1), ZIndex = 11, Parent = line })
 		Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = opts })
 		optionButtons[row.key] = {}
-		local w = if #row.options == 3 then 96 else 120
+		local w = if #row.options >= 4 then 74 elseif #row.options == 3 then 96 else 120
 		for j, o in row.options do
-			local b = Theme.button({ LayoutOrder = j, TextSize = 14, Size = UDim2.fromOffset(w, 40), ZIndex = 11, Parent = opts })
+			local b = Theme.button({ LayoutOrder = j, TextSize = 14, Size = UDim2.fromOffset(w, Theme.TOUCH), ZIndex = 11, Parent = opts })
+			local pad = b:FindFirstChildOfClass("UIPadding")
+			if pad then
+				pad.PaddingLeft = UDim.new(0, 4)
+				pad.PaddingRight = UDim.new(0, 4)
+			end
 			table.insert(optionButtons[row.key], { b = b, value = o.value, textKey = o.textKey })
 			b.Activated:Connect(function()
-				SettingsController.set(row.key, o.value)
+				if row.key == "language" then
+					if LocaleController.lang() ~= o.value then
+						LocaleController.toggle()
+					end
+				else
+					SettingsController.set(row.key, o.value)
+				end
 			end)
 		end
 	end

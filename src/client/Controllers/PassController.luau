@@ -46,22 +46,23 @@ local function claim(tier: number, track: string)
 end
 
 local function build()
-	modal = Modal.create("Pass", 720, 250)
+	modal = Modal.create("Pass", 720, 262)
 	local body = modal.body
-	levelLabel = Theme.label({ TextSize = 16, FontFace = Theme.fontBold, Size = UDim2.new(0.5, 0, 0, 20), ZIndex = 11, Parent = body })
-	endsLabel = Theme.label({ TextSize = 13, TextColor3 = Theme.colors.textMuted, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(0.5, 0, 0, 20), ZIndex = 11, Parent = body })
-	endsLabel.TextXAlignment = Enum.TextXAlignment.Right
-	xpBar = Create("Frame", { Position = UDim2.fromOffset(0, 24), Size = UDim2.new(1, 0, 0, 14), BackgroundColor3 = Theme.colors.panelStroke, BackgroundTransparency = 0.7, BorderSizePixel = 0, ZIndex = 11, Parent = body }, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+	-- Top: the level and the season end on the left, Premium and Skip (48 px) on the right (MOBILE_HUD_PLAN B7).
+	levelLabel = Theme.label({ TextSize = 16, FontFace = Theme.fontBold, Size = UDim2.new(1, -400, 0, 22), ZIndex = 11, Parent = body })
+	endsLabel = Theme.label({ TextSize = 13, TextColor3 = Theme.colors.textMuted, Position = UDim2.fromOffset(0, 24), Size = UDim2.new(1, -400, 0, 18), ZIndex = 11, Parent = body })
+	endsLabel.TextXAlignment = Enum.TextXAlignment.Left
+	xpBar = Create("Frame", { Position = UDim2.fromOffset(0, Theme.TOUCH + 4), Size = UDim2.new(1, 0, 0, 14), BackgroundColor3 = Theme.colors.panelStroke, BackgroundTransparency = 0.7, BorderSizePixel = 0, ZIndex = 11, Parent = body }, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
 	xpFill = Create("Frame", { Size = UDim2.fromScale(0, 1), BackgroundColor3 = Theme.colors.quest, BorderSizePixel = 0, ZIndex = 12, Parent = xpBar }, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
 	xpLabel = Theme.label({ TextSize = 11, FontFace = Theme.fontBold, Size = UDim2.fromScale(1, 1), ZIndex = 13, Parent = xpBar })
 	xpLabel.TextXAlignment = Enum.TextXAlignment.Center
-	local holder = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, 44), Size = UDim2.new(1, 0, 0, 150), ZIndex = 11, Parent = body })
+	local holder = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, Theme.TOUCH + 24), Size = UDim2.new(1, 0, 0, 190), ZIndex = 11, Parent = body })
 	strip = Modal.scroller(holder, true)
 	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = strip })
-	local row = Create("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(1, 0, 0, Theme.TOUCH - 6), ZIndex = 11, Parent = body })
-	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = row })
-	premiumButton = Theme.button({ LayoutOrder = 1, TextSize = 14, Size = UDim2.fromOffset(220, Theme.TOUCH - 6), BackgroundColor3 = Theme.rarity.legendary, ZIndex = 11, Parent = row })
-	skipButton = Theme.button({ LayoutOrder = 2, TextSize = 14, Size = UDim2.fromOffset(180, Theme.TOUCH - 6), BackgroundColor3 = Theme.colors.quest, ZIndex = 11, Parent = row })
+	local row = Create("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromOffset(392, Theme.TOUCH), ZIndex = 11, Parent = body })
+	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = row })
+	premiumButton = Theme.button({ LayoutOrder = 1, TextSize = 14, Size = UDim2.fromOffset(210, Theme.TOUCH), BackgroundColor3 = Theme.rarity.legendary, ZIndex = 11, Parent = row })
+	skipButton = Theme.button({ LayoutOrder = 2, TextSize = 14, Size = UDim2.fromOffset(170, Theme.TOUCH), BackgroundColor3 = Theme.colors.quest, ZIndex = 11, Parent = row })
 	premiumButton.Activated:Connect(function()
 		Net.event(Net.Events.RequestProduct):FireServer("pass_premium_s1")
 	end)
@@ -72,7 +73,7 @@ end
 
 local function tierColumn(t: any, snapshot: any, tier: number, level: number)
 	local def = SeasonPass.tiers[tier]
-	local col = Create("Frame", { LayoutOrder = tier, Size = UDim2.fromOffset(118, 146), BackgroundColor3 = if tier <= level then Theme.colors.quest else Theme.colors.panelStroke, BackgroundTransparency = if tier <= level then 0.8 else 0.9, BorderSizePixel = 0, ZIndex = 11, Parent = strip }, { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) })
+	local col = Create("Frame", { LayoutOrder = tier, Size = UDim2.fromOffset(118, 186), BackgroundColor3 = if tier <= level then Theme.colors.quest else Theme.colors.panelStroke, BackgroundTransparency = if tier <= level then 0.8 else 0.9, BorderSizePixel = 0, ZIndex = 11, Parent = strip }, { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) })
 	local head = Theme.label({ Text = t("pass.level", { n = tier }), TextSize = 13, FontFace = Theme.fontBold, Size = UDim2.new(1, 0, 0, 18), ZIndex = 12, Parent = col })
 	head.TextXAlignment = Enum.TextXAlignment.Center
 	local function trackBlock(y: number, track: string, reward: any)
@@ -80,10 +81,10 @@ local function tierColumn(t: any, snapshot: any, tier: number, level: number)
 		local lockedPremium = track == "premium" and not snapshot.pass.premium
 		local label = Theme.label({ Text = t("pass." .. track), TextSize = 11, Position = UDim2.fromOffset(4, y), Size = UDim2.new(1, -8, 0, 12), TextYAlignment = Enum.TextYAlignment.Top, TextColor3 = if track == "premium" then Theme.rarity.legendary else Theme.colors.text, ZIndex = 12, Parent = col })
 		label.TextXAlignment = Enum.TextXAlignment.Center
-		Amount.row({ Position = UDim2.fromOffset(2, y + 12), Size = UDim2.new(1, -4, 0, 24), ZIndex = 12, Parent = col }, Amount.reward(t, reward), { iconSize = 24, textSize = 12, rtl = LocaleController.isRtl() })
+		Amount.row({ Position = UDim2.fromOffset(2, y + 12), Size = UDim2.new(1, -4, 0, 22), ZIndex = 12, Parent = col }, Amount.reward(t, reward), { iconSize = 22, textSize = 12, rtl = LocaleController.isRtl() })
 		local text = if claimed then t("pass.claimed") elseif tier > level then t("pass.locked") elseif lockedPremium then t("pass.premium") else t("pass.claim")
 		local enabled = not claimed and tier <= level and not lockedPremium
-		local b = Theme.button({ Text = text, TextSize = 12, Position = UDim2.fromOffset(6, y + 36), Size = UDim2.new(1, -12, 0, 26), BackgroundColor3 = if enabled then Theme.colors.button else Theme.colors.buttonDisabled, AutoButtonColor = enabled, ZIndex = 12, Parent = col })
+		local b = Theme.button({ Text = text, TextSize = 12, Position = UDim2.fromOffset(6, y + 36), Size = UDim2.new(1, -12, 0, Theme.TOUCH), BackgroundColor3 = if enabled then Theme.colors.button else Theme.colors.buttonDisabled, AutoButtonColor = enabled, ZIndex = 12, Parent = col })
 		b.Activated:Connect(function()
 			if enabled then
 				claim(tier, track)
@@ -91,7 +92,7 @@ local function tierColumn(t: any, snapshot: any, tier: number, level: number)
 		end)
 	end
 	trackBlock(20, "free", def.free)
-	trackBlock(84, "premium", def.premium)
+	trackBlock(102, "premium", def.premium)
 end
 
 function PassController.render()

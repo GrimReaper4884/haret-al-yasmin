@@ -19,7 +19,7 @@ local LobbyMenuController = require(script.Parent.LobbyMenuController)
 local DailyController = {}
 
 local modal: Modal.Modal
-local row: Frame
+local row: ScrollingFrame
 local streakLabel: TextLabel
 local claimButton: TextButton
 local busy = false
@@ -28,7 +28,9 @@ local function build()
 	modal = Modal.create("Daily", 700, 200)
 	local body = modal.body
 	streakLabel = Theme.label({ TextSize = 14, FontFace = Theme.fontBold, Size = UDim2.new(1, 0, 0, 18), ZIndex = 11, Parent = body })
-	row = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, 22), Size = UDim2.new(1, 0, 0, 110), ZIndex = 11, Parent = body })
+	-- The seven days scroll sideways when they do not fit (MOBILE_HUD_PLAN B7).
+	local holder = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, 22), Size = UDim2.new(1, 0, 0, 116), ZIndex = 11, Parent = body })
+	row = Modal.scroller(holder, true)
 	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = row })
 	claimButton = Theme.button({ TextSize = 16, AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.fromScale(0.5, 1), Size = UDim2.fromOffset(220, Theme.TOUCH), BackgroundColor3 = Theme.colors.accent, ZIndex = 11, Parent = body })
 	claimButton.Activated:Connect(function()
