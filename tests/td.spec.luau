@@ -1965,6 +1965,37 @@ return function(t)
 			t.eq(play("ep6", "nightmare", "whale").won, false, "ep6 Nightmare: past the whale")
 			t.truthy(play("ep6", "nightmare", "whale2").won, "ep6 Nightmare: whale2")
 		end)
+		-- Episodes 7–9 meet every cell of the STORY_PLAN §5.3 ladder (S1-S09, D-066).
+		t.it("Episodes 7–9 climb the ladder: each cell won by its target and by no tier below it (S1-S09)", function()
+			local TARGET = {
+				ep7 = { normal = "myth12up", hard = "myth12up+beads", nightmare = "whale2" },
+				ep8 = { normal = "myth12up+beads", hard = "whale2", nightmare = "whale2" },
+				ep9 = { normal = "myth12up+beads", hard = "whale2", nightmare = "whale2" },
+			}
+			local order = AutoBattle.POLICY_ORDER
+			for ep, cells in TARGET do
+				for diff, target in cells do
+					t.truthy(play(ep, diff, target).won, ep .. " " .. diff .. ": won by " .. target)
+					for i = table.find(order, "leg10up") :: number, (table.find(order, target) :: number) - 1 do
+						t.eq(play(ep, diff, order[i]).won, false, ep .. " " .. diff .. ": not won by " .. order[i])
+					end
+				end
+			end
+		end)
+		t.it("Episodes 8 and 9 walk both roads and bring the ally (S1-S09)", function()
+			for _, id in { "ep8", "ep9" } do
+				t.eq(Modes[id].arena, "twin_gates")
+				t.eq(Modes[id].twinRoads, true)
+			end
+			local turn = Waves.episodes.ep8.script[41]
+			t.eq(turn.kind, "ally")
+			t.eq(turn.unit, "adashari")
+			t.eq(Waves.episodes.ep8.bosses[40], "chief_thief", "he comes as the thief on wave 40, then turns")
+			local guard = Waves.episodes.ep9.script[1]
+			t.eq(guard.unit, "adashari")
+			t.eq(guard.shield, 20, "he takes the first 20 gate damage")
+			t.eq(Modes.ep7.twinRoads, nil, "Episode 7 has one road")
+		end)
 
 		t.it("Episode 1 Normal: 4–6 upgraded Rare/Epic win; without upgrades the wave-10 boss breaks you", function()
 			t.truthy(play("ep1", "normal", "re4up").won, "4 R/E + upgrades")

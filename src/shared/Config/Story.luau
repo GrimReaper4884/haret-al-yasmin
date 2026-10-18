@@ -54,7 +54,7 @@ local episodes: { [string]: Episode } = {
 	ep8 = episode(
 		"ep8",
 		{ "two_paths", "split", "heal" },
-		{ "fakhr", "abu_zira", "rival_zaim", "rival_zaim_enraged" },
+		{ "fakhr", "abu_zira", "chief_thief", "rival_zaim", "rival_zaim_enraged" },
 		{ ally_turn = "story.moment.ally_turn" }
 	),
 	ep9 = episode("ep9", { "ally", "swarm", "stealth" }, { "abu_shatour", "lateef", "abu_zira", "fakhr", "rival_zaim", "colonel" }),

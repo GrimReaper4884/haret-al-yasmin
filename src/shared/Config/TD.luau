@@ -86,6 +86,9 @@ return {
 		ep4 = { lira = 300, qirsh = 300, xp = 320 },
 		ep5 = { lira = 360, qirsh = 340, xp = 380 },
 		ep6 = { lira = 420, qirsh = 380, xp = 440 },
+		ep7 = { lira = 480, qirsh = 420, xp = 500 },
+		ep8 = { lira = 560, qirsh = 480, xp = 580 },
+		ep9 = { lira = 650, qirsh = 540, xp = 680 },
 	},
 	-- One-off gifts for the first clear of an episode at (or above) a difficulty, on top of the reward:
 	-- trait stones and/or a unit (a copy already owned stars it). Beads are in Config/Beads.firstClear.

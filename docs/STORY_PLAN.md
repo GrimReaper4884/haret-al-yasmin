@@ -286,6 +286,8 @@ with level-7 signatures), **myth12up+beads** (beads at 2 of 3 slots), **whale2**
 
 Achieved (S1-S04, D-057): ep4 leg10up / leg10up / whale; ep5 leg10up / leg10up / whale (Fawza helps, isn't required: D-058);
 ep6 leg10up+sig with two lanterns / myth12up (coin flip) → myth12up+beads / whale2. Table in `TOWER_DEFENSE.md` §5.
+Achieved (S1-S09, D-066): ep7 myth12up / myth12up+beads / whale2; ep8 myth12up+beads / whale2 / whale2 (31/35, knife edge);
+ep9 myth12up+beads / whale2 / whale2 (the ally is not decisive in the harness). Every §5.3 cell for Episodes 7–9 is met.
 
 Rules for tuning: every cell one tier harder than the one above it; **no episode is won by the tier below
 its Normal target on Normal** (asserted); bosses stay gate-breakers (gate damage 40/60/80/100/120 for the new
