@@ -16,6 +16,8 @@ local Story = require(Shared.Config.Story)
 local IconIds = require(Shared.Config.Icons)
 local Signal = require(Shared.Util.Signal)
 local PartyLogic = require(Shared.Logic.PartyLogic)
+local MechanicFx = require(Shared.Logic.MechanicFx)
+local Vfx = require(Shared.Config.Vfx)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
@@ -46,6 +48,9 @@ local hud: Frame
 local waveLabel: TextLabel
 local countLabel: TextLabel
 local gateMeter: Theme.Meter
+local burnRow: Frame -- flame pips under the gate bar, one per burn stack (S1-C02)
+local burnPips: { Frame } = {}
+local lastBurn = 0
 local cashLabel: TextLabel
 local cashBox: Frame
 local flash: Frame
@@ -95,6 +100,14 @@ local function build()
 	countLabel = Theme.display({ TextSize = 14, TextColor3 = Color3.fromHex("#FFE9B8"), Size = UDim2.new(1, 0, 0, 16), Position = UDim2.fromOffset(0, 36), ZIndex = 3, Parent = top })
 	countLabel.TextXAlignment = Enum.TextXAlignment.Center
 	gateMeter = Theme.meter({ Position = UDim2.fromOffset(10, 55), Size = UDim2.new(1, -20, 0, 20), ZIndex = 3, Parent = top }, Theme.colors.hpHigh)
+	local pip = Vfx.STORY.burnPip
+	burnRow = Create("Frame", { Name = "Burn", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 76), Size = UDim2.fromOffset((pip + 2) * TD.BURN_MAX_STACKS, pip), BackgroundTransparency = 1, Visible = false, ZIndex = 3, Parent = top })
+	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, Padding = UDim.new(0, 2), SortOrder = Enum.SortOrder.LayoutOrder, Parent = burnRow })
+	for i = 1, TD.BURN_MAX_STACKS do
+		local holder = Create("Frame", { LayoutOrder = i, BackgroundTransparency = 1, Size = UDim2.fromOffset(pip, pip), Visible = false, ZIndex = 4, Parent = burnRow })
+		Icons.draw("mech_burn", holder)
+		table.insert(burnPips, holder)
+	end
 
 	-- Cash: bottom centre, just above the unit bar, so cost and wallet read in one glance.
 	local cashPill
@@ -283,6 +296,16 @@ local function render()
 	local frac = if state.gateMax > 0 then state.gateHp / state.gateMax else 0
 	gateMeter.fill.BackgroundColor3 = if frac > 0.5 then Theme.colors.hpHigh elseif frac > 0.25 then Theme.colors.hpMid else Theme.colors.hpLow
 	gateMeter.set(frac, t("match.gate") .. "  " .. state.gateHp .. " / " .. state.gateMax)
+	-- Burn stacks on the gate (Episode 5's torchbearers): one flame each; a new one punches.
+	local burn = MechanicFx.burnPips(state.gateBurn, TD.BURN_MAX_STACKS)
+	for i, holder in burnPips do
+		holder.Visible = i <= burn
+	end
+	burnRow.Visible = burn > 0
+	if burn > lastBurn then
+		Juice.punch(burnRow, 0.2)
+	end
+	lastBurn = burn
 
 	local cash = state.cash
 	-- The cash icon carries the unit; the pill shows the number only.
