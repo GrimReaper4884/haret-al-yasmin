@@ -153,4 +153,77 @@ return function(t)
 			end
 		end)
 	end)
+
+	-- Season Story 1 (Config/Story, STORY_PLAN §5, S1-N02): every line resolves in every language.
+	t.describe("Story", function()
+		local Story = t.config("Story")
+		local Waves = t.config("Waves")
+		t.it("nine episodes, three intro and three outro lines each, every key in EN and AR", function()
+			checkKey(Story.titleKey, "Story.titleKey")
+			t.eq(#Story.order, 9)
+			local seen = {}
+			for i, id in Story.order do
+				t.eq(id, "ep" .. i, "episodes in order")
+				local ep = Story.episodes[id]
+				t.truthy(ep, id .. " has an entry")
+				seen[id] = true
+				checkKey(ep.titleKey, id .. ".title")
+				t.eq(#ep.intro, 3, id .. " intro lines")
+				t.eq(#ep.outro, 3, id .. " outro lines")
+				for _, key in ep.intro do
+					checkKey(key, id .. ".intro")
+				end
+				for _, key in ep.outro do
+					checkKey(key, id .. ".outro")
+				end
+				for enemy, key in ep.boss do
+					checkKey(key, id .. ".boss." .. enemy)
+				end
+				for name, key in ep.moments or {} do
+					checkKey(key, id .. ".moment." .. name)
+				end
+			end
+			for id in Story.episodes do
+				t.truthy(seen[id], id .. " is in Story.order")
+			end
+		end)
+		t.it("13 boss lines; the built episodes have a line for every boss they spawn", function()
+			local keys = {}
+			for _, ep in Story.episodes do
+				for _, key in ep.boss do
+					keys[key] = true
+				end
+				for _, key in ep.moments or {} do
+					keys[key] = true
+				end
+			end
+			local n = 0
+			for _ in keys do
+				n += 1
+			end
+			t.eq(n, 13, "boss and moment lines")
+			for id, wave in Waves.episodes do
+				local ep = Story.episodes[id]
+				if ep then
+					for _, boss in wave.bosses do
+						t.truthy(ep.boss[boss], id .. " has a Hakawati line for " .. boss)
+					end
+				end
+			end
+		end)
+		t.it("no story line names a character (names wait for the S1-N01 table)", function()
+			local banned = { "Abu ", "Issam", "Shehab", "Idaashari", "Adashari", "أبو ", "الإدعشري", "العدشري" }
+			for key, text in Strings.en do
+				if string.sub(key, 1, 6) == "story." then
+					for _, lang in Strings.languages do
+						local s = Strings[lang][key]
+						for _, word in banned do
+							t.truthy(not string.find(s, word, 1, true), key .. " (" .. lang .. ") names " .. word)
+						end
+					end
+				end
+				t.truthy(text ~= "", key)
+			end
+		end)
+	end)
 end
