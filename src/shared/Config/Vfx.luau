@@ -6,6 +6,7 @@
 return {
 	MAX_LIVE = 80, -- pooled effect parts on screen at once (hard cap)
 	MAX_PER_FRAME = 14, -- pooled parts handed out in one frame; the rest of that frame's effects are skipped
+	INFO_RESERVE = 30, -- of MAX_LIVE, kept for play information (Vfx.STORY rings and telegraph; S1-C02)
 
 	-- Particle sprites (PV-B01, assets/marketing/vfx/*.png, 256² with alpha). id 0 = not uploaded:
 	-- UI/Fx.emitter returns nil and callers keep their part-based effect. MAX_EMITTERS caps the
@@ -124,8 +125,8 @@ return {
 	-- information) and drops the flashes. Burn stacks on the gate show as flame pips under the gate
 	-- bar (HUD, every Effects level), `burnPip` px each.
 	STORY = {
-		aura = { color = "#E8A33A", transparency = 0.8, max = 6, height = 0.1 },
-		shield = { color = "#8FB3D9", transparency = 0.78, max = 6, height = 0.1 },
+		aura = { color = "#E8A33A", transparency = 0.9, max = 6, height = 0.1 }, -- neon: reads on night maps
+		shield = { color = "#8FB3D9", transparency = 0.86, max = 6, height = 0.1 },
 		reveal = { color = "#F2C14E", radius = 3.5, life = 0.5 },
 		telegraph = { color = "#B04CC4", spacing = 3, dash = 1.6, width = 0.45, maxDashes = 14, landRadius = 3 },
 		summon = { color = "#4A5C8C", radius = 5, life = 0.6 },

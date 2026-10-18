@@ -642,6 +642,12 @@ Tag legend in the flag column: **MEANING** may say the wrong thing · **DIALECT*
 | 22 | `mech.heal` | Healers | مداوين |  |  |  |
 | 23 | `mech.ally` | An ally | حليف |  |  |  |
 
+## 20. Season Story 1: match toasts (S1-C02)
+
+| # | Key | English | Arabic (current) | Claude flag | Correction | OK? |
+|---|-----|---------|------------------|-------------|------------|-----|
+| 1 | `match.summon` | {boss} calls {n} × {enemy}! | {boss} نادى {n} × {enemy}! | «نادى» = called (for); alternative «جاب معه». |  |  |
+
 ## Sign-off
 
 | Reviewer | Dialect / country | Date | Sections reviewed | Notes |

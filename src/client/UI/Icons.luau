@@ -330,14 +330,14 @@ local drawers: { [string]: (Frame, Color3) -> () } = {
 		rectO(h, orange, 0.5, 0.62, 0.48, 0.48, 0.45, 45)
 		rect(h, Color3.fromHex("#F7C948"), 0.5, 0.68, 0.22, 0.22, 0.45, 45)
 	end,
+	-- A gold "?" filling a dark disc, so it still reads at the 12 px health-bar marker size.
 	mech_disguise = function(h, _c)
-		rectO(h, Color3.fromHex("#5B5368"), 0.5, 0.56, 0.7, 0.76, 0.45)
-		rect(h, Palette.ink, 0.5, 0.46, 0.46, 0.34, 0.45)
+		rectO(h, Color3.fromHex("#3A3346"), 0.5, 0.5, 0.92, 0.92, 1)
 		Create("TextLabel", {
 			BackgroundTransparency = 1,
 			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.fromScale(0.5, 0.47),
-			Size = UDim2.fromScale(0.4, 0.36),
+			Position = UDim2.fromScale(0.5, 0.52),
+			Size = UDim2.fromScale(0.78, 0.78),
 			Text = "?",
 			TextScaled = true,
 			Font = Enum.Font.GothamBlack,

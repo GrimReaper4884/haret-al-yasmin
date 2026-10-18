@@ -64,6 +64,7 @@ type Enemy = {
 	disc: BasePart?, -- red ground disc under a boss (PV-A04)
 	ring: BasePart?, -- faint ground ring of a drummer's aura or a porter's shield (S1-C02)
 	ringKind: string?,
+	wantRing: MechanicFx.Ring?, -- its ring, until it gets one (a busy frame's budget may be spent)
 	disguise: Frame?, -- the "?" marker on a disguised attacker's health bar until it is revealed
 }
 
@@ -77,6 +78,30 @@ local arenaPaths: { Path.Path } = {} -- every road (twin-gate arenas have two; S
 local origin: CFrame? = nil
 local selectedTower: number? = nil -- PlacementController tells us; its target gets the flash
 local ringCounts: { [string]: number } = {} -- ground rings in use per kind (Vfx.STORY caps)
+
+-- Gives a drummer or porter its ground ring if the kind's cap and this frame's effects budget allow;
+-- called at spawn and again each frame until it has one.
+local function tryRing(rec: Enemy)
+	local want = rec.wantRing
+	if not want or rec.ring or not MechanicFx.plan(Fx.level()).rings then
+		return
+	end
+	local cfg = (Vfx.STORY :: any)[want.kind]
+	if not MechanicFx.admit(ringCounts, want.kind, cfg.max) then
+		return
+	end
+	local ring = Fx.part(Enum.PartType.Cylinder, true)
+	if not ring then
+		MechanicFx.release(ringCounts, want.kind)
+		return
+	end
+	ring.Color = Color3.fromHex(cfg.color) -- pooled parts are Neon: a soft glow that still reads at night
+	ring.Transparency = cfg.transparency
+	ring.Size = Vector3.new(cfg.height, want.radius * 2, want.radius * 2)
+	rec.ring = ring
+	rec.ringKind = want.kind
+	rec.wantRing = nil
+end
 
 local function dropRing(rec: Enemy)
 	local ring, kind = rec.ring, rec.ringKind
@@ -231,23 +256,8 @@ local function spawn(e: any)
 	}
 	rec.bar, rec.disguise = healthBar(model, rec.boss, MechanicFx.markers(def, false))
 	-- A drummer's aura or a porter's shield: a faint ground ring at its real radius (S1-C02).
-	local ringDef = MechanicFx.ring(def)
-	if ringDef and MechanicFx.plan(Fx.level()).rings then
-		local cfg = (Vfx.STORY :: any)[ringDef.kind]
-		if MechanicFx.admit(ringCounts, ringDef.kind, cfg.max) then
-			local ring = Fx.part(Enum.PartType.Cylinder)
-			if ring then
-				ring.Material = Enum.Material.SmoothPlastic
-				ring.Color = Color3.fromHex(cfg.color)
-				ring.Transparency = cfg.transparency
-				ring.Size = Vector3.new(cfg.height, ringDef.radius * 2, ringDef.radius * 2)
-				rec.ring = ring
-				rec.ringKind = ringDef.kind
-			else
-				MechanicFx.release(ringCounts, ringDef.kind)
-			end
-		end
-	end
+	rec.wantRing = MechanicFx.ring(def)
+	tryRing(rec)
 	if rec.boss then
 		showBoss(e.id, e.enemyId)
 		if Fx.any() then
@@ -698,16 +708,17 @@ end
 ---------------------------------------------------------------- Story mechanics (S1-C02)
 
 -- A flat ring that grows and fades at `at` (reveal flash, summon pulse, telegraph landing).
-local function groundPulse(at: Vector3, color: string, radius: number, life: number)
-	local ring = Fx.part(Enum.PartType.Cylinder)
+local function groundPulse(at: Vector3, color: string, radius: number, life: number, info: boolean?): boolean
+	local ring = Fx.part(Enum.PartType.Cylinder, info)
 	if not ring then
-		return
+		return false
 	end
 	ring.Color = Color3.fromHex(color)
 	ring.Transparency = 0.25
 	ring.Size = Vector3.new(0.3, 1.5, 1.5)
 	ring.CFrame = CFrame.new(at + Vector3.new(0, 0.3, 0)) * CFrame.Angles(0, 0, math.rad(90))
 	Fx.fade(ring, life, { Size = Vector3.new(0.3, radius * 2, radius * 2), Transparency = 1 })
+	return true
 end
 
 -- A disguise falls: the "?" goes and a gold ring flashes on the figure.
@@ -744,20 +755,39 @@ local function telegraph(e: any)
 	local life = ((def and def.teleport and def.teleport.telegraph) or 2) / math.max(1, (s and s.speed) or 1)
 	local cfg = Vfx.STORY.telegraph
 	local color = Color3.fromHex(cfg.color)
-	for _, d in MechanicFx.dashes(e.from, math.min(e.to, path.length), cfg.spacing, cfg.maxDashes) do
-		local dash = Fx.part(Enum.PartType.Block)
-		if not dash then
-			break
+	local to = math.min(e.to, path.length)
+	local list = MechanicFx.dashes(e.from, to, cfg.spacing, cfg.maxDashes)
+	local lx, lz = Path.position(path, to)
+	local landAt = (o * CFrame.new(lx, 0, lz)).Position
+	-- The per-frame effects budget is shared with every hit of the wave: whatever this frame can't
+	-- take is drawn on the next ones (the landing ring first: where he lands is the warning).
+	task.spawn(function()
+		local started = os.clock()
+		local landed = false
+		local i = 1
+		while (not landed or i <= #list) and os.clock() - started < life and MatchController.active() do
+			local left = life - (os.clock() - started)
+			if not landed then
+				landed = groundPulse(landAt, cfg.color, cfg.landRadius, left, true)
+			end
+			while landed and i <= #list do
+				local dash = Fx.part(Enum.PartType.Block, true)
+				if not dash then
+					break
+				end
+				local x, z, ux, uz = Path.position(path, list[i])
+				dash.Color = color
+				dash.Transparency = 0.15
+				dash.Size = Vector3.new(cfg.width, 0.15, cfg.dash)
+				dash.CFrame = o * CFrame.lookAt(Vector3.new(x, 0.2, z), Vector3.new(x + ux, 0.2, z + uz))
+				Fx.fade(dash, left, { Transparency = 1 }, Enum.EasingStyle.Quint)
+				i += 1
+			end
+			if not landed or i <= #list then
+				task.wait()
+			end
 		end
-		local x, z, ux, uz = Path.position(path, d)
-		dash.Color = color
-		dash.Transparency = 0.15
-		dash.Size = Vector3.new(cfg.width, 0.15, cfg.dash)
-		dash.CFrame = o * CFrame.lookAt(Vector3.new(x, 0.2, z), Vector3.new(x + ux, 0.2, z + uz))
-		Fx.fade(dash, life, { Transparency = 1 }, Enum.EasingStyle.Quint)
-	end
-	local lx, lz = Path.position(path, math.min(e.to, path.length))
-	groundPulse((o * CFrame.new(lx, 0, lz)).Position, cfg.color, cfg.landRadius, life)
+	end)
 end
 
 -- A boss calls escorts: a toast names them, and a ring pulses at the boss.
@@ -914,6 +944,9 @@ local function step(dt: number)
 	local parts: { BasePart } = {}
 	local cframes: { CFrame } = {}
 	for _, rec in enemies do
+		if rec.wantRing then
+			tryRing(rec)
+		end
 		-- Predict: the server distance keeps moving at the measured speed between updates; draw at
 		-- that speed plus a gentle pull toward the prediction (never backwards, snap if far off).
 		if rec.lastAt and os.clock() - rec.lastAt < 0.4 then
