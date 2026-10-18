@@ -439,7 +439,7 @@ and the experience page shows our icon, five thumbnails and a trailer. `tools/ch
 - [x] PV-B00 02c120c · [x] PV-B01 4a8009d + 9a0449e · [x] PV-B02 0802c02 · [x] PV-B03 407e982 · [x] PV-B04 b1ca5d8 · [x] PV-B05 b427880 · [x] PV-B06 d738e08 · [x] PV-B07 c3e69e1 · [x] PV-B08 30e6a8f
 - [x] PV-C01 9a0449e · [x] PV-C02 5603d0e · [x] PV-C03 9a0449e + b078a08 · [x] PV-C04 f51bb27 + b078a08 · [x] PV-C05 b078a08 · [x] PV-C06 b078a08
 - [ ] PV-D01 · [ ] PV-D02 · [ ] PV-D03 · [ ] PV-D04 · [ ] PV-D05 · [ ] PV-D06
-- [x] PV-E01 d76b586 · [x] PV-E02 bea9b3e · [x] PV-E03 39d8ae1 · [~] PV-E04 (meshes ba6db15; awaiting the owner's Studio import)
+- [x] PV-E01 d76b586 · [x] PV-E02 bea9b3e · [x] PV-E03 39d8ae1 · [x] PV-E04 ba6db15 + a8ea43c
 
 ---
 
