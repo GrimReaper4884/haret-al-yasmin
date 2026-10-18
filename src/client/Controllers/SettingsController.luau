@@ -9,6 +9,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared.Net)
 local Settings = require(Shared.Logic.Settings)
+local Version = require(Shared.Config.Version)
 local Signal = require(Shared.Util.Signal)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
@@ -155,7 +156,7 @@ end
 
 local function build()
 	-- The rows scroll once they outgrow a landscape phone (390 px tall at UIScale 1).
-	modal = Modal.create("Settings", 520, math.min(#ROWS * 46 + 26, MAX_BODY))
+	modal = Modal.create("Settings", 520, math.min(#ROWS * 46 + 48, MAX_BODY))
 	local body = Modal.scroller(modal.body)
 	Create("UIPadding", { PaddingTop = UDim.new(0, 3), PaddingBottom = UDim.new(0, 3), PaddingRight = UDim.new(0, 12), Parent = body })
 	Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = body })
@@ -175,6 +176,16 @@ local function build()
 		end
 	end
 	hint = Theme.label({ LayoutOrder = #ROWS + 1, TextSize = 12, TextColor3 = Theme.colors.textMuted, Size = UDim2.new(1, 0, 0, 18), ZIndex = 11, Parent = body })
+	Theme.label({
+		LayoutOrder = #ROWS + 2,
+		Text = "v" .. Version.VERSION,
+		TextSize = 12,
+		TextColor3 = Theme.colors.textMuted,
+		TextXAlignment = Enum.TextXAlignment.Center,
+		Size = UDim2.new(1, 0, 0, 16),
+		ZIndex = 11,
+		Parent = body,
+	})
 end
 
 -- A one-tap speaker that toggles `music` (lobby HUD and match HUD). The icon and the hover hint

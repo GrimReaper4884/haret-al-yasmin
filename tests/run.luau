@@ -143,6 +143,7 @@ local specs = {
 	require("./arenadressing.spec"),
 	require("./loading.spec"),
 	require("./storycards.spec"),
+	require("./version.spec"),
 	require("./upgradeview.spec"),
 }
 for _, spec in specs do
