@@ -445,6 +445,7 @@ local function backToLobby()
 	state = nil
 	result.setVisible(false)
 	MatchMenuController.close()
+	ToastController.setTop(nil)
 	LobbyMenuController.setInMatch(false)
 	GuiService.TouchControlsEnabled = true
 	render()
@@ -456,6 +457,7 @@ function MatchController.start()
 		info = payload
 		state = nil
 		Modal.closeAll()
+		ToastController.setTop(Hud.TOAST.matchTop)
 		LobbyMenuController.setInMatch(true)
 		MatchController.Started:Fire(payload)
 		render()

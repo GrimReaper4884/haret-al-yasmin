@@ -43,7 +43,14 @@ return {
 		margin = 16,
 		bottom = 6, -- px from the safe area's bottom edge
 		FIT_SLOTS = 7,
+		lift = 8, -- the picked slot rises this much
+		costIconMin = 60, -- narrower slots show the price without the cash icon (it stays ≥ 16 px text)
 	},
+
+	-- Toasts: top of the stack in the lobby and in a match (under the wave / gate block and its burn
+	-- pips), and the bottom band they never enter (hotbar, cash pill, Place / Cancel); `step` is one
+	-- toast plus its gap, `max` the most shown at once where they fit.
+	TOAST = { lobbyTop = 80, matchTop = 100, keepBottom = 160, step = 46, max = 3 },
 
 	-- Right rail (Skip, Speed, View) in the thumb arc, above the jump zone; the match menu `≡` sits at
 	-- the top of the same edge. When a column cannot hold every button the rest go into the next one in.

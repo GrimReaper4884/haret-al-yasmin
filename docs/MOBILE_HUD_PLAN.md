@@ -435,7 +435,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
 
 ### Milestone 1: match chrome
 
-- [x] **MH-04 Match menu sheet and the right rail** · deps: MH-03
+- [x] eda4136 **MH-04 Match menu sheet and the right rail** · deps: MH-03
   - **Goal:** Three buttons in the thumb arc; everything else behind one menu.
   - **Change:** `MatchController.build`: the right column becomes `rail` (Skip, Speed, View; 56 px;
     position from `HudLayout.rail`, side from `railSide`) and a 48 px `≡` button at the top-right inside
@@ -447,7 +447,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
     clear of Roblox's controls; pressing Leave in the sheet needs the confirm; `LeaveMatch` fires once;
     keyboard V still toggles the view; DECISIONS row B9-4.
 
-- [ ] **MH-05 Hotbar, cash pill and toast band** · deps: MH-04
+- [x] **MH-05 Hotbar, cash pill and toast band** · deps: MH-04
   - **Goal:** The hotbar sized by `HudLayout.hotbar`, never under a corner.
   - **Change:** `PlacementController.build`/`slotFor`: slot size from the layout; bar width = slots;
     bar position from the layout (centred in the free band); slot prices still through `myCost`

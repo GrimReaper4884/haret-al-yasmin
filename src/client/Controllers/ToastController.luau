@@ -12,15 +12,32 @@ local Create = require(UI.Create)
 local Theme = require(UI.Theme)
 local Juice = require(UI.Juice)
 local Root = require(UI.Root)
+local Device = require(UI.Device)
+local Hud = require(Shared.Config.Hud)
 local LocaleController = require(script.Parent.LocaleController)
 
 local ToastController = {}
 
-local MAX_VISIBLE = 3
 local LIFETIME = 3
 
 local stack: Frame
 local order = 0
+local top = Hud.TOAST.lobbyTop
+
+-- How many toasts fit between the stack's top and the bottom band (always at least one).
+local function maxVisible(): number
+	local T = Hud.TOAST
+	local room = Device.designSize().y - T.keepBottom - top + (T.step - 40)
+	return math.clamp(math.floor(room / T.step), 1, T.max)
+end
+
+-- The match HUD moves the stack under its wave / gate block (MatchController); nil = lobby.
+function ToastController.setTop(y: number?)
+	top = y or Hud.TOAST.lobbyTop
+	if stack then
+		stack.Position = UDim2.new(0.5, 0, 0, top)
+	end
+end
 
 local function resolveArgs(args: { [string]: any }?): { [string]: any }?
 	if not args then
@@ -71,11 +88,14 @@ function ToastController.show(key: string, args: { [string]: any }?)
 			table.insert(frames, c)
 		end
 	end
-	if #frames > MAX_VISIBLE then
+	local cap = maxVisible()
+	if #frames > cap then
 		table.sort(frames, function(a, b)
 			return a.LayoutOrder < b.LayoutOrder
 		end)
-		frames[1]:Destroy()
+		for i = 1, #frames - cap do
+			frames[i]:Destroy()
+		end
 	end
 
 	task.delay(LIFETIME, function()
@@ -93,7 +113,7 @@ function ToastController.start()
 	stack = Create("Frame", {
 		Name = "Toasts",
 		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.new(0.5, 0, 0, 80),
+		Position = UDim2.new(0.5, 0, 0, top),
 		Size = UDim2.fromScale(0.6, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundTransparency = 1,

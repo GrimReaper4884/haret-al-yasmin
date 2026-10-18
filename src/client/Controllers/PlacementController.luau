@@ -38,12 +38,16 @@ local ToastController = require(script.Parent.ToastController)
 local SettingsController = require(script.Parent.SettingsController)
 local RigAnimController = require(script.Parent.RigAnimController)
 local EnemyRenderController = require(script.Parent.EnemyRenderController)
+local Hud = require(Shared.Config.Hud)
+local HudLayout = require(Shared.Logic.HudLayout)
+local Device = require(UI.Device)
 
 local PlacementController = {}
 
 local TARGETING = { "first", "last", "strong", "close" }
 
 local bar: Frame
+local barLayout: UIListLayout
 local placeHint: TextLabel
 local cancelButton: TextButton
 local towerPanel: Frame
@@ -66,7 +70,7 @@ local autoButton: TextButton
 
 -- One slot per loadout unit, built once per match/loadout (a 3D portrait each), then only
 -- re-tinted as cash changes.
-type Slot = { frame: Frame, cost: TextLabel, count: TextLabel, dim: Frame, stroke: UIStroke, unitId: string, price: number }
+type Slot = { holder: Frame, frame: Frame, cost: TextLabel, costIcon: Frame, count: TextLabel, dim: Frame, stroke: UIStroke, unitId: string, price: number }
 local slots: { Slot } = {}
 local slotKey = ""
 local ghostLight: Highlight? = nil
@@ -85,11 +89,12 @@ local busy = false
 
 local function build()
 	local root = Root.get()
-	bar = Create("Frame", { Name = "UnitBar", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -8), Size = UDim2.fromOffset(7 * 74, 92), BackgroundTransparency = 1, Active = true, Visible = false, ZIndex = 3, Parent = root })
-	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, VerticalAlignment = Enum.VerticalAlignment.Bottom, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = bar })
+	-- Hotbar, hint and cancel are placed by layoutBar (Logic/HudLayout.hotbar, MOBILE_HUD_PLAN B2).
+	bar = Create("Frame", { Name = "UnitBar", Size = UDim2.fromOffset(7 * 74, 92), BackgroundTransparency = 1, Active = true, Visible = false, ZIndex = 3, Parent = root })
+	barLayout = Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, VerticalAlignment = Enum.VerticalAlignment.Bottom, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = bar })
 	placeHint = Theme.display({ Name = "PlaceHint", TextSize = 16, AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -150), Size = UDim2.new(0.8, 0, 0, 22), Visible = false, ZIndex = 3, Parent = root })
 	placeHint.TextXAlignment = Enum.TextXAlignment.Center
-	cancelButton = Theme.button({ Name = "CancelPlace", Text = "X", TextSize = 22, AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0.5, 7 * 74 / 2 + 8, 1, -24), Size = UDim2.fromOffset(52, 52), BackgroundColor3 = Theme.colors.danger, Visible = false, ZIndex = 4, Parent = root })
+	cancelButton = Theme.button({ Name = "CancelPlace", Text = "X", TextSize = 22, AnchorPoint = Vector2.new(1, 1), Size = UDim2.fromOffset(52, 52), BackgroundColor3 = Theme.colors.danger, Visible = false, ZIndex = 4, Parent = root })
 
 	-- Tower panel: left edge, away from the bar (docs/research/ROBLOX_TD_UI_PATTERNS.md §1).
 	towerPanel = Theme.panel({ Name = "TowerPanel", AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 0), Size = UDim2.fromOffset(232, 0), AutomaticSize = Enum.AutomaticSize.Y, Active = true, Visible = false, ZIndex = 4, Parent = root })
@@ -718,7 +723,7 @@ local function slotFor(i: number, unitId: string): Slot
 	local def = (Units :: any)[unitId]
 	local color = Theme.rarityColor(def.rarity)
 	local price = myCost(unitId, def.levels[1].cost)
-	local holder = Create("Frame", { LayoutOrder = i, Size = UDim2.fromOffset(68, 84), BackgroundTransparency = 1, ZIndex = 3 })
+	local holder = Create("Frame", { LayoutOrder = i, Size = UDim2.fromOffset(Hud.HOTBAR.slot.desktop[1], Hud.HOTBAR.slot.desktop[2]), BackgroundTransparency = 1, ZIndex = 3 })
 	local frame = Create("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = color, BorderSizePixel = 0, ZIndex = 3, Parent = holder }, { Create("UICorner", { CornerRadius = UDim.new(0, 12) }) })
 	Create("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.new(0.45, 0.45, 0.45)), Parent = frame })
 	local stroke = Theme.border(frame, 2.5)
@@ -738,7 +743,7 @@ local function slotFor(i: number, unitId: string): Slot
 	end
 	local cost = Theme.display({ LayoutOrder = 2, Text = tostring(price), TextSize = 16, AutomaticSize = Enum.AutomaticSize.X, Size = UDim2.fromOffset(0, 20), ZIndex = 7, Parent = costRow })
 	cost.TextWrapped = false
-	local count = Theme.display({ Text = "", TextSize = 12, Position = UDim2.fromOffset(5, 3), Size = UDim2.fromOffset(40, 14), ZIndex = 7, Parent = frame })
+	local count = Theme.display({ Text = "", TextSize = Hud.TEXT_MIN, Position = UDim2.fromOffset(5, 3), Size = UDim2.fromOffset(40, 15), ZIndex = 7, Parent = frame })
 	count.TextXAlignment = Enum.TextXAlignment.Left
 	if def.rarity == "legendary" or def.rarity == "mythic" or def.rarity == "secret" then
 		Juice.shine(frame, 3)
@@ -759,7 +764,33 @@ local function slotFor(i: number, unitId: string): Slot
 		pickSlot(unitId, price, frame)
 	end)
 	holder.Parent = bar
-	return { frame = frame, cost = cost, count = count, dim = dim, stroke = stroke, unitId = unitId, price = price }
+	return { holder = holder, frame = frame, cost = cost, costIcon = costIcon, count = count, dim = dim, stroke = stroke, unitId = unitId, price = price }
+end
+
+-- Sizes and places the hotbar between Roblox's thumbstick and jump zones (touch) or centred
+-- (desktop), the cash pill right above the first slot, the hint above that and the cancel button
+-- above the last slot. Runs on every loadout and device change.
+local function layoutBar()
+	local n = math.max(#slots, 1)
+	local hb = HudLayout.hotbar(Hud, Device.profile(), Device.scale(), Device.safeSize(), n, Device.reserved())
+	local lift = Hud.HOTBAR.lift
+	barLayout.Padding = UDim.new(0, hb.gap)
+	bar.Position = UDim2.fromOffset(hb.x, hb.y - lift)
+	bar.Size = UDim2.fromOffset(hb.width, hb.slotH + lift)
+	for _, s in slots do
+		s.holder.Size = UDim2.fromOffset(hb.slotW, hb.slotH)
+		s.costIcon.Visible = hb.slotW >= Hud.HOTBAR.costIconMin
+	end
+	local above = hb.y - lift - 2
+	local cash = MatchController.cashPill()
+	local cashH = 36
+	if cash then
+		cash.AnchorPoint = Vector2.new(0, 1)
+		cash.Position = UDim2.fromOffset(hb.x, above)
+		cashH = cash.Size.Y.Offset
+	end
+	placeHint.Position = UDim2.new(0.5, 0, 0, above - cashH - 4)
+	cancelButton.Position = UDim2.fromOffset(hb.x + hb.width, above)
 end
 
 -- Pops the loadout card of `unitId` (a defender of yours just landed, PV-B05).
@@ -795,6 +826,7 @@ local function renderBar()
 		end
 	end
 	refreshBar()
+	layoutBar()
 	bar.Visible = true
 end
 
@@ -1022,6 +1054,7 @@ function PlacementController.start()
 			renderBar()
 		end
 	end)
+	Device.Changed:Connect(layoutBar)
 	LocaleController.Changed:Connect(function()
 		if MatchController.active() then
 			renderBar()
