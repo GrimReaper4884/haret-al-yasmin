@@ -658,7 +658,7 @@ Found in the MH-18 Part D run (TEST_REPORT_SLICE "MH after"), fixed one task per
   - **Accept:** iPhone 17 Pro: the Qahwaji's dialogue open in the lobby, `M` starts Episode 1, the
     dialogue is gone at wave 1/20 (`mh19_iphone17pro_*`); the match audit 9 · 0 · 0; no console errors.
 
-- [x] **MH-20 Lane Diary shows both tracks without a scroll on phones** · deps: MH-13
+- [x] 071ab09 **MH-20 Lane Diary shows both tracks without a scroll on phones** · deps: MH-13
   - **Goal:** the premium Claim row is on screen when the Diary opens on a phone.
   - **Change:** the Pass modal uses `opts.fill`; on touch-phone `shapePass` packs a 48 px top row (level,
     XP bar and season end beside Premium 180 / Skip 140), a 60 px Free · Premium legend and 116 px tier
@@ -668,6 +668,13 @@ Found in the MH-18 Part D run (TEST_REPORT_SLICE "MH after"), fixed one task per
   - **Accept:** content window = canvas (710×230 iPhone, 600×188 at 640, no sheet scroll); the premium
     buttons end at y 244 of a 262 content edge at 640; audit 22 · 0 (iPhone) / 20 · 0 (640); desktop
     capture unchanged (`mh20_*`).
+
+- [x] **MH-21 Summon sheet without the outer scroll** · deps: MH-13
+  - **Goal:** no outer scroll bar on Summon when its body fits.
+  - **Change:** the Summon modal uses `opts.fill`; on a phone the button column starts at the top of the
+    body and the rotation timer moves under the featured cards (12 px), so the body is 184 px.
+  - **Accept:** content window = canvas (230 iPhone, 188 at 640); Rates fits with the pity line; audit
+    11 · 0 on both phones; desktop row layout unchanged (`mh21_*`).
 
 ---
 

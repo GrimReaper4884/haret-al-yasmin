@@ -79,7 +79,8 @@ local function fmtTime(seconds: number): string
 end
 
 local function build()
-	modal = Modal.create("Summon", 560, 250)
+	-- fill: on a phone the body is the sheet's height (shapeSummon fits it, so the sheet never scrolls).
+	modal = Modal.create("Summon", 560, 250, { fill = true })
 	local body = modal.body
 	bannerLabel = Theme.label({ TextSize = 16, FontFace = Theme.fontBold, Size = UDim2.new(0.6, 0, 0, 20), ZIndex = 11, Parent = body })
 	rotateLabel = Theme.label({ TextSize = 13, TextColor3 = Theme.colors.textMuted, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(0.4, 0, 0, 20), ZIndex = 11, Parent = body })
@@ -366,16 +367,25 @@ function SummonController.open()
 end
 
 -- On a phone the buttons stand in a column beside the featured cards, so the sheet needs no scroll
--- to reach them (MOBILE_HUD_PLAN B7); elsewhere they sit in a row under the cards.
+-- to reach them (MOBILE_HUD_PLAN B7); elsewhere they sit in a row under the cards. The phone column
+-- starts at the top and the rotation timer moves under the cards: 184 px, inside the 188 px a
+-- 640x282 sheet leaves (MH-21).
 local function shapeSummon()
 	if not bottomFrame then
 		return
 	end
 	local side = Device.isPhone()
 	local columnH = 22 + 3 * Theme.TOUCH + 2 * 8
-	featured.Size = if side then UDim2.new(0.5, 0, 0, 150) else UDim2.new(1, 0, 0, 150)
+	featured.Position = UDim2.fromOffset(0, if side then 22 else 24)
+	featured.Size = if side then UDim2.new(0.5, 0, 0, 146) else UDim2.new(1, 0, 0, 150)
+	bannerLabel.Size = UDim2.new(if side then 0.5 else 0.6, 0, 0, 20)
+	rotateLabel.AnchorPoint = if side then Vector2.new(0, 0) else Vector2.new(1, 0)
+	rotateLabel.Position = if side then UDim2.fromOffset(0, 170) else UDim2.fromScale(1, 0)
+	rotateLabel.Size = if side then UDim2.new(0.5, 0, 0, 14) else UDim2.new(0.4, 0, 0, 20)
+	rotateLabel.TextSize = if side then 12 else 13
+	rotateLabel.TextXAlignment = if side then Enum.TextXAlignment.Center else Enum.TextXAlignment.Right
 	bottomFrame.AnchorPoint = if side then Vector2.new(1, 0) else Vector2.new(0, 1)
-	bottomFrame.Position = if side then UDim2.new(1, 0, 0, 24) else UDim2.fromScale(0, 1)
+	bottomFrame.Position = if side then UDim2.fromScale(1, 0) else UDim2.fromScale(0, 1)
 	bottomFrame.Size = if side then UDim2.new(0.5, 0, 0, columnH) else UDim2.new(1, 0, 0, Theme.TOUCH + 22)
 	buttonRow.Size = if side then UDim2.new(1, 0, 0, columnH - 22) else UDim2.new(1, 0, 0, Theme.TOUCH)
 	buttonLayout.FillDirection = if side then Enum.FillDirection.Vertical else Enum.FillDirection.Horizontal
