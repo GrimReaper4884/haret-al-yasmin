@@ -106,6 +106,8 @@ Remotes are created by the server in `ReplicatedStorage.Remotes`. Names are defi
 | `SetLoadout` / `RerollTrait` | RemoteFunction | C→S | `{unitIds}` / unitId | owned, unique, slot count (pass); trait stones |
 | `ClaimPass` / `RedeemCode` / `ClaimDaily` | RemoteFunction | C→S | tier, track / code / — | level reached, premium flag; expiry, once; UTC day |
 | `DebugCommand` | RemoteEvent | C→S | cmd, arg | Studio only (no listener in production) |
+| `ClientProfile` | RemoteEvent | C→S | "desktop" \| "touch-phone" \| "touch-tablet" | STRICT; first valid report per session kept on the player state (not the profile) and logged as `ui_device` (MOBILE_HUD_PLAN MH-17) |
+| `PlaceCancelled` | RemoteEvent | C→S | — | 2 burst / 2 per s; counted per match, logged as `place_outcome_cancelled` with `placed` / `invalid` when the match ends for the player |
 
 Dialogue is started by the server-side `ProximityPrompt.Triggered` event, so the client never names the
 NPC it is talking to.

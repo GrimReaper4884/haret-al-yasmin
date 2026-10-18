@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Controllers = script.Parent:WaitForChild("Controllers")
 local TD = require(ReplicatedStorage:WaitForChild("Shared").Config.TD)
 local Device = require(script.Parent:WaitForChild("UI").Device)
+local Net = require(ReplicatedStorage.Shared.Net)
 
 local StateController = require(Controllers.StateController)
 local LocaleController = require(Controllers.LocaleController)
@@ -45,6 +46,8 @@ local LobbyStoryController = require(Controllers.LobbyStoryController)
 StateController.start()
 LocaleController.start()
 Device.start() -- profile and UIScale before any controller lays out
+-- Which HUD this session runs (MOBILE_HUD_PLAN MH-17); the server takes the first report only.
+Net.event(Net.Events.ClientProfile):FireServer(Device.profile())
 StateController.Changed:Connect(function(snapshot: any)
 	Device.setSlotCount(snapshot.loadoutSlots or TD.LOADOUT_SLOTS)
 end)

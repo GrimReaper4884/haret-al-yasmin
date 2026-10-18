@@ -47,6 +47,9 @@ Net.Events = {
 	AfkLeave = "AfkLeave", -- C→S
 	AfkHop = "AfkHop", -- C→S (idle for IDLE_HOP_SECONDS inside the room)
 	DebugCommand = "DebugCommand", -- C→S (Studio only; ignored in production) cmd, arg
+	-- Telemetry (MOBILE_HUD_PLAN MH-17)
+	ClientProfile = "ClientProfile", -- C→S "desktop" | "touch-phone" | "touch-tablet" (first per session)
+	PlaceCancelled = "PlaceCancelled", -- C→S (an aimed placement was cancelled; 2 per s)
 }
 
 Net.Unreliable = {

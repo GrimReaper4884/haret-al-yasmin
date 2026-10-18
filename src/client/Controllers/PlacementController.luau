@@ -740,10 +740,22 @@ local function placeCall(unitId: string, x: number, z: number, done: (boolean, s
 	end)
 end
 
+-- Telemetry (MOBILE_HUD_PLAN MH-17): the player gave up on an aimed placement (Cancel, a long
+-- press, the slot tapped again, Q). The server counts it per match; it is never trusted for more.
+local function reportCancel()
+	if placing ~= nil then
+		Net.event(Net.Events.PlaceCancelled):FireServer()
+	end
+end
+
 -- Advances Logic/PlaceFlow by one event and performs its actions.
 local function run(event: PlaceFlow.Event, flags: PlaceFlow.Flags)
 	if flow.mode == "aiming" and placing == nil then
 		flow = PlaceFlow.new() -- the ghost was cleared elsewhere (match end, Q, a panel)
+	end
+	local e: any = event
+	if flow.mode == "aiming" and (e.type == "cancel" or e.type == "longPress" or (e.type == "pick" and e.unitId == flow.unitId)) then
+		reportCancel()
 	end
 	local nextFlow, actions = PlaceFlow.step(flow, event, flags)
 	flow = nextFlow
@@ -1293,7 +1305,10 @@ function PlacementController.start()
 			renderTowerPanel()
 		end
 	end)
-	cancelButton.Activated:Connect(clearGhost)
+	cancelButton.Activated:Connect(function()
+		reportCancel()
+		clearGhost()
+	end)
 	for _, v in views do
 		v.close.Activated:Connect(function()
 			clearSelection()
@@ -1390,6 +1405,7 @@ function PlacementController.start()
 				end
 				pickSlot(slot.unitId, slot.price, slot.frame)
 			elseif input.KeyCode == Enum.KeyCode.Q then
+				reportCancel()
 				clearGhost()
 				clearSelection()
 			end

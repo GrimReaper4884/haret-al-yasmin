@@ -612,7 +612,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
 
 ### Milestone 7: feedback, telemetry, evidence
 
-- [x] **MH-16 Haptics and press states** · deps: MH-03, MH-07, MH-09
+- [x] 0bc7aae **MH-16 Haptics and press states** · deps: MH-03, MH-07, MH-09
   - **Goal:** B8 feel.
   - **Change:** `UIClick` effects on Place, Upgrade, Sell, Summon, Claim; `UINotification` on gate hit
     (`MatchController.gateHitFlash`); all gated by the `sfx` setting; `Theme.lip` press state applied
@@ -620,7 +620,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
   - **Accept:** no errors on desktop (HapticEffect is inert there); the setting toggles them; one line
     in DECISIONS.
 
-- [ ] **MH-17 Device and placement telemetry** · deps: MH-07
+- [x] **MH-17 Device and placement telemetry** · deps: MH-07
   - **Goal:** B8 numbers.
   - **Change:** `Net.Events.ClientProfile` (C→S, `RemoteGuard.wrap`: enum of `desktop | touch-phone |
     touch-tablet`, first call per session accepted, later calls dropped and logged), server stores it on

@@ -3,12 +3,15 @@
 -- handles the language preference, and delivers notifications. Other services can add fields to
 -- the snapshot with PlayerStateService.addExtra (perks, region policy…).
 
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared.Net)
 local Validate = require(Shared.Logic.Validate)
 local Settings = require(Shared.Logic.Settings)
+local DeviceTelemetry = require(Shared.Logic.DeviceTelemetry)
+local Hud = require(Shared.Config.Hud)
 local DataService = require(script.Parent.DataService)
 local RemoteGuard = require(script.Parent.RemoteGuard)
 local Analytics = require(script.Parent.AnalyticsService)
@@ -19,6 +22,18 @@ local pending: { [Player]: boolean } = {}
 local stateSync: RemoteEvent
 local notify: RemoteEvent
 local extras: { (Player, { [string]: any }) -> () } = {}
+-- The HUD profile each client reported this session (player state, not the profile: MH-17).
+local devices: { [Player]: DeviceTelemetry.Session } = {}
+
+-- The device session of a player (created on first use; dropped when they leave).
+function PlayerStateService.device(player: Player): DeviceTelemetry.Session
+	local s = devices[player]
+	if not s then
+		s = DeviceTelemetry.newSession()
+		devices[player] = s
+	end
+	return s
+end
 
 local function eventsSnapshot(events: { [string]: any }): { [string]: any }
 	local out = {}
@@ -119,6 +134,20 @@ function PlayerStateService.start()
 	RemoteGuard.onThrottled = function(player: Player)
 		PlayerStateService.notify(player, "notify.slow_down")
 	end
+
+	-- The client's HUD profile, once per session (DeviceTelemetry.report drops the rest).
+	RemoteGuard.event(Net.Events.ClientProfile, RemoteGuard.STRICT, function(player: Player, profile: any)
+		local session = PlayerStateService.device(player)
+		local ok, why = DeviceTelemetry.report(Hud, session, profile)
+		if not ok then
+			print(string.format("[Telemetry] ClientProfile from %s dropped: %s", player.Name, tostring(why)))
+			return
+		end
+		Analytics.custom(player, "ui_device", DeviceTelemetry.index(Hud, profile), profile)
+	end)
+	Players.PlayerRemoving:Connect(function(player: Player)
+		devices[player] = nil
+	end)
 
 	RemoteGuard.event(Net.Events.SetLanguage, RemoteGuard.STRICT, function(player: Player, lang: any)
 		if not Validate.isShortString(lang, 4) or (lang ~= "en" and lang ~= "ar") then

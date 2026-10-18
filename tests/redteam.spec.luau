@@ -25,6 +25,8 @@ return function(t)
 	local MatchRewards = t.logic("MatchRewards")
 	local Grants = t.logic("Grants")
 	local Ledger = t.logic("Ledger")
+	local DeviceTelemetry = t.logic("DeviceTelemetry")
+	local Hud = t.config("Hud")
 	local ProfileSchema = t.logic("ProfileSchema")
 	local Units = t.config("Units")
 	local Enemies = t.config("Enemies")
@@ -1062,6 +1064,69 @@ return function(t)
 			t.eq(clean[1].stones, 1e300)
 			t.eq(#clean[2].key, 64)
 			t.eq(clean[2].seed, nil)
+		end)
+	end)
+	------------------------------------------------------------------------------------------
+	t.describe("Red team: ClientProfile and PlaceCancelled (MOBILE_HUD_PLAN MH-17)", function()
+		t.it("the profile enum takes exactly the three HUD profiles; anything else is dropped", function()
+			t.eq(DeviceTelemetry.index(Hud, "desktop"), 0)
+			t.eq(DeviceTelemetry.index(Hud, "touch-phone"), 1)
+			t.eq(DeviceTelemetry.index(Hud, "touch-tablet"), 2)
+			local hostile = { "Desktop", "touch", "", string.rep("x", 1000), "touch-phone\0", 1, 0 / 0, math.huge, true, {}, nil }
+			for i = 1, 11 do
+				local session = DeviceTelemetry.newSession()
+				local ok, why = DeviceTelemetry.report(Hud, session, hostile[i])
+				t.eq(ok, false)
+				t.eq(why, "bad_profile")
+				t.eq(session.profile, nil)
+			end
+		end)
+		t.it("only the first valid report of a session counts; 1,000 later reports change nothing", function()
+			local session = DeviceTelemetry.newSession()
+			t.eq((DeviceTelemetry.report(Hud, session, "touch-phone")), true)
+			for i = 1, 1000 do
+				local ok, why = DeviceTelemetry.report(Hud, session, if i % 2 == 0 then "desktop" else "touch-tablet")
+				t.eq(ok, false)
+				t.eq(why, "already_reported")
+			end
+			t.eq(session.profile, "touch-phone")
+			t.eq(session.dropped, 1000)
+		end)
+		t.it("PlaceTower results: placed, refused spots count as invalid, every other refusal is ignored", function()
+			t.eq(DeviceTelemetry.classify(Hud, true, nil), "placed")
+			for _, err in { "bad_position", "out_of_bounds", "on_path", "too_close" } do
+				t.eq(DeviceTelemetry.classify(Hud, false, err), "invalid")
+			end
+			for _, err in { "bad_request", "not_in_match", "match_over", "not_in_loadout", "tower_cap", "unit_cap", "cannot_afford", "rate_limited", "error", nil } do
+				t.eq(DeviceTelemetry.classify(Hud, false, err), nil)
+			end
+		end)
+		t.it("a cancel flood stops at the rate limit and the per-match cap; events carry the device", function()
+			local limit = Hud.TELEMETRY.cancelLimit
+			local l = RateLimiter.new(limit.capacity, limit.perSecond)
+			local counts = DeviceTelemetry.newCounts()
+			for i = 1, 1000 do
+				if RateLimiter.allow(l, "attacker", (i - 1) / 1000) then
+					DeviceTelemetry.add(Hud, counts, "cancelled")
+				end
+			end
+			t.truthy(counts.cancelled <= limit.capacity + limit.perSecond, "cancels let through " .. counts.cancelled)
+			for _ = 1, 5000 do
+				DeviceTelemetry.add(Hud, counts, "invalid")
+			end
+			t.eq(counts.invalid, Hud.TELEMETRY.maxPerMatch)
+			t.eq(counts.placed, 0)
+			local session = DeviceTelemetry.newSession()
+			DeviceTelemetry.report(Hud, session, "touch-phone")
+			local events = DeviceTelemetry.events(counts, session)
+			t.eq(#events, 2, "no event for a zero count")
+			t.eq(events[1].name, "place_outcome_invalid")
+			t.eq(events[1].value, Hud.TELEMETRY.maxPerMatch)
+			t.eq(events[1].profile, "touch-phone")
+			t.eq(events[2].name, "place_outcome_cancelled")
+			t.eq(DeviceTelemetry.events(DeviceTelemetry.newCounts(), nil)[1], nil)
+			counts.placed = 3
+			t.eq(DeviceTelemetry.events(counts, nil)[1].profile, "unknown")
 		end)
 	end)
 end

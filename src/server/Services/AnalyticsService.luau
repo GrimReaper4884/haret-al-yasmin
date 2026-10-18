@@ -3,6 +3,7 @@
 
 local RobloxAnalytics = game:GetService("AnalyticsService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Ledger = require(Shared.Logic.Ledger)
@@ -63,9 +64,18 @@ function Analytics.ledger(player: Player, entry: Ledger.Entry, profile: any)
 	end
 end
 
-function Analytics.custom(player: Player, name: string, value: number?)
+-- `device` (the HUD profile, MOBILE_HUD_PLAN MH-17) goes in CustomField01 so Creator Hub can break
+-- the event down by device class.
+function Analytics.custom(player: Player, name: string, value: number?, device: string?)
+	if device and RunService:IsStudio() then
+		print(string.format("[Analytics] %s = %s (%s)", name, tostring(value or 1), device))
+	end
 	safe("custom", function()
-		RobloxAnalytics:LogCustomEvent(player, name, value or 1)
+		if device then
+			RobloxAnalytics:LogCustomEvent(player, name, value or 1, { [Enum.AnalyticsCustomFieldKeys.CustomField01.Name] = device })
+		else
+			RobloxAnalytics:LogCustomEvent(player, name, value or 1)
+		end
 	end)
 end
 

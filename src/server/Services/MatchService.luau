@@ -20,6 +20,8 @@ local Traits = require(Shared.Config.Traits)
 local Beads = require(Shared.Config.Beads)
 local Items = require(Shared.Config.Items)
 local Economy = require(Shared.Config.Economy)
+local Hud = require(Shared.Config.Hud)
+local DeviceTelemetry = require(Shared.Logic.DeviceTelemetry)
 local TdSim = require(Shared.Logic.TdSim)
 local TdTowers = require(Shared.Logic.TdTowers)
 local WaveLogic = require(Shared.Logic.WaveLogic)
@@ -65,6 +67,7 @@ export type Match = {
 	revealShown: { [number]: number }, -- tower id → the lantern tower letting it see stealth (absent = none)
 	sabotaged: { [number]: number }, -- tower id → game time its sabotage ends (towerDisabled; D-038)
 	script: any?, -- the episode's scripted beats (Config/Waves episodes[id].script): the ally's turn
+	placeCounts: { [Player]: DeviceTelemetry.Counts }, -- placed / invalid / cancelled this match (MH-17)
 }
 
 local matches: { [number]: Match } = {}
@@ -288,6 +291,31 @@ local function destroyMatch(match: Match)
 	ArenaService.release(match.slot)
 end
 
+-- Placement telemetry (MOBILE_HUD_PLAN MH-17): one count table per player per match, logged as
+-- place_outcome_<outcome> events tagged with the player's device when the match ends for them.
+local function countPlacement(match: Match, player: Player, outcome: DeviceTelemetry.Outcome?)
+	if not outcome or match.ended then
+		return
+	end
+	local counts = match.placeCounts[player]
+	if not counts then
+		counts = DeviceTelemetry.newCounts()
+		match.placeCounts[player] = counts
+	end
+	DeviceTelemetry.add(Hud, counts, outcome)
+end
+
+local function flushPlacements(match: Match, player: Player)
+	local counts = match.placeCounts[player]
+	if not counts then
+		return
+	end
+	match.placeCounts[player] = nil
+	for _, e in DeviceTelemetry.events(counts, PlayerStateService.device(player)) do
+		Analytics.custom(player, e.name, e.value, e.profile)
+	end
+end
+
 local function finish(match: Match, won: boolean)
 	if match.ended then
 		return
@@ -299,6 +327,7 @@ local function finish(match: Match, won: boolean)
 	pushState(match)
 	for _, p in match.order do
 		if match.players[p] then
+			flushPlacements(match, p)
 			local reward = rewardPlayer(match, p, outcome)
 			evEnd:FireClient(p, { won = won, waves = outcome.wavesCleared, reward = reward })
 			if won and match.mode.kind == "story" then
@@ -323,6 +352,7 @@ local function removePlayer(match: Match, player: Player, goHome: boolean)
 	if not key then
 		return
 	end
+	flushPlacements(match, player)
 	match.players[player] = nil
 	match.byKey[key] = nil
 	match.votes[player] = nil
@@ -422,6 +452,7 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 		eventBuffer = {},
 		buffShown = {},
 		revealShown = {},
+		placeCounts = {},
 		sabotaged = {},
 	}
 	nextMatchId += 1
@@ -795,7 +826,20 @@ function MatchService.start()
 	evHome = Net.event(Net.Events.MatchHome)
 	evPositions = Net.unreliable(Net.Events.EnemyPositions)
 
-	RemoteGuard.func(Net.Functions.PlaceTower, RemoteGuard.DEFAULT, placeTower)
+	RemoteGuard.func(Net.Functions.PlaceTower, RemoteGuard.DEFAULT, function(player: Player, unitId: any, x: any, z: any)
+		local r = placeTower(player, unitId, x, z)
+		local match = byPlayer[player]
+		if match then
+			countPlacement(match, player, DeviceTelemetry.classify(Hud, r.ok == true, r.err))
+		end
+		return r
+	end)
+	RemoteGuard.event(Net.Events.PlaceCancelled, Hud.TELEMETRY.cancelLimit, function(player: Player)
+		local match = byPlayer[player]
+		if match then
+			countPlacement(match, player, "cancelled")
+		end
+	end)
 	RemoteGuard.func(Net.Functions.UpgradeTower, RemoteGuard.DEFAULT, upgradeTower)
 	RemoteGuard.func(Net.Functions.SellTower, RemoteGuard.DEFAULT, sellTower)
 

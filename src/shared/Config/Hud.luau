@@ -87,6 +87,15 @@ return {
 	-- that ended it, usually Redeem, lands before the panel moves back), and the window in which a
 	-- second Redeem (the button's own Activated after the focus-loss tap) is ignored.
 	KEYBOARD = { restoreS = 0.4, redeemDebounceS = 0.5 },
+	-- Telemetry (B8, MH-17): the HUD profiles a client may report (analytics value = position - 1:
+	-- 0 desktop, 1 touch-phone, 2 touch-tablet), the PlaceTower refusals that count as a misplaced
+	-- spot, the per-match cap on each count, and the PlaceCancelled rate limit (2 per second).
+	TELEMETRY = {
+		profiles = { "desktop", "touch-phone", "touch-tablet" },
+		invalidReasons = { "bad_position", "out_of_bounds", "on_path", "too_close" },
+		maxPerMatch = 1000,
+		cancelLimit = { capacity = 2, perSecond = 2 },
+	},
 	-- Haptics (B8): at most one gate-hit buzz per this many seconds.
 	HAPTICS = { notifyGapS = 0.3 },
 	-- The defender bottom sheet (B4) is never wider than this (desktop with panelSide = bottom).
