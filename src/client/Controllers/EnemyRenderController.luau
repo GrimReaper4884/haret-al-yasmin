@@ -21,6 +21,7 @@ local Arenas = require(Shared.Config.Arenas)
 local Vfx = require(Shared.Config.Vfx)
 local Path = require(Shared.Logic.Path)
 local HitFx = require(Shared.Logic.HitFx)
+local MechanicFx = require(Shared.Logic.MechanicFx)
 local RigBuilder = require(Shared.Util.RigBuilder)
 local BoneAnim = require(Shared.Anim.BoneAnim)
 local UI = script.Parent.Parent.UI
@@ -38,6 +39,7 @@ local LocaleController = require(script.Parent.LocaleController)
 local MatchCameraController = require(script.Parent.MatchCameraController)
 local AudioController = require(script.Parent.AudioController)
 local ThrowFx = require(script.Parent.ThrowFx)
+local ToastController = require(script.Parent.ToastController)
 
 local EnemyRenderController = {}
 
@@ -60,6 +62,9 @@ type Enemy = {
 	walks: boolean, -- baked walk clip: no synthetic bob
 	punchAt: number?, -- os.clock() of the last knockback nudge (PV-B02)
 	disc: BasePart?, -- red ground disc under a boss (PV-A04)
+	ring: BasePart?, -- faint ground ring of a drummer's aura or a porter's shield (S1-C02)
+	ringKind: string?,
+	disguise: Frame?, -- the "?" marker on a disguised attacker's health bar until it is revealed
 }
 
 local folder: Folder
@@ -71,6 +76,17 @@ local arenaPath: Path.Path? = nil
 local arenaPaths: { Path.Path } = {} -- every road (twin-gate arenas have two; S1-S07)
 local origin: CFrame? = nil
 local selectedTower: number? = nil -- PlacementController tells us; its target gets the flash
+local ringCounts: { [string]: number } = {} -- ground rings in use per kind (Vfx.STORY caps)
+
+local function dropRing(rec: Enemy)
+	local ring, kind = rec.ring, rec.ringKind
+	if ring and kind then
+		rec.ring = nil
+		rec.ringKind = nil
+		MechanicFx.release(ringCounts, kind)
+		Fx.release(ring)
+	end
+end
 
 local function clear()
 	for _, e in enemies do
@@ -79,6 +95,7 @@ local function clear()
 			Fx.release(e.disc)
 			e.disc = nil
 		end
+		dropRing(e)
 	end
 	enemies = {}
 	byModel = {}
@@ -87,12 +104,13 @@ local function clear()
 end
 
 -- A health bar over the head: a dark-red ring around it marks a hostile (PV-A04), and small
--- markers to its left show armour (shield) and stealth (eye).
-local function healthBar(model: Model, boss: boolean, armor: boolean, stealth: boolean): Frame
+-- markers to its left show armour (shield), stealth (eye) and a holding disguise ("?", S1-C02).
+-- Returns the fill and the disguise marker (hidden when the attacker is revealed).
+local function healthBar(model: Model, boss: boolean, names: { string }): (Frame, Frame?)
 	local head = model:FindFirstChild("Head") or model.PrimaryPart
 	local r = Vfx.ENEMY_READ
 	local w, h = if boss then 90 else 44, if boss then 10 else 6
-	local markers = (if armor then 1 else 0) + (if stealth then 1 else 0)
+	local markers = #names
 	local gui = Create("BillboardGui", {
 		Adornee = head,
 		Size = UDim2.fromOffset(w + markers * (r.marker + 2) + 4, math.max(h + 4, r.marker)),
@@ -114,14 +132,16 @@ local function healthBar(model: Model, boss: boolean, armor: boolean, stealth: b
 	Create("UIStroke", { Color = Color3.fromHex(r.barStroke), Thickness = r.barStrokeWidth, Parent = back })
 	local fill = Create("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = if boss then Theme.colors.danger else Theme.colors.quest, BorderSizePixel = 0, Parent = back })
 	local x = 0
-	for _, name in { if armor then "shield" else nil, if stealth then "eye" else nil } do
-		if name then
-			local holder = Create("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, x, 0.5, 0), Size = UDim2.fromOffset(r.marker, r.marker), Parent = gui })
-			Icons.draw(name, holder)
-			x += r.marker + 2
+	local disguise: Frame? = nil
+	for _, name in names do
+		local holder = Create("Frame", { Name = name, BackgroundTransparency = 1, AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, x, 0.5, 0), Size = UDim2.fromOffset(r.marker, r.marker), Parent = gui })
+		Icons.draw(name, holder)
+		x += r.marker + 2
+		if name == "mech_disguise" then
+			disguise = holder
 		end
 	end
-	return fill
+	return fill, disguise
 end
 
 ---------------------------------------------------------------- Boss bar (PV-A04)
@@ -209,7 +229,25 @@ local function spawn(e: any)
 		punchAt = nil,
 		walks = model:GetAttribute("Imported") == true and BoneAnim.has(e.enemyId),
 	}
-	rec.bar = healthBar(model, rec.boss, (def.armor or 0) > 0, def.stealth == true)
+	rec.bar, rec.disguise = healthBar(model, rec.boss, MechanicFx.markers(def, false))
+	-- A drummer's aura or a porter's shield: a faint ground ring at its real radius (S1-C02).
+	local ringDef = MechanicFx.ring(def)
+	if ringDef and MechanicFx.plan(Fx.level()).rings then
+		local cfg = (Vfx.STORY :: any)[ringDef.kind]
+		if MechanicFx.admit(ringCounts, ringDef.kind, cfg.max) then
+			local ring = Fx.part(Enum.PartType.Cylinder)
+			if ring then
+				ring.Material = Enum.Material.SmoothPlastic
+				ring.Color = Color3.fromHex(cfg.color)
+				ring.Transparency = cfg.transparency
+				ring.Size = Vector3.new(cfg.height, ringDef.radius * 2, ringDef.radius * 2)
+				rec.ring = ring
+				rec.ringKind = ringDef.kind
+			else
+				MechanicFx.release(ringCounts, ringDef.kind)
+			end
+		end
+	end
 	if rec.boss then
 		showBoss(e.id, e.enemyId)
 		if Fx.any() then
@@ -414,6 +452,7 @@ local function remove(id: number, died: boolean, death: any?)
 		rec.disc = nil
 		Fx.release(disc)
 	end
+	dropRing(rec)
 	if rec.boss then
 		hideBoss(id)
 	end
@@ -656,6 +695,88 @@ function EnemyRenderController.setSelectedTower(id: number?)
 	selectedTower = id
 end
 
+---------------------------------------------------------------- Story mechanics (S1-C02)
+
+-- A flat ring that grows and fades at `at` (reveal flash, summon pulse, telegraph landing).
+local function groundPulse(at: Vector3, color: string, radius: number, life: number)
+	local ring = Fx.part(Enum.PartType.Cylinder)
+	if not ring then
+		return
+	end
+	ring.Color = Color3.fromHex(color)
+	ring.Transparency = 0.25
+	ring.Size = Vector3.new(0.3, 1.5, 1.5)
+	ring.CFrame = CFrame.new(at + Vector3.new(0, 0.3, 0)) * CFrame.Angles(0, 0, math.rad(90))
+	Fx.fade(ring, life, { Size = Vector3.new(0.3, radius * 2, radius * 2), Transparency = 1 })
+end
+
+-- A disguise falls: the "?" goes and a gold ring flashes on the figure.
+local function revealed(id: number)
+	local rec = enemies[id]
+	if not rec then
+		return
+	end
+	local marker = rec.disguise
+	if marker then
+		rec.disguise = nil
+		marker.Visible = false
+	end
+	if MechanicFx.plan(Fx.level()).flashes then
+		local cfg = Vfx.STORY.reveal
+		groundPulse(rec.model:GetPivot().Position, cfg.color, cfg.radius, cfg.life)
+	end
+end
+
+-- Lateef's jump (event telegraph: from / to are distances on his road): dashes along the road and a
+-- ring where he lands, held for the telegraph time (shorter at 2× speed).
+local function telegraph(e: any)
+	local rec = enemies[e.id]
+	local o = origin
+	if not rec or not o or type(e.from) ~= "number" or type(e.to) ~= "number" or not MechanicFx.plan(Fx.level()).telegraph then
+		return
+	end
+	local path = arenaPaths[rec.road] or arenaPath
+	if not path then
+		return
+	end
+	local def = (Enemies :: any)[rec.enemyId]
+	local s = MatchController.state()
+	local life = ((def and def.teleport and def.teleport.telegraph) or 2) / math.max(1, (s and s.speed) or 1)
+	local cfg = Vfx.STORY.telegraph
+	local color = Color3.fromHex(cfg.color)
+	for _, d in MechanicFx.dashes(e.from, math.min(e.to, path.length), cfg.spacing, cfg.maxDashes) do
+		local dash = Fx.part(Enum.PartType.Block)
+		if not dash then
+			break
+		end
+		local x, z, ux, uz = Path.position(path, d)
+		dash.Color = color
+		dash.Transparency = 0.15
+		dash.Size = Vector3.new(cfg.width, 0.15, cfg.dash)
+		dash.CFrame = o * CFrame.lookAt(Vector3.new(x, 0.2, z), Vector3.new(x + ux, 0.2, z + uz))
+		Fx.fade(dash, life, { Transparency = 1 }, Enum.EasingStyle.Quint)
+	end
+	local lx, lz = Path.position(path, math.min(e.to, path.length))
+	groundPulse((o * CFrame.new(lx, 0, lz)).Position, cfg.color, cfg.landRadius, life)
+end
+
+-- A boss calls escorts: a toast names them, and a ring pulses at the boss.
+local function summoned(e: any)
+	local rec = enemies[e.id]
+	local boss = if rec then (Enemies :: any)[rec.enemyId] else nil
+	local minion = (Enemies :: any)[e.enemy]
+	local t = LocaleController.t
+	ToastController.show("match.summon", {
+		boss = if boss then t(boss.nameKey) else "",
+		n = tonumber(e.count) or 1,
+		enemy = if minion then t(minion.nameKey) else tostring(e.enemy),
+	})
+	if rec and MechanicFx.plan(Fx.level()).flashes then
+		local cfg = Vfx.STORY.summon
+		groundPulse(rec.model:GetPivot().Position, cfg.color, cfg.radius, cfg.life)
+	end
+end
+
 local function onEvents(events: { any })
 	if not origin or not arenaPath then
 		return
@@ -677,6 +798,12 @@ local function onEvents(events: { any })
 			AudioController.sting("gate_hit")
 		elseif t == "waveStart" and e.boss then
 			bossTelegraph()
+		elseif t == "revealed" then
+			revealed(e.id)
+		elseif t == "telegraph" then
+			telegraph(e)
+		elseif t == "summon" then
+			summoned(e)
 		elseif t == "towerPlaced" then
 			towerPos[e.id] = (origin * CFrame.new(e.x, 0, e.z)).Position
 			towerUnit[e.id] = e.unitId
@@ -821,6 +948,11 @@ local function step(dt: number)
 		if disc then
 			table.insert(parts, disc)
 			table.insert(cframes, o * CFrame.new(x, 0.15, z) * CFrame.Angles(0, 0, math.rad(90)))
+		end
+		local ring = rec.ring
+		if ring then
+			table.insert(parts, ring)
+			table.insert(cframes, o * CFrame.new(x, 0.08, z) * CFrame.Angles(0, 0, math.rad(90)))
 		end
 	end
 	if #parts > 0 then

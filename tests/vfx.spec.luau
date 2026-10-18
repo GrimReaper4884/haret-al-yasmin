@@ -275,4 +275,104 @@ return function(t)
 			end
 		end)
 	end)
+
+	-- Season Story 1 mechanics on the match HUD (S1-C02, Logic/MechanicFx, Config/Vfx.STORY).
+	t.describe("Story mechanics (S1-C02)", function()
+		local MechanicFx = t.logic("MechanicFx")
+		local Enemies = t.config("Enemies")
+		local TD = t.config("TD")
+		local Icons = t.config("Icons")
+		local S = Vfx.STORY
+
+		t.it("health-bar markers: armour, stealth, and a ? until the disguise falls", function()
+			t.truthy(t.deepEq(MechanicFx.markers(Enemies.thief, false), { "eye" }))
+			t.truthy(t.deepEq(MechanicFx.markers(Enemies.porter, false), { "shield" }))
+			local d = MechanicFx.markers(Enemies.disguised, false)
+			t.eq(d[#d], "mech_disguise", "the disguised man shows a ?")
+			for _, m in MechanicFx.markers(Enemies.disguised, true) do
+				t.truthy(m ~= "mech_disguise", "revealed: the ? is gone")
+			end
+			local beggar = MechanicFx.markers(Enemies.beggar, false)
+			t.truthy(table.find(beggar, "eye") and table.find(beggar, "mech_disguise"), "the beggar is hidden and disguised")
+			for id, def in Enemies do
+				for _, m in MechanicFx.markers(def, false) do
+					t.truthy(Icons.images[m], id .. ": marker " .. m .. " is in Config/Icons")
+				end
+			end
+		end)
+
+		t.it("rings: the drummer carries his aura, the porter his shield, at their real radii", function()
+			local dr = MechanicFx.ring(Enemies.drummer)
+			t.eq(dr.kind, "aura")
+			t.eq(dr.radius, Enemies.drummer.aura.radius)
+			local po = MechanicFx.ring(Enemies.porter)
+			t.eq(po.kind, "shield")
+			t.eq(po.radius, Enemies.porter.shield.radius)
+			t.eq(MechanicFx.ring(Enemies.thief), nil)
+			for id, def in Enemies do
+				local r = MechanicFx.ring(def)
+				if def.aura or def.shield then
+					t.truthy(r and r.radius > 0 and r.radius <= 20, id .. " ring radius")
+				end
+			end
+		end)
+
+		t.it("ring slots are capped per kind and given back", function()
+			local counts = {}
+			for _ = 1, S.aura.max do
+				t.eq(MechanicFx.admit(counts, "aura", S.aura.max), true)
+			end
+			t.eq(MechanicFx.admit(counts, "aura", S.aura.max), false, "one ring too many")
+			t.eq(MechanicFx.admit(counts, "shield", S.shield.max), true, "kinds are counted apart")
+			MechanicFx.release(counts, "aura")
+			t.eq(MechanicFx.admit(counts, "aura", S.aura.max), true)
+			MechanicFx.release(counts, "nothing")
+			t.eq(counts.nothing, 0, "never negative")
+		end)
+
+		t.it("Effects levels: off draws no world part, reduced keeps play information", function()
+			t.truthy(t.deepEq(MechanicFx.plan("off"), { rings = false, telegraph = false, flashes = false }))
+			t.truthy(t.deepEq(MechanicFx.plan("reduced"), { rings = true, telegraph = true, flashes = false }))
+			t.truthy(t.deepEq(MechanicFx.plan("full"), { rings = true, telegraph = true, flashes = true }))
+		end)
+
+		t.it("telegraph dashes run from where he is to where he lands, capped", function()
+			local d = MechanicFx.dashes(10, 25, S.telegraph.spacing, S.telegraph.maxDashes)
+			t.eq(#d, 5)
+			t.truthy(d[1] > 10 and d[#d] < 25, "inside the jump")
+			for i = 2, #d do
+				t.truthy(d[i] > d[i - 1], "in order")
+			end
+			-- Lateef's real jump on the longest road stays under the cap.
+			local long = MechanicFx.dashes(0, 400, S.telegraph.spacing, S.telegraph.maxDashes)
+			t.eq(#long, S.telegraph.maxDashes)
+			t.eq(#MechanicFx.dashes(20, 20, 3, 14), 0, "no jump, no dashes")
+			t.eq(#MechanicFx.dashes(20, 10, 3, 14), 0, "never backwards")
+			t.eq(#MechanicFx.dashes(0, 1, 3, 14), 1, "a short jump still shows one")
+		end)
+
+		t.it("flame pips follow the burn stacks, clamped to the cap", function()
+			t.eq(MechanicFx.burnPips(0, TD.BURN_MAX_STACKS), 0)
+			t.eq(MechanicFx.burnPips(3, TD.BURN_MAX_STACKS), 3)
+			t.eq(MechanicFx.burnPips(99, TD.BURN_MAX_STACKS), TD.BURN_MAX_STACKS)
+			t.eq(MechanicFx.burnPips(nil, TD.BURN_MAX_STACKS), 0)
+			t.eq(MechanicFx.burnPips(0 / 0, TD.BURN_MAX_STACKS), 0)
+			t.truthy(S.burnPip * TD.BURN_MAX_STACKS <= 120, "the pips fit under the gate bar")
+		end)
+
+		t.it("the story effects fit inside the effects budget", function()
+			local function hex(c)
+				t.truthy(type(c) == "string" and string.match(c, "^#%x%x%x%x%x%x$"), "hex colour " .. tostring(c))
+			end
+			for _, k in { "aura", "shield", "reveal", "telegraph", "summon" } do
+				hex(S[k].color)
+			end
+			-- Worst case at once: every ring slot, a whole telegraph (+ its landing ring), a reveal and a summon.
+			local worst = S.aura.max + S.shield.max + S.telegraph.maxDashes + 1 + 1 + 1
+			t.truthy(worst <= Vfx.MAX_LIVE / 2, "story parts leave half the pool for hits and deaths")
+			t.truthy(S.telegraph.maxDashes + 1 <= Vfx.MAX_PER_FRAME + 1, "a telegraph is drawn in about one frame")
+			t.truthy(S.aura.transparency >= 0.6 and S.shield.transparency >= 0.6, "rings stay subtle")
+			t.truthy(S.reveal.life <= 1.5 and S.summon.life <= 1.5, "flashes are short")
+		end)
+	end)
 end

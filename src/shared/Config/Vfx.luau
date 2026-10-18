@@ -114,6 +114,24 @@ return {
 		defeatLife = 1.5,
 	},
 
+	-- Season Story 1 mechanics in a match (S1-C02, Logic/MechanicFx). A drummer's speed aura and a
+	-- porter's shield are faint ground rings that follow the figure (one pooled part each, moved in the
+	-- per-frame BulkMoveTo; at most `max` of a kind at once, the rest go without). A disguised attacker
+	-- carries a "?" marker on its health bar until it is revealed, then a gold ring flashes on it.
+	-- Lateef's jump is telegraphed by up to `maxDashes` dashes along the road to where he lands and a
+	-- ring there. A boss's summon pulses a ring at the boss (and always shows a toast). Effects "off"
+	-- draws none of the world parts; "reduced" keeps the rings and the telegraph (they are play
+	-- information) and drops the flashes. Burn stacks on the gate show as flame pips under the gate
+	-- bar (HUD, every Effects level), `burnPip` px each.
+	STORY = {
+		aura = { color = "#E8A33A", transparency = 0.8, max = 6, height = 0.1 },
+		shield = { color = "#8FB3D9", transparency = 0.78, max = 6, height = 0.1 },
+		reveal = { color = "#F2C14E", radius = 3.5, life = 0.5 },
+		telegraph = { color = "#B04CC4", spacing = 3, dash = 1.6, width = 0.45, maxDashes = 14, landRadius = 3 },
+		summon = { color = "#4A5C8C", radius = 5, life = 0.6 },
+		burnPip = 16,
+	},
+
 	-- Ultimate strikes (EnemyRenderController.ultimateStrike): kept from P1-15.
 	SHABRIYEH = { bladeLife = 0.35, bladeLength = 9 },
 	SWEEP = { ringLife = 0.5, dustLife = 0.8, dustColor = "#C9B48F" },
