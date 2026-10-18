@@ -141,6 +141,7 @@ local specs = {
 	require("./moments.spec"),
 	require("./lobbylife.spec"),
 	require("./arenadressing.spec"),
+	require("./loading.spec"),
 }
 for _, spec in specs do
 	spec(t)

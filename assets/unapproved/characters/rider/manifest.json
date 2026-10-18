@@ -1,9 +1,28 @@
 {
   "id": "rider",
   "tasks": {
-    "concept": "01a14ba7-29af-72f3-8ade-1851b12c940e"
+    "concept": "01a14ba7-29af-72f3-8ade-1851b12c940e",
+    "mesh": "01a14c7a-a61d-759c-8f3b-f7dfabc642ef",
+    "rig": "01a14c7b-cdff-73a1-ae25-09bcf8827d8a",
+    "anim_idle": "01a14c7c-23c1-737d-add2-445339c6735a",
+    "anim_attack": "01a14c7c-451f-72b1-9d6d-224540937b34",
+    "clip_flyup": "01a14c7f-5e96-7117-9e1a-5d7dca3aa99a",
+    "clip_hitreact": "01a14c7f-806c-7491-9601-74ab373945c5",
+    "clip_run2": "01a14c7f-a22a-7679-90f0-e4bb3c582e49"
   },
   "credits": {
-    "concept": 6
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3,
+    "clip_flyup": 3,
+    "clip_hitreact": 3,
+    "clip_run2": 3
+  },
+  "clips": {
+    "flyup": 7,
+    "hitreact": 178,
+    "run2": 14
   }
 }

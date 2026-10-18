@@ -12,6 +12,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared.Net)
 local TD = require(Shared.Config.TD)
 local Modes = require(Shared.Config.Modes)
+local IconIds = require(Shared.Config.Icons)
 local Signal = require(Shared.Util.Signal)
 local PartyLogic = require(Shared.Logic.PartyLogic)
 local UI = script.Parent.Parent.UI
@@ -52,6 +53,7 @@ local speedButton: TextButton
 local leaveButton: TextButton
 local codesButton: TextButton
 local result: Modal.Modal
+local resultBanner: ImageLabel
 local resultBody: TextLabel
 local resultAmounts: Frame
 local resultExtra: TextLabel
@@ -161,6 +163,19 @@ local function build()
 	Create("UIGradient", { Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.5, 0.85), NumberSequenceKeypoint.new(1, 0) }), Parent = flash })
 
 	result = Modal.create("MatchResult", 460, 150)
+	-- The mode's painted banner (PV-C06) between the title and the rewards.
+	resultBanner = Create("ImageLabel", {
+		Name = "Banner",
+		LayoutOrder = 2,
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, 0, 0, 110),
+		ScaleType = Enum.ScaleType.Crop,
+		ZIndex = 11,
+		Visible = false,
+		Parent = result.panel,
+	}, { Create("UICorner", { CornerRadius = UDim.new(0, 10) }) })
+	Theme.border(resultBanner, 2.5)
+	result.body.LayoutOrder = 3
 	-- Waves held and the "Rewards" header, then the rewards as icon + number, then first clear and
 	-- event currency (three stacked pieces so the icon row never overlaps text).
 	local stack = Create("Frame", { Name = "Stack", BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 100), ZIndex = 11, Parent = result.body })
@@ -294,6 +309,11 @@ local function showResult(payload: any)
 	replayButton.Text = t("match.replay")
 	nextButton.Text = t("match.next")
 	local modeId = if info then info.modeId else nil
+	local art = if modeId then IconIds.modes[modeId] else nil
+	resultBanner.Visible = art ~= nil and art.id > 0
+	if art and art.id > 0 then
+		resultBanner.Image = "rbxassetid://" .. tostring(art.id)
+	end
 	local snapshot: any = StateController.get()
 	replayButton.Visible = not payload.left and modeId ~= nil
 	nextButton.Visible = not payload.left

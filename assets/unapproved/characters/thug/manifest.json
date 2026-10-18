@@ -1,10 +1,24 @@
 {
   "id": "thug",
   "tasks": {
-    "concept": "01a14ba8-309f-7277-86af-a8abaa76328f"
+    "concept": "01a14ba8-309f-7277-86af-a8abaa76328f",
+    "mesh": "01a14c7a-a68d-7220-835a-f6fe32382ed0",
+    "rig": "01a14c7b-cf42-7070-a5d2-54b4dc66037f",
+    "anim_idle": "01a14c7c-21d7-73a5-9f69-34afe302195f",
+    "anim_attack": "01a14c7c-5dba-77b4-bdbb-73da3379f691",
+    "clip_hitreact": "01a14c7f-5e9b-7724-aab6-ea49c8f14d1a",
+    "clip_knockdown": "01a14c7f-7f81-7502-8a75-c281ce388f4a",
+    "clip_walkfight": "01a14c7f-a079-77e7-adb9-702b83ba0ada"
   },
   "credits": {
-    "concept": 6
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3,
+    "clip_hitreact": 3,
+    "clip_knockdown": 3,
+    "clip_walkfight": 3
   },
   "rerolled": [
     {
@@ -12,5 +26,10 @@
       "why": "arms down, grey skin",
       "credits": 6
     }
-  ]
+  ],
+  "clips": {
+    "hitreact": 178,
+    "knockdown": 187,
+    "walkfight": 21
+  }
 }

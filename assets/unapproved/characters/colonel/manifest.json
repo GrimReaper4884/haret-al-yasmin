@@ -1,9 +1,34 @@
 {
   "id": "colonel",
   "tasks": {
-    "concept": "01a14ba7-29a2-714f-b2a7-22b36dece27a"
+    "concept": "01a14ba7-29a2-714f-b2a7-22b36dece27a",
+    "mesh": "01a14c7a-a730-76d9-9cd8-a9514c9acae2",
+    "rig": "01a14c7b-cf50-755c-aea0-8649a2f81c69",
+    "anim_idle": "01a14c7c-27c4-749b-a0e9-27b41bd12f6b",
+    "anim_attack": "01a14c7c-4970-7687-8119-504df79a9844",
+    "clip_dyingback": "01a14c7f-5e92-7791-8c38-1ffafcceb294",
+    "clip_hitreact": "01a14c7f-811d-7347-a707-20da800fdd4c",
+    "clip_redcarpet": "01a14c7f-a2ac-7114-bb73-94ca732f951f",
+    "clip_swordshout": "01a14c7f-c389-75f3-b400-2d882caba06f",
+    "clip_waisthit": "01a14c7f-e46d-703f-a179-31c618f2b801"
   },
   "credits": {
-    "concept": 6
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3,
+    "clip_dyingback": 3,
+    "clip_hitreact": 3,
+    "clip_redcarpet": 3,
+    "clip_swordshout": 3,
+    "clip_waisthit": 3
+  },
+  "clips": {
+    "dyingback": 189,
+    "hitreact": 178,
+    "redcarpet": 117,
+    "swordshout": 101,
+    "waisthit": 171
   }
 }

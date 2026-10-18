@@ -128,13 +128,16 @@ prompt, and never feed a photo of an actor (docs/COPYRIGHT_REGISTER.md).
   (`pahlawan`), the 'Arada dancer (`arada`) with idle/attack; gendarme and thief with walk; the cat
   (`qitt`, static mesh: the auto-rigger is biped-only, so `characters.json` marks it
   `"pose": false, "rig": false`). **21 imported characters in total.** Meshy's T-pose step dropped
-  most hand props (hammer, sword/shield, rifle). Still primitive: bandits, thugs, riders, sappers,
-  the sergeant and the commandant.
+  most hand props (hammer, sword/shield, rifle).
+- 2026-10-18: **all 27 characters imported** — thug, bandit, rider, sapper (decimated to ~5.6k by
+  `tools/anim/decimate.py`), the Sergeant and the Commandant (DECISIONS D-037), baked clips only.
 - Prop facing checked in Studio: the arena barber shop faces the road. `lantern_post` is a
   free-standing stone pillar (arm along the mesh's X axis per its vertices), so it is only used in
   the open arenas; Jasmine Lane uses wall lanterns instead (players reported posts in the market).
 - To tune: whether Meshy walk clips carry root motion (enemies slide along the road in code), and card previews show imported characters in
   their T-pose bind pose (needs a `WorldModel` to play the idle in a viewport).
+- Saving without the dialog: `SerializationService:SerializeInstancesAsync({model})` in `execute_luau` returns the
+  binary `.rbxm`; return it base64 (≤ ~95k characters per call, so one or two models at a time) and decode it on disk.
 - Studio-driving lessons: paste paths from a clipboard you set yourself (typing raced with stale
   clipboard contents twice); scroll the Explorer fully up before selecting the imported model.
 

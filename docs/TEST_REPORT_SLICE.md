@@ -736,3 +736,40 @@ Verdict: external (Studio or a plugin), ignored (D-020).
 | Tuning during the run | Rival Lane road #8E8D86 → #625D55 (it barely read against the paving); haze transparency 0.86 → 0.76, size 7 → 8, rate 0.12 → 0.16 per stud (invisible at first) |
 | Console | no errors from our code |
 | Restore | Effects full, language en, loadout unchanged, no lira spent |
+
+### PV-E04 Meshy props: hanging lantern, market bundle, jasmine pot (2026-10-18, D-035)
+
+| Check | Result |
+|---|---|
+| Meshes | hanging_lantern 1,354 tris, market_bundle 1,961, jasmine_pot 1,893 (all ≤ 2k); one 1024² base-colour map each after `tools/meshy/shrink_textures.py`; re-imported headless in Blender 5.2 (1 object, 1024×1024 each) |
+| Import | Studio 3D importer (File → Import, Studio Default preset, Creator Me), one MeshPart per model; saved to `assets/production/PropModels/*.rbxm`; Rojo synced them into `ReplicatedStorage.PropModels` |
+| Lobby swap | 16 hanging lanterns, 4 market bundles, 9 jasmine pots; no tagged primitive left; 16 lights now on the lantern meshes; `[World] built` 1,499 → 1,423 parts |
+| Arena swap (orchard) | 8 market bundles (kerb and garden crates), 2 jasmine pots, 4 hanging lanterns (gate wall and two wires); 393 → 333 parts; lights 4 |
+| `tools/check.ps1` | green, 267 specs (new: swap config names the three props with prop-sized heights) |
+| Captures | `pve04_lane_bundle_lanterns_*` (bundle on the kerb, brass lanterns on their brackets), `pve04_lane_jasmine_pots_*`, `pve04_arena_kerb_bundles_*` |
+| Console | no errors from our code |
+
+### PV-D01 logo and PV-D05 loading screen (2026-10-18, D-036)
+
+| Check | Result |
+|---|---|
+| Logo | 4 generated marks (`logo_mark_variants_2026-10-18.jpg`), owner picked variant 3; set composed with the shaped Arabic + English wordmark (`logo_set_v2_2026-10-18.jpg`); readable at 150 px on light and dark |
+| Uploads | mark 94560000612541, wide logo 89973783873794, text wordmark 124741548596324 (Open Cloud, in moderation at upload) |
+| `tools/check.ps1` | my specs green (loading.spec: bar progress and easing, finish rule, cached ≤ 2.5 s with the fade, 30 s cap under the 60 s join rule, line cycling, stripe stops within ColorSequence rules, copied colours = Palette, petal id = Vfx, logo ids = manifest). Two failures belong to another session's in-progress PV-A02/A03 attacker work (Icons portraits, Baked clips) |
+| Sync | `script_grep RemoveDefaultLoadingScreen` finds `ReplicatedFirst.LoadingScreen` (after restarting `rojo serve` for the new tree) |
+| Desktop | fallback mark, petals, ablaq bands and bar, bilingual line (`pvd05_loading_fallback_desktop_2026-10-18.jpg`, held 12 s with `DebugHoldLoading`) |
+| Phone (Device Simulator, iPhone 17 Pro, viewport 750×381) | the uploaded mark and wordmark swapped in, full bleed after `ScreenInsets = None` (the first capture showed the world round the safe area) (`pvd05_loading_iphone17pro_2026-10-18.jpg`) |
+| Timing (cached Studio join, no hold) | `[Loading] done in 2.32 s` (hand-over; gone after the 0.4 s fade); the wait is the character spawning, the screen's own minimum is 1.2 s |
+| Bugs found and fixed in the run | `ColorSequence.new(): table is too long` (40 stripes = 80 keypoints) and `ColorSequence must end at time=1.0` |
+| Restore | Device Simulator back to default, `DebugHoldLoading` removed, Studio in Edit |
+
+## PV-A02/A03: the last six attackers (2026-10-18)
+
+| Check | Evidence |
+|---|---|
+| Models synced | `ReplicatedStorage.CharacterModels` lists 27 models; Thug, Bandit, Rider, Sapper, Sergeant, Commandant each have their skinned `Mesh_0` |
+| Tris | thug 5,628 · bandit 5,604 · rider 5,603 · sapper 5,616 (≤ 6k) · sergeant 8,067 · colonel 8,300 (≤ 12k) |
+| Live match, Episode 1 Normal | wave 7: 2 thugs imported; wave 10: the Sergeant as the Meshy figure with his new portrait on the boss bar (`docs/art/pva02_sergeant_boss_bar_2026-10-18.jpg`); wave 12: bandit, 5 thugs, 9 gendarmes, 8 thieves, all imported, no primitive enemy |
+| Walk clips | all six built by `RigBuilder` and walking on their baked clips (`docs/art/pva02_six_attackers_walk_2026-10-18.jpg`) |
+| Console | `[HaretAlYasmin] server ready`; no errors from our code (UIBlox and D-020 noise only) |
+| Specs | `tools/check.ps1` green, 276 passed (clips spec now requires all 11 attackers; icons spec checks every portrait matches its model) |

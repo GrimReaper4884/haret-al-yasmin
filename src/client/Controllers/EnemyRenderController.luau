@@ -160,15 +160,16 @@ local function showBoss(id: number, enemyId: string)
 	bossName.Text = LocaleController.t(def.nameKey)
 	bossName.TextXAlignment = if LocaleController.isRtl() then Enum.TextXAlignment.Right else Enum.TextXAlignment.Left
 	for _, c in bossPortrait:GetChildren() do
-		if c:IsA("ViewportFrame") then
+		if c:IsA("ViewportFrame") or c:IsA("ImageLabel") then
 			c:Destroy()
 		end
 	end
-	-- Portrait: the boss's own figure, head and shoulders (painted portraits arrive in PV-C05).
-	local vp = UnitCard.preview(enemyId, { Size = UDim2.fromScale(1, 1), ZIndex = 4 }, false, true)
-	vp.BackgroundTransparency = 1
-	Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = vp })
-	vp.Parent = bossPortrait
+	-- Portrait: the painted head and shoulders (PV-C05), or the live figure framed the same way.
+	local face = UnitCard.portrait(enemyId, { Size = UDim2.fromScale(1, 1), ZIndex = 4 })
+	face.BackgroundTransparency = 1
+	local corner = face:FindFirstChildOfClass("UICorner") or Create("UICorner", { Parent = face })
+	corner.CornerRadius = UDim.new(1, 0)
+	face.Parent = bossPortrait
 	bossMeter.set(1, "")
 	bossBar.Visible = true
 	Juice.pop(bossBar)

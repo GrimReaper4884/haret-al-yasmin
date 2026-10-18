@@ -15,6 +15,7 @@ local TD = require(Shared.Config.TD)
 local Modes = require(Shared.Config.Modes)
 local Waves = require(Shared.Config.Waves)
 local Enemies = require(Shared.Config.Enemies)
+local IconIds = require(Shared.Config.Icons)
 local MatchRewards = require(Shared.Logic.MatchRewards)
 local PartyLogic = require(Shared.Logic.PartyLogic)
 local UI = script.Parent.Parent.UI
@@ -23,6 +24,7 @@ local Theme = require(UI.Theme)
 local Amount = require(UI.Amount)
 local Modal = require(UI.Modal)
 local Juice = require(UI.Juice)
+local Icons = require(UI.Icons)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
@@ -161,6 +163,25 @@ local function card(modeId: string, i: number): TextButton
 		ZIndex = 12,
 		Parent = list,
 	})
+	-- The mode's painted banner (PV-C06) behind the text, dimmed so the outlined labels read on it.
+	local art = IconIds.modes[modeId]
+	if art and art.id > 0 then
+		local banner = Create("ImageLabel", {
+			Name = "Banner",
+			BackgroundTransparency = 1,
+			Size = UDim2.fromScale(1, 1),
+			Image = "rbxassetid://" .. tostring(art.id),
+			ScaleType = Enum.ScaleType.Crop,
+			ImageColor3 = if unlocked then Color3.fromRGB(175, 170, 165) else Color3.fromRGB(80, 80, 80),
+			ZIndex = 12,
+			Parent = b,
+		}, { Create("UICorner", { CornerRadius = UDim.new(0, 10) }) })
+		Create("UIGradient", {
+			Rotation = 90,
+			Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.5, 0.25), NumberSequenceKeypoint.new(1, 0) }),
+			Parent = banner,
+		})
+	end
 	if on then
 		local border = b:FindFirstChild("Border") :: UIStroke?
 		if border then
@@ -316,8 +337,12 @@ local function build()
 	diffRow = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, 58), Size = UDim2.new(1, 0, 0, 32), ZIndex = 12, Parent = detail })
 	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = diffRow })
 	for i, d in TD.DIFFICULTY_ORDER do
-		local b = Theme.button({ LayoutOrder = i, TextSize = 13, Size = UDim2.fromOffset(100, 32), ZIndex = 12, Parent = diffRow })
+		local b = Theme.button({ LayoutOrder = i, TextSize = 13, Size = UDim2.fromOffset(126, 32), ZIndex = 12, Parent = diffRow })
 		diffButtons[d] = b
+		-- Difficulty ribbon (PV-C06) at the leading edge, the label shifted past it.
+		local ribbon = Create("Frame", { Name = "Ribbon", BackgroundTransparency = 1, AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 4, 0.5, 0), Size = UDim2.fromOffset(24, 24), ZIndex = 13, Parent = b })
+		Icons.draw("diff_" .. d, ribbon)
+		Create("UIPadding", { PaddingLeft = UDim.new(0, 26), PaddingRight = UDim.new(0, 2), Parent = b })
 		b.Activated:Connect(function()
 			if selected and canPlay(selected, d) then
 				difficulty = d
