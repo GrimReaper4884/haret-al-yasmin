@@ -1,8 +1,9 @@
 --!strict
 -- Match camera. Matches open on foot behind the player's character (the genre default: you walk
 -- the arena and place defenders around you); the Settings "Match camera" choice can make them open
--- in the "watchtower" view instead, a tilted top-down view of the whole arena. A toggle in the
--- match HUD (and the V key) switches between the two. Always restored when the match ends.
+-- in the "watchtower" view instead, a tilted top-down view of the whole arena. The rail's View
+-- button (MatchController.railButton "view") and the V key switch between the two. Always restored
+-- when the match ends.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
@@ -15,9 +16,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Arenas = require(Shared.Config.Arenas)
 local HitFx = require(Shared.Logic.HitFx)
 local UI = script.Parent.Parent.UI
-local Theme = require(UI.Theme)
 local Fx = require(UI.Fx)
-local Root = require(UI.Root)
 local MatchController = require(script.Parent.MatchController)
 local LocaleController = require(script.Parent.LocaleController)
 local SettingsController = require(script.Parent.SettingsController)
@@ -26,6 +25,7 @@ local MatchCameraController = {}
 
 local overhead = false
 local button: TextButton
+local label: TextLabel
 local info: MatchController.Info? = nil
 
 local function overheadCFrame(): CFrame?
@@ -60,8 +60,8 @@ local function apply()
 	else
 		camera.CameraType = Enum.CameraType.Custom
 	end
-	if button then
-		button.Text = if overhead then LocaleController.t("match.camera_walk") else LocaleController.t("match.camera_overhead")
+	if label then
+		label.Text = if overhead then LocaleController.t("match.view_walk") else LocaleController.t("match.view_tower")
 	end
 end
 
@@ -145,30 +145,19 @@ function MatchCameraController.start()
 		applied = CFrame.new(dx, dy, 0)
 		camera.CFrame = camera.CFrame * applied
 	end)
-	button = Theme.button({
-		Name = "CameraToggle",
-		TextSize = 13,
-		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.new(1, -10, 0, 56 + 4 * Theme.TOUCH + 4 * 6), -- below MatchController's right column (skip, speed, leave, codes)
-		Size = UDim2.fromOffset(120, Theme.TOUCH),
-		BackgroundColor3 = Theme.colors.textMuted,
-		Visible = false,
-		ZIndex = 3,
-		Parent = Root.get(),
-	})
+	button, label = MatchController.railButton("view")
 	button.Activated:Connect(MatchCameraController.toggle)
 	MatchController.Started:Connect(function(payload: MatchController.Info)
 		info = payload
 		overhead = SettingsController.get("camera") == "overhead"
-		button.Visible = true
 		task.delay(0.5, apply)
 	end)
 	MatchController.Ended:Connect(function()
 		overhead = false
-		button.Visible = false
 		info = nil
 		apply()
 	end)
+	apply()
 	UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
 		if not processed and input.KeyCode == Enum.KeyCode.V then
 			MatchCameraController.toggle()

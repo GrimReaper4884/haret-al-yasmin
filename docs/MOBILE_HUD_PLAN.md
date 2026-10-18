@@ -421,7 +421,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
     `UIScale.Scale` value moves to ≥ 1.0; DECISIONS row for B9-1 and B9-6; `SYSTEMS_ARCHITECTURE.md:17`
     corrected in the same commit.
 
-- [x] **MH-03 Theme touch tokens and the button audit helper** · deps: MH-02
+- [x] 28a4aaf **MH-03 Theme touch tokens and the button audit helper** · deps: MH-02
   - **Goal:** One place that makes a button touch-legal.
   - **Change:** `Theme.button` enforces a minimum drawn size of `Hud.TOUCH_MIN` unless `props.compact`
     is set (desktop-only decorations), and adds a transparent hit-pad child when the drawn size is smaller
@@ -435,7 +435,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
 
 ### Milestone 1: match chrome
 
-- [ ] **MH-04 Match menu sheet and the right rail** · deps: MH-03
+- [x] **MH-04 Match menu sheet and the right rail** · deps: MH-03
   - **Goal:** Three buttons in the thumb arc; everything else behind one menu.
   - **Change:** `MatchController.build`: the right column becomes `rail` (Skip, Speed, View; 56 px;
     position from `HudLayout.rail`, side from `railSide`) and a 48 px `≡` button at the top-right inside

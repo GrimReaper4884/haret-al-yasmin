@@ -25,6 +25,9 @@ Icons.images = {
 	ui_music = { id = 116428282368219 },
 	ui_music_off = { id = 118573460190934 },
 	ui_shop = { id = 91398480705014 },
+	-- Touch HUD (MOBILE_HUD_PLAN MH-04): primitives until a painted pair is approved
+	ui_menu = { id = 0 },
+	ui_view = { id = 0 },
 
 	-- Match actions and defender roles (PV-C04)
 	act_upgrade = { id = 118839200965690 },

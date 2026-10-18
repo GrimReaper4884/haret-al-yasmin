@@ -453,6 +453,20 @@ local drawers: { [string]: (Frame, Color3) -> () } = {
 		end
 		rectO(h, Color3.fromHex("#E8D07A"), 0.5, 0.3, 0.7, 0.2, 1)
 	end,
+	-- Three bars: the match menu (MH-04).
+	ui_menu = function(h, _c)
+		for k = 0, 2 do
+			rectO(h, WHITE, 0.5, 0.26 + k * 0.24, 0.72, 0.13, 0.5)
+		end
+	end,
+	-- A watchtower on its legs with a lit window: the camera view toggle (MH-04).
+	ui_view = function(h, _c)
+		rectO(h, Palette.woodDark, 0.34, 0.74, 0.08, 0.46, 0.2, 8)
+		rectO(h, Palette.woodDark, 0.66, 0.74, 0.08, 0.46, 0.2, -8)
+		rectO(h, Palette.wood, 0.5, 0.42, 0.62, 0.34, 0.12)
+		rectO(h, Palette.fabricRed, 0.5, 0.18, 0.76, 0.16, 0.3)
+		rect(h, GOLD, 0.5, 0.43, 0.22, 0.16, 0.2)
+	end,
 	qirsh_pouch = function(h, _c)
 		rectO(h, Palette.wood, 0.5, 0.58, 0.62, 0.6, 0.4)
 		rect(h, Palette.woodDark, 0.5, 0.3, 0.4, 0.08, 1)

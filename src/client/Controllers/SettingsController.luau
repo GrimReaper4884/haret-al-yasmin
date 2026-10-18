@@ -243,7 +243,8 @@ function SettingsController.muteButton(props: { [string]: any }, tipLeft: boolea
 		SettingsController.set("music", values.music == false)
 	end)
 	b.MouseEnter:Connect(function()
-		tip.Visible = true
+		-- Hover hint for the mouse only: a tap on a phone also fires MouseEnter.
+		tip.Visible = not Device.isTouch()
 	end)
 	b.MouseLeave:Connect(function()
 		tip.Visible = false

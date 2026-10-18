@@ -8,7 +8,7 @@
 --   * under MIN px on either axis (AbsoluteSize, i.e. after the UIScale), unless the button carries a
 --     transparent hit pad (`TouchPad`, MH-03) that is at least MIN on both axes, and
 --   * intersecting the bottom-left LEFT or bottom-right RIGHT corner of the safe area (the Roblox
---     thumbstick and jump zones), while those touch controls would be shown.
+--     thumbstick and jump zones; a visible jump button replaces RIGHT, as HudLayout does).
 -- Corners default to MOBILE_HUD_PLAN B1's numbers; when PlayerGui.TouchGui.TouchControlFrame exists
 -- the measured thumbstick / jump frames are reported too.
 -- Pass condition from MH-03 on: "undersized 0" on the phone presets for every screen an MH task has
@@ -33,6 +33,17 @@ local origin = screen.AbsolutePosition
 local size = screen.AbsoluteSize
 local leftRect = { x0 = 0, y0 = size.Y - LEFT[2], x1 = LEFT[1], y1 = size.Y }
 local rightRect = { x0 = size.X - RIGHT[1], y0 = size.Y - RIGHT[2], x1 = size.X, y1 = size.Y }
+-- Like Logic/HudLayout.reserved: a visible TouchGui jump button (padded 8 px, out to the edges)
+-- replaces the right fallback; the Dynamic Thumbstick has no fixed frame, so the left one stays.
+do
+	local tg = pg:FindFirstChild("TouchGui")
+	local tcf = tg and tg:FindFirstChild("TouchControlFrame")
+	local jump = tcf and tcf:FindFirstChild("JumpButton")
+	if jump and jump.Visible and jump.AbsoluteSize.X > 0 then
+		local p = jump.AbsolutePosition - origin
+		rightRect = { x0 = math.max(0, p.X - 8), y0 = math.max(0, p.Y - 8), x1 = size.X, y1 = size.Y }
+	end
+end
 
 local function overlaps(a, b)
 	return a.x0 < b.x1 and b.x0 < a.x1 and a.y0 < b.y1 and b.y0 < a.y1

@@ -1,7 +1,7 @@
 --!strict
 -- Match state on the client: MatchStart / MatchState / MatchEvents / MatchEnd, the match HUD
--- (wave, countdown, gate HP, cash, skip/speed/leave) and the result screen. Other controllers
--- subscribe to MatchController.Started / Updated / Events / Ended.
+-- (wave, countdown, gate HP, cash, the rail: skip / speed / view, the `≡` match menu) and the result
+-- screen. Other controllers subscribe to MatchController.Started / Updated / Events / Ended.
 
 local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
@@ -18,6 +18,8 @@ local Signal = require(Shared.Util.Signal)
 local PartyLogic = require(Shared.Logic.PartyLogic)
 local MechanicFx = require(Shared.Logic.MechanicFx)
 local Vfx = require(Shared.Config.Vfx)
+local Hud = require(Shared.Config.Hud)
+local HudLayout = require(Shared.Logic.HudLayout)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
@@ -26,11 +28,13 @@ local Modal = require(UI.Modal)
 local Juice = require(UI.Juice)
 local Icons = require(UI.Icons)
 local Amount = require(UI.Amount)
+local Device = require(UI.Device)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
 local SettingsController = require(script.Parent.SettingsController)
 local ToastController = require(script.Parent.ToastController)
+local MatchMenuController = require(script.Parent.MatchMenuController)
 
 local MatchController = {}
 
@@ -56,8 +60,9 @@ local cashBox: Frame
 local flash: Frame
 local skipButton: TextButton
 local speedButton: TextButton
-local leaveButton: TextButton
-local codesButton: TextButton
+local viewButton: TextButton
+local menuButton: TextButton
+local railLabels: { [TextButton]: TextLabel } = {}
 local result: Modal.Modal
 local resultBanner: ImageLabel
 local resultOutro: TextLabel
@@ -85,6 +90,57 @@ end
 
 function MatchController.active(): boolean
 	return info ~= nil
+end
+
+-- A rail button and its label ("view" belongs to MatchCameraController, which sets its text).
+function MatchController.railButton(name: string): (TextButton, TextLabel)
+	local b = if name == "skip" then skipButton elseif name == "speed" then speedButton else viewButton
+	return b, railLabels[b]
+end
+
+-- Places the visible rail buttons and the menu button from Logic/HudLayout (B2): the thumb arc above
+-- Roblox's jump button on touch, the right edge (or the left, Settings railSide) on every profile.
+local function layoutRail()
+	if not hud then
+		return
+	end
+	local shown = {}
+	for _, b in { skipButton, speedButton, viewButton } do
+		if b.Visible then
+			table.insert(shown, b)
+		end
+	end
+	local side = SettingsController.get("railSide") or "right"
+	local r = HudLayout.rail(Hud, Device.profile(), Device.scale(), Device.safeSize(), side, #shown, Device.reserved())
+	for i, b in shown do
+		local p = r.buttons[i]
+		b.Position = UDim2.fromOffset(p.x, p.y)
+		b.Size = UDim2.fromOffset(r.size, r.size)
+	end
+	menuButton.Position = UDim2.fromOffset(r.menu.x, r.menu.y)
+	menuButton.Size = UDim2.fromOffset(r.menu.size, r.menu.size)
+end
+MatchController.relayout = layoutRail
+
+-- A square rail button: icon on top, a short outlined label under it.
+local function railButtonOf(name: string, color: Color3, iconName: string): TextButton
+	local b = Theme.button({ Name = "Rail_" .. name, Text = "", Size = UDim2.fromOffset(Hud.RAIL.button, Hud.RAIL.button), BackgroundColor3 = color, ZIndex = 3, Parent = hud })
+	local pad = b:FindFirstChildOfClass("UIPadding")
+	if pad then
+		pad:Destroy()
+	end
+	local holder = Create("Frame", { Name = "Icon", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 4), Size = UDim2.fromOffset(28, 28), BackgroundTransparency = 1, ZIndex = 4, Parent = b })
+	Icons.draw(iconName, holder)
+	for _, d in holder:GetDescendants() do
+		if d:IsA("GuiObject") then
+			d.ZIndex = 4
+		end
+	end
+	local label = Theme.display({ Name = "Label", Text = "", TextSize = Hud.TEXT_MIN, AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -3), Size = UDim2.new(1, -4, 0, 16), ZIndex = 4, Parent = b })
+	label.TextXAlignment = Enum.TextXAlignment.Center
+	label.TextWrapped = false
+	railLabels[b] = label
+	return b
 end
 
 local function build()
@@ -115,37 +171,24 @@ local function build()
 	cashLabel.TextColor3 = Color3.fromHex("#FFD970")
 	cashBox = cashPill
 
-	-- Right column: skip, speed, leave, codes
-	local col = Create("Frame", { AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -10, 0, 56), Size = UDim2.fromOffset(112, 4 * Theme.TOUCH + 3 * 6), BackgroundTransparency = 1, ZIndex = 3, Parent = hud })
-	Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = col })
-	skipButton = Theme.button({ LayoutOrder = 1, TextSize = 16, Size = UDim2.new(1, 0, 0, Theme.TOUCH), BackgroundColor3 = Theme.colors.confirm, ZIndex = 3, Parent = col })
-	speedButton = Theme.button({ LayoutOrder = 2, TextSize = 20, Size = UDim2.new(1, 0, 0, Theme.TOUCH), BackgroundColor3 = Theme.colors.gold, ZIndex = 3, Parent = col })
-	-- Leave, with the settings gear beside it (effects, camera, auto ultimate mid-match).
-	local lastRow = Create("Frame", { LayoutOrder = 3, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, Theme.TOUCH), ZIndex = 3, Parent = col })
-	leaveButton = Theme.button({ TextSize = 15, Size = UDim2.new(1, -Theme.TOUCH - 6, 1, 0), BackgroundColor3 = Theme.colors.danger, ZIndex = 3, Parent = lastRow })
-	local gear = Theme.button({ Name = "Settings", Text = "", AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH), BackgroundColor3 = Color3.fromHex("#6E5E50"), ZIndex = 3, Parent = lastRow })
-	local gp = gear:FindFirstChildOfClass("UIPadding")
-	if gp then
-		gp:Destroy()
+	-- The rail (B2): Skip (prep only), Speed (host only), View (walk / watchtower, MatchCameraController),
+	-- placed by layoutRail; everything else lives behind the `≡` match menu.
+	skipButton = railButtonOf("skip", Theme.colors.confirm, "act_skip")
+	speedButton = railButtonOf("speed", Theme.colors.gold, "act_speed")
+	viewButton = railButtonOf("view", Theme.colors.textMuted, "ui_view")
+	menuButton = Theme.button({ Name = "MatchMenu", Text = "", Size = UDim2.fromOffset(Hud.RAIL.menu, Hud.RAIL.menu), BackgroundColor3 = Color3.fromHex("#6E5E50"), ZIndex = 3, Parent = hud })
+	local mp = menuButton:FindFirstChildOfClass("UIPadding")
+	if mp then
+		mp:Destroy()
 	end
-	local gearIcon = Create("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(28, 28), BackgroundTransparency = 1, ZIndex = 4, Parent = gear })
-	Icons.draw("ui_settings", gearIcon)
-	-- Music mute just left of the column, level with the gear.
-	SettingsController.muteButton({
-		Name = "Music",
-		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.fromOffset(-6, 0),
-		Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH),
-		BackgroundColor3 = Color3.fromHex("#6E5E50"),
-		ZIndex = 3,
-		Parent = lastRow,
-	}, true)
-	gear.Activated:Connect(function()
-		local open = LobbyMenuController.opener("settings")
-		if open then
-			open()
+	local menuIcon = Create("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(28, 28), BackgroundTransparency = 1, ZIndex = 4, Parent = menuButton })
+	Icons.draw("ui_menu", menuIcon)
+	for _, d in menuIcon:GetDescendants() do
+		if d:IsA("GuiObject") then
+			d.ZIndex = 4
 		end
-	end)
+	end
+	menuButton.Activated:Connect(MatchMenuController.open)
 	skipButton.Activated:Connect(function()
 		Net.event(Net.Events.VoteSkip):FireServer()
 	end)
@@ -161,17 +204,7 @@ local function build()
 		end
 		Net.event(Net.Events.SetSpeed):FireServer(nextSpeed)
 	end)
-	leaveButton.Activated:Connect(function()
-		Net.event(Net.Events.LeaveMatch):FireServer()
-	end)
-	-- Codes mid-match (match-cash codes only work here); the lobby menu is hidden during a match.
-	codesButton = Theme.button({ Name = "Codes", LayoutOrder = 4, TextSize = 15, Size = UDim2.new(1, 0, 0, Theme.TOUCH), BackgroundColor3 = Color3.fromHex("#5E6F7D"), ZIndex = 3, Parent = col })
-	codesButton.Activated:Connect(function()
-		local open = LobbyMenuController.opener("codes")
-		if open then
-			open()
-		end
-	end)
+	layoutRail()
 
 	-- Full-screen red flash when the gate is hit (own ScreenGui so it covers the safe-area insets).
 	local fxGui = Create("ScreenGui", { Name = "HaretFx", ResetOnSpawn = false, IgnoreGuiInset = true, ScreenInsets = Enum.ScreenInsets.None, DisplayOrder = 5, Parent = Players.LocalPlayer:WaitForChild("PlayerGui") })
@@ -326,13 +359,16 @@ local function render()
 	end
 	lastWave = state.wave
 
-	skipButton.Visible = state.phase == "prep"
-	skipButton.Text = t("match.skip", { n = state.votes or 0, total = state.players or 1 })
 	local me = Players.LocalPlayer.Name
-	speedButton.Visible = state.host == me
-	speedButton.Text = t("match.speed", { n = state.speed or 1 })
-	leaveButton.Text = t("match.leave")
-	codesButton.Text = t("codes.title")
+	local skipShown, speedShown = state.phase == "prep", state.host == me
+	local relayout = skipButton.Visible ~= skipShown or speedButton.Visible ~= speedShown
+	skipButton.Visible = skipShown
+	railLabels[skipButton].Text = t("match.skip_votes", { n = state.votes or 0, total = state.players or 1 })
+	speedButton.Visible = speedShown
+	railLabels[speedButton].Text = t("match.speed", { n = state.speed or 1 })
+	if relayout then
+		layoutRail()
+	end
 end
 
 local function showResult(payload: any)
@@ -408,6 +444,7 @@ local function backToLobby()
 	info = nil
 	state = nil
 	result.setVisible(false)
+	MatchMenuController.close()
 	LobbyMenuController.setInMatch(false)
 	GuiService.TouchControlsEnabled = true
 	render()
@@ -455,6 +492,12 @@ function MatchController.start()
 		end
 	end)
 	LocaleController.Changed:Connect(render)
+	Device.Changed:Connect(layoutRail)
+	SettingsController.Changed:Connect(function(key: string)
+		if key == "railSide" then
+			layoutRail()
+		end
+	end)
 end
 
 return MatchController
