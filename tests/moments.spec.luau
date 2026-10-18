@@ -34,6 +34,40 @@ return function(t)
 			t.eq(M.fromEvent(e, { totalWaves = 20, cutscenes = true, effects = "reduced", reducedMotion = false })[1].camera, true)
 		end)
 
+		t.it("the ally turns only where the story has the beat; the camera follows the boss rule (S1-C05)", function()
+			local Story = t.config("Story")
+			local line = Story.episodes.ep8.moments.ally_turn
+			local e = { type = "ally", id = 7, unitId = "adashari", shield = 0 }
+			local withLine = { totalWaves = 55, cutscenes = true, effects = "full", reducedMotion = false, allyLine = line }
+			local turn = M.fromEvent(e, withLine)
+			t.eq(kinds(turn), "allyTurn")
+			t.eq(turn[1].id, 7)
+			t.eq(turn[1].unit, "adashari")
+			t.eq(turn[1].line, line)
+			t.eq(turn[1].camera, true)
+			t.eq(kinds(M.fromEvent(e, full)), "", "Episode 9's guard from wave 1 has no turn beat")
+			local still = M.fromEvent(e, { totalWaves = 55, cutscenes = true, effects = "full", reducedMotion = true, allyLine = line })
+			t.eq(still[1].camera, false, "reduced motion: the line, no camera push")
+			t.eq(Story.episodes.ep9.moments, nil, "Episode 9 has no turn beat")
+		end)
+
+		t.it("dusk falls to night by the configured wave", function()
+			local Lighting = t.config("Lighting")
+			local by = Lighting.dusk.nightByWave
+			t.eq(M.nightFraction(1, by), 0)
+			t.eq(M.nightFraction(by, by), 1)
+			t.eq(M.nightFraction(by + 20, by), 1)
+			t.eq(M.nightFraction(0, by), 0)
+			local mid = M.nightFraction(math.floor((by + 1) / 2), by)
+			t.truthy(mid > 0.4 and mid < 0.6, "half way at the middle wave")
+			t.eq(M.nightFraction(5, 1), 1, "a one-wave fall is night at once")
+			t.truthy(Lighting.dusk.modes.ep9, "Episode 9 opens at dusk")
+			for id in Lighting.dusk.modes do
+				t.truthy(t.config("Modes")[id], "dusk mode " .. id .. " exists")
+			end
+			t.truthy(Lighting.dusk.clockTime < Lighting.night.clockTime, "dusk comes before night")
+		end)
+
 		t.it("wave clears carry the bonus but not after the last wave", function()
 			local c = M.fromEvent({ type = "waveEnd", wave = 4, bonus = 120 }, full)
 			t.eq(kinds(c), "waveClear")

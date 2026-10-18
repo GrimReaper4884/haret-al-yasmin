@@ -19,10 +19,15 @@ return {
 		tint = "#E6EDFF", -- a slightly cool grade over the warm one
 		contrast = 0.05,
 		blend = 2.5, -- seconds
+		clockTime = 19.4, -- the match night (MatchFxController)
+		brightness = 1.4,
 	},
 	-- Episode 9 opens at dusk and night falls over the waves (STORY_PLAN §8.5, S1-M05): the start look;
-	-- the client tween toward `night` by `nightByWave` is S1-C05.
+	-- each wave start moves it toward `night`, reaching it at `nightByWave` (S1-C05,
+	-- MatchMoments.nightFraction, MatchFxController). `modes` are the modes that open at dusk.
 	dusk = {
+		modes = { ep9 = true },
+		brightness = 2,
 		density = 0.38,
 		hazeColor = "#C98A5A", -- low sun through dust
 		hazeDecay = "#5A3A40",
