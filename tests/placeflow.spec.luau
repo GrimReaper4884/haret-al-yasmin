@@ -156,6 +156,21 @@ return function(t)
 		end)
 	end)
 
+	t.describe("defender panel strings", function()
+		t.it("every unit with an ultimate has its button label in every language (MH-09)", function()
+			local Strings = t.config("Strings")
+			for id, def in Units do
+				if def.ability then
+					for lang, map in Strings do
+						if type(map) == "table" and map["match.ult_auto"] then
+							t.truthy(map["ult." .. id], "missing ult." .. id .. " in " .. lang)
+						end
+					end
+				end
+			end
+		end)
+	end)
+
 	t.describe("client-shaped canPlace", function()
 		-- What PlacementController builds from MatchState, towerPlaced events and Path.buildAll.
 		local arena = Arenas.twin_gates

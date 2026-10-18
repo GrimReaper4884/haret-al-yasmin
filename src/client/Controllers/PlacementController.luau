@@ -34,6 +34,7 @@ local Icons = require(UI.Icons)
 local Theme = require(UI.Theme)
 local Root = require(UI.Root)
 local UnitCard = require(UI.UnitCard)
+local TowerPanelView = require(UI.TowerPanelView)
 local Juice = require(UI.Juice)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
@@ -63,6 +64,11 @@ local lastGroundTap: Vector2? = nil -- the ghost starts where the finger last to
 local groundHit: (screen: Vector2) -> (Vector3?, Instance?)
 local lastScreen: Vector2? = nil -- where the ghost is aimed (mouse position, or the finger minus its offset)
 local ERR_KEYS: { [string]: string }
+-- The defender panel's two shapes (UI/TowerPanelView, B4); the fields below point at the active one.
+local sideView: TowerPanelView.View
+local sheetView: TowerPanelView.View
+local activeView: TowerPanelView.View
+local syncSheet: () -> ()
 local towerPanel: Frame
 local towerPortrait: Frame
 local towerTitle: TextLabel
@@ -75,8 +81,7 @@ local sigCards: { [string]: TextButton } = {}
 local sigPick: string? = nil -- the path card tapped on the selected defender, confirmed by Upgrade
 local sellButton: TextButton
 local targetButton: TextButton
-local closeButton: TextButton
-local ultRow: Frame
+local ultRow: GuiObject
 local ultButton: TextButton
 local ultFill: Frame
 local autoButton: TextButton
@@ -101,6 +106,26 @@ local arenaPaths: { Path.Path } = {} -- every road: the ghost keeps clear of all
 local origin: CFrame? = nil
 local busy = false
 
+-- Points the panel fields at one of the two views.
+local function useView(v: TowerPanelView.View)
+	activeView = v
+	towerPanel = v.panel
+	towerPortrait = v.portrait
+	towerTitle = v.title
+	towerLevel = v.level
+	towerOwner = v.owner
+	towerStats = v.stats
+	upgradeButton = v.upgrade
+	sigRow = v.sigRow
+	sigCards = v.sigCards
+	sellButton = v.sell
+	targetButton = v.target
+	ultRow = v.ultRow
+	ultButton = v.ult
+	ultFill = v.ultFill
+	autoButton = v.auto
+end
+
 local function build()
 	local root = Root.get()
 	-- Hotbar, hint and cancel are placed by layoutBar (Logic/HudLayout.hotbar, MOBILE_HUD_PLAN B2).
@@ -123,60 +148,10 @@ local function build()
 	reasonLabel = Theme.display({ Name = "PlaceReason", TextSize = 15, TextColor3 = Color3.fromHex("#FF8A7A"), AnchorPoint = Vector2.new(0.5, 0), Size = UDim2.fromOffset(260, 20), Visible = false, ZIndex = 3, Parent = root })
 	reasonLabel.TextXAlignment = Enum.TextXAlignment.Center
 
-	-- Tower panel: left edge, away from the bar (docs/research/ROBLOX_TD_UI_PATTERNS.md §1).
-	towerPanel = Theme.panel({ Name = "TowerPanel", AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 0), Size = UDim2.fromOffset(232, 0), AutomaticSize = Enum.AutomaticSize.Y, Active = true, Visible = false, ZIndex = 4, Parent = root })
-	Create("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6), PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8), Parent = towerPanel })
-	Create("UIListLayout", { Padding = UDim.new(0, 4), SortOrder = Enum.SortOrder.LayoutOrder, Parent = towerPanel })
-	local header = Create("Frame", { LayoutOrder = 1, Size = UDim2.new(1, 0, 0, 56), BackgroundTransparency = 1, ZIndex = 4, Parent = towerPanel })
-	towerPortrait = Create("Frame", { Size = UDim2.fromOffset(56, 56), BackgroundTransparency = 1, ZIndex = 4, Parent = header })
-	towerTitle = Theme.display({ TextSize = 16, Position = UDim2.fromOffset(62, 0), Size = UDim2.new(1, -112, 0, 36), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 5, Parent = header })
-	towerTitle.TextXAlignment = Enum.TextXAlignment.Left
-	towerLevel = Theme.display({ TextSize = 14, TextColor3 = Color3.fromHex("#FFD970"), Position = UDim2.fromOffset(62, 38), Size = UDim2.new(1, -62, 0, 18), ZIndex = 5, Parent = header })
-	towerLevel.TextXAlignment = Enum.TextXAlignment.Left
-	closeButton = Theme.button({ Text = "X", TextSize = 18, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, 2, 0, -2), Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH), BackgroundColor3 = Theme.colors.danger, ZIndex = 6, Parent = header })
-	local cp = closeButton:FindFirstChildOfClass("UIPadding")
-	if cp then
-		cp:Destroy()
-	end
-	towerOwner = Theme.label({ LayoutOrder = 2, TextSize = 12, FontFace = Theme.fontBold, TextColor3 = Theme.colors.textMuted, Size = UDim2.new(1, 0, 0, 14), Visible = false, ZIndex = 4, Parent = towerPanel })
-	towerStats = Theme.label({ LayoutOrder = 3, TextSize = 14, FontFace = Theme.fontBold, RichText = true, Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, LineHeight = 1.15, ZIndex = 4, Parent = towerPanel })
-	-- Level 7 (STORY_PLAN §7.1): at the last level a unit with a signature offers two path cards; one
-	-- tap picks, Upgrade confirms (UpgradeTower with the path; the server re-checks everything).
-	sigRow = Create("Frame", { Name = "Signature", LayoutOrder = 4, Size = UDim2.new(1, 0, 0, 92), BackgroundTransparency = 1, Visible = false, ZIndex = 4, Parent = towerPanel })
-	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = sigRow })
-	for i, pathKey in { "a", "b" } do
-		local card = Theme.button({ Name = "Path_" .. pathKey, LayoutOrder = i, Text = "", Size = UDim2.new(0.5, -3, 1, 0), BackgroundColor3 = Theme.colors.button, ZIndex = 4, Parent = sigRow })
-		local pad = card:FindFirstChildOfClass("UIPadding")
-		if pad then
-			pad.PaddingLeft = UDim.new(0, 5)
-			pad.PaddingRight = UDim.new(0, 5)
-		end
-		local nameLabel = Theme.display({ Name = "PathName", TextSize = 14, Position = UDim2.fromOffset(0, 5), Size = UDim2.new(1, 0, 0, 18), ZIndex = 5, Parent = card })
-		nameLabel.TextXAlignment = Enum.TextXAlignment.Center
-		local descLabel = Theme.label({ Name = "PathDesc", TextSize = 11, TextColor3 = Color3.fromHex("#FFF1D0"), Position = UDim2.fromOffset(0, 24), Size = UDim2.new(1, 0, 1, -46), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 5, Parent = card })
-		descLabel.TextXAlignment = Enum.TextXAlignment.Center
-		local costLabel = Theme.display({ Name = "PathCost", TextSize = 13, TextColor3 = Color3.fromHex("#FFD970"), AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0, 0, 1, -4), Size = UDim2.new(1, 0, 0, 16), ZIndex = 5, Parent = card })
-		costLabel.TextXAlignment = Enum.TextXAlignment.Center
-		sigCards[pathKey] = card
-	end
-	upgradeButton = Theme.button({ LayoutOrder = 5, TextSize = 17, Size = UDim2.new(1, 0, 0, Theme.TOUCH), BackgroundColor3 = Theme.colors.confirm, ZIndex = 4, Parent = towerPanel })
-	local row = Create("Frame", { LayoutOrder = 6, Size = UDim2.new(1, 0, 0, Theme.TOUCH), BackgroundTransparency = 1, ZIndex = 4, Parent = towerPanel })
-	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6), Parent = row })
-	targetButton = Theme.button({ TextSize = 13, Size = UDim2.new(0.5, -3, 1, 0), BackgroundColor3 = Theme.colors.quest, ZIndex = 4, Parent = row })
-	sellButton = Theme.button({ TextSize = 13, Size = UDim2.new(0.5, -3, 1, 0), BackgroundColor3 = Theme.colors.danger, ZIndex = 4, Parent = row })
-	-- Ultimate: the button fills back up as the cooldown recovers; Auto fires it when ready.
-	ultRow = Create("Frame", { LayoutOrder = 7, Size = UDim2.new(1, 0, 0, Theme.TOUCH), BackgroundTransparency = 1, ZIndex = 4, Parent = towerPanel })
-	ultButton = Theme.button({ TextSize = 14, Size = UDim2.new(1, -62, 1, 0), BackgroundColor3 = Theme.lira, ClipsDescendants = true, ZIndex = 4, Parent = ultRow })
-	ultFill = Create("Frame", { Name = "Cooldown", AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromScale(0, 1), BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.45, BorderSizePixel = 0, ZIndex = 4, Parent = ultButton })
-	autoButton = Theme.button({ TextSize = 12, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(0, 56, 1, 0), ZIndex = 4, Parent = ultRow })
-	for _, b in { targetButton, sellButton, ultButton, autoButton } do
-		local pad = b:FindFirstChildOfClass("UIPadding")
-		if pad then
-			pad.PaddingLeft = UDim.new(0, 4)
-			pad.PaddingRight = UDim.new(0, 4)
-		end
-		b.TextWrapped = true
-	end
+	-- The defender panel: the side column (desktop) and the bottom sheet (touch), MOBILE_HUD_PLAN B4.
+	sideView = TowerPanelView.side(root)
+	sheetView = TowerPanelView.sheet(root, Hud.PRIMARY)
+	useView(sideView)
 end
 
 local function clearGhost()
@@ -214,6 +189,7 @@ local function clearSelection()
 		selectedRing:Destroy()
 		selectedRing = nil
 	end
+	syncSheet()
 end
 
 -- The range preview (PV-B05): a soft disc with an ablaq edge of alternating basalt and cream
@@ -567,14 +543,20 @@ local function renderTowerPanel()
 	local nextLevel = def.levels[rec.level + 1]
 	local nx = if nextLevel then myStats(rec.unitId, rec.level + 1) else nil
 	local lines = {}
+	-- The sheet puts the numeric stats on one line and keeps the rest on their own (B4).
+	local core, extra = {}, {}
+	local function add(line: string, isCore: boolean?)
+		table.insert(lines, line)
+		table.insert(if isCore then core else extra, line)
+	end
 	local buff = rec.buff or 1 -- from nearby supports (server-computed, towerBuff events)
 	if st.damage > 0 then
-		table.insert(lines, statLine(t("match.stat_damage", { n = "" }), round(st.damage * buff, 0), nx and round(nx.damage * buff, 0)))
+		add(statLine(t("match.stat_damage", { n = "" }), round(st.damage * buff, 0), nx and round(nx.damage * buff, 0)), true)
 		if buff > 1 then
-			table.insert(lines, '<font color="' .. GAIN .. '">' .. t("match.buffed", { n = round((buff - 1) * 100, 0) }) .. "</font>")
+			add('<font color="' .. GAIN .. '">' .. t("match.buffed", { n = round((buff - 1) * 100, 0) }) .. "</font>")
 		end
-		table.insert(lines, statLine(t("match.stat_range", { n = "" }), round(st.range, 1), nx and round(nx.range, 1)))
-		table.insert(lines, statLine(t("match.stat_speed_label"), round(st.cooldown, 2), nx and round(nx.cooldown, 2), "s"))
+		add(statLine(t("match.stat_range", { n = "" }), round(st.range, 1), nx and round(nx.range, 1)), true)
+		add(statLine(t("match.stat_speed_label"), round(st.cooldown, 2), nx and round(nx.cooldown, 2), "s"), true)
 		-- Stealth enemies walk past defenders that can't see them; say so up front. A defender inside
 		-- a Natour's lantern (server-computed, towerReveal events) sees them and says whose light it is.
 		local lit = not st.hitsStealth and rec.revealedBy ~= nil
@@ -586,13 +568,13 @@ local function renderTowerPanel()
 		else
 			seesText = t(if sees then "match.sees_stealth" else "match.no_stealth")
 		end
-		table.insert(lines, string.format('<font color="%s">%s</font>', if sees then GAIN else LOSS, seesText))
+		add(string.format('<font color="%s">%s</font>', if sees then GAIN else LOSS, seesText))
 	end
 	if rec.sabotaged then
-		table.insert(lines, '<font color="' .. LOSS .. '">' .. t("match.sabotaged") .. "</font>")
+		add('<font color="' .. LOSS .. '">' .. t("match.sabotaged") .. "</font>")
 	end
 	if st.revealsStealth and rec.sabotaged then
-		table.insert(lines, '<font color="' .. LOSS .. '">' .. t("match.lantern_out") .. "</font>")
+		add('<font color="' .. LOSS .. '">' .. t("match.lantern_out") .. "</font>")
 	elseif st.revealsStealth then
 		local n = 0
 		for _, other in towers do
@@ -600,21 +582,33 @@ local function renderTowerPanel()
 				n += 1
 			end
 		end
-		table.insert(lines, '<font color="' .. GAIN .. '">' .. t("match.reveals_stealth") .. "</font>")
+		add('<font color="' .. GAIN .. '">' .. t("match.reveals_stealth") .. "</font>")
 		if n > 0 then
-			table.insert(lines, t("match.reveals_count", { n = n }))
+			add(t("match.reveals_count", { n = n }))
 		end
 	end
 	if st.income then
-		table.insert(lines, statLine(t("match.stat_income", { n = "" }), st.income, nx and nx.income))
+		add(statLine(t("match.stat_income", { n = "" }), st.income, nx and nx.income), true)
 	end
 	if st.buff then
-		table.insert(lines, statLine(t("match.stat_buff", { n = "" }), round((st.buff - 1) * 100, 0), nx and nx.buff and round((nx.buff - 1) * 100, 0), "%"))
+		add(statLine(t("match.stat_buff", { n = "" }), round((st.buff - 1) * 100, 0), nx and nx.buff and round((nx.buff - 1) * 100, 0), "%"), true)
 	end
 	if st.heal then
-		table.insert(lines, statLine(t("match.stat_heal", { n = "" }), st.heal, nx and nx.heal))
+		add(statLine(t("match.stat_heal", { n = "" }), st.heal, nx and nx.heal), true)
 	end
-	towerStats.Text = table.concat(lines, "\n")
+	if activeView.kind == "sheet" and not LocaleController.isRtl() then
+		-- One line of numbers; right-to-left text keeps one stat a line (mixed digits and arrows reorder).
+		local text = table.concat(core, "  ·  ")
+		if #extra > 0 then
+			text = (if text ~= "" then text .. "\n" else "") .. table.concat(extra, "\n")
+		end
+		towerStats.Text = text
+	else
+		towerStats.Text = table.concat(lines, "\n")
+	end
+	Theme.align(towerStats, LocaleController.isRtl(), activeView.kind == "side")
+	Theme.align(towerTitle, LocaleController.isRtl())
+	Theme.align(towerLevel, LocaleController.isRtl())
 
 	local state = MatchController.state()
 	local cash = if state then state.cash else 0
@@ -671,6 +665,7 @@ local function renderTowerPanel()
 	if not towerPanel.Visible then
 		towerPanel.Visible = true
 		Juice.pop(towerPanel, 0.85)
+		syncSheet()
 	end
 end
 
@@ -972,13 +967,79 @@ local function layoutBar()
 	touchCancel.Size = UDim2.fromOffset(pair.cancel.w, pair.cancel.h)
 	local cash = MatchController.cashPill()
 	local cashH = 36
-	if cash then
+	-- (while the defender sheet is open the pill rides on the sheet instead, see layoutSheet)
+	if cash and not (activeView.kind == "sheet" and towerPanel.Visible) then
 		cash.AnchorPoint = Vector2.new(0, 1)
 		cash.Position = UDim2.fromOffset(hb.x, above)
 		cashH = cash.Size.Y.Offset
 	end
 	placeHint.Position = UDim2.new(0.5, 0, 0, above - cashH - 4)
 	cancelButton.Position = UDim2.fromOffset(hb.x + hb.width, above)
+end
+
+-- The bottom sheet takes the hotbar's band: as wide as the space between Roblox's corners on touch
+-- (at most SHEET_MAX_W), standing on the hotbar's bottom line; the cash pill rides on its top edge.
+local function layoutSheet()
+	local scale = Device.scale()
+	local d = Device.designSize()
+	local lo, hi = Hud.HOTBAR.margin, d.x - Hud.HOTBAR.margin
+	if Device.isTouch() then
+		local band = Device.freeBand()
+		local reserved = Device.reserved()
+		lo = if reserved.left then band.x0 / scale else lo
+		hi = if reserved.right then band.x1 / scale else hi
+	end
+	local w = math.min(hi - lo, Hud.SHEET_MAX_W)
+	local sheet = sheetView.panel
+	sheet.Size = UDim2.fromOffset(w, 0)
+	sheet.Position = UDim2.fromOffset((lo + hi) / 2 - w / 2, d.y - Hud.HOTBAR.bottom)
+	local top = d.y - Hud.HOTBAR.bottom - sheet.AbsoluteSize.Y / scale
+	local cash = MatchController.cashPill()
+	if cash and sheet.Visible then
+		cash.AnchorPoint = Vector2.new(0, 1)
+		cash.Position = UDim2.fromOffset((lo + hi) / 2 - w / 2, top - 2)
+	end
+	-- The rail stays above the sheet (its inner columns may reach over the band).
+	MatchController.setRailFloor(if sheet.Visible then top else nil)
+end
+
+-- The open sheet hides the hotbar (and the bar returns when it closes).
+syncSheet = function()
+	local open = activeView.kind == "sheet" and towerPanel.Visible
+	if MatchController.active() and #slots > 0 then
+		bar.Visible = not open
+	end
+	if open then
+		layoutSheet()
+	else
+		MatchController.setRailFloor(nil)
+		layoutBar()
+	end
+end
+
+-- Settings panelSide: auto = the sheet on touch, the side panel on desktop; side / bottom force one.
+local function chooseView(): TowerPanelView.View
+	local side = SettingsController.get("panelSide")
+	if side == "bottom" or (side ~= "side" and Device.isTouch()) then
+		return sheetView
+	end
+	return sideView
+end
+
+local function switchView()
+	local v = chooseView()
+	if v == activeView then
+		syncSheet()
+		return
+	end
+	local wasOpen = towerPanel.Visible
+	towerPanel.Visible = false
+	useView(v)
+	portraitFor = nil
+	if wasOpen and selected then
+		renderTowerPanel()
+	end
+	syncSheet()
 end
 
 -- Pops the loadout card of `unitId` (a defender of yours just landed, PV-B05).
@@ -1015,7 +1076,7 @@ local function renderBar()
 	end
 	refreshBar()
 	layoutBar()
-	bar.Visible = true
+	bar.Visible = not (activeView.kind == "sheet" and towerPanel.Visible)
 end
 
 local function onEvents(events: { any })
@@ -1096,7 +1157,10 @@ function PlacementController.start()
 		end
 		call(Net.Functions.UpgradeTower, selected)
 	end
-	upgradeButton.Activated:Connect(pressUpgrade)
+	local views = { sideView, sheetView }
+	for _, v in views do
+		v.upgrade.Activated:Connect(pressUpgrade)
+	end
 	-- Studio harness (DebugKeysController): open a defender's panel, cycle the path card, press
 	-- Upgrade, or send a wrong path through the same call (its refusal shows the error toast).
 	if RunService:IsStudio() then
@@ -1114,33 +1178,35 @@ function PlacementController.start()
 			end
 		end
 	end
-	for pathKey, card in sigCards do
-		card.Activated:Connect(function()
-			sigPick = pathKey
-			Juice.punch(card, 0.08)
-			renderTowerPanel()
+	for _, v in views do
+		for pathKey, card in v.sigCards do
+			card.Activated:Connect(function()
+				sigPick = pathKey
+				Juice.punch(card, 0.08)
+				renderTowerPanel()
+			end)
+		end
+		v.sell.Activated:Connect(function()
+			if selected then
+				call(Net.Functions.SellTower, selected)
+			end
+		end)
+		v.ult.Activated:Connect(function()
+			local rec = selected and towers[selected]
+			if not rec then
+				return
+			end
+			if os.clock() < rec.readyAt then
+				Juice.shake(v.ult)
+				return
+			end
+			Net.event(Net.Events.UseAbility):FireServer(selected)
+			Juice.punch(v.ult)
+		end)
+		v.auto.Activated:Connect(function()
+			SettingsController.set("autoUlt", not (SettingsController.get("autoUlt") == true))
 		end)
 	end
-	sellButton.Activated:Connect(function()
-		if selected then
-			call(Net.Functions.SellTower, selected)
-		end
-	end)
-	ultButton.Activated:Connect(function()
-		local rec = selected and towers[selected]
-		if not rec then
-			return
-		end
-		if os.clock() < rec.readyAt then
-			Juice.shake(ultButton)
-			return
-		end
-		Net.event(Net.Events.UseAbility):FireServer(selected)
-		Juice.punch(ultButton)
-	end)
-	autoButton.Activated:Connect(function()
-		SettingsController.set("autoUlt", not (SettingsController.get("autoUlt") == true))
-	end)
 	SettingsController.Changed:Connect(function(key: string)
 		if key == "autoUlt" and selected then
 			renderTowerPanel()
@@ -1148,28 +1214,30 @@ function PlacementController.start()
 	end)
 	-- Hold Upgrade to keep buying levels (one every 0.3 s after a short delay).
 	local holding = 0
-	upgradeButton.InputBegan:Connect(function(input: InputObject)
-		if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
-			return
-		end
-		holding += 1
-		local token = holding
-		task.delay(0.45, function()
-			while holding == token and selected and towerPanel.Visible do
-				local rec = towers[selected]
-				if not rec or UpgradeView.step((Units :: any)[rec.unitId], rec.level, rec.path) ~= "level" then
-					break -- holding never buys a signature: that is a choice
+	for _, v in views do
+		v.upgrade.InputBegan:Connect(function(input: InputObject)
+			if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
+				return
+			end
+			holding += 1
+			local token = holding
+			task.delay(0.45, function()
+				while holding == token and selected and towerPanel.Visible do
+					local rec = towers[selected]
+					if not rec or UpgradeView.step((Units :: any)[rec.unitId], rec.level, rec.path) ~= "level" then
+						break -- holding never buys a signature: that is a choice
+					end
+					call(Net.Functions.UpgradeTower, selected)
+					task.wait(0.3)
 				end
-				call(Net.Functions.UpgradeTower, selected)
-				task.wait(0.3)
+			end)
+		end)
+		v.upgrade.InputEnded:Connect(function(input: InputObject)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				holding += 1
 			end
 		end)
-	end)
-	upgradeButton.InputEnded:Connect(function(input: InputObject)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			holding += 1
-		end
-	end)
+	end
 	-- Ultimate cooldown fill (cheap: one frame size, ten times a second, only while visible).
 	task.spawn(function()
 		while true do
@@ -1186,15 +1254,17 @@ function PlacementController.start()
 			end
 		end
 	end)
-	targetButton.Activated:Connect(function()
-		local id = selected
-		local rec = if id then towers[id] else nil
-		if rec and id then
-			local idx = table.find(TARGETING, rec.targeting) or 1
-			local nextMode = TARGETING[idx % #TARGETING + 1]
-			Net.event(Net.Events.SetTargeting):FireServer(id, nextMode)
-		end
-	end)
+	for _, v in views do
+		v.target.Activated:Connect(function()
+			local id = selected
+			local rec = if id then towers[id] else nil
+			if rec and id then
+				local idx = table.find(TARGETING, rec.targeting) or 1
+				local nextMode = TARGETING[idx % #TARGETING + 1]
+				Net.event(Net.Events.SetTargeting):FireServer(id, nextMode)
+			end
+		end)
+	end
 
 	MatchController.Started:Connect(function(info: MatchController.Info)
 		towers = {}
@@ -1217,9 +1287,11 @@ function PlacementController.start()
 		end
 	end)
 	cancelButton.Activated:Connect(clearGhost)
-	closeButton.Activated:Connect(function()
-		clearSelection()
-	end)
+	for _, v in views do
+		v.close.Activated:Connect(function()
+			clearSelection()
+		end)
+	end
 	MatchController.Events:Connect(onEvents)
 	MatchController.Ended:Connect(function()
 		clearGhost()
@@ -1242,7 +1314,18 @@ function PlacementController.start()
 			renderBar()
 		end
 	end)
-	Device.Changed:Connect(layoutBar)
+	Device.Changed:Connect(switchView)
+	SettingsController.Changed:Connect(function(key: string)
+		if key == "panelSide" then
+			switchView()
+		end
+	end)
+	sheetView.panel:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+		if sheetView.panel.Visible then
+			layoutSheet()
+		end
+	end)
+	switchView()
 	LocaleController.Changed:Connect(function()
 		if MatchController.active() then
 			renderBar()

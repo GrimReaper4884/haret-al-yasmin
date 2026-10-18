@@ -114,6 +114,9 @@ function MatchController.railButton(name: string): (TextButton, TextLabel)
 	return b, railLabels[b]
 end
 
+-- The top of a bottom element taller than the hotbar (the defender sheet), design px, or nil.
+local railFloor: number? = nil
+
 -- Places the visible rail buttons and the menu button from Logic/HudLayout (B2): the thumb arc above
 -- Roblox's jump button on touch, the right edge (or the left, Settings railSide) on every profile.
 local function layoutRail()
@@ -127,7 +130,7 @@ local function layoutRail()
 		end
 	end
 	local side = SettingsController.get("railSide") or "right"
-	local r = HudLayout.rail(Hud, Device.profile(), Device.scale(), Device.safeSize(), side, #shown, Device.reserved())
+	local r = HudLayout.rail(Hud, Device.profile(), Device.scale(), Device.safeSize(), side, #shown, Device.reserved(), railFloor)
 	for i, b in shown do
 		local p = r.buttons[i]
 		b.Position = UDim2.fromOffset(p.x, p.y)
@@ -137,6 +140,14 @@ local function layoutRail()
 	menuButton.Size = UDim2.fromOffset(r.menu.size, r.menu.size)
 end
 MatchController.relayout = layoutRail
+
+-- PlacementController: the defender sheet opened (its top, design px) or closed (nil).
+function MatchController.setRailFloor(y: number?)
+	if railFloor ~= y then
+		railFloor = y
+		layoutRail()
+	end
+end
 
 -- A square rail button: icon on top, a short outlined label under it.
 local function railButtonOf(name: string, color: Color3, iconName: string): TextButton

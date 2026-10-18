@@ -143,9 +143,10 @@ function HudLayout.hotbar(cfg: any, profile: Profile, scale: number, safeSize: S
 end
 
 -- The match rail (design px): the menu button at the top of the rail's edge and up to `count` buttons
--- vertically centred in the space between it and the jump zone (or the hotbar band), outermost
--- column first; a column that cannot hold them all spills into the next one inwards.
-function HudLayout.rail(cfg: any, profile: Profile, scale: number, safeSize: Size, side: string, count: number, reserved: Reserved?): Rail
+-- vertically centred in the space between it and the jump zone (or the hotbar band, or `floor`: the
+-- top of a taller bottom element such as the defender sheet), outermost column first; a column that
+-- cannot hold them all spills into the next one inwards.
+function HudLayout.rail(cfg: any, profile: Profile, scale: number, safeSize: Size, side: string, count: number, reserved: Reserved?, floor: number?): Rail
 	local R = cfg.RAIL
 	local res: Reserved = reserved or {}
 	local w, h = safeSize.x / scale, safeSize.y / scale
@@ -155,7 +156,7 @@ function HudLayout.rail(cfg: any, profile: Profile, scale: number, safeSize: Siz
 	local top = cfg.TOP_CLEAR + R.menu + gap
 	local zone = if right then res.right else res.left
 	local hotbarTop = h - cfg.HOTBAR.bottom - slotBase(cfg, profile)[2]
-	local bottom = hotbarTop - gap
+	local bottom = math.min(hotbarTop, floor or math.huge) - gap
 	if zone then
 		bottom = math.min(bottom, zone.y0 / scale - gap)
 	end

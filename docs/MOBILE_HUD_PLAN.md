@@ -502,7 +502,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
     greys Place and shows the reason; phone captures of aiming (valid, invalid) and of the Place/Cancel
     pair. DECISIONS row B9-2.
 
-- [x] **MH-08 Touch selection rules** · deps: MH-07
+- [x] 99efd39 **MH-08 Touch selection rules** · deps: MH-07
   - **Goal:** B3-4.
   - **Change:** `towerAtScreen` radius from `Hud.PLACE.PICK_PX[touch/mouse]`; on touch a tap on empty
     ground keeps the selection (mouse still clears); selection ring and `EnemyRenderController.setSelectedTower`
@@ -513,7 +513,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
 
 ### Milestone 3: defender panel
 
-- [ ] **MH-09 Bottom sheet defender panel** · deps: MH-08
+- [x] **MH-09 Bottom sheet defender panel** · deps: MH-08
   - **Goal:** B4.
   - **Change:** `PlacementController.build` builds both panels (side, bottom) from one `renderTowerPanel`
     data step (title, level or signature name, stats lines incl. sabotaged / lantern-out, the

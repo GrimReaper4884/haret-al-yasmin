@@ -84,4 +84,6 @@ return {
 
 	-- Sheet modals on phones (B7): margin to the safe area's edges.
 	SHEET_MARGIN = 8,
+	-- The defender bottom sheet (B4) is never wider than this (desktop with panelSide = bottom).
+	SHEET_MAX_W = 640,
 }

@@ -170,6 +170,16 @@ return function(t)
 			end
 		end)
 
+		t.it("keeps the rail above a taller bottom element (the defender sheet)", function()
+			local safe = size(750, 324)
+			local reserved = HudLayout.reserved(Hud, "touch-phone", true, safe)
+			local floor = 147
+			local rail = HudLayout.rail(Hud, "touch-phone", 1, safe, "right", 3, reserved, floor)
+			for _, b in rail.buttons do
+				t.truthy(b.y + rail.size <= floor - Hud.RAIL.gap + 1e-6, "rail button under the sheet's top")
+			end
+		end)
+
 		t.it("recognises taps by slop and time", function()
 			local slop, tmax = Hud.PLACE.TAP_SLOP_PX, Hud.PLACE.TAP_MAX_S
 			t.truthy(HudLayout.isTap(Hud, 0, 0, 0))
