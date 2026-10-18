@@ -55,6 +55,19 @@ function StoryCards.secretOdds(td: any, episodeId: string, difficulty: string): 
 	return { unit = drop.unit, chance = chance, pity = drop.pity }
 end
 
+-- The Hakawati's room tales (S1-C06): one per episode in story order, its outro readable once the
+-- player has cleared that episode on any difficulty (`cleared` = profile.td.cleared). Read-only.
+export type Tale = { id: string, number: number, titleKey: string, lines: { string }, unlocked: boolean }
+
+function StoryCards.tales(story: any, cleared: { [string]: any }?): { Tale }
+	local out: { Tale } = {}
+	for i, id in story.order do
+		local ep = story.episodes[id]
+		table.insert(out, { id = id, number = i, titleKey = ep.titleKey, lines = ep.outro, unlocked = cleared ~= nil and cleared[id] ~= nil })
+	end
+	return out
+end
+
 -- 0.01 → "1", 0.025 → "2.5" (one decimal at most, no trailing ".0").
 function StoryCards.percent(chance: number): string
 	local s = string.format("%.1f", chance * 100)

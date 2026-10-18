@@ -672,6 +672,20 @@ Tag legend in the flag column: **MEANING** may say the wrong thing · **DIALECT*
 |---|-----|---------|------------------|-------------|------------|-----|
 | 1 | `match.ally` | Ally | حليف | Under Al-Adashari's name in a match. |  |  |
 
+## 24. Season Story 1: lobby story bits (S1-C06)
+
+| # | Key | English | Arabic (current) | Claude flag | Correction | OK? |
+|---|-----|---------|------------------|-------------|------------|-----|
+| 1 | `pass.season.s1.name` | Lane Diary · Season 1: The Night Guard | دفتر الحارة · الموسم ١: الحارس الليلي | Name changed (was without the subtitle). |  |  |
+| 2 | `story.cart.name` | Pickle cart | عربية المخلّل |  |  |  |
+| 3 | `story.cart.prompt` | Look | اتفرّج |  |  |  |
+| 4 | `story.cart.1` | A pickle cart by the gate. Long ago the za'im lent a hard man the money to push it. | عربية مخلّل جنب الباب. من زمان الزعيم ديّن زلمة قاسي مصاري ليدفشها. |  |  |  |
+| 5 | `story.cart.2` | By day he sold pickles from it. By night he walked the roofs. | بالنهار كان يبيع منها مخلّل، وبالليل يمشي عالسطوح. |  |  |  |
+| 6 | `story.cart.3` | Its wheels still turn. Some say the man who owned it guards this gate now. | دواليبها لسّا بتدور. وفي ناس بتقول صاحبها صار يحرس هالباب. |  |  |  |
+| 7 | `afk.tales` | Tales | حكايات |  |  |  |
+| 8 | `afk.tales_title` | The Hakawati's tales | حكايات الحكواتي |  |  |  |
+| 9 | `afk.tale_locked` | Clear Episode {n} to hear this tale. | اربح الحلقة {n} لتسمع هالحكاية. |  |  |  |
+
 ## Sign-off
 
 | Reviewer | Dialect / country | Date | Sections reviewed | Notes |

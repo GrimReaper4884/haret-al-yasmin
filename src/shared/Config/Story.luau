@@ -60,8 +60,20 @@ local episodes: { [string]: Episode } = {
 	ep9 = episode("ep9", { "ally", "swarm", "stealth" }, { "abu_shatour", "lateef", "abu_zira", "fakhr", "rival_zaim", "colonel" }),
 }
 
+-- The pickle cart by the lane gate (STORY_PLAN §7.6, S1-C06; the prop is S1-A08's): a tap shows its
+-- three lines in turn over the cart, `lineSeconds` each, within `reach` studs. The tag the prop carries.
+local cart = {
+	tag = "PickleCart",
+	lines = { "story.cart.1", "story.cart.2", "story.cart.3" },
+	nameKey = "story.cart.name",
+	promptKey = "story.cart.prompt",
+	lineSeconds = 4,
+	reach = 10,
+}
+
 return {
 	titleKey = "story.season.title",
+	cart = cart,
 	order = { "ep1", "ep2", "ep3", "ep4", "ep5", "ep6", "ep7", "ep8", "ep9" },
 	episodes = episodes,
 }
