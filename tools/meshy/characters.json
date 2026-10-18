@@ -267,6 +267,12 @@
       "texture_style": "enemy",
       "prompt": "Drunken rival-lane fighter of 1930s Damascus, lanky man with a long drooping moustache, tarboosh fallen backwards, unbuttoned striped shirt, a broken bottle in one hand and a short knife in the other, reeling stance.",
       "texture": "Red tarboosh, blue and white striped shirt, dark trousers, green glass bottle, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "adashari": {
+      "height": 1.8,
+      "prompt": "Gaunt wiry 1930s Damascus night guard with a haunted but kind expression, stubble and hollow cheeks, dark head cloth wrapped low over the brow, grey-brown striped qumbaz, wide black belt with a short sheathed dagger, left arm missing: the empty left sleeve is folded and pinned up flat against the shoulder with a white bandage showing, right arm straight out to the side with the right hand open and empty (no lantern), standing guard.",
+      "texture": "Dark charcoal head cloth, grey-brown striped qumbaz, black belt, brass dagger hilt, white bandage, warm tan skin.",
+      "_note": "S1-A05 (Al-Adashari, the secret unit): his lantern is a held prop (Anim/HandProps). One-armed: the auto-rig still makes left-arm bones; the bake leaves them unused (STORY_PLAN §12, S1-A05)."
     }
   },
   "prop_style": "Stylized chunky cartoon game prop for a mobile tower-defense game set in a 1930s Damascus old-city lane, toy-like proportions, clean simple shapes, bold readable silhouette, hand-painted flat colors with soft shading, warm limestone and wood palette, single object centered, three-quarter view, no characters, no text, no background.",
