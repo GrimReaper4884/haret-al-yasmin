@@ -238,6 +238,118 @@
         "clip": "waisthit",
         "to": 24
       }
+    },
+    "pickpocket": {
+      "walk": "runfast",
+      "hit": "hitreact",
+      "death": {
+        "clip": "flyup",
+        "yaw": 0
+      }
+    },
+    "drummer": {
+      "walk": "confident",
+      "hit": "hitreact",
+      "death": {
+        "clip": "knockdown",
+        "yaw": 0
+      }
+    },
+    "torchbearer": {
+      "walk": "run2",
+      "hit": "hitreact",
+      "death": {
+        "clip": "knockdown",
+        "yaw": 0
+      }
+    },
+    "porter": {
+      "walk": "orc",
+      "hit": "hitreact",
+      "death": {
+        "clip": "knockdown1",
+        "yaw": 0
+      }
+    },
+    "disguised": {
+      "walk": "quickwalk",
+      "hit": "hitreact",
+      "death": {
+        "clip": "knockdown",
+        "yaw": 0
+      }
+    },
+    "beggar": {
+      "walk": "cautious",
+      "hit": "hitreact",
+      "death": {
+        "clip": "flyup",
+        "yaw": 0
+      }
+    },
+    "corporal": {
+      "walk": "quickwalk",
+      "hit": "hitreact",
+      "death": {
+        "clip": "knockdown",
+        "yaw": 0
+      },
+      "intro": {
+        "clip": "chestpound",
+        "yaw": 0
+      },
+      "stagger": {
+        "clip": "waisthit",
+        "to": 24
+      }
+    },
+    "abu_jawdan": {
+      "walk": "proud",
+      "hit": "hitreact",
+      "death": {
+        "clip": "knockdown1",
+        "yaw": 0
+      },
+      "intro": {
+        "clip": "chestpound",
+        "yaw": 0
+      },
+      "stagger": {
+        "clip": "waisthit",
+        "to": 24
+      }
+    },
+    "abu_shatour": {
+      "walk": "walkfight",
+      "hit": "hitreact",
+      "death": {
+        "clip": "dyingback",
+        "yaw": 0
+      },
+      "intro": {
+        "clip": "axebreathe",
+        "yaw": 0
+      },
+      "stagger": {
+        "clip": "waisthit",
+        "to": 24
+      }
+    },
+    "lateef": {
+      "walk": "run3",
+      "hit": "hitreact",
+      "death": {
+        "clip": "flyup",
+        "yaw": 0
+      },
+      "intro": {
+        "clip": "battlepose",
+        "yaw": 0
+      },
+      "stagger": {
+        "clip": "waisthit",
+        "to": 24
+      }
     }
   }
 }

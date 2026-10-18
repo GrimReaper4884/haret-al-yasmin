@@ -11,7 +11,8 @@ if the texture is missing. Each module is one object in the "kit" collection; to
 export_kit.py writes one GLB per module. Budgets: ≤ 2,000 triangles per module (gates and the
 warehouse ≤ 6,000), checked by export_kit.py.
 
-The organic half (olive trees, sacks, jars, the press: S1-M02) is modelled by hand in the same .blend.
+The organic half (olive trees, sacks, jars, the press, nets: S1-M02) is scripted here too, as low-poly
+stylised shapes, so the whole kit stays reproducible from the repo (D-054).
 """
 
 import math
@@ -37,6 +38,7 @@ PALETTE = [
     ("water", "#5D8FA8"), ("sack", "#C2A878"), ("glow", "#F3D27A"), ("olive", "#5E6B3A"),
     ("canvas", "#D8CFB5"), ("khaki", "#8A7A52"), ("white", "#EFE6D2"), ("slate", "#5C6670"),
     ("plaster_shade", "#D6C6A8"), ("rival_wood", "#3E4A52"), ("fire", "#E07A2E"), ("cushion", "#7A3B5C"),
+    ("leaf", "#4E6B34"), ("leaf_light", "#7E9467"), ("bark", "#6B5440"), ("net", "#B89E6A"),
 ]
 SWATCH = {name: i for i, (name, _) in enumerate(PALETTE)}
 
@@ -456,6 +458,125 @@ def rubble(b):
         b.box((s, s * 0.8, s * 0.6), (rng.uniform(-2.5, 2.5), rng.uniform(-2.0, 2.0), 0), rng.choice(["stone", "basalt", "plaster_shade"]), rot=(rng.uniform(-15, 15), rng.uniform(-15, 15), rng.uniform(0, 90)))
 
 
+
+
+# ---------------------------------------------------------------------------------------- organic (S1-M02)
+def olive_tree(b, seed, height):
+    """A stylised olive: a twisted trunk of tilted segments, two or three boughs, a silver-green
+    canopy of squashed blobs, a few dark olives."""
+    rng = random.Random(seed)
+    x = y = 0.0
+    z = 0.0
+    seg = height * 0.45 / 3
+    for i in range(3):  # the gnarled trunk leans a little each segment
+        lean = (rng.uniform(-14, 14), rng.uniform(-14, 14))
+        b.cyl(0.85 - i * 0.12, seg, (x, y, z), "bark", segs=7, top_radius=0.7 - i * 0.12, rot=(lean[0], lean[1], 0))
+        x += math.sin(math.radians(lean[1])) * seg * 0.5
+        y -= math.sin(math.radians(lean[0])) * seg * 0.5
+        z += seg * 0.95
+    top = Vector((x, y, z))
+    for k in range(3):  # boughs
+        a = k / 3 * math.tau + rng.random()
+        b.cyl(0.22, height * 0.22, tuple(top), "bark", segs=5, top_radius=0.12, rot=(math.degrees(math.sin(a)) * 0.6 + 35 * math.sin(a), 35 * math.cos(a), 0))
+    for k in range(8):  # canopy: low and wide, silver-green on top of dark green
+        a = k / 8 * math.tau + rng.random() * 0.5
+        r = rng.uniform(1.4, 2.6)
+        c = top + Vector((math.cos(a) * r, math.sin(a) * r, rng.uniform(0.2, 1.2)))
+        b.sphere(rng.uniform(1.4, 2.0), tuple(c), "leaf" if k % 2 else "leaf_light", segs=8, rings=5, scale=(1.25, 1.25, 0.55))
+    for _ in range(6):
+        a = rng.random() * math.tau
+        c = top + Vector((math.cos(a) * 2.4, math.sin(a) * 2.4, rng.uniform(0.6, 1.6)))
+        b.sphere(0.18, tuple(c), "basalt", segs=5, rings=3)
+
+
+def olive_tree_a(b):
+    olive_tree(b, 11, 7.0)
+
+
+def olive_tree_b(b):
+    olive_tree(b, 23, 8.5)
+
+
+def olive_tree_c(b):
+    olive_tree(b, 37, 5.5)
+
+
+def orchard_wall_low(b):
+    # a dry-stone field wall 8 studs long, knee high, of irregular stones
+    rng = random.Random(5)
+    for row in range(3):
+        x = -4.0 + (0.4 if row % 2 else 0.0)
+        while x < 4.0:
+            w = rng.uniform(0.8, 1.4)
+            b.box((min(w, 4.0 - x), 1.4 - row * 0.15, 0.55), (x + min(w, 4.0 - x) / 2, 0, row * 0.55), rng.choice(["stone", "cobble", "plaster_shade"]), rot=(0, 0, rng.uniform(-3, 3)))
+            x += w
+    b.box((8.2, 1.2, 0.25), (0, 0, 1.65), "stone")
+
+
+def terrace_step(b):
+    # a step between two terraces: a retaining face of stones and an earth top, 8 wide
+    b.box((8, 3, 1.6), (0, 0, 0), "dust")
+    for i in range(6):
+        b.box((1.3, 0.3, 1.6), (-3.3 + i * 1.32, -1.55, 0), "stone" if i % 2 else "cobble")
+    b.box((8, 3, 0.1), (0, 0, 1.6), "grass")
+
+
+def irrigation_channel_4m(b):
+    for side in (-1, 1):
+        b.box((16, 0.7, 0.6), (0, side * 0.9, 0), "stone")
+    b.box((16, 1.1, 0.15), (0, 0, 0), "cobble_dark")
+    b.box((16, 1.0, 0.05), (0, 0, 0.3), "water")
+
+
+def olive_press(b):
+    # the stone mill: a round basin, an upright millstone on a wooden axle, a beam to turn it, oil jars
+    b.cyl(3.4, 1.4, (0, 0, 0), "stone", segs=16)
+    b.cyl(2.9, 0.12, (0, 0, 1.4), "olive", segs=16)
+    b.cyl(1.4, 0.9, (1.0, 0, 1.4), "plaster_shade", segs=14, rot=(90, 0, 0))  # the millstone on its edge
+    b.cyl(0.35, 3.4, (0, 0, 1.4), "wood_dark", segs=8)  # central post
+    b.box((7.6, 0.35, 0.35), (1.4, 0, 2.8), "wood")  # the beam
+    b.cyl(0.6, 0.9, (4.6, 1.6, 0), "terracotta", segs=10, top_radius=0.35)
+    b.cyl(0.55, 0.8, (4.4, -1.4, 0), "terracotta", segs=10, top_radius=0.3)
+    b.box((1.4, 1.0, 0.5), (-4.0, 0, 0), "wood")  # trough
+    b.box((1.2, 0.8, 0.1), (-4.0, 0, 0.45), "olive")
+
+
+def sack_pile(b):
+    rng = random.Random(8)
+    spots = [(-1.0, 0, 0), (0.9, 0.2, 0), (0, -0.9, 0), (-0.2, 0.1, 1.1), (0.7, -0.4, 1.0)]
+    for x, y, z in spots:
+        b.sphere(0.95, (x, y, z + 0.6), "sack", segs=8, rings=5, scale=(1.0, 0.75, 0.62))
+        b.cyl(0.22, 0.3, (x, y, z + 1.15), "net", segs=6, top_radius=0.1)
+    b.box((0.06, 0.06, 0.06), (0, 0, 0), "net")  # keeps the origin on the ground
+
+
+def oil_jar_cluster(b):
+    for x, y, s in ((-0.9, 0.2, 1.0), (0.6, -0.3, 0.85), (0.2, 0.9, 0.7)):
+        b.cyl(0.55 * s, 0.35 * s, (x, y, 0), "terracotta", segs=10, top_radius=0.75 * s)
+        b.cyl(0.75 * s, 0.9 * s, (x, y, 0.35 * s), "terracotta", segs=10, top_radius=0.4 * s)
+        b.cyl(0.3 * s, 0.3 * s, (x, y, 1.25 * s), "terracotta", segs=8, top_radius=0.38 * s)
+
+
+def harvest_net(b):
+    # a net spread under a tree to catch olives, 6 × 6, with olives on it
+    rng = random.Random(3)
+    b.box((6, 6, 0.04), (0, 0, 0), "net")
+    for i in range(7):
+        b.box((0.08, 6, 0.06), (-3 + i, 0, 0.04), "sack")
+        b.box((6, 0.08, 0.06), (0, -3 + i, 0.04), "sack")
+    for _ in range(18):
+        b.sphere(0.13, (rng.uniform(-2.6, 2.6), rng.uniform(-2.6, 2.6), 0.12), "basalt", segs=5, rings=3)
+
+
+def ladder(b):
+    # a wooden ladder leaning back against a tree or wall (foot at the origin)
+    for side in (-1, 1):
+        b.box((0.18, 0.18, 7.0), (side * 0.6, 0, 0), "wood", rot=(-14, 0, 0))
+    for i in range(8):
+        z = 0.6 + i * 0.8
+        b.box((1.25, 0.14, 0.14), (0, z * math.tan(math.radians(14)), z), "wood_dark")
+
+
 MODULES = {
     # lane walls
     "wall_2m": wall_2m, "wall_4m": wall_4m, "wall_corner": wall_corner, "wall_arch": wall_arch,
@@ -470,6 +591,11 @@ MODULES = {
     "rooftop_stair": rooftop_stair, "skyline_dome": skyline_dome, "skyline_minaret": skyline_minaret,
     # ground
     "grass_patch": grass_patch, "dust_patch": dust_patch, "rubble": rubble,
+    # orchard (organic half, S1-M02): the Olive Press event map
+    "olive_tree_a": olive_tree_a, "olive_tree_b": olive_tree_b, "olive_tree_c": olive_tree_c,
+    "orchard_wall_low": orchard_wall_low, "terrace_step": terrace_step, "irrigation_channel_4m": irrigation_channel_4m,
+    "olive_press": olive_press, "sack_pile": sack_pile, "oil_jar_cluster": oil_jar_cluster,
+    "harvest_net": harvest_net, "ladder": ladder,
 }
 
 
