@@ -28,6 +28,7 @@ Icons.images = {
 	-- Touch HUD (MOBILE_HUD_PLAN MH-04): primitives until a painted pair is approved
 	ui_menu = { id = 0 },
 	ui_view = { id = 0 },
+	ui_more = { id = 0 },
 
 	-- Match actions and defender roles (PV-C04)
 	act_upgrade = { id = 118839200965690 },

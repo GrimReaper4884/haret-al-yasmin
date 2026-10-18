@@ -45,6 +45,9 @@ local function apply(key: string, value: any)
 		Device.setPreset(value)
 	end
 	SettingsController.Changed:Fire(key, value)
+	if key == "music" then
+		LobbyMenuController.refresh()
+	end
 end
 
 function SettingsController.set(key: string, value: any)
@@ -271,6 +274,13 @@ function SettingsController.start()
 	SettingsController.Changed:Connect(render)
 	LocaleController.Changed:Connect(render)
 	LobbyMenuController.register("settings", SettingsController.open)
+	-- The lobby's More sheet on a phone (MOBILE_HUD_PLAN B6): Music with its state.
+	LobbyMenuController.register("music", function()
+		SettingsController.set("music", values.music == false)
+	end)
+	LobbyMenuController.registerLabel("music", function()
+		return LocaleController.t("settings.music") .. ": " .. LocaleController.t(if values.music == false then "settings.off" else "settings.on")
+	end)
 end
 
 return SettingsController

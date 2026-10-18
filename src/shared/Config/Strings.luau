@@ -276,6 +276,7 @@ local en: { [string]: string } = {
 	["match.camera_overhead"] = "Watchtower view",
 	["match.camera_walk"] = "Walk",
 	-- Touch HUD rail and match menu (MOBILE_HUD_PLAN MH-04)
+	["hud.more"] = "More",
 	["match.view_tower"] = "Tower",
 	["match.view_walk"] = "Walk",
 	["match.skip_votes"] = "{n}/{total}",
@@ -1128,6 +1129,7 @@ local ar: { [string]: string } = {
 	["match.camera_overhead"] = "منظر البرج",
 	["match.camera_walk"] = "مشي",
 	-- Touch HUD rail and match menu (MOBILE_HUD_PLAN MH-04)
+	["hud.more"] = "المزيد",
 	["match.view_tower"] = "البرج",
 	["match.view_walk"] = "مشي",
 	["match.skip_votes"] = "{n}/{total}",

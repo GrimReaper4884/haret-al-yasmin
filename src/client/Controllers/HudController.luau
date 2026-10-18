@@ -16,6 +16,7 @@ local LocaleController = require(script.Parent.LocaleController)
 local ShopController = require(script.Parent.ShopController)
 local WardrobeController = require(script.Parent.WardrobeController)
 local SettingsController = require(script.Parent.SettingsController)
+local LobbyMenuController = require(script.Parent.LobbyMenuController)
 
 local HudController = {}
 
@@ -130,6 +131,8 @@ local function build()
 		Parent = root,
 	})
 	wardrobeButton.Activated:Connect(WardrobeController.toggle)
+	-- On a phone the Wardrobe lives in the lobby's More sheet (MOBILE_HUD_PLAN B6).
+	LobbyMenuController.register("wardrobe", WardrobeController.toggle)
 
 	-- One-tap music mute beside the pills (the match HUD has its own next to the gear).
 	SettingsController.muteButton({
