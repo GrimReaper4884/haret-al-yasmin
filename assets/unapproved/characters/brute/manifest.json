@@ -1,0 +1,24 @@
+{
+  "id": "brute",
+  "tasks": {
+    "concept": "01a14ef2-bed9-7168-beb3-eb9323df56fe",
+    "mesh": "01a14f38-20e5-73d1-8b37-759b3438c001",
+    "rig": "01a14f39-96b5-7166-b1a4-50b32a39c437",
+    "clip_hitreact": "01a14f41-b33f-775e-b1e0-43253d8a1123",
+    "clip_knockdown1": "01a14f41-d500-7411-bf23-8170261095c9",
+    "clip_orc": "01a14f41-f737-75ab-a783-c6886781dc22"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_hitreact": 0,
+    "clip_knockdown1": 3,
+    "clip_orc": 3
+  },
+  "clips": {
+    "hitreact": 178,
+    "knockdown1": 190,
+    "orc": 119
+  }
+}

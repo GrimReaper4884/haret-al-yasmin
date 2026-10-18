@@ -11,8 +11,9 @@ local PassLogic = require(Shared.Logic.PassLogic)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
+local Juice = require(UI.Juice)
 local Modal = require(UI.Modal)
-local RewardText = require(UI.RewardText)
+local Amount = require(UI.Amount)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
@@ -24,6 +25,7 @@ local levelLabel: TextLabel
 local xpBar: Frame
 local xpFill: Frame
 local xpLabel: TextLabel
+local lastXp: number? = nil
 local endsLabel: TextLabel
 local strip: ScrollingFrame
 local premiumButton: TextButton
@@ -76,8 +78,9 @@ local function tierColumn(t: any, snapshot: any, tier: number, level: number)
 	local function trackBlock(y: number, track: string, reward: any)
 		local claimed = (if track == "free" then snapshot.pass.claimedFree else snapshot.pass.claimedPremium)[tostring(tier)] == true
 		local lockedPremium = track == "premium" and not snapshot.pass.premium
-		local label = Theme.label({ Text = t("pass." .. track) .. "\n" .. RewardText(t, reward), TextSize = 11, Position = UDim2.fromOffset(4, y), Size = UDim2.new(1, -8, 0, 34), TextYAlignment = Enum.TextYAlignment.Top, TextColor3 = if track == "premium" then Theme.rarity.legendary else Theme.colors.text, ZIndex = 12, Parent = col })
+		local label = Theme.label({ Text = t("pass." .. track), TextSize = 11, Position = UDim2.fromOffset(4, y), Size = UDim2.new(1, -8, 0, 12), TextYAlignment = Enum.TextYAlignment.Top, TextColor3 = if track == "premium" then Theme.rarity.legendary else Theme.colors.text, ZIndex = 12, Parent = col })
 		label.TextXAlignment = Enum.TextXAlignment.Center
+		Amount.row({ Position = UDim2.fromOffset(2, y + 12), Size = UDim2.new(1, -4, 0, 24), ZIndex = 12, Parent = col }, Amount.reward(t, reward), { iconSize = 24, textSize = 12, rtl = LocaleController.isRtl() })
 		local text = if claimed then t("pass.claimed") elseif tier > level then t("pass.locked") elseif lockedPremium then t("pass.premium") else t("pass.claim")
 		local enabled = not claimed and tier <= level and not lockedPremium
 		local b = Theme.button({ Text = text, TextSize = 12, Position = UDim2.fromOffset(6, y + 36), Size = UDim2.new(1, -12, 0, 26), BackgroundColor3 = if enabled then Theme.colors.button else Theme.colors.buttonDisabled, AutoButtonColor = enabled, ZIndex = 12, Parent = col })
@@ -100,12 +103,16 @@ function PassController.render()
 	if not snapshot then
 		return
 	end
-	modal.title.Text = t("pass.season.s1.name")
+	modal.title.Text = t(SeasonPass.nameKey) -- the season's own name (S1-C06: "… Season 1: The Night Guard")
 	Theme.align(modal.title, LocaleController.isRtl())
 	local level, into, need = PassLogic.level(snapshot.pass.xp, SeasonPass.tiers)
 	levelLabel.Text = t("pass.level", { n = level })
 	xpLabel.Text = if need > 0 then t("pass.xp", { n = into, total = need }) else "MAX"
 	xpFill.Size = UDim2.fromScale(if need > 0 then into / need else 1, 1)
+	if lastXp and snapshot.pass.xp > lastXp then
+		Juice.shineOnce(xpFill)
+	end
+	lastXp = snapshot.pass.xp
 	local days = math.max(0, math.floor((SeasonPass.endsAt - os.time()) / 86400))
 	endsLabel.Text = t("pass.ends", { n = days })
 	premiumButton.Text = if snapshot.pass.premium then t("pass.premium") .. " ✓" else t("pass.buy_premium")

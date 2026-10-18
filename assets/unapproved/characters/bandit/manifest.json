@@ -1,0 +1,28 @@
+{
+  "id": "bandit",
+  "tasks": {
+    "concept": "01a14ba7-29a4-7083-841c-1d8a385048fc",
+    "mesh": "01a14c7a-a6cd-726a-9aac-bf23fc020ecb",
+    "rig": "01a14c7c-1c65-7340-953c-6b8fec00c1fe",
+    "anim_idle": "01a14c7c-6ef2-75ea-9dee-7873c5652e03",
+    "anim_attack": "01a14c7c-aac1-776b-976b-6efb915321e2",
+    "clip_dyingback": "01a14c7f-5e93-7248-b447-cc9244e84df5",
+    "clip_hitreact": "01a14c7f-8066-7610-a2f9-779df8197c29",
+    "clip_orc": "01a14c7f-a18a-7191-b3f4-c00aca49558e"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3,
+    "clip_dyingback": 3,
+    "clip_hitreact": 3,
+    "clip_orc": 3
+  },
+  "clips": {
+    "dyingback": 189,
+    "hitreact": 178,
+    "orc": 119
+  }
+}

@@ -133,7 +133,12 @@ def make(cid: str, until: str):
         if prop:
             prompt = (cfg["prop_style"] + " " + ch["prompt"] + " " + ch["texture"])[:2000]
         else:
-            prompt = (cfg["style"] + " " + ch["prompt"] + " " + ch["texture"] + " " + cfg["texture_style"])[:2000]
+            # Attackers opt into the colder, hostile texture style ("texture_style": "enemy").
+            tstyle = cfg["enemy_texture_style"] if ch.get("texture_style") == "enemy" else cfg["texture_style"]
+            # Non-bipeds (the cart, the snake) name their own style key: the default one asks for a
+            # T-posed character and grew the snake arms and the cart two extra riders.
+            style = cfg[ch["style"]] if "style" in ch else cfg["style"]
+            prompt = (style + " " + ch["prompt"] + " " + ch["texture"] + " " + tstyle)[:2000]
         body = {"ai_model": "nano-banana-2", "prompt": prompt, "remove_background": True}
         if not prop and ch.get("pose", True):
             body["pose_mode"] = "t-pose"  # the auto-rigger needs a T-pose

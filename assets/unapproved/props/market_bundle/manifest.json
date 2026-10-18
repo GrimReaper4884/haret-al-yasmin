@@ -1,0 +1,11 @@
+{
+  "id": "market_bundle",
+  "tasks": {
+    "concept": "01a14c59-6739-754f-9a65-dc4ded5f1a4f",
+    "mesh": "01a14c5b-2711-7665-ad77-4e9ec2d75f33"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30
+  }
+}

@@ -17,6 +17,7 @@ local Waves = require(Shared.Config.Waves)
 local Arenas = require(Shared.Config.Arenas)
 local Modes = require(Shared.Config.Modes)
 local Traits = require(Shared.Config.Traits)
+local Beads = require(Shared.Config.Beads)
 local Items = require(Shared.Config.Items)
 local Economy = require(Shared.Config.Economy)
 local TdSim = require(Shared.Logic.TdSim)
@@ -61,6 +62,9 @@ export type Match = {
 	outcome: any?,
 	eventBuffer: { any },
 	buffShown: { [number]: number }, -- tower id → the support buff on its badge (absent = none)
+	revealShown: { [number]: number }, -- tower id → the lantern tower letting it see stealth (absent = none)
+	sabotaged: { [number]: number }, -- tower id → game time its sabotage ends (towerDisabled; D-038)
+	script: any?, -- the episode's scripted beats (Config/Waves episodes[id].script): the ally's turn
 }
 
 local matches: { [number]: Match } = {}
@@ -86,6 +90,7 @@ local function rulesFor(match: Match): TdTowers.Rules
 		towerCap = TD.TOWER_CAP,
 		sellRefund = TD.SELL_REFUND,
 		starBonus = TD.STAR_BONUS,
+		traitCaps = Traits.caps,
 	}
 end
 
@@ -108,6 +113,7 @@ local function stateSnapshot(match: Match, player: Player): { [string]: any }
 		countdown = TdSim.countdown(s),
 		gateHp = s.gateHp,
 		gateMax = s.gateMax,
+		gateBurn = s.gateBurn.stacks,
 		cash = if me then me.cash else 0,
 		speed = match.speed,
 		votes = votes,
@@ -232,8 +238,14 @@ local function rewardPlayer(match: Match, player: Player, outcome: any): any
 		if eventId and eventDef then
 			eventGain = EventLogic.addCurrency(p, eventId, eventDef, EventLogic.matchCurrency(eventDef, outcome.won, outcome.wavesCleared))
 		end
+		-- Beads first: they read the first-clear state that record() is about to update (S1-S11).
+		local beads = MatchRewards.beads(p, match.modeId, match.mode, match.difficulty, outcome, Beads, TD, os.time() // 86400)
+		;(reward :: any).beads = beads
+		-- Episode 9's secret unit roll (S1-S12), granted in this same mutation.
+		local secret = MatchRewards.secretDrop(p, match.modeId, match.mode, match.difficulty, outcome, TD.SECRET_DROP, TD, math.random)
+		;(reward :: any).secretUnit = secret
 		MatchRewards.record(p, match.modeId, match.mode, match.difficulty, outcome, if ps then ps.kills else 0, TD)
-		Grants.apply(p, { lira = reward.lira, qirsh = reward.qirsh, xp = reward.xp, traitStones = reward.traitStones }, {
+		Grants.apply(p, { lira = reward.lira, qirsh = reward.qirsh, xp = reward.xp, traitStones = reward.traitStones, beads = beads, unit = secret or reward.unit }, {
 			maxQirsh = Economy.MAX_QIRSH,
 			maxLira = TD.MAX_LIRA,
 			maxStones = TD.MAX_TRAIT_STONES,
@@ -242,11 +254,19 @@ local function rewardPlayer(match: Match, player: Player, outcome: any): any
 			traits = Traits,
 			rng = math.random,
 			now = os.time(),
+			maxBeads = Beads.maxBeads,
 		})
 		return true
 	end, { src = "match:" .. match.modeId })
 	Analytics.custom(player, (if outcome.won then "MatchWon_" else "MatchLost_") .. match.modeId .. "_" .. match.difficulty, outcome.wavesCleared)
 	PlayerStateService.notify(player, "notify.match_rewards", { lira = reward.lira, qirsh = reward.qirsh, xp = reward.xp })
+	local secret = (reward :: any).secretUnit
+	if secret and (Units :: any)[secret] then
+		PlayerStateService.notify(player, "notify.secret_unit", { unitKey = (Units :: any)[secret].nameKey })
+	elseif reward.unit and (Units :: any)[reward.unit] then
+		-- A first-clear story gift (TD.STORY_FIRST_CLEAR, e.g. Umm Baki after Episode 6).
+		PlayerStateService.notify(player, "notify.gift_unit", { unitKey = (Units :: any)[reward.unit].nameKey })
+	end
 	if eventGain > 0 and eventDef then
 		(reward :: any).eventCurrency = eventGain;
 		(reward :: any).eventCurrencyKey = eventDef.currencyKey
@@ -358,7 +378,10 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 	local arena = Arenas[mode.arena]
 	-- Bigger parties face tougher enemies (and may split the cash), so 4 players aren't 4× stronger.
 	local scale = WaveLogic.partyScale(TD, #keys)
-	local state = TdSim.new(arena.path, keys, math.floor(TD.START_CASH * scale.cash + 0.5), diff.gate, total, TD.PREP_SECONDS, {
+	-- Twin-road arenas send enemies down both roads only in modes tuned for it (Modes.twinRoads, S1-M05):
+	-- the saha also lists its side alley, but Episodes 4 and 6 were balanced on the stair road alone.
+	local roads = if (mode :: any).twinRoads and arena.paths then arena.paths else arena.path
+	local state = TdSim.new(roads, keys, math.floor(TD.START_CASH * scale.cash + 0.5), diff.gate, total, TD.PREP_SECONDS, {
 		between = TD.BETWEEN_WAVES,
 		waveBonusBase = TD.WAVE_BONUS_BASE * scale.cash,
 		waveBonusPerWave = TD.WAVE_BONUS_PER_WAVE * scale.cash,
@@ -366,11 +389,16 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 		enemies = Enemies :: any,
 		stunChainMax = TD.STUN_CHAIN_MAX,
 		stunImmunity = TD.STUN_IMMUNITY,
+		maxSpeedMul = WaveLogic.MAX_SPEED_MUL,
+		burnMax = TD.BURN_MAX_STACKS,
+		burnTick = TD.BURN_TICK,
+		burnDamage = TD.BURN_DAMAGE,
+		burnFor = TD.BURN_SECONDS,
 	}, function(wave: number)
 		if episode then
-			return WaveLogic.story(episode, wave, diff, scale)
+			return WaveLogic.story(episode, wave, diff, scale, Enemies :: any)
 		end
-		return WaveLogic.infinite(Waves.infinite, wave, diff, scale)
+		return WaveLogic.infinite(Waves.infinite, wave, diff, scale, Enemies :: any)
 	end)
 
 	local match: Match = {
@@ -390,8 +418,11 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 		posAt = 0,
 		ended = false,
 		outcome = nil,
+		script = if episode then (episode :: any).script else nil,
 		eventBuffer = {},
 		buffShown = {},
+		revealShown = {},
+		sabotaged = {},
 	}
 	nextMatchId += 1
 	matches[match.id] = match
@@ -463,6 +494,42 @@ function MatchService.debugAddCash(player: Player, amount: number)
 	MatchService.addCash(player, amount)
 end
 
+-- Studio test hook (DebugService only): stands a story ally (no owner, no profile change) at the
+-- player's feet, e.g. Al-Adashari to watch his Oath without granting him (S1-S12).
+function MatchService.debugAlly(player: Player, unitId: string, level: number): (boolean, string?)
+	local match = byPlayer[player]
+	local def = (Units :: any)[unitId]
+	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not match or match.ended or not def or not root then
+		return false, "not in a match / unknown unit"
+	end
+	local lx, lz = ArenaService.toLocal(match.slot, root.Position)
+	local ally = TdTowers.addAlly(match.state, unitId, def, level, lx, lz, rulesFor(match), 0)
+	ArenaService.buildTower(match.slot, ally, "")
+	queueEvent(match, { type = "towerPlaced", id = ally.id, owner = nil, ally = true, unitId = unitId, x = lx, z = lz, level = ally.level, range = ally.stats.range })
+	return true, nil
+end
+
+-- Studio test hook (DebugService only): queues the given attackers into the running wave, one every
+-- `gap` seconds from now, at the wave's HP multiplier. Lets a play-test meet enemies no wave script
+-- uses yet (S1-S03). Returns false outside a wave.
+function MatchService.debugSpawn(player: Player, enemyIds: { string }, gap: number): (boolean, string?)
+	local match = byPlayer[player]
+	if not match or match.ended or match.state.phase ~= "wave" then
+		return false, "not in a wave"
+	end
+	local s = match.state
+	local now = s.time - s.waveStartedAt
+	local hpMul = if s.queue[1] then s.queue[1].hpMul else 1
+	for k, id in enemyIds do
+		if not (Enemies :: any)[id] then
+			return false, "unknown enemy " .. id
+		end
+		table.insert(s.queue, s.queueIndex + k - 1, { at = now + (k - 1) * gap, enemy = id, hpMul = hpMul, speedMul = 1, boss = (Enemies :: any)[id].boss })
+	end
+	return true, nil
+end
+
 function MatchService.count(): number
 	local n = 0
 	for _ in matches do
@@ -503,6 +570,18 @@ local function refreshBuffs(match: Match)
 			end
 			queueEvent(match, { type = "towerBuff", id = t.id, buff = b })
 		end
+		-- Natour's lantern (TdSim.revealerFor): a defender that can't see stealth on its own is told
+		-- which lantern lets it, so its panel can say "sees hidden thieves thanks to …".
+		local r = if t.stats.damage > 0 and not t.stats.hitsStealth then TdSim.revealerFor(match.state, t) else nil
+		local rid = if r then r.id else nil
+		if rid ~= match.revealShown[t.id] then
+			if rid then
+				match.revealShown[t.id] = rid
+			else
+				match.revealShown[t.id] = nil
+			end
+			queueEvent(match, { type = "towerReveal", id = t.id, by = if r then r.unitId else nil, byTower = rid })
+		end
 	end
 end
 
@@ -521,9 +600,10 @@ local function placeTower(player: Player, unitId: any, x: any, z: any): { [strin
 	local lx, lz = ArenaService.toLocal(match.slot, Vector3.new(x, 0, z))
 	local owned = profile.units[unitId]
 	local stars = UnitLogic.stars(owned.copies, TD.STAR_COPIES)
-	local trait = Traits.traits[owned.trait]
+	local trait = UnitLogic.ownedTrait(owned, Traits.traits, TD.STAR_COPIES, TD.TRAIT2_STARS)
+	local bead = UnitLogic.beadBonus(owned.beads, Beads)
 	local key = match.players[player]
-	local ok, perr, tower = TdTowers.place(match.state, key, unitId, def, lx, lz, stars, trait, rulesFor(match))
+	local ok, perr, tower = TdTowers.place(match.state, key, unitId, def, lx, lz, stars, trait, rulesFor(match), bead)
 	if not ok then
 		return { ok = false, err = perr }
 	end
@@ -547,7 +627,11 @@ function MatchService.debugPlace(player: Player, unitId: string, lx: number, lz:
 	return r.ok == true, r.err
 end
 
-local function upgradeTower(player: Player, towerId: any): { [string]: any }
+-- path: nil, or "a" | "b" for the level-7 signature (TdTowers refuses it anywhere else).
+local function upgradeTower(player: Player, towerId: any, path: any): { [string]: any }
+	if path ~= nil and path ~= "a" and path ~= "b" then
+		return { ok = false, err = "bad_request" }
+	end
 	local match, _, err = towerContext(player)
 	if not match then
 		return { ok = false, err = err }
@@ -562,7 +646,7 @@ local function upgradeTower(player: Player, towerId: any): { [string]: any }
 	if not tower then
 		return { ok = false, err = "not_yours" }
 	end
-	local ok, uerr = TdTowers.upgrade(match.state, key, towerId, (Units :: any)[tower.unitId], rulesFor(match))
+	local ok, uerr = TdTowers.upgrade(match.state, key, towerId, (Units :: any)[tower.unitId], rulesFor(match), path)
 	if not ok then
 		return { ok = false, err = uerr }
 	end
@@ -571,7 +655,7 @@ local function upgradeTower(player: Player, towerId: any): { [string]: any }
 		model:SetAttribute("Level", tower.level)
 		model:SetAttribute("Range", tower.stats.range)
 	end
-	queueEvent(match, { type = "towerUpgraded", id = towerId, level = tower.level, range = tower.stats.range })
+	queueEvent(match, { type = "towerUpgraded", id = towerId, level = tower.level, range = tower.stats.range, path = tower.path })
 	refreshBuffs(match)
 	flushEvents(match)
 	pushState(match)
@@ -593,6 +677,7 @@ local function sellTower(player: Player, towerId: any): { [string]: any }
 	end
 	queueEvent(match, { type = "towerSold", id = towerId })
 	match.buffShown[towerId] = nil
+	match.revealShown[towerId] = nil
 	refreshBuffs(match)
 	flushEvents(match)
 	pushState(match)
@@ -622,11 +707,33 @@ local function stepMatch(match: Match, dt: number)
 				match.votes = {}
 				changed = true
 				queueEvent(match, e)
-			elseif t == "waveEnd" or t == "reached" then
+				-- Story beats: Al-Adashari turns at the gate (Episode 8) or guards it from wave 1 (Episode 9).
+				local ally = TdTowers.runScript(match.state, match.script, e.wave, Units :: any, rulesFor(match), (Arenas[match.slot.arenaId] :: any).allySpot)
+				if ally then
+					ArenaService.buildTower(match.slot, ally, "")
+					queueEvent(match, { type = "towerPlaced", id = ally.id, owner = nil, ally = true, unitId = ally.unitId, x = ally.x, z = ally.z, level = ally.level, range = ally.stats.range })
+					queueEvent(match, { type = "ally", id = ally.id, unitId = ally.unitId, shield = match.state.allyShield })
+				end
+			elseif t == "towerDisabled" then
+				-- A saboteur's shot: the tower can't attack and, if it is a lantern, goes dark
+				if type(e.tower) == "number" and type(e.untilT) == "number" then
+					match.sabotaged[e.tower] = e.untilT
+				end
+				queueEvent(match, e)
+				refreshBuffs(match)
+			elseif t == "waveEnd" or t == "reached" or t == "gateBurn" then
 				changed = true
 				queueEvent(match, e)
 				if t == "waveEnd" then
 					autoSkip = true
+					-- The sim clears every sabotage at wave end
+					for id in match.sabotaged do
+						queueEvent(match, { type = "towerEnabled", id = id })
+					end
+					if next(match.sabotaged) ~= nil then
+						table.clear(match.sabotaged)
+						refreshBuffs(match)
+					end
 					for p in match.players do
 						FunnelService.waveCleared(p, e.wave)
 					end
@@ -648,6 +755,18 @@ local function stepMatch(match: Match, dt: number)
 				queueEvent(match, e)
 			end
 		end
+	end
+	-- Sabotage wearing off mid-wave: the tower is back (and a lantern lights up again)
+	local back = false
+	for id, untilT in match.sabotaged do
+		if match.state.time >= untilT then
+			match.sabotaged[id] = nil
+			queueEvent(match, { type = "towerEnabled", id = id })
+			back = true
+		end
+	end
+	if back then
+		refreshBuffs(match)
 	end
 	if match.accum > TD.TICK * MAX_STEPS_PER_FRAME then
 		match.accum = 0 -- the server fell behind; drop time instead of spiralling

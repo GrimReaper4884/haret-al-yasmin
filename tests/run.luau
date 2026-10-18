@@ -136,6 +136,14 @@ local specs = {
 	require("./funnel.spec"),
 	require("./vfx.spec"),
 	require("./redteam.spec"),
+	require("./icons.spec"),
+	require("./clips.spec"),
+	require("./moments.spec"),
+	require("./lobbylife.spec"),
+	require("./arenadressing.spec"),
+	require("./loading.spec"),
+	require("./storycards.spec"),
+	require("./upgradeview.spec"),
 }
 for _, spec in specs do
 	spec(t)

@@ -7,7 +7,11 @@
     "anim_idle": "01a14218-c704-74f4-b19a-94fd88724169",
     "anim_attack": "01a14219-05c9-731d-bcc2-4c6c824ec72b",
     "clip_hitreact": "01a14794-dcdf-77ae-a3e9-07943b150807",
-    "clip_orc": "01a14794-ff10-757b-a5fb-999390cfb8bb"
+    "clip_orc": "01a14794-ff10-757b-a5fb-999390cfb8bb",
+    "clip_chestpound": "01a14bd6-2fdb-76dd-a8fd-ce40db92802d",
+    "clip_knockdown1": "01a14bd6-5455-7726-b467-216305e1bad4",
+    "clip_waisthit": "01a14bd6-75d0-757a-8ab6-018472d26ddc",
+    "clip_quickwalk": "01a14bde-947b-7184-9960-b0e827491780"
   },
   "credits": {
     "concept": 6,
@@ -16,10 +20,18 @@
     "anim_idle": 3,
     "anim_attack": 3,
     "clip_hitreact": 3,
-    "clip_orc": 3
+    "clip_orc": 3,
+    "clip_chestpound": 3,
+    "clip_knockdown1": 3,
+    "clip_waisthit": 3,
+    "clip_quickwalk": 3
   },
   "clips": {
     "hitreact": 178,
-    "orc": 119
+    "orc": 119,
+    "chestpound": 88,
+    "knockdown1": 190,
+    "waisthit": 171,
+    "quickwalk": 115
   }
 }

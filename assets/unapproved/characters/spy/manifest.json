@@ -7,7 +7,9 @@
     "anim_idle": "01a14219-39aa-7225-b950-03a625422315",
     "anim_attack": "01a14219-5cae-744c-b7c9-559c6ef011cf",
     "clip_hitreact": "01a14794-bd7c-7249-b212-8859e338b3a7",
-    "clip_sneaky": "01a14794-de8b-75c0-9b73-91469b8d781c"
+    "clip_sneaky": "01a14794-de8b-75c0-9b73-91469b8d781c",
+    "clip_flyup": "01a14bd6-2fde-70e5-bcba-c2cec0bd6734",
+    "clip_run3": "01a14bde-2e88-73d4-b033-412c8638c581"
   },
   "credits": {
     "concept": 6,
@@ -16,10 +18,14 @@
     "anim_idle": 0,
     "anim_attack": 3,
     "clip_hitreact": 3,
-    "clip_sneaky": 3
+    "clip_sneaky": 3,
+    "clip_flyup": 3,
+    "clip_run3": 3
   },
   "clips": {
     "hitreact": 178,
-    "sneaky": 559
+    "sneaky": 559,
+    "flyup": 7,
+    "run3": 15
   }
 }

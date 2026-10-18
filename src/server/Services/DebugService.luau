@@ -4,6 +4,7 @@
 -- Never created outside Studio.
 --   local D = game.ServerStorage.HaretDebug
 --   print(D:Invoke("state"))         -- live profile as JSON (first player)
+--   print(D:Invoke("match", "ep4,normal")) -- start a match past the requires chain (no unlock written)
 --   print(D:Invoke("peek"))          -- what the (mock) store holds
 --   print(D:Invoke("ledger"))        -- audit ledger (Logic/Ledger) as JSON, newest last
 --   print(D:Invoke("funnel"))        -- onboarding funnel rows with seconds since join (P2-16)
@@ -16,6 +17,8 @@
 --   print(D:Invoke("foreignLock", "clear")) -- release it again ("clear <userId>" once the player is kicked)
 --   print(D:Invoke("qirsh", 500))    -- grant test qirsh (Studio only)
 --   print(D:Invoke("lira", 5000))    -- grant test lira and 5 trait stones (Studio only)
+--   print(D:Invoke("spawn", "porter,drummer")) -- queue attackers into the running wave, 1 per second
+--   print(D:Invoke("ally", "adashari,3"))  -- a story ally at your feet (no profile change)
 
 local HttpService = game:GetService("HttpService")
 local Net = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared").Net)
@@ -118,6 +121,25 @@ function DebugService.start()
 				return "bad arg"
 			end
 			return MatchService.debugPlace(player, unitId, tonumber(x) :: number, tonumber(z) :: number)
+		elseif cmd == "ally" then
+			-- "unitId,level": a story ally at your feet (S1-S12 checks; no profile change)
+			local unitId, lvl = string.match(tostring(arg), "^([%w_]+),(%d+)$")
+			if not unitId then
+				return "bad arg"
+			end
+			return MatchService.debugAlly(player, unitId, tonumber(lvl) :: number)
+		elseif cmd == "match" then
+			-- "mode,difficulty": start that match for you alone, past the requires chain (S1-S04 checks
+			-- of episodes the profile has not unlocked; leave with H before the end to keep rewards out)
+			local modeId, diff = string.match(tostring(arg), "^([%w_]+),(%a+)$")
+			if not modeId then
+				return "bad arg"
+			end
+			local match, err = MatchService.create(modeId, diff :: string, { player }, player)
+			return if match then "ok" else tostring(err)
+		elseif cmd == "spawn" then
+			-- "id,id,…": queue these attackers into the running wave, one per second (S1-S03 checks)
+			return MatchService.debugSpawn(player, string.split(tostring(arg), ","), 1)
 		elseif cmd == "grant" then
 			-- "id,id,…": own these units and make them the loadout (play-testing specific figures)
 			local ids = string.split(tostring(arg), ",")

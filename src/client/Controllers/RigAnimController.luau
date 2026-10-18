@@ -17,10 +17,12 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Units = require(Shared.Config.Units)
 local Looks = require(Shared.Config.CharacterLooks)
+local Vfx = require(Shared.Config.Vfx)
 local BoneAnim = require(Shared.Anim.BoneAnim)
 local MatchController = require(script.Parent.MatchController)
 local EnemyRenderController = require(script.Parent.EnemyRenderController)
 local ThrowFx = require(script.Parent.ThrowFx)
+local Fx = require(script.Parent.Parent.UI.Fx)
 
 local RigAnimController = {}
 
@@ -295,19 +297,41 @@ local function findTower(towerId: number): Model?
 	return nil
 end
 
+-- The figure of tower `towerId` in the arena (nil when not streamed in).
+function RigAnimController.findTower(towerId: number): Model?
+	return findTower(towerId)
+end
+
 local function enemyModel(id: number?): Model?
 	local folder = Workspace:FindFirstChild("EnemyRender")
 	local m = if folder and id then folder:FindFirstChild("Enemy_" .. id) else nil
 	return if m and m:IsA("Model") then m else nil
 end
 
--- A short flinch layered over the enemy's walk.
+-- A short flinch layered over the enemy's walk; bosses that have a `stagger` clip play that.
 local function flinch(enemyId: number?)
 	local m = enemyModel(enemyId)
 	local rec = if m then recs[m] else nil
 	local bone = if rec then rec.bone else nil
 	if bone and not BoneAnim.busy(bone) then
-		BoneAnim.play(bone, "hit", 1.4, 0.6)
+		if BoneAnim.length(bone, "stagger") > 0 then
+			BoneAnim.play(bone, "stagger", 1.2, 0.7)
+		else
+			BoneAnim.play(bone, "hit", 1.4, 0.6)
+		end
+	end
+end
+
+-- A boss steps in with its `intro` taunt over the walk (PV-A03/B06).
+local function intro(enemyId: number)
+	local m = enemyModel(enemyId)
+	if not m then
+		return
+	end
+	local rec = track(m, false)
+	local bone = rec.bone
+	if bone and BoneAnim.length(bone, "intro") > 0 then
+		BoneAnim.play(bone, "intro", 1, 0.85)
 	end
 end
 
@@ -323,9 +347,22 @@ end
 
 -- Plays the attack (or ultimate) on a tower, turns it toward the world point `at`, and throws the
 -- character's prop from the hand when the swing lands (the target flinches when it arrives).
-function RigAnimController.attack(towerId: number, at: Vector3?, ability: boolean?, targetId: number?)
+function RigAnimController.attack(towerId: number, at: Vector3?, ability: boolean?, targetId: number?, damage: number?)
+	-- The hit lands on the target with the flinch: number, spark, flash (EnemyRenderController.impact).
+	local function landed()
+		flinch(targetId)
+		EnemyRenderController.impact(targetId, damage, ability == true, towerId)
+		-- Splash hits freeze the striker for a blink (PV-B04 hit-stop).
+		local tm = findTower(towerId)
+		local tr = if tm then recs[tm] else nil
+		local hs = Vfx.ROLES.splash.hitStop
+		if tr and tr.bone and tr.role == "splash" and Fx.full() then
+			BoneAnim.slow(tr.bone, 0, hs)
+		end
+	end
 	local model = findTower(towerId)
 	if not model then
+		landed()
 		return
 	end
 	local rec = track(model, true)
@@ -343,6 +380,12 @@ function RigAnimController.attack(towerId: number, at: Vector3?, ability: boolea
 	local bone = rec.bone
 	if bone then
 		delay = BoneAnim.play(bone, slot, 1.15) or BoneAnim.play(bone, "attack", 1.15) or 0
+		if ability and Fx.full() then
+			-- Slow-in on the figure only (PV-B04): the strike lands that much later.
+			local s = Vfx.abilitySlow
+			BoneAnim.slow(bone, s.factor, s.seconds)
+			delay += if delay <= s.factor * s.seconds then delay / s.factor - delay else s.seconds * (1 - s.factor)
+		end
 	else
 		local tracks = rec.tracks
 		if tracks and tracks.Attack then
@@ -357,7 +400,7 @@ function RigAnimController.attack(towerId: number, at: Vector3?, ability: boolea
 					BoneAnim.thrown(rec.bone, slot, 0.7)
 				end
 				ThrowFx.throw(kind, handPosition(model), target, function()
-					flinch(targetId)
+					landed()
 					if ability then
 						EnemyRenderController.ultimateAt(towerId, target)
 					end
@@ -365,7 +408,7 @@ function RigAnimController.attack(towerId: number, at: Vector3?, ability: boolea
 			end
 		end)
 	else
-		task.delay(delay, flinch, targetId)
+		task.delay(delay, landed)
 	end
 end
 
@@ -445,14 +488,26 @@ function RigAnimController.start()
 		end
 		local origin = CFrame.new(info.origin)
 		for _, e in events do
-			if e.type == "attack" and type(e.tower) == "number" then
+			if e.type == "spawn" and e.boss and type(e.id) == "number" then
+				intro(e.id)
+			elseif e.type == "attack" and type(e.tower) == "number" then
 				local at = if type(e.x) == "number" and type(e.z) == "number" then (origin * CFrame.new(e.x, 0, e.z)).Position else nil
-				RigAnimController.attack(e.tower, at, e.ability == true, if type(e.target) == "number" then e.target else nil)
+				RigAnimController.attack(e.tower, at, e.ability == true, if type(e.target) == "number" then e.target else nil, if type(e.damage) == "number" then e.damage else nil)
 			end
 		end
 	end)
 	RunService.RenderStepped:Connect(step)
 	ThrowFx.start()
+	-- Defeated figures play their `death` clip before fading (PV-B03; clips are baked in PV-A03).
+	EnemyRenderController.setDeathClip(function(model: Model): number
+		local rec = recs[model]
+		local bone = if rec then rec.bone else nil
+		if bone and BoneAnim.length(bone, "death") > 0 then
+			BoneAnim.play(bone, "death", 1, 1, true)
+			return BoneAnim.length(bone, "death")
+		end
+		return 0
+	end)
 end
 
 return RigAnimController

@@ -9,7 +9,7 @@ local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
 local Modal = require(UI.Modal)
-local RewardText = require(UI.RewardText)
+local Amount = require(UI.Amount)
 local LocaleController = require(script.Parent.LocaleController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
 local ToastController = require(script.Parent.ToastController)
@@ -21,6 +21,7 @@ local box: TextBox
 local redeem: TextButton
 local hint: TextLabel
 local result: TextLabel
+local granted: Frame
 local busy = false
 
 local ERRORS = {
@@ -48,7 +49,8 @@ local function build()
 		Parent = body,
 	}, { Create("UICorner", { CornerRadius = UDim.new(0, 10) }), Create("UIStroke", { Color = Theme.colors.panelStroke, Thickness = 2 }) })
 	redeem = Theme.button({ TextSize = 15, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, 0, 0, 44), Size = UDim2.fromOffset(120, Theme.TOUCH), BackgroundColor3 = Theme.colors.quest, ZIndex = 11, Parent = body })
-	result = Theme.label({ TextSize = 14, FontFace = Theme.fontBold, TextColor3 = Theme.colors.accent, Position = UDim2.fromOffset(0, 104), Size = UDim2.new(1, 0, 0, 50), ZIndex = 11, Parent = body })
+	result = Theme.label({ TextSize = 14, FontFace = Theme.fontBold, TextColor3 = Theme.colors.accent, Position = UDim2.fromOffset(0, 104), Size = UDim2.new(1, 0, 0, 22), ZIndex = 11, Parent = body })
+	granted = Amount.row({ Name = "Granted", Position = UDim2.fromOffset(0, 126), Size = UDim2.new(1, 0, 0, 28), ZIndex = 11, Parent = body }, {})
 	redeem.Activated:Connect(function()
 		if busy then
 			return
@@ -65,12 +67,14 @@ local function build()
 			busy = false
 			local t = LocaleController.t
 			if ok and type(r) == "table" and r.ok then
-				result.Text = t("codes.ok") .. "  " .. RewardText(t, r.granted or {})
+				result.Text = t("codes.ok")
+				Amount.fill(granted, Amount.reward(t, r.granted or {}), { iconSize = 24, textSize = 15, rtl = LocaleController.isRtl() })
 				box.Text = ""
 				ToastController.show("codes.ok")
 			else
 				local err = if ok and type(r) == "table" then r.err else "error"
 				result.Text = t(ERRORS[err] or "notify.error")
+				Amount.fill(granted, {})
 			end
 		end)
 	end)

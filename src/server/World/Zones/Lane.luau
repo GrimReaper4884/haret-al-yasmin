@@ -107,7 +107,9 @@ local function lane(map: Instance)
 	Props.pot(m, Vector3.new(6.8, 0.35, 38), "basil", 1)
 	Props.crate(m, CFrame.new(-6.4, 0, 46) * CFrame.Angles(0, math.rad(90), 0), Color3.fromHex("#E8892B"))
 	Props.crate(m, CFrame.new(6.4, 0, 30) * CFrame.Angles(0, math.rad(90), 0), Color3.fromHex("#4A2357"))
-	Props.cat(m, CFrame.new(-7.5, 0.35, 66) * CFrame.Angles(0, math.rad(-120), 0), Color3.fromHex("#C98A4B"))
+	-- The bakery cat keeps watch from an empty crate (and turns to look at passers-by, client-side)
+	Kit.box(m, "CatCrate", -8, 0, 65.2, -6.4, 1.1, 66.8, Palette.wood, M.WoodPlanks)
+	Props.cat(m, CFrame.new(-7.2, 1.1, 66) * CFrame.Angles(0, math.rad(-120), 0), Color3.fromHex("#C98A4B"))
 	Props.copperPot(m, Vector3.new(6.9, 0.35, 75), 1.1)
 end
 

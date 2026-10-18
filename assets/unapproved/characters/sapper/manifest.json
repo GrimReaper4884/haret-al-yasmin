@@ -1,0 +1,28 @@
+{
+  "id": "sapper",
+  "tasks": {
+    "concept": "01a14ba7-29ae-73b0-8d7d-b1679f33123c",
+    "mesh": "01a14c7a-a67e-7026-b5f1-0f45ade743f9",
+    "rig": "01a14c7c-1ae4-759c-9ed1-f830a9dd61b9",
+    "anim_idle": "01a14c7c-6ca3-7748-b3ba-8b209f2da581",
+    "anim_attack": "01a14c7c-8f2d-77f8-8bb8-91281c2be2ce",
+    "clip_hitreact": "01a14c7f-5e94-71a9-b9b1-4c7fb5247fff",
+    "clip_injuredwalk": "01a14c7f-8041-72ad-9598-9dc95e3506c5",
+    "clip_knockdown1": "01a14c7f-a0b5-72dc-888d-f2d86f682cbb"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3,
+    "clip_hitreact": 3,
+    "clip_injuredwalk": 3,
+    "clip_knockdown1": 3
+  },
+  "clips": {
+    "hitreact": 178,
+    "injuredwalk": 111,
+    "knockdown1": 190
+  }
+}

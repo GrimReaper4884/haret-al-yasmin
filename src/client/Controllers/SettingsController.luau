@@ -1,6 +1,6 @@
 --!strict
--- Player settings (Logic/Settings): effects level, summon animation, match camera, auto
--- ultimate, auto skip. Values follow the server snapshot; a change applies at once on this client and is
+-- Player settings (Logic/Settings): effects level, music, sound effects, summon animation, match
+-- camera, auto ultimate, auto skip. Values follow the server snapshot; a change applies at once on this client and is
 -- sent to the server to be saved (the server validates it). The Settings screen opens from the
 -- lobby rail and the match HUD gear.
 
@@ -15,6 +15,7 @@ local Create = require(UI.Create)
 local Theme = require(UI.Theme)
 local Modal = require(UI.Modal)
 local Fx = require(UI.Fx)
+local Icons = require(UI.Icons)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
@@ -83,6 +84,21 @@ local ROWS: { Row } = {
 		},
 	},
 	{
+		key = "cutscenes",
+		labelKey = "settings.cutscenes",
+		options = { { value = true, textKey = "settings.on" }, { value = false, textKey = "settings.off" } },
+	},
+	{
+		key = "music",
+		labelKey = "settings.music",
+		options = { { value = true, textKey = "settings.on" }, { value = false, textKey = "settings.off" } },
+	},
+	{
+		key = "sfx",
+		labelKey = "settings.sfx",
+		options = { { value = true, textKey = "settings.on" }, { value = false, textKey = "settings.off" } },
+	},
+	{
 		key = "skipSummon",
 		labelKey = "settings.skipSummon",
 		options = { { value = false, textKey = "settings.show" }, { value = true, textKey = "settings.skip" } },
@@ -109,6 +125,7 @@ local ROWS: { Row } = {
 	},
 }
 
+local MAX_BODY = 280 -- px
 local modal: Modal.Modal
 local rowLabels: { [string]: TextLabel } = {}
 local optionButtons: { [string]: { { b: TextButton, value: any, textKey: string } } } = {}
@@ -137,8 +154,10 @@ local function render()
 end
 
 local function build()
-	modal = Modal.create("Settings", 520, #ROWS * 46 + 26)
-	local body = modal.body
+	-- The rows scroll once they outgrow a landscape phone (390 px tall at UIScale 1).
+	modal = Modal.create("Settings", 520, math.min(#ROWS * 46 + 26, MAX_BODY))
+	local body = Modal.scroller(modal.body)
+	Create("UIPadding", { PaddingTop = UDim.new(0, 3), PaddingBottom = UDim.new(0, 3), PaddingRight = UDim.new(0, 12), Parent = body })
 	Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = body })
 	for i, row in ROWS do
 		local line = Create("Frame", { LayoutOrder = i, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 40), ZIndex = 11, Parent = body })
@@ -156,6 +175,73 @@ local function build()
 		end
 	end
 	hint = Theme.label({ LayoutOrder = #ROWS + 1, TextSize = 12, TextColor3 = Theme.colors.textMuted, Size = UDim2.new(1, 0, 0, 18), ZIndex = 11, Parent = body })
+end
+
+-- A one-tap speaker that toggles `music` (lobby HUD and match HUD). The icon and the hover hint
+-- follow the setting; the hint sits below the button, or to its left when `tipLeft` (match column).
+function SettingsController.muteButton(props: { [string]: any }, tipLeft: boolean?): TextButton
+	local b = Theme.button(props)
+	b.Text = ""
+	local pad = b:FindFirstChildOfClass("UIPadding")
+	if pad then
+		pad:Destroy()
+	end
+	local icon = Create("Frame", {
+		Name = "Icon",
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.fromScale(0.62, 0.62),
+		BackgroundTransparency = 1,
+		ZIndex = (props.ZIndex or 1) + 1,
+		Parent = b,
+	})
+	local tip = Theme.label({
+		Name = "Tip",
+		AnchorPoint = if tipLeft then Vector2.new(1, 0.5) else Vector2.new(0.5, 0),
+		Position = if tipLeft then UDim2.new(0, -6, 0.5, 0) else UDim2.new(0.5, 0, 1, 4),
+		Size = UDim2.fromOffset(200, 18),
+		TextXAlignment = if tipLeft then Enum.TextXAlignment.Right else Enum.TextXAlignment.Center,
+		TextSize = 12,
+		FontFace = Theme.fontBold,
+		TextColor3 = Color3.new(1, 1, 1),
+		TextStrokeTransparency = 0.3,
+		Visible = false,
+		ZIndex = (props.ZIndex or 1) + 2,
+		Parent = b,
+	})
+	local shown: boolean? = nil
+	local function paint()
+		local on = values.music ~= false
+		tip.Text = LocaleController.t(if on then "hud.music_on" else "hud.music_off")
+		if shown == on then
+			return
+		end
+		shown = on
+		icon:ClearAllChildren()
+		Icons.draw(if on then "ui_music" else "ui_music_off", icon)
+		for _, d in icon:GetDescendants() do
+			if d:IsA("GuiObject") then
+				d.ZIndex = icon.ZIndex
+			end
+		end
+	end
+	b.Activated:Connect(function()
+		SettingsController.set("music", values.music == false)
+	end)
+	b.MouseEnter:Connect(function()
+		tip.Visible = true
+	end)
+	b.MouseLeave:Connect(function()
+		tip.Visible = false
+	end)
+	SettingsController.Changed:Connect(function(key: string)
+		if key == "music" then
+			paint()
+		end
+	end)
+	LocaleController.Changed:Connect(paint)
+	paint()
+	return b
 end
 
 function SettingsController.open()

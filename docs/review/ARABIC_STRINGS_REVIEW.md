@@ -517,6 +517,175 @@ Tag legend in the flag column: **MEANING** may say the wrong thing · **DIALECT*
 | 6 | `sign.coffee` | قهوة الحارة | قهوة الحارة |  |  |  |
 | 7 | `sign.board` | لوحة الحارة | لوحة الحارة |  |  |  |
 
+## 18. Season Story 1: the Hakawati's tale, traits v2 and the second trait slot
+
+*Added by hand on 2026-10-18 (S1-N02, S1-S02): `build_arabic_review.py` predates the `settings.`, `afk.` and `event.` keys and stops on them, so this section was appended instead of regenerating the file. Story lines name roles only; character names wait for the S1-N01 table.*
+
+| # | Key | English | Arabic (current) | Claude flag | Correction | OK? |
+|---|-----|---------|------------------|-------------|------------|-----|
+| 1 | `story.season.title` | Season Story 1 · The Night Guard | حكاية الموسم ١ · الحارس الليلي |  |  |  |
+| 2 | `story.ep1.title` | Night of the Thieves | ليلة الحرامية |  |  |  |
+| 3 | `story.ep1.intro.1` | Gather round. In the lane of jasmine, the cloth merchant's gold vanished in one night. | يا سادة يا كرام، بحارة الياسمين راح دهب تاجر القماش بليلة وحدة. | STYLE: «يا سادة يا كرام» is the classic hakawati opener (a folk formula, not from the series). Keep? |  |  |
+| 4 | `story.ep1.intro.2` | The watchman saw a shadow at the gate, lifted his lantern… and was never seen again. | الناطور شاف خيال عند الباب، رفع فانوسه… وما حدا شافه بعدها. |  |  |  |
+| 5 | `story.ep1.intro.3` | Tonight the thieves come back for more. Hold the gate until dawn. | الليلة الحرامية راجعين لياخدوا أكتر. امسكوا الباب للصبح. |  |  |  |
+| 6 | `story.ep1.outro.1` | Dawn came, and the gate still stood. | طلع الضو، والباب بعدو واقف. |  |  |  |
+| 7 | `story.ep1.outro.2` | The gold was gone, and so was the watchman. Only his lantern lay in the dust. | الدهب راح، والناطور كمان. بس فانوسه ضلّ مرمي بالتراب. |  |  |  |
+| 8 | `story.ep1.outro.3` | And one man in the lane slept badly that night. Remember him. | وفي زلمة بالحارة ما غمّض عينه هديك الليلة. تذكّروه. |  |  |  |
+| 9 | `story.ep2.title` | The Rival Lane | الحارة التانية |  |  |  |
+| 10 | `story.ep2.intro.1` | A man with a heavy secret moved his family to the next lane. | زلمة شايل سرّ تقيل نقل عيلته عالحارة التانية. |  |  |  |
+| 11 | `story.ep2.intro.2` | There he whispered in their 'akeed's ear: "Jasmine Lane thinks it is better than you." | وهونيك وشوش بإدن عكيدها: "حارة الياسمين شايفة حالها أحسن منكن." |  |  |  |
+| 12 | `story.ep2.intro.3` | Now their thugs march on our gate, and their 'akeed walks behind them. | وهلّق زعرانهن جايين عبابنا، وعكيدهن ماشي وراهن. |  |  |  |
+| 13 | `story.ep2.outro.1` | The rival lane's men limped home, and their 'akeed swore he would return. | رجال الحارة التانية رجعوا عرجانين، وعكيدهن حلف ليرجع. |  |  |  |
+| 14 | `story.ep2.outro.2` | Nobody asked who had lit the fire between the two lanes. | وما حدا سأل مين ولّع النار بين الحارتين. |  |  |  |
+| 15 | `story.ep2.outro.3` | Nobody, except the Hakawati. Come back tomorrow. | ما حدا… غير الحكواتي. ارجعوا بكرا. |  |  |  |
+| 16 | `story.ep3.title` | The Siege | الحصار |  |  |  |
+| 17 | `story.ep3.intro.1` | The noise of the feud reached the garrison on the hill. | صوت العركة وصل للثكنة اللي عالتلّة. |  |  |  |
+| 18 | `story.ep3.intro.2` | The commandant said: "If the lanes cannot keep order, my soldiers will." | القومندان قال: "إذا الحارات ما بتعرف تضبط حالها، عساكري بيضبطوها." |  |  |  |
+| 19 | `story.ep3.intro.3` | Sappers at the walls, riders at the gate. This is a siege. | لغّامة عالحيطان وخيّالة عالباب. هاد حصار. |  |  |  |
+| 20 | `story.ep3.outro.1` | The commandant rode away, his boots heavy with our mud. | القومندان مشي، وجزمته تقيلة من طين حارتنا. |  |  |  |
+| 21 | `story.ep3.outro.2` | The lane counted its doors, its jars and its children. All there. | الحارة عدّت بوابها وجرارها وولادها. كلّن موجودين. |  |  |  |
+| 22 | `story.ep3.outro.3` | But the gold of the first night was still missing. Patience. | بس دهب أول ليلة بعدو ضايع. طوّلوا بالكن. |  |  |  |
+| 23 | `story.ep4.title` | The Lost Shoe | الصرماية | STYLE: «الصرماية» (the shoe) is colloquial on purpose; too crude for a title? Alternative «الكندرة». |  |  |
+| 24 | `story.ep4.intro.1` | Pickpockets poured into the square like sparrows, and the drums came after them. | النشّالة فاضوا عالساحة متل العصافير، ووراهن الطبول. |  |  |  |
+| 25 | `story.ep4.intro.2` | The gendarmes came too, searching every house for the stolen gold. | وإجوا الدرك كمان، يفتّشوا كل بيت عالدهب المسروق. |  |  |  |
+| 26 | `story.ep4.intro.3` | Hold the square. Somewhere in this lane, a shoe is waiting to be found. | امسكوا الساحة. بمحل ما بهالحارة في صرماية ناطرة حدا يلاقيها. |  |  |  |
+| 27 | `story.ep4.outro.1` | Under a chest in a dark room, they found one old shoe. | تحت صندوق بأوضة معتمة لقيوا صرماية عتيقة وحدة. |  |  |  |
+| 28 | `story.ep4.outro.2` | Its twin had been lost at the gate on the night of the gold. | وأختها كانت ضايعة عند الباب ليلة الدهب. |  |  |  |
+| 29 | `story.ep4.outro.3` | The sergeant shouted and threatened, but its owner said nothing at all. | الرقيب صرّخ وهدّد، بس صاحبها ما حكى ولا كلمة. |  |  |  |
+| 30 | `story.ep5.title` | Fire at the Warehouse | حريق البوايكية | MEANING: «البوايكية» = the 'akeed's storehouse in Damascene; will kids understand it, or use «المستودع»? |  |  |
+| 31 | `story.ep5.intro.1` | The 'akeed needed a night guard for his warehouse, and he chose the man nobody trusted. | العكيد كان بدّه ناطور لبوايكيته، واختار الزلمة اللي ما حدا بيوثق فيه. |  |  |  |
+| 32 | `story.ep5.intro.2` | That same night, torches moved through the orchards toward the door. | وبنفس الليلة، مشاعل مشيت بين البساتين لعند الباب. |  |  |  |
+| 33 | `story.ep5.intro.3` | Keep water ready. If the door burns, the harvest burns with it. | جهّزوا المي. إذا احترق الباب، بيحترق الموسم معه. |  |  |  |
+| 34 | `story.ep5.outro.1` | The cleaver man was caught with the oil jar still in his hand. | صاحب الساطور انمسك وجرّة الزيت بعدها بإيده. |  |  |  |
+| 35 | `story.ep5.outro.2` | In the morning the 'akeed paid the night guard one gold lira. | الصبح العكيد عطى الناطور ليرة دهب وحدة. |  |  |  |
+| 36 | `story.ep5.outro.3` | The first honest coin of his life. He held it and wept. | أول قرش حلال بحياته. مسكها وبكي. | MEANING: «قرش حلال» = honest money; check the religious nuance is fine for kids. |  |  |
+| 37 | `story.ep6.title` | The Blind Beggar | الشحّاد الأعمى |  |  |  |
+| 38 | `story.ep6.intro.1` | Fog sat on the square, and a blind beggar sat by the courtyard wall. | الضباب قاعد عالساحة، وشحّاد أعمى قاعد جنب حيط الباحة. |  |  |  |
+| 39 | `story.ep6.intro.2` | He heard everything. And he saw, the Hakawati says, a little too much. | كان يسمع كل شي. وبيقول الحكواتي: كان يشوف أكتر من اللازم. |  |  |  |
+| 40 | `story.ep6.intro.3` | Tonight some neighbours in the lane are not neighbours at all. Lanterns up. | الليلة في جيران ماشيين بالحارة وهنّي مو جيران. ارفعوا الفوانيس. |  |  |  |
+| 41 | `story.ep6.outro.1` | The beggar tore off his blindfold and ran, but the lanterns had seen his face. | الشحّاد شلح الطمّاشة وهرب، بس الفوانيس شافت وجهه. |  |  |  |
+| 42 | `story.ep6.outro.2` | At the gate they found the purse he had taken, still full. | وعند الباب لقيوا الصرّة اللي سرقها، بعدها مليانة. |  |  |  |
+| 43 | `story.ep6.outro.3` | The lane learned a hard lesson: not every quiet man is harmless. | الحارة تعلّمت درس صعب: مو كل واحد ساكت بيكون مسالم. |  |  |  |
+| 44 | `story.ep7.title` | The Police Post | المخفر |  |  |  |
+| 45 | `story.ep7.intro.1` | The sergeant lost his prisoner, and the corporal lost his rifle. | الرقيب ضيّع سجينه، والعريف ضيّع بارودته. |  |  |  |
+| 46 | `story.ep7.intro.2` | Ashamed, the whole post marched on the lane to win back its pride. | ومن الخجل، المخفر كلّه زحف عالحارة ليرجّع هيبته. |  |  |  |
+| 47 | `story.ep7.intro.3` | Riflemen will try to pin your defenders down. Spread them out. | البندقجية رح يحاولوا يشلّوا رجالك. فرّقوهن. |  |  |  |
+| 48 | `story.ep7.outro.1` | The commandant counted his men and found fewer than he had brought. | القومندان عدّ عساكره ولقاهن أقل من اللي جابهن. |  |  |  |
+| 49 | `story.ep7.outro.2` | The corporal's rifle turned up in a cooking pot. Nobody owned up. | بارودة العريف طلعت بطنجرة طبخ. وما حدا اعترف. |  |  |  |
+| 50 | `story.ep7.outro.3` | The post went quiet. But the rival lane had been watching. | المخفر هدي. بس الحارة التانية كانت عم تتفرّج. |  |  |  |
+| 51 | `story.ep8.title` | The Two Lanes | الحارتين |  |  |  |
+| 52 | `story.ep8.intro.1` | Two roads, two gates, and every man of the rival lane on them. | طريقين، وبابين، وكل رجال الحارة التانية عليهن. |  |  |  |
+| 53 | `story.ep8.intro.2` | Their 'akeed has stopped smiling. This time he comes himself. | عكيدهن بطّل يضحك. هالمرّة جاي بنفسه. |  |  |  |
+| 54 | `story.ep8.intro.3` | And somewhere among them walks the thief who started it all. | وبيناتهن ماشي الحرامي اللي بلّش كل شي. |  |  |  |
+| 55 | `story.ep8.outro.1` | At our gate the thief stopped, looked back at our lane, and turned his back on theirs. | عند بابنا الحرامي وقف، طلّع بحارتنا، وعطى ضهره لحارتهن. |  |  |  |
+| 56 | `story.ep8.outro.2` | He fought beside us to the last wave. The lane called him a hero. | حارب معنا لآخر موجة. والحارة سمّته بطل. |  |  |  |
+| 57 | `story.ep8.outro.3` | Only he knew how heavy that word was. One tale is left. | بس هو كان يعرف قدّيش هالكلمة تقيلة. ضلّت حكاية وحدة. |  |  |  |
+| 58 | `story.ep9.title` | The Confession | الاعتراف |  |  |  |
+| 59 | `story.ep9.intro.1` | His arm is gone and his nights are full of bad dreams. Still, he guards the gate. | إيده راحت ولياليه مليانة كوابيس. ومع هيك، واقف عالباب. |  |  |  |
+| 60 | `story.ep9.intro.2` | Snakes crawl out of a grave that only he knows about. | حيّات طالعة من قبر ما حدا بيعرف فيه غيره. | STYLE: snakes from a grave: check it is not too dark for children. |  |  |
+| 61 | `story.ep9.intro.3` | Stand with him until dawn. He has something to say before the end. | اوقفوا معه للصبح. عنده كلمة بدّه يقولها قبل النهاية. |  |  |  |
+| 62 | `story.ep9.outro.1` | Before the elders he told the truth: the gold, the watchman, the night at the gate. | قدّام كبار الحارة قال الحقيقة: الدهب، والناطور، وليلة الباب. |  |  |  |
+| 63 | `story.ep9.outro.2` | Half the gold went to the lane, and half to the watchman's family. | نصّ الدهب راح للحارة، والنصّ التاني لعيلة الناطور. |  |  |  |
+| 64 | `story.ep9.outro.3` | And the lane forgave him. So ends the tale of the Night Guard. | والحارة سامحته. وهون بتخلص حكاية الحارس الليلي. |  |  |  |
+| 65 | `story.boss.sergeant` | The sergeant swaggers in. He was never any good at catching thieves. | الرقيب داخل متمختر. عمره ما كان شاطر يمسك حرامية. |  |  |  |
+| 66 | `story.boss.chief_thief` | Look who walks with the thieves tonight. Keep your eyes on his feet. | شوفوا مين ماشي مع الحرامية الليلة. عينكن على رجليه. |  |  |  |
+| 67 | `story.boss.rival_zaim` | The rival lane's 'akeed comes to settle the score. | عكيد الحارة التانية جاي ياخد تاره. |  |  |  |
+| 68 | `story.boss.colonel` | The commandant, at last. He has never lost a siege… until tonight? | القومندان أخيراً. عمره ما خسر حصار… لهلّق؟ |  |  |  |
+| 69 | `story.boss.corporal` | Here comes the corporal, holding his rifle the wrong way round. | إجا العريف، ماسك بارودته بالمقلوب. |  |  |  |
+| 70 | `story.boss.abu_jawdan` | The sergeant of four lanes. He wants a confession, any confession. | رقيب الأربع حارات. بدّه اعتراف، أي اعتراف. |  |  |  |
+| 71 | `story.boss.abu_shatour` | The cleaver man and his torch. Mind the door! | صاحب الساطور ومشعله. دير بالك عالباب! |  |  |  |
+| 72 | `story.boss.lateef` | The blind beggar opens his eyes. Watch him: he jumps. | الشحّاد الأعمى فتّح عيونه. انتبهوا: بينطّ. |  |  |  |
+| 73 | `story.boss.spy` | Something moves in the shadows by the wall. Light it up. | في شي عم يتحرّك بالعتمة جنب الحيط. ضوّوا عليه. |  |  |  |
+| 74 | `story.boss.fakhr` | One hand, one club, and a long grudge. | إيد وحدة، وعصاية وحدة، وحقد طويل. |  |  |  |
+| 75 | `story.boss.abu_zira` | He reels like a ship in a storm, and hits like one too. | بيتمايل متل مركب بالعاصفة، وبيضرب متله كمان. |  |  |  |
+| 76 | `story.boss.rival_zaim_enraged` | The rival 'akeed is furious now, and his men close in around him. | عكيد الحارة التانية معصّب هلّق، ورجاله ملمومين حواليه. |  |  |  |
+| 77 | `story.moment.ally_turn` | The thief reaches our gate… and turns to face his own lane. | الحرامي وصل لبابنا… ولفّ وجهه لحارته. |  |  |  |
+| 78 | `trait.lantern.name` | Lantern | فانوس |  |  |  |
+| 79 | `trait.fireproof.name` | Fireproof | ما بيحرق | STYLE: «ما بيحرق» (doesn't burn) as a trait name; alternative «ضد النار». |  |  |
+| 80 | `trait.miser.name` | Miser | بخيل |  |  |  |
+| 81 | `trait.twin.name` | Twins | توأم |  |  |  |
+| 82 | `units.trait2` | 2nd trait: {trait} | الصفة التانية: {trait} |  |  |  |
+| 83 | `units.trait2_empty` | 2nd trait: not rolled yet | الصفة التانية: لسّا ما انسحبت |  |  |  |
+| 84 | `units.trait2_locked` | 2nd trait opens at {n}★ | الصفة التانية بتنفتح عند {n}★ |  |  |  |
+| 85 | `units.reroll1` | Reroll 1st · 1 stone | غيّر الأولى · حجر | STYLE: shortened to fit a small button; «الأولى» = the first trait. |  |  |
+| 86 | `units.reroll2` | Reroll 2nd · 1 stone | غيّر التانية · حجر |  |  |  |
+| 87 | `units.rates_title2` | Second trait reroll rates (this defender) | نسب تغيير الصفة التانية (لهالرجل) |  |  |  |
+| 88 | `units.rates_switch` | 1st / 2nd | الأولى / التانية |  |  |  |
+
+## 19. Season Story 1: the Play panel Story tab (S1-C01)
+
+*Added by hand on 2026-10-18 (S1-C01), same reason as §18.*
+
+| # | Key | English | Arabic (current) | Claude flag | Correction | OK? |
+|---|-----|---------|------------------|-------------|------------|-----|
+| 1 | `play.soon` | Coming soon | قريباً |  |  |  |
+| 2 | `play.soon_name` | Episode {n} · {title} | الحلقة {n} · {title} | {n} is shown in Arabic-Indic digits (as in the mode names). |  |  |
+| 3 | `play.hakawati` | The Hakawati: | بيحكي الحكواتي: |  |  |  |
+| 4 | `play.mechanics` | New here: | جديد هون: |  |  |  |
+| 5 | `play.first_gift` | First {d} clear: | أول فوز {d}: | {d} is the difficulty name (عادي / صعب / كابوس). |  |  |
+| 6 | `play.secret` | Every win: {pct}% chance of {unit} | كل فوز: فرصة {pct}٪ لـ{unit} |  |  |  |
+| 7 | `play.secret_pity` | Sure after {n} wins without him · the first Nightmare clear always brings him | أكيد بعد {n} فوز بدونه · وأول فوز بالكابوس بيجيبه دايماً |  |  |  |
+| 8 | `mech.stealth` | Hidden thieves | حرامية مخفيين |  |  |  |
+| 9 | `mech.armor` | Armour | دروع |  |  |  |
+| 10 | `mech.fast` | Fast riders | خيّالة سريعين |  |  |  |
+| 11 | `mech.sapper` | Wall breakers | هدّامين حيطان |  |  |  |
+| 12 | `mech.swarm` | Swarms | أسراب |  |  |  |
+| 13 | `mech.aura` | War drums | طبول |  |  |  |
+| 14 | `mech.two_paths` | Two roads | طريقين |  |  |  |
+| 15 | `mech.burn` | Fire | حريق |  |  |  |
+| 16 | `mech.shield` | Shields | تروس |  |  |  |
+| 17 | `mech.disguised` | Disguised | متنكّرين |  |  |  |
+| 18 | `mech.teleport` | Sudden jumps | نطّات فجأة |  |  |  |
+| 19 | `mech.sabotage` | Snipers | قنّاصة |  |  |  |
+| 20 | `mech.summon` | Reinforcements | نجدات |  |  |  |
+| 21 | `mech.split` | Splitting carts | عربيات بتنفلق | STYLE: «بتنفلق» (bursts open); alternative «بتتفرّق». |  |  |
+| 22 | `mech.heal` | Healers | مداوين |  |  |  |
+| 23 | `mech.ally` | An ally | حليف |  |  |  |
+
+## 20. Season Story 1: match toasts (S1-C02)
+
+| # | Key | English | Arabic (current) | Claude flag | Correction | OK? |
+|---|-----|---------|------------------|-------------|------------|-----|
+| 1 | `match.summon` | {boss} calls {n} × {enemy}! | {boss} نادى {n} × {enemy}! | «نادى» = called (for); alternative «جاب معه». |  |  |
+
+## 21. Season Story 1: enemy render (S1-C03)
+
+| # | Key | English | Arabic (current) | Claude flag | Correction | OK? |
+|---|-----|---------|------------------|-------------|------------|-----|
+| 1 | `match.pinned` | Pinned! | مثبّت! | Tag over a defender a rifleman has pinned down; alternative «محاصَر!». |  |  |
+
+## 22. Season Story 1: level 7 and beads (S1-C04)
+
+| # | Key | English | Arabic (current) | Claude flag | Correction | OK? |
+|---|-----|---------|------------------|-------------|------------|-----|
+| 1 | `match.sig_pick` | Pick a path | اختار طريق |  |  |  |
+| 2 | `match.sig_confirm` | Choose · ${n} | اختار · ${n} |  |  |  |
+| 3 | `units.beads_title` | Beads | خرزات |  |  |  |
+| 4 | `units.bead_empty` | Empty | فاضي |  |  |  |
+| 5 | `units.bead_pick` | Slot {n}: thread a bead (1 bead) | الخانة {n}: لضم خرزة (خرزة وحدة) | «لضم» = to thread (a bead on a string). |  |  |
+| 6 | `units.err.no_beads` | No beads yet: win Episode 5 or 7–9 on Hard. | ما عندك خرزات لسّا: اربح الحلقة ٥ أو ٧–٩ عالصعب. |  |  |  |
+| 7 | `units.err.same_bead` | That bead is already on this slot. | هالخرزة أصلاً على هالخانة. |  |  |  |
+
+## 23. Season Story 1: the ally (S1-C05)
+
+| # | Key | English | Arabic (current) | Claude flag | Correction | OK? |
+|---|-----|---------|------------------|-------------|------------|-----|
+| 1 | `match.ally` | Ally | حليف | Under Al-Adashari's name in a match. |  |  |
+
+## 24. Season Story 1: lobby story bits (S1-C06)
+
+| # | Key | English | Arabic (current) | Claude flag | Correction | OK? |
+|---|-----|---------|------------------|-------------|------------|-----|
+| 1 | `pass.season.s1.name` | Lane Diary · Season 1: The Night Guard | دفتر الحارة · الموسم ١: الحارس الليلي | Name changed (was without the subtitle). |  |  |
+| 2 | `story.cart.name` | Pickle cart | عربية المخلّل |  |  |  |
+| 3 | `story.cart.prompt` | Look | اتفرّج |  |  |  |
+| 4 | `story.cart.1` | A pickle cart by the gate. Long ago the za'im lent a hard man the money to push it. | عربية مخلّل جنب الباب. من زمان الزعيم ديّن زلمة قاسي مصاري ليدفشها. |  |  |  |
+| 5 | `story.cart.2` | By day he sold pickles from it. By night he walked the roofs. | بالنهار كان يبيع منها مخلّل، وبالليل يمشي عالسطوح. |  |  |  |
+| 6 | `story.cart.3` | Its wheels still turn. Some say the man who owned it guards this gate now. | دواليبها لسّا بتدور. وفي ناس بتقول صاحبها صار يحرس هالباب. |  |  |  |
+| 7 | `afk.tales` | Tales | حكايات |  |  |  |
+| 8 | `afk.tales_title` | The Hakawati's tales | حكايات الحكواتي |  |  |  |
+| 9 | `afk.tale_locked` | Clear Episode {n} to hear this tale. | اربح الحلقة {n} لتسمع هالحكاية. |  |  |  |
+
 ## Sign-off
 
 | Reviewer | Dialect / country | Date | Sections reviewed | Notes |

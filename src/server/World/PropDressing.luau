@@ -62,6 +62,59 @@ local function place(parent: Instance, origin: CFrame, p: Placements.Placement, 
 	spawnProp(parent, p.prop, ground, p.height, p.solid == true)
 end
 
+-- PV-E04: replaces every tagged primitive under `root` (World/Props: SwapProp, SwapCFrame,
+-- SwapScale, SwapReplace) with its Meshy prop. Lights inside removed parts move onto the prop, so
+-- lanterns keep glowing (and flickering, AmbienceController). Returns how many were swapped.
+function PropDressing.swap(root: Instance): number
+	local todo: { Model } = {}
+	for _, d in root:GetDescendants() do
+		if d:IsA("Model") and d:GetAttribute("SwapProp") ~= nil then
+			table.insert(todo, d)
+		end
+	end
+	local n = 0
+	for _, m in todo do
+		local name = m:GetAttribute("SwapProp")
+		local cf = m:GetAttribute("SwapCFrame")
+		local cfg = Placements.swaps[name :: any]
+		local parent = m.Parent
+		if type(name) == "string" and typeof(cf) == "CFrame" and cfg and parent and template(name) then
+			local scale = m:GetAttribute("SwapScale")
+			local height = cfg.height * (if type(scale) == "number" then scale else 1)
+			local prop = spawnProp(parent, name, cf, height, false)
+			if prop then
+				local host = prop:FindFirstChildWhichIsA("BasePart", true)
+				local only = m:GetAttribute("SwapReplace")
+				local remove: { Instance } = {}
+				if type(only) == "string" then
+					for _, partName in string.split(only, ",") do
+						for _, c in m:GetChildren() do
+							if c.Name == partName then
+								table.insert(remove, c)
+							end
+						end
+					end
+				else
+					table.insert(remove, m)
+				end
+				for _, r in remove do
+					for _, light in r:GetDescendants() do
+						if light:IsA("Light") and host then
+							light.Parent = host
+						end
+					end
+					r:Destroy()
+				end
+				if type(only) == "string" then
+					prop.Parent = m -- the kept parts (bracket, chain) and the prop stay one model
+				end
+				n += 1
+			end
+		end
+	end
+	return n
+end
+
 -- Lobby dressing in world coordinates.
 function PropDressing.dressLobby(parent: Instance)
 	local folder = Instance.new("Folder")

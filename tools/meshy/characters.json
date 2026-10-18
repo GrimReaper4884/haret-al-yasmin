@@ -1,7 +1,9 @@
 {
   "_comment": "Meshy prompts (docs/CHARACTER_PIPELINE.md). Characters are the lane drama's main cast by the owner's decision (COPYRIGHT_REGISTER C-201); keys are the unit/enemy ids they play. Never name the series or an actor, never ask for a real person's likeness: describe period costume and props only. 'style'/'texture_style' are prepended to character prompts, 'prop_style' to props.",
   "style": "Chibi-proportioned stylized cartoon game character (oversized head about one third of total height, short sturdy body, big hands and feet), like a collectible vinyl toy for a mobile tower-defense game, clean simple shapes, bold readable silhouette, full body standing in T-pose, facing the camera, no base, no background.",
+  "creature_style": "Stylized cartoon game model for a mobile tower-defense game, chunky toy-like proportions, like a collectible vinyl toy, clean simple shapes, bold readable silhouette, one single subject only (no extra characters), full body seen from a three-quarter front view, no base, no background.",
   "texture_style": "Hand-painted flat colors, soft shading, no photorealism, warm Mediterranean palette, clean cloth folds, friendly expressive face.",
+  "enemy_texture_style": "Hand-painted flat colors, soft shading, no photorealism, colder palette of indigo, basalt grey and olive with red accents, clean cloth folds, hostile scowling expressive face, menacing but never grotesque, no caricature.",
   "animations": {
     "_comment": "Meshy library action ids, filled after running `python tools/meshy/meshy.py library`. One clip per file so Roblox imports each as its own track. Defenders need idle + attack; the auto-rig already returns a free walk clip for attackers.",
     "idle": 0,
@@ -116,11 +118,192 @@
       "texture": "Red fez, crisp white apron and shirt, black waistcoat with thin gold trim, dark brown trousers, tan skin."
     },
     "qitt": {
+      "retired": "S1-S12b (2026-10-18, D-052): the unit left the game; Cat.rbxm stays as the lane's cat prop",
       "height": 0.5,
       "pose": false,
       "rig": false,
       "prompt": "The beloved ginger street cat of a 1930s Damascus neighbourhood, chubby orange tabby cat with big green eyes and a curled tail, sitting proudly, cute and expressive, full body.",
       "texture": "Warm orange tabby fur with darker stripes, white chest and paws, bright green eyes, pink nose."
+    },
+    "thug": {
+      "height": 1.75,
+      "texture_style": "enemy",
+      "prompt": "Rival-lane street thug of 1930s Damascus, stocky young man with stubble and a sneer, black tarboosh pushed back, olive-green striped qumbaz with the sleeves rolled, wide black sash, baggy dark trousers, leather slippers, holding a short wooden cudgel in his right hand, swaggering stance.",
+      "texture": "Olive and black stripes, black sash and tarboosh, dark wood cudgel, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "bandit": {
+      "height": 1.9,
+      "texture_style": "enemy",
+      "prompt": "Orchard bandit of the 1930s Syrian countryside, broad bearded man with a grey-and-white checkered head cloth (keffiyeh) under a black cord, long dusty brown robe, crossed leather bandoliers over the chest, dark cloak, tall boots, holding a curved sword in his right hand, grim menacing face.",
+      "texture": "Dusty brown robe, grey-white checkered head cloth, dark brown cloak, worn leather bandoliers, steel sword, tan weathered skin."
+    },
+    "rider": {
+      "height": 1.85,
+      "texture_style": "enemy",
+      "prompt": "Colonial-era mounted gendarmerie officer of the 1930s on foot, lean man with a thin handlebar moustache, dark blue kepi with a gold band, dark blue riding jacket with gold buttons and epaulettes, tan riding breeches, tall black riding boots with spurs, holding a sabre in his right hand and a riding crop tucked in his belt, arrogant upright pose.",
+      "texture": "Navy jacket with gold braid, tan breeches, black boots and spurs, steel sabre, light skin."
+    },
+    "sapper": {
+      "height": 1.8,
+      "texture_style": "enemy",
+      "prompt": "Military sapper of a 1930s colonial garrison, stocky man with a short beard, round steel helmet, dark grey work tunic with rolled sleeves, heavy canvas apron, leather gloves, a coil of fuse rope over the shoulder, holding a pickaxe in his right hand and a small powder keg under the left arm, dogged determined face.",
+      "texture": "Dark grey tunic, steel helmet, tan canvas apron, brown rope, black-and-red powder keg, light skin."
+    },
+    "sergeant": {
+      "height": 1.95,
+      "texture_style": "enemy",
+      "prompt": "The Sergeant (shawish), a burly 1930s colonial gendarmerie sergeant, thick black moustache and a scar on the cheek, dark blue kepi with a red band, dark blue uniform with gold chevrons on the sleeves, brass buttons, wide belt with a holster, tall black boots, holding a heavy cavalry sabre in his right hand, barking furious face.",
+      "texture": "Navy uniform, gold chevrons and buttons, red kepi band, black boots, steel sabre, light skin."
+    },
+    "colonel": {
+      "height": 2.1,
+      "texture_style": "enemy",
+      "prompt": "The Commandant, the towering commander of a 1930s colonial garrison, tall man with a grey goatee and monocle, black kepi with heavy gold braid, long black greatcoat with gold epaulettes and a red sash across the chest, white gloves, polished black boots, holding an ornate officer's sabre in his right hand, cold imperious face.",
+      "texture": "Black greatcoat, gold braid and epaulettes, crimson sash, white gloves, steel sabre with a gold hilt, pale skin."
+    },
+    "pickpocket": {
+      "height": 1.45,
+      "texture_style": "enemy",
+      "prompt": "Street pickpocket boy of 1930s Damascus, wiry teenager with a smirk, flat cap, patched grey shirt, short baggy trousers, barefoot, clutching a stolen purse, mid-sprint.",
+      "texture": "Grey and olive patched cloth, dark cap, brown leather purse, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "drummer": {
+      "height": 1.75,
+      "texture_style": "enemy",
+      "prompt": "Rival-lane drummer, stocky man with a sneer, olive turban-wrapped tarboosh, dark striped qumbaz, a large frame drum slung on the chest, beating it with a curved stick.",
+      "texture": "Olive turban, dark striped robe, pale drum skin with a dark wooden rim, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "torchbearer": {
+      "height": 1.75,
+      "texture_style": "enemy",
+      "prompt": "Night arsonist of 1930s Damascus, lean man with a scarf over the mouth, dark sherwal and vest, holding a burning rag torch high in the right hand and an oil jar in the left.",
+      "texture": "Black and basalt cloth, red scarf, orange cartoon flame, clay oil jar, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "porter": {
+      "height": 1.85,
+      "texture_style": "enemy",
+      "prompt": "Burly 1930s porter of a Damascus market, thick neck and arms, rolled head scarf as a pad, sleeveless vest, wide belt, carrying a huge wooden crate on his back, bent forward.",
+      "texture": "Grey-brown vest, dark belt, pale wooden crate with rope, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "disguised": {
+      "height": 1.75,
+      "texture_style": "enemy",
+      "prompt": "Shifty man dressed as an ordinary 1930s Damascus neighbour, plain beige qumbaz and red tarboosh, hands hidden in the sleeves, eyes darting sideways, a dagger hilt showing at the belt.",
+      "texture": "Beige robe, red tarboosh, dark belt, small steel dagger hilt, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "beggar": {
+      "height": 1.7,
+      "texture_style": "enemy",
+      "prompt": "1930s street beggar with a dark blindfold pushed up on the forehead, patched grey cloak, bare feet, a wooden staff in one hand and a begging bowl in the other, sly posture.",
+      "texture": "Patched grey cloak, dark blindfold, pale wooden staff, copper bowl, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "corporal": {
+      "height": 1.8,
+      "texture_style": "enemy",
+      "prompt": "Jumpy young colonial-gendarmerie corporal of the 1930s, thin moustache, kepi askew, dark blue uniform one size too big, holding a rifle he clearly cannot handle, wide anxious eyes, comic.",
+      "texture": "Navy uniform, single gold stripe on the sleeve, brass buttons, dark wooden rifle, light skin, arms straight out to the sides."
+    },
+    "abu_jawdan": {
+      "height": 1.95,
+      "texture_style": "enemy",
+      "prompt": "Corrupt 1930s police sergeant over four lanes, portly man with a big curled moustache and heavy brows, red-banded kepi, dark blue jacket straining at brass buttons, baton tucked under the arm, smug half-smile.",
+      "texture": "Navy jacket, red kepi band, brass buttons, black baton and boots, light skin, arms straight out to the sides."
+    },
+    "abu_shatour": {
+      "height": 2.0,
+      "texture_style": "enemy",
+      "prompt": "Rival-lane thug boss of 1930s Damascus, broad man with a cleaver (a wide butcher's blade) in the right hand and a torch in the left, black head cloth wrapped tight, dark striped vest, scar across the nose, snarling.",
+      "texture": "Black head cloth, dark striped vest, steel cleaver, orange cartoon flame, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "lateef": {
+      "height": 1.85,
+      "texture_style": "enemy",
+      "prompt": "1930s false blind beggar revealed as a spy, gaunt man ripping a dark blindfold off with one hand, dagger in the other, patched grey cloak flying, bare feet, cruel grin.",
+      "texture": "Patched grey cloak, dark blindfold, steel dagger, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "qabilah": {
+      "height": 1.6,
+      "prompt": "Elderly 1930s Damascus midwife, round and brisk old woman, white headscarf, long dark house dress with a striped apron, both hands open and empty (nothing held, no lamp, no bundle), arms straight out to the sides, knowing kind expression, modest clothing.",
+      "texture": "White headscarf, dark navy house dress, cream and rust striped apron, tan skin.",
+      "_note": "S1-A03 (Umm Baki): empty hands; her small oil lamp is a held prop (src/shared/Anim/HandProps.luau), like Fawza's broom."
+    },
+    "rifleman": {
+      "height": 1.8,
+      "texture_style": "enemy",
+      "prompt": "Colonial-era infantry rifleman of the 1930s, lean soldier with a tall red felt cap with a tassel, khaki tunic with a leather belt, puttees, holding a long rifle across the chest, stern face.",
+      "texture": "Red felt cap with a black tassel, khaki tunic, brown leather belt and puttees, dark wooden rifle, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "cart": {
+      "height": 2.0,
+      "texture_style": "enemy",
+      "pose": false,
+      "rig": false,
+      "prompt": "Small wooden two-wheeled cart pulled by a grey donkey, piled high with burlap sacks, four small scowling faces in dark caps peeking out between the sacks, 1930s Levantine style, no driver, no people standing beside it.",
+      "texture": "Weathered brown wood, burlap sacks, grey donkey with a red harness, the peeking faces scowling under dark caps.",
+      "style": "creature_style"
+    },
+    "hakim_rival": {
+      "height": 1.7,
+      "texture_style": "enemy",
+      "prompt": "Rival-lane healer of 1930s Damascus, thin old man with a grey goatee, green turban, long dark robe, a leather satchel of bottles over the shoulder, holding a glass vial up.",
+      "texture": "Dark green turban, charcoal robe, brown leather satchel, green glass vial, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "snake": {
+      "height": 0.5,
+      "texture_style": "enemy",
+      "pose": false,
+      "rig": false,
+      "prompt": "Cartoon viper snake with no arms and no legs, a long legless body coiled in an S-shape, raised head ready to strike, forked tongue out.",
+      "texture": "Sand yellow and black diamond scales, pale belly, red forked tongue, amber eyes.",
+      "style": "creature_style"
+    },
+    "brute": {
+      "height": 1.95,
+      "texture_style": "enemy",
+      "prompt": "Hulking rival-lane fighter, shaved head with a scar, dark head cloth around the neck, sleeveless striped vest, wide red belt, iron knuckles, fists raised, drunken swagger.",
+      "texture": "Dark striped vest, red belt, black neck cloth, iron grey knuckles, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "fakhr": {
+      "height": 2.05,
+      "texture_style": "enemy",
+      "prompt": "One-handed rival-lane bruiser of 1930s Damascus, massive shoulders, a bandaged stump for the left hand, a spiked club in the right, dark head cloth, open black vest, red sash, roaring.",
+      "texture": "Dark head cloth, black vest, red sash, white bandage on the left stump, dark wooden spiked club, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "abu_zira": {
+      "height": 1.95,
+      "texture_style": "enemy",
+      "prompt": "Drunken rival-lane fighter of 1930s Damascus, lanky man with a long drooping moustache, tarboosh fallen backwards, unbuttoned striped shirt, a broken bottle in one hand and a short knife in the other, reeling stance.",
+      "texture": "Red tarboosh, blue and white striped shirt, dark trousers, green glass bottle, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "adashari": {
+      "height": 1.8,
+      "prompt": "Gaunt wiry 1930s Damascus night guard with a haunted but kind expression, stubble and hollow cheeks, dark head cloth wrapped low over the brow, grey-brown striped qumbaz, wide black belt with a short sheathed dagger, left arm missing: the empty left sleeve is folded and pinned up flat against the shoulder with a white bandage showing, right arm straight out to the side with the right hand open and empty (no lantern), standing guard.",
+      "texture": "Dark charcoal head cloth, grey-brown striped qumbaz, black belt, brass dagger hilt, white bandage, warm tan skin.",
+      "_note": "S1-A05 (Al-Adashari, the secret unit): his lantern is a held prop (Anim/HandProps). One-armed: the auto-rig still makes left-arm bones; the bake leaves them unused (STORY_PLAN §12, S1-A05)."
+    },
+    "hammam": {
+      "height": 1.8,
+      "prompt": "Stout 1930s Damascus bathhouse owner, towel over the shoulder, white undershirt, red-striped waist wrap, wooden clogs, cheerful squint, both hands open and empty (no bowl), arms straight out to the sides.",
+      "texture": "White undershirt, red and white striped waist wrap, cream towel, brown wooden clogs, warm tan skin.",
+      "_note": "S1-A07: empty hands; the held item is an Anim/HandProps prop. Copper water bowl."
+    },
+    "hummus": {
+      "height": 1.7,
+      "prompt": "1930s Damascus street seller of hummus and fava, thin cheerful man, white skullcap, grey qumbaz with a canvas money apron, both hands open and empty (no pot, no ladle), arms straight out to the sides.",
+      "texture": "White skullcap, grey qumbaz, beige canvas apron, warm tan skin.",
+      "_note": "S1-A07: empty hands; the held item is an Anim/HandProps prop. Ladle (and a brass pot as a placed prop later)."
+    },
+    "iskafi": {
+      "height": 1.6,
+      "prompt": "Old 1930s Damascus cobbler, small and slightly bent, grey beard, round black cap, leather apron with nails in its pocket, both hands open and empty (no hammer, no shoe), arms straight out to the sides.",
+      "texture": "Black round cap, dark brown leather apron, grey shirt, warm tan skin.",
+      "_note": "S1-A07: empty hands; the held item is an Anim/HandProps prop. Cobbler's hammer."
+    },
+    "matriarch": {
+      "height": 1.8,
+      "prompt": "Formidable 1930s Damascus matriarch around fifty years old, tall and straight-backed, strong mature face with fine lines and a few grey hairs at the temples, embroidered dark indoor dress, gold-edged headscarf, heavy necklace, fierce dignified expression, both hands open and empty, arms straight out to the sides, modest clothing.",
+      "texture": "Deep plum embroidered dress, black headscarf with a gold edge, gold necklace, warm tan skin.",
+      "_note": "S1-A07: empty hands; the held item is an Anim/HandProps prop. Her pointing hand is a pose in the clips, not a prop."
     }
   },
   "prop_style": "Stylized chunky cartoon game prop for a mobile tower-defense game set in a 1930s Damascus old-city lane, toy-like proportions, clean simple shapes, bold readable silhouette, hand-painted flat colors with soft shading, warm limestone and wood palette, single object centered, three-quarter view, no characters, no text, no background.",
@@ -154,6 +337,21 @@
       "prompt": "Small courtyard fountain of an old Damascus house: octagonal stone basin with black-and-white inlaid stone pattern, a central spout with water, potted jasmine at its rim.",
       "texture": "Limestone and basalt inlay, turquoise tiles inside the basin, clear water, green jasmine with white flowers.",
       "polycount": 5000
+    },
+    "hanging_lantern": {
+      "prompt": "Hanging oil lantern from an old Damascus lane: hexagonal brass frame with amber glass panes, a pointed domed cap with a ring on top, hanging from a short black iron chain, a small flame glowing inside.",
+      "texture": "Aged brass, black iron chain, warm amber glass glow.",
+      "polycount": 1500
+    },
+    "market_bundle": {
+      "prompt": "Market bundle from a 1930s Damascus lane: a wooden crate full of oranges and pomegranates with two tied burlap sacks of grain leaning against it and a small copper jug in front.",
+      "texture": "Pale weathered wood, bright orange and deep red fruit, beige burlap with rope ties, shiny copper.",
+      "polycount": 2000
+    },
+    "jasmine_pot": {
+      "prompt": "Large terracotta pot with a climbing white jasmine plant from an old Damascus courtyard: rounded clay pot with a painted blue band, a bushy dark green jasmine with many small white star flowers, a few tendrils curling over the rim.",
+      "texture": "Warm terracotta, cobalt blue band, dark glossy green leaves, white flowers.",
+      "polycount": 2000
     }
   }
 }

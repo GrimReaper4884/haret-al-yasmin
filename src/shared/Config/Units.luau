@@ -3,9 +3,10 @@
 -- (unit.<id>.name / .desc); visuals describe a primitive rig (Util/RigBuilder).
 --
 -- Since 2026-10-16 (owner's decision, docs/COPYRIGHT_REGISTER.md C-201) most defenders carry the
--- names and roles of the lane's main characters in the classic Damascus-lane drama (Abu Issam the
--- barber-hakim, Abu Shehab, Mo'taz…). Ids and balance were kept, only identities moved: e.g. the
--- legendary healer slot `umm_hara` is Abu Issam. Faces are stylized cartoons, never actor
+-- roles of the lane's main characters in the classic Damascus-lane drama; since 2026-10-18 their
+-- names are one letter off (STORY_PLAN §3, C-241: Abu Hissam the barber-hakim, Abu Shehan,
+-- Mo'ez…). Ids and balance were kept, only identities moved: e.g. the
+-- legendary healer slot `umm_hara` is Abu Hissam. Faces are stylized cartoons, never actor
 -- likenesses. Display names are plain strings and can be changed in Strings without touching
 -- balance.
 --
@@ -13,6 +14,9 @@
 -- damage per hit, range in studs, cooldown in seconds. splash = radius; slow = speed multiplier
 -- applied for slowFor seconds; buff = damage multiplier granted to towers in range (support);
 -- income = cash per cleared wave (farm); heal = gate HP per cleared wave (healer).
+-- revealsStealth = the unit's light lets every other defender inside its range target stealth
+-- enemies too (Natour's lantern; TdSim.revealerFor), and unmasks disguised enemies inside it.
+-- douse = burn stacks the unit takes off the gate with every attack (water on the flames).
 
 export type Rarity = "rare" | "epic" | "legendary" | "mythic" | "secret"
 export type Role = "melee" | "ranged" | "splash" | "support" | "farm" | "healer"
@@ -28,14 +32,20 @@ export type Level = {
 	stun: number?,
 	buff: number?,
 	income: number?,
+	bounty: number?, -- farm: cash for every enemy that dies inside its range, whoever lands the blow
 	heal: number?,
 }
 
 export type Ability = {
-	kind: "shabriyeh" | "sweep",
+	kind: "shabriyeh" | "sweep" | "mark",
+	stun: number?, -- sweep: also stuns everything it hits (signature)
+	slow: number?, -- shabriyeh: also slows the target to this speed multiplier … (signature)
+	slowFor: number?, -- … for this many seconds
 	cooldown: number, -- seconds
-	multiplier: number, -- damage multiplier on the target (shabriyeh) or on everything in radius (sweep)
+	multiplier: number, -- damage multiplier on the target (shabriyeh), on everything in radius (sweep), or that the marked enemy takes from every defender (mark; cap 1.4, D-045)
 	radius: number?,
+	duration: number?, -- mark: seconds the mark lasts
+	count: number?, -- mark: how many enemies one Oath marks (default 1; signature Repentance 2)
 }
 
 export type Visual = {
@@ -48,6 +58,21 @@ export type Visual = {
 	scale: number?,
 }
 
+-- Level 7 "signature" (STORY_PLAN §7.1): bought once at the last level, for `cost`, choosing path a or b.
+-- It starts from the last level and changes it: `set` overrides Level fields, `cooldownMul` scales
+-- the attack cooldown, `ability` overrides ability fields, `revealsStealth` lights a lantern,
+-- `haste` speeds up other defenders in a radius (cooldown × mul). Cap (D-047): a path adds at most
+-- +35 % damage per second or exactly one effect, never both (tests/td.spec "Signatures").
+export type Signature = {
+	key: string, -- name: unit.<id>.sig.<key>.name / .desc
+	cost: number,
+	set: { [string]: number }?,
+	cooldownMul: number?,
+	ability: { [string]: number }?,
+	revealsStealth: boolean?,
+	haste: { radius: number, mul: number }?,
+}
+
 export type UnitDef = {
 	nameKey: string,
 	descKey: string,
@@ -55,10 +80,14 @@ export type UnitDef = {
 	role: Role,
 	maxPlaced: number,
 	hitsStealth: boolean?,
+	revealsStealth: boolean?,
+	douse: number?,
 	levels: { Level },
 	ability: Ability?,
 	visual: Visual,
 	noBanner: boolean?, -- secret / event units never come from a banner
+	signature: { a: Signature, b: Signature }?, -- level 7 (Epic and above): one of two paths, bought once at max level
+	beads: { string }?, -- the three bead kinds its slots take (default Config/Beads.byRole[role])
 }
 
 local function L(cost: number, damage: number, range: number, cooldown: number, extra: { [string]: any }?): Level
@@ -96,6 +125,7 @@ local Units: { [string]: UnitDef } = {
 		role = "ranged",
 		maxPlaced = 4,
 		hitsStealth = true,
+		revealsStealth = true, -- the lantern: defenders inside his range see hidden thieves too
 		levels = {
 			L(180, 4, 12, 1.15, { slow = 0.75, slowFor = 1.5 }),
 			L(120, 6, 13, 1.1, { slow = 0.7, slowFor = 1.8 }),
@@ -104,6 +134,105 @@ local Units: { [string]: UnitDef } = {
 			L(560, 18, 16, 0.95, { slow = 0.5, slowFor = 2.8 }),
 		},
 		visual = { robe = "#4A2E18", accent = "#B87333", skin = "#B97F5A", hat = "hatta", hatColor = "#EFE6D2", weapon = "lantern" },
+	},
+	-- Umm Baki the midwife (STORY_PLAN §7.5, S1-A03): the second lamp after Abu Hares. Her lamp lights
+	-- stealth and disguised attackers for every defender in range; she hits lightly and never slows.
+	-- The first Normal clear of Episode 6 gives her (TD.STORY_FIRST_CLEAR).
+	qabilah = {
+		nameKey = "unit.qabilah.name",
+		descKey = "unit.qabilah.desc",
+		rarity = "rare",
+		role = "ranged",
+		maxPlaced = 4,
+		hitsStealth = true,
+		revealsStealth = true,
+		levels = {
+			L(160, 3, 11, 1.2),
+			L(110, 5, 12, 1.15),
+			L(190, 8, 13, 1.1),
+			L(300, 11, 14, 1.05),
+			L(460, 15, 15, 1.0),
+		},
+		visual = { robe = "#2B3550", accent = "#B5532C", skin = "#C68E64", hat = "scarf", hatColor = "#F4F1EA", weapon = "lantern" },
+	},
+	-- Season Story 1 defenders (STORY_PLAN §7.5, S1-A07).
+	-- Abu Samih the hummus seller: a farm that pays for every attacker that falls in his range.
+	hummus = {
+		nameKey = "unit.hummus.name",
+		descKey = "unit.hummus.desc",
+		rarity = "rare",
+		role = "farm",
+		maxPlaced = 3,
+		levels = {
+			L(320, 4, 9, 1.2, { bounty = 6 }),
+			L(220, 6, 9.5, 1.15, { bounty = 9 }),
+			L(360, 8, 10, 1.1, { bounty = 13 }),
+			L(560, 11, 10.5, 1.05, { bounty = 18 }),
+			L(800, 14, 11, 1.0, { bounty = 24 }),
+		},
+		visual = { robe = "#8A8A84", accent = "#D9C9A8", skin = "#C68E64", hat = "cap", hatColor = "#F4F1EA", weapon = "tray" },
+	},
+	-- Abu Hamoud the cobbler: nails on the road; whoever steps in them slows.
+	iskafi = {
+		nameKey = "unit.iskafi.name",
+		descKey = "unit.iskafi.desc",
+		rarity = "rare",
+		role = "splash",
+		maxPlaced = 5,
+		levels = {
+			L(240, 4, 10, 1.6, { splash = 3, slow = 0.6, slowFor = 2 }),
+			L(160, 7, 10.5, 1.55, { splash = 3.3, slow = 0.6, slowFor = 2 }),
+			L(280, 10, 11, 1.5, { splash = 3.7, slow = 0.6, slowFor = 2 }),
+			L(440, 14, 11.5, 1.45, { splash = 4.1, slow = 0.6, slowFor = 2 }),
+			L(680, 20, 12, 1.4, { splash = 4.5, slow = 0.6, slowFor = 2 }),
+		},
+		visual = { robe = "#5A4632", accent = "#3B2A20", skin = "#C68E64", hat = "cap", hatColor = "#1F1B18", weapon = "hammer" },
+	},
+	-- Abu Basim of the hammam: a cloud of steam every 3 s over his whole range that slows the crowd
+	-- and takes a burn stack off the gate (the plan's "aura", built from splash + slow + douse).
+	hammam = {
+		nameKey = "unit.hammam.name",
+		descKey = "unit.hammam.desc",
+		rarity = "epic",
+		role = "splash",
+		maxPlaced = 2,
+		douse = 1,
+		levels = {
+			L(480, 2, 11, 3.0, { splash = 11, slow = 0.8, slowFor = 3 }),
+			L(320, 3, 12, 3.0, { splash = 12, slow = 0.77, slowFor = 3 }),
+			L(480, 4, 13, 3.0, { splash = 13, slow = 0.74, slowFor = 3 }),
+			L(720, 6, 14, 3.0, { splash = 14, slow = 0.71, slowFor = 3 }),
+			L(1000, 8, 15, 3.0, { splash = 15, slow = 0.68, slowFor = 3 }),
+			L(1400, 10, 16, 3.0, { splash = 16, slow = 0.65, slowFor = 3 }),
+		},
+		signature = {
+			a = { key = "scald", cost = 2100, set = { douse = 2 } },
+			b = { key = "fog", cost = 2100, set = { slow = 0.55 } },
+		},
+		visual = { robe = "#F4F1EA", accent = "#A4302A", skin = "#C68E64", hat = "none", hatColor = "#F4F1EA", weapon = "jug" },
+	},
+	-- Su'da Khanum: The Cry silences the road around her (ability sweep with a stun).
+	matriarch = {
+		nameKey = "unit.matriarch.name",
+		descKey = "unit.matriarch.desc",
+		rarity = "mythic",
+		role = "splash",
+		maxPlaced = 1,
+		hitsStealth = true,
+		levels = {
+			L(1300, 60, 11, 1.1, { splash = 6 }),
+			L(850, 90, 11.5, 1.05, { splash = 6.5 }),
+			L(1300, 135, 12, 1.0, { splash = 7 }),
+			L(1950, 200, 12.5, 0.95, { splash = 7.5 }),
+			L(2900, 310, 13, 0.88, { splash = 8.2 }),
+			L(4300, 480, 13.5, 0.8, { splash = 9 }),
+		},
+		ability = { kind = "sweep", cooldown = 11, multiplier = 4, radius = 11, stun = 1.2 },
+		signature = {
+			a = { key = "wail", cost = 6450, ability = { radius = 13 } },
+			b = { key = "silence", cost = 6450, ability = { stun = 1.8 } },
+		},
+		visual = { robe = "#5A2340", accent = "#C9A13B", skin = "#C68E64", hat = "scarf", hatColor = "#1F1B18", weapon = "none" },
 	},
 	farran = {
 		nameKey = "unit.farran.name",
@@ -128,6 +257,7 @@ local Units: { [string]: UnitDef } = {
 		rarity = "rare",
 		role = "splash",
 		maxPlaced = 5,
+		douse = 1, -- her water puts out the torchbearers' fire on the gate
 		levels = {
 			L(300, 6, 12, 1.5, { splash = 4, slow = 0.7, slowFor = 1.5 }),
 			L(200, 9, 13, 1.45, { splash = 4.2, slow = 0.65, slowFor = 1.8 }),
@@ -203,6 +333,10 @@ local Units: { [string]: UnitDef } = {
 			L(1800, 160, 10.5, 0.5),
 		},
 		ability = { kind = "shabriyeh", cooldown = 12, multiplier = 6 },
+		signature = {
+			a = { key = "rage", cost = 2700, ability = { cooldown = 8 } },
+			b = { key = "guard", cost = 2700, set = { stun = 0.3 } },
+		},
 		visual = { robe = "#1F1B18", accent = "#A4302A", skin = "#C68E64", hat = "tarboosh", hatColor = "#A4302A", weapon = "dagger", scale = 1.08 },
 	},
 	haddad = {
@@ -219,6 +353,10 @@ local Units: { [string]: UnitDef } = {
 			L(1350, 105, 12, 1.7, { splash = 6.5, stun = 0.8 }),
 			L(2000, 155, 12.5, 1.6, { splash = 7, stun = 1.0 }),
 		},
+		signature = {
+			a = { key = "anvil", cost = 3000, set = { stun = 1.4 } },
+			b = { key = "forge", cost = 3000, set = { splash = 9 } },
+		},
 		visual = { robe = "#6E5E50", accent = "#3D3A38", skin = "#B97F5A", hat = "none", hatColor = "#000000", weapon = "hammer", scale = 1.12 },
 	},
 	mukhtar = {
@@ -234,6 +372,10 @@ local Units: { [string]: UnitDef } = {
 			L(950, 0, 15, 1, { buff = 1.4 }),
 			L(1500, 0, 16, 1, { buff = 1.52 }),
 			L(2200, 0, 17, 1, { buff = 1.65 }),
+		},
+		signature = {
+			a = { key = "loud", cost = 3300, set = { buff = 1.8 } },
+			b = { key = "brave", cost = 3300, set = { damage = 6, cooldown = 1.2 } },
 		},
 		visual = { robe = "#EADFC8", accent = "#C9A13B", skin = "#C08A62", hat = "tarboosh", hatColor = "#A4302A", weapon = "none" },
 	},
@@ -255,6 +397,10 @@ local Units: { [string]: UnitDef } = {
 			L(2800, 300, 12, 0.45),
 		},
 		ability = { kind = "shabriyeh", cooldown = 9, multiplier = 10 },
+		signature = {
+			a = { key = "judgment", cost = 4200, ability = { multiplier = 14 } },
+			b = { key = "mercy", cost = 4200, ability = { slow = 0.5, slowFor = 3 } },
+		},
 		visual = { robe = "#1F1B18", accent = "#C9A13B", skin = "#C68E64", hat = "tarboosh", hatColor = "#A4302A", weapon = "dagger", scale = 1.12 },
 	},
 	pahlawan = {
@@ -272,6 +418,10 @@ local Units: { [string]: UnitDef } = {
 			L(2900, 290, 12, 1.0, { splash = 8, stun = 1.2 }),
 		},
 		ability = { kind = "sweep", cooldown = 14, multiplier = 4, radius = 9 },
+		signature = {
+			a = { key = "iron", cost = 4350, ability = { radius = 12 } },
+			b = { key = "pin", cost = 4350, ability = { stun = 1.5 } },
+		},
 		visual = { robe = "#A4302A", accent = "#1F1B18", skin = "#B97F5A", hat = "none", hatColor = "#000000", weapon = "none", scale = 1.25 },
 	},
 	umm_hara = {
@@ -287,6 +437,10 @@ local Units: { [string]: UnitDef } = {
 			L(1200, 0, 17, 1, { heal = 18, buff = 1.28 }),
 			L(1800, 0, 18, 1, { heal = 24, buff = 1.36 }),
 			L(2600, 0, 19, 1, { heal = 32, buff = 1.45 }),
+		},
+		signature = {
+			a = { key = "hakim", cost = 3900, set = { heal = 44 } },
+			b = { key = "elder", cost = 3900, set = { buff = 1.6 } },
 		},
 		visual = { robe = "#EADFC8", accent = "#1F1B18", skin = "#D2A07A", hat = "tarboosh", hatColor = "#A4302A", weapon = "razor" },
 	},
@@ -308,6 +462,10 @@ local Units: { [string]: UnitDef } = {
 			L(4000, 540, 14, 0.7, { splash = 10 }),
 		},
 		ability = { kind = "sweep", cooldown = 10, multiplier = 5, radius = 12 },
+		signature = {
+			a = { key = "drums", cost = 6000, cooldownMul = 0.8 },
+			b = { key = "swords", cost = 6000, revealsStealth = true },
+		},
 		visual = { robe = "#FBF8F1", accent = "#A4302A", skin = "#C68E64", hat = "tarboosh", hatColor = "#A4302A", weapon = "sword", scale = 1.1 },
 	},
 	zaim_akbar = {
@@ -326,27 +484,41 @@ local Units: { [string]: UnitDef } = {
 			L(4500, 800, 13, 0.38),
 		},
 		ability = { kind = "shabriyeh", cooldown = 7, multiplier = 15 },
+		signature = {
+			a = { key = "akeed", cost = 6750, ability = { multiplier = 20 } },
+			b = { key = "rally", cost = 6750, haste = { radius = 10, mul = 0.9 } },
+		},
 		visual = { robe = "#1F1B18", accent = "#C9A13B", skin = "#C68E64", hat = "tarboosh", hatColor = "#A4302A", weapon = "dagger", scale = 1.18 },
 	},
 
-	---------------------------------------------------------------- Secret (codes / events only)
-	qitt = {
-		nameKey = "unit.qitt.name",
-		descKey = "unit.qitt.desc",
+	---------------------------------------------------------------- Secret (story drops only)
+
+	-- The secret unit of Season Story 1 (STORY_PLAN §7.6, S1-S12): the thief of Episodes 1–3, the
+	-- one-armed night guard after his confession. Only from Episode 9 wins (TD.SECRET_DROP).
+	adashari = {
+		nameKey = "unit.adashari.name",
+		descKey = "unit.adashari.desc",
 		rarity = "secret",
 		role = "melee",
 		maxPlaced = 1,
 		hitsStealth = true,
+		revealsStealth = true, -- his lantern (D-051: lights his attack range for now)
 		noBanner = true,
 		levels = {
-			L(50, 30, 7, 0.4),
-			L(50, 60, 7.5, 0.38),
-			L(100, 120, 8, 0.35),
-			L(200, 240, 8.5, 0.32),
-			L(400, 480, 9, 0.3),
-			L(800, 960, 10, 0.25),
+			L(900, 60, 8, 0.6),
+			L(600, 90, 8.5, 0.58),
+			L(1000, 135, 9, 0.55),
+			L(1600, 200, 9.5, 0.5),
+			L(2400, 300, 10, 0.46),
+			L(3600, 450, 11, 0.42),
 		},
-		visual = { robe = "#C98A4B", accent = "#C98A4B", skin = "#C98A4B", hat = "none", hatColor = "#000000", weapon = "cat", scale = 0.5 },
+		-- The Oath: marks the strongest enemy in range; every defender hits it ×1.4 for 4 s.
+		ability = { kind = "mark", cooldown = 10, multiplier = 1.4, duration = 4 },
+		signature = {
+			a = { key = "repentance", cost = 5400, ability = { count = 2 } },
+			b = { key = "warehouse", cost = 5400, set = { douse = 2 } },
+		},
+		visual = { robe = "#7A6A55", accent = "#1F1B18", skin = "#B97F5A", hat = "hatta", hatColor = "#2A211B", weapon = "lantern", scale = 0.95 },
 	},
 }
 

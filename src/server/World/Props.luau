@@ -108,6 +108,10 @@ function Props.lantern(parent: Instance, f: CFrame, range: number?): Model
 	light.Brightness = 1.1
 	light.Shadows = false
 	light.Parent = glass
+	-- PV-E04: the Meshy lantern takes the glass and cap's place under the bracket
+	m:SetAttribute("SwapProp", "hanging_lantern")
+	m:SetAttribute("SwapCFrame", f * CFrame.new(0, -0.6, -1.3))
+	m:SetAttribute("SwapReplace", "Cap,Glass")
 	return m
 end
 
@@ -118,6 +122,11 @@ function Props.pot(parent: Instance, pos: Vector3, kind: "basil" | "jasmine" | "
 	Kit.column(m, "Pot", pos, 0.9 * s, 0.9 * s, TERRACOTTA, M.Slate, false)
 	Kit.ball(m, "Leaves", pos + Vector3.new(0, 1.25 * s, 0), 1.2 * s, Palette.vine, M.Grass, false)
 	local flower = if kind == "jasmine" then Palette.jasmine elseif kind == "geranium" then Palette.fabricRed else nil
+	if kind == "jasmine" then
+		m:SetAttribute("SwapProp", "jasmine_pot") -- PV-E04
+		m:SetAttribute("SwapCFrame", CFrame.new(pos))
+		m:SetAttribute("SwapScale", s)
+	end
 	if flower then
 		for i = 1, 3 do
 			local a = i * 2.1
@@ -130,6 +139,7 @@ end
 -- Clothes line between two points with hanging cloths.
 function Props.laundry(parent: Instance, a: Vector3, b: Vector3, colors: { Color3 }): Model
 	local m = model(parent, "Laundry")
+	m.ModelStreamingMode = Enum.ModelStreamingMode.Atomic -- the client sways it (LobbyLifeController)
 	local mid = (a + b) / 2
 	local len = (b - a).Magnitude
 	part(m, { name = "Rope", size = Vector3.new(0.06, 0.06, len), cf = CFrame.lookAt(mid, b), color = Palette.stoneWarm, material = M.Fabric, collide = false, shadow = false })
@@ -171,6 +181,7 @@ end
 -- A sitting cat (`cf` at ground, facing local -Z).
 function Props.cat(parent: Instance, cf: CFrame, color: Color3): Model
 	local m = model(parent, "Cat")
+	m.ModelStreamingMode = Enum.ModelStreamingMode.Atomic -- the client turns it (LobbyLifeController)
 	part(m, { name = "Body", size = Vector3.new(0.7, 0.8, 1.2), cf = cf * CFrame.new(0, 0.4, 0.15), color = color, material = M.Fabric, collide = false })
 	Kit.ball(m, "Head", (cf * CFrame.new(0, 1.05, -0.35)).Position, 0.62, color, M.Fabric, false)
 	for _, x in { -0.18, 0.18 } do
@@ -183,6 +194,8 @@ end
 -- Wooden crate of produce (oranges, aubergines, pomegranates…).
 function Props.crate(parent: Instance, cf: CFrame, produce: Color3): Model
 	local m = model(parent, "Crate")
+	m:SetAttribute("SwapProp", "market_bundle") -- PV-E04
+	m:SetAttribute("SwapCFrame", cf)
 	part(m, { name = "Crate", size = Vector3.new(2, 1, 1.4), cf = cf * CFrame.new(0, 0.5, 0), color = Palette.wood, material = M.WoodPlanks })
 	for i = 0, 5 do
 		local x = -0.65 + (i % 3) * 0.65

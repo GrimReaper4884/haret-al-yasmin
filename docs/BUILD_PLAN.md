@@ -248,6 +248,16 @@ models, red-teaming, onboarding measurement, and live ops.
 
 ---
 
+## Phase V: Look-and-feel pass (runs alongside Phases 3–4)
+
+The full task list lives in [`docs/POLISH_PLAN.md`](POLISH_PLAN.md) (written 2026-10-17 after a live audit):
+the six remaining attackers through Meshy (PV-A), hit/death/boss animation and pooled particle effects (PV-B),
+a painted icon set for lira, qirsh, trait stones, rewards, menus and portraits (PV-C), the experience icon,
+thumbnails, trailer, animated-logo loading screen and covers (PV-D, supersedes P4-03), and lobby/arena
+dressing (PV-E). Branch `phase/polish`; tick tasks in that file's §9.
+
+---
+
 ## Phase 5: Launch
 
 - [ ] **P5-01 Launch audit** · deps: P4-*
@@ -257,6 +267,14 @@ models, red-teaming, onboarding measurement, and live ops.
 - [ ] **P5-03 Publish** · deps: P5-01 · STOP (owner publishes the production build, sets title, description, genre; agent provides the text; restart outdated servers afterwards).
 - [ ] **P5-04 Launch-weekend watch** · deps: P5-03 · every 2 hours: error telemetry, economy anomalies (lira/stone source spikes, duplicate receipt alerts); hotfixes on `hotfix/*` with tests; STOP for the owner to publish.
 - [ ] **P5-05 Milestone codes** · deps: P5-03 · pre-written like/favourite milestone codes with expiry; activated on the owner's go.
+
+---
+
+## Phase S1: Season Story 1 (runs after Phase V; queue in `docs/STORY_PLAN.md`)
+
+Nine-episode story following the lane drama's first-part arc with one-letter-off names, 17 new attackers, unit
+signatures/traits v2/beads with declared caps, Al-Adashari as the secret unit (the Cat retired), and arenas built
+from a Blender kit. Tasks S1-N/S/A/M/C with Accept lines and the owner's STOP list are in that file; tick them there.
 
 ---
 

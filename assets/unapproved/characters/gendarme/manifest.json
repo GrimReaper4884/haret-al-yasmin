@@ -7,7 +7,10 @@
     "anim_idle": "01a1468b-127b-75f2-8095-5491a08cdcea",
     "anim_attack": "01a1468b-3438-7383-8d66-47bbda9ef107",
     "clip_hitreact": "01a14794-f748-7139-87b8-c0e0ce3f9ff4",
-    "clip_proud": "01a14795-1894-76a6-9bd2-be32f32809c2"
+    "clip_proud": "01a14795-1894-76a6-9bd2-be32f32809c2",
+    "clip_knockdown": "01a14bd6-3059-723d-97f3-dd1d48ba163e",
+    "clip_riflecharge": "01a14bde-51df-772e-b705-dbb12cf0915c",
+    "clip_quickwalk": "01a14bde-7376-7012-86a7-54e0fba4a74c"
   },
   "credits": {
     "concept": 6,
@@ -16,10 +19,16 @@
     "anim_idle": 3,
     "anim_attack": 3,
     "clip_hitreact": 0,
-    "clip_proud": 3
+    "clip_proud": 3,
+    "clip_knockdown": 3,
+    "clip_riflecharge": 3,
+    "clip_quickwalk": 3
   },
   "clips": {
     "hitreact": 178,
-    "proud": 114
+    "proud": 114,
+    "knockdown": 187,
+    "riflecharge": 511,
+    "quickwalk": 115
   }
 }

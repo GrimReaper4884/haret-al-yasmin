@@ -15,6 +15,7 @@ local Net = require(Shared.Net)
 local Items = require(Shared.Config.Items)
 local Shops = require(Shared.Config.Shops)
 local Products = require(Shared.Config.Products)
+local IconIds = require(Shared.Config.Icons)
 local Economy = require(Shared.Config.Economy)
 local MonetizationLogic = require(Shared.Logic.MonetizationLogic)
 local UI = script.Parent.Parent.UI
@@ -290,13 +291,13 @@ local function storeRows(snapshot: any)
 		for _, key in Products.liraOrder do
 			local product = (Products.devProducts :: any)[key]
 			order += 1
-			productRow(order, key, "lira", t("hud.lira", { n = product.amount }), false)
+			productRow(order, key, IconIds.product[product.kind], t("hud.lira", { n = product.amount }), false)
 		end
 	end
 	for _, key in Products.storeOrder do
 		local product = (Products.devProducts :: any)[key]
 		order += 1
-		productRow(order, key, "coins", t("hud.currency", { n = product.amount }), false)
+		productRow(order, key, IconIds.product[product.kind], t("hud.currency", { n = product.amount }), false)
 	end
 	for _, key in Products.extrasOrder do
 		local product = (Products.devProducts :: any)[key]
@@ -304,7 +305,7 @@ local function storeRows(snapshot: any)
 		local hidden = snapshot.restricted and MonetizationLogic.fundsRandomItems(product)
 		if not owned and not hidden then
 			order += 1
-			productRow(order, key, if product.kind == "stones" then "stone" else "pass", if product.descKey then t(product.descKey) else t(product.nameKey), true)
+			productRow(order, key, IconIds.product[product.kind] or "pass", if product.descKey then t(product.descKey) else t(product.nameKey), true)
 		end
 	end
 	for _, key in Products.passOrder do

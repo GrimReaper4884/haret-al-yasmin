@@ -1,5 +1,5 @@
 --!strict
--- Always-on HUD: coin pill, errand tracker and language toggle.
+-- Always-on HUD: coin pill, errand tracker, language toggle, wardrobe and the music mute.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -15,6 +15,7 @@ local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local ShopController = require(script.Parent.ShopController)
 local WardrobeController = require(script.Parent.WardrobeController)
+local SettingsController = require(script.Parent.SettingsController)
 
 local HudController = {}
 
@@ -40,8 +41,8 @@ local function build()
 		Position = UDim2.new(0.5, -6, 0, 10),
 		Size = UDim2.fromOffset(170, 36),
 		Parent = root,
-	}, Theme.colors.gold)
-	coinLabel.TextColor3 = Color3.fromHex("#FFD970")
+	}, Theme.colors.gold, "qirsh")
+	coinLabel.TextColor3 = Color3.fromHex("#F6C08A")
 	coinLabel.Size = UDim2.new(1, -66, 1, 0)
 	-- "+" opens the coin store (Robux purses and passes).
 	local storeButton = Theme.button({
@@ -130,6 +131,15 @@ local function build()
 	})
 	wardrobeButton.Activated:Connect(WardrobeController.toggle)
 
+	-- One-tap music mute beside the pills (the match HUD has its own next to the gear).
+	SettingsController.muteButton({
+		Name = "Music",
+		Position = UDim2.new(0.5, 226, 0, 4),
+		Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH),
+		BackgroundColor3 = Color3.fromHex("#6E5E50"),
+		Parent = root,
+	})
+
 	-- Shown only when the server runs on the mock store (unpublished place / no API access).
 	testBadge = Theme.label({
 		Name = "TestMode",
@@ -198,8 +208,9 @@ local function render()
 	local snapshot = StateController.get()
 
 	if snapshot then
+		-- The qirsh icon carries the unit; the pill shows the number only.
 		local function fmt(n: number): string
-			return t("hud.currency", { n = n })
+			return tostring(n)
 		end
 		if lastQirsh and snapshot.qirsh ~= lastQirsh then
 			-- Count up and punch so earning/spending is noticed.

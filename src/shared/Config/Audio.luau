@@ -19,6 +19,7 @@ local Audio: { [string]: Cue } = {
 	-- Stings
 	gate_close = { id = 9114129501, kind = "sting", volume = 0.8 }, -- wooden bar dropping into its hooks, iron rattle; licensed, approved by owner 2026-10-16 (C-104)
 	wave_start = { id = 1841116360, kind = "sting", volume = 0.6 }, -- darbuka roll + zaghareet-like rise; licensed, approved by owner 2026-10-16 (C-105)
+	wave_clear = { id = 0, kind = "sting", volume = 0.6 }, -- short darbuka flourish; silent until commissioned (PV-B06)
 	shabriyeh = { id = 9119742466, kind = "sting", volume = 0.9 }, -- blade drawn: metal shing + single qanun hit; licensed, approved by owner 2026-10-16 (C-106)
 	gate_hit = { id = 9114129572, kind = "sting", volume = 0.7 }, -- thud on wood; licensed, approved by owner 2026-10-16 (C-107)
 	victory = { id = 9040297291, kind = "sting", volume = 0.8 }, -- 'arada-style sword-and-shield rhythm, 6 s; licensed, approved by owner 2026-10-16 (C-108)

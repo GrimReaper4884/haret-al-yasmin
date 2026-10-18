@@ -19,7 +19,23 @@ export type Placement = {
 	anchor: ("start" | "origin")?,
 }
 
-local Placements: { lobby: { Placement }, arenas: { [string]: { Placement } } } = {
+-- Swaps (PV-E04): primitive props that a Meshy prop replaces wherever it stands, lobby and arenas
+-- alike. World/Props tags each primitive (`SwapProp`, `SwapCFrame` = where the prop's bottom
+-- centre goes, `SwapScale`, optional `SwapReplace` = only these child parts are removed, the rest
+-- stays, e.g. a lantern's wall bracket); PropDressing.swap does the rest. `height` is the prop's
+-- height in studs at scale 1. A missing model leaves the primitive in place.
+export type Swap = { height: number }
+
+local Placements: {
+	lobby: { Placement },
+	arenas: { [string]: { Placement } },
+	swaps: { [string]: Swap },
+} = {
+	swaps = {
+		hanging_lantern = { height = 1.7 }, -- replaces the glass and cap of every hanging lantern
+		market_bundle = { height = 1.8 }, -- replaces every produce crate
+		jasmine_pot = { height = 2.4 }, -- replaces every potted jasmine
+	},
 	lobby = {
 		-- No free-standing lantern posts in Jasmine Lane: the lane is only 16 studs wide and players
 		-- reported the posts standing in the market. The lane uses wall lanterns (Zones/Lane facades).
@@ -41,6 +57,16 @@ local Placements: { lobby: { Placement }, arenas: { [string]: { Placement } } } 
 			{ prop = "coffee_house", at = { -44, -36 }, height = 7, yaw = -139, solid = true }, -- faces the road corner (-28,-18)
 			{ prop = "bread_oven", at = { 66, 4 }, height = 7, yaw = 90, solid = true },
 			{ prop = "fountain", at = { 18, -36 }, height = 4, solid = true },
+		},
+		-- The Rival Lane: their gate at the road's start (ours, the primitive one, stands at the end:
+		-- it is what the attackers hit), lantern posts at the corners, the rival quarter's fountain.
+		rival_lane = {
+			{ prop = "gate", anchor = "start", at = { 0, 4 }, height = 20, solid = true },
+			{ prop = "lantern_post", at = { -58, 18 }, height = 9 },
+			{ prop = "lantern_post", at = { -22, 6 }, height = 9 },
+			{ prop = "lantern_post", at = { 6, -24 }, height = 9 },
+			{ prop = "lantern_post", at = { 44, 26 }, height = 9 },
+			{ prop = "fountain", at = { -44, -36 }, height = 4, solid = true }, -- the south-west corner, off the best tower ground
 		},
 		siege = {
 			{ prop = "gate", anchor = "start", at = { 0, 4 }, height = 20, solid = true },

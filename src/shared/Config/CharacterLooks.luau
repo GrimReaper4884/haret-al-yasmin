@@ -28,6 +28,7 @@ export type Look = {
 	model: string?, -- imported model name, if one has been approved
 	modelYaw: number?, -- degrees to turn an imported model that does not already face -Z (GLB imports do)
 	anims: { idle: number?, attack: number?, walk: number? }?, -- published animation asset ids
+	clips: string?, -- baked clip set (Anim/Clips/<id>) when it is not this id's own: a re-skin on another figure's mesh
 }
 
 local DARK = "#1F1B18"
@@ -53,7 +54,7 @@ local Looks: { [string]: Look } = {
 		cloak = "#4A2E18",
 		model = "AbuFares",
 		anims = { idle = 90495332802964, attack = 98400283326592 },
-	}, -- Abu Fares the watchman
+	}, -- Abu Hares the watchman
 	farran = {
 		build = "stout",
 		outfit = "apron",
@@ -63,7 +64,7 @@ local Looks: { [string]: Look } = {
 		apron = "#FBF8F1",
 		model = "AbuBashir",
 		anims = { idle = 104394597256841, attack = 84495088331540 },
-	}, -- Abu Bashir the baker
+	}, -- Abu Baseer the baker
 	saqqa = {
 		build = "normal",
 		outfit = "abaya",
@@ -73,8 +74,18 @@ local Looks: { [string]: Look } = {
 		model = "Fawzia",
 		-- v2 model (no fused broom; the broom is an Anim/HandProps prop): the published clips were
 		-- made for the v1 rig, so only the baked clips (Anim/Clips/saqqa) apply.
-	}, -- Fawzia
-	-- Issam, Abu Issam's son and apprentice
+	}, -- Fawza
+	-- Umm Baki the midwife (S1-A03): empty-handed Meshy model; her oil lamp is an Anim/HandProps prop.
+	qabilah = {
+		build = "stout",
+		outfit = "abaya",
+		beard = "none",
+		moustache = "none",
+		cloak = "#2B3550",
+		apron = "#E9DCC8",
+		model = "UmmBaki",
+	},
+	-- Hissam, Abu Hissam's son and apprentice
 	hallaq = {
 		build = "slim",
 		outfit = "apron",
@@ -93,7 +104,7 @@ local Looks: { [string]: Look } = {
 		hair = GREY,
 		model = "AbuGhalib",
 		anims = { idle = 103539550283275, attack = 124855699529232 },
-	}, -- Abu Ghalib
+	}, -- Abu Ghadeb
 	qahwaji = {
 		build = "stout",
 		outfit = "apron",
@@ -103,7 +114,7 @@ local Looks: { [string]: Look } = {
 		apron = "#C9A13B",
 		model = "AbuHatem",
 		anims = { idle = 99420630175988, attack = 137357629317314 },
-	}, -- Abu Hatem
+	}, -- Abu Hazem
 	qabaday = {
 		build = "broad",
 		outfit = "vest",
@@ -112,7 +123,7 @@ local Looks: { [string]: Look } = {
 		hair = DARK,
 		model = "Motaz",
 		anims = { idle = 100329174869234, attack = 72491953659647 },
-	}, -- Mo'taz
+	}, -- Mo'ez
 	haddad = {
 		build = "broad",
 		outfit = "apron",
@@ -122,7 +133,7 @@ local Looks: { [string]: Look } = {
 		apron = "#3D3A38",
 		model = "AbuKhater",
 		anims = { idle = 79270488835196, attack = 108770696471593 },
-	}, -- Abu Khater
+	}, -- Abu Shater
 	mukhtar = {
 		build = "slim",
 		outfit = "qumbaz",
@@ -131,7 +142,7 @@ local Looks: { [string]: Look } = {
 		hair = DARK,
 		model = "AbuBadr",
 		anims = { idle = 118604731409520, attack = 87931164204170 },
-	}, -- Abu Badr
+	}, -- Abu Bader
 	zaim = {
 		build = "broad",
 		outfit = "bisht",
@@ -141,7 +152,7 @@ local Looks: { [string]: Look } = {
 		cloak = DARK,
 		model = "AbuSaleh",
 		anims = { idle = 130775978082816, attack = 111473861813662 },
-	}, -- Za'im Abu Saleh
+	}, -- Za'im Abu Faleh
 	pahlawan = {
 		build = "giant",
 		outfit = "sherwal",
@@ -151,7 +162,7 @@ local Looks: { [string]: Look } = {
 		model = "Strongman",
 		anims = { idle = 76414942150002, attack = 80908186732109 },
 	},
-	-- Abu Issam, the barber and hakim of the lane: Meshy character (COPYRIGHT_REGISTER C-200)
+	-- Abu Hissam, the barber and hakim of the lane: Meshy character (COPYRIGHT_REGISTER C-200)
 	umm_hara = {
 		build = "slim",
 		outfit = "apron",
@@ -179,8 +190,15 @@ local Looks: { [string]: Look } = {
 		hair = DARK,
 		model = "AbuShehab",
 		anims = { idle = 106622979715660, attack = 134238214440993 },
-	}, -- Al-'Akeed Abu Shehab
-	qitt = { model = "Cat" },
+	}, -- Al-'Akeed Abu Shehan
+	-- Al-Adashari, the night guard (S1-S12, model S1-A05): one-armed; the left forearm is cut from the mesh
+	-- (tools/anim/dropbones.py) and the bake pins the empty sleeve to his side.
+	adashari = { build = "slim", outfit = "qumbaz", beard = "stubble", moustache = "thin", hair = DARK, apron = "#1F1B18", model = "Adashari" },
+	-- Season Story 1 defenders (S1-A07).
+	hummus = { build = "slim", outfit = "apron", beard = "none", moustache = "thin", hair = DARK, apron = "#D9C9A8", model = "AbuSamih" },
+	iskafi = { build = "kid", outfit = "apron", beard = "full", moustache = "thick", hair = GREY, apron = "#5A3A22", model = "AbuHamoud" },
+	hammam = { build = "stout", outfit = "vest", beard = "short", moustache = "thick", hair = DARK, model = "AbuBasim" },
+	matriarch = { build = "normal", outfit = "abaya", beard = "none", moustache = "none", cloak = "#5A2340", model = "SudaKhanum" },
 
 	------------------------------------------------------------------ attackers
 	gendarme = {
@@ -208,10 +226,11 @@ local Looks: { [string]: Look } = {
 		moustache = "thick",
 		hair = DARK,
 		cloak = "#4A3B30",
+		model = "Bandit",
 	},
-	thug = { build = "stout", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK },
-	rider = { build = "normal", outfit = "uniform", beard = "none", moustache = "handlebar", hair = DARK },
-	sapper = { build = "stout", outfit = "uniform", beard = "short", moustache = "thick", hair = DARK },
+	thug = { build = "stout", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK, model = "Thug" },
+	rider = { build = "normal", outfit = "uniform", beard = "none", moustache = "handlebar", hair = DARK, model = "Rider" },
+	sapper = { build = "stout", outfit = "uniform", beard = "short", moustache = "thick", hair = DARK, model = "Sapper" },
 	spy = {
 		build = "slim",
 		outfit = "qumbaz",
@@ -222,7 +241,7 @@ local Looks: { [string]: Look } = {
 		model = "Nims",
 		anims = { walk = 118280743752950 },
 	},
-	sergeant = { build = "broad", outfit = "uniform", beard = "none", moustache = "handlebar", hair = DARK },
+	sergeant = { build = "broad", outfit = "uniform", beard = "none", moustache = "handlebar", hair = DARK, model = "Sergeant" },
 	chief_thief = {
 		build = "broad",
 		outfit = "qumbaz",
@@ -243,7 +262,51 @@ local Looks: { [string]: Look } = {
 		model = "AbuNar",
 		anims = { walk = 100088303835625 },
 	},
-	colonel = { build = "giant", outfit = "uniform", beard = "none", moustache = "handlebar", hair = GREY },
+	colonel = { build = "giant", outfit = "uniform", beard = "none", moustache = "handlebar", hair = GREY, model = "Commandant" },
+
+	-- Season Story 1, batch 1 (S1-S03 config, S1-A02 Meshy models; register C-242..C-251).
+	pickpocket = { build = "kid", outfit = "sherwal", beard = "none", moustache = "none", hair = DARK, model = "Pickpocket" },
+	drummer = { build = "stout", outfit = "qumbaz", beard = "stubble", moustache = "thick", hair = DARK, model = "Drummer" },
+	torchbearer = { build = "slim", outfit = "vest", beard = "stubble", moustache = "thin", hair = DARK, model = "Torchbearer" },
+	porter = { build = "broad", outfit = "vest", beard = "short", moustache = "thick", hair = DARK, model = "Porter" },
+	disguised = { build = "normal", outfit = "qumbaz", beard = "short", moustache = "thin", hair = DARK, cloak = "#D9C9A8", model = "Disguised" },
+	beggar = { build = "slim", outfit = "abaya", beard = "stubble", moustache = "none", hair = GREY, cloak = "#6E6A64", model = "Beggar" },
+	corporal = { build = "slim", outfit = "uniform", beard = "none", moustache = "thin", hair = DARK, model = "Corporal" },
+	abu_jawdan = { build = "stout", outfit = "uniform", beard = "none", moustache = "handlebar", hair = DARK, model = "AbuJawdan" },
+	abu_shatour = { build = "broad", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK, model = "AbuShatour" },
+	lateef = { build = "slim", outfit = "abaya", beard = "stubble", moustache = "thin", hair = DARK, cloak = "#6E6A64", model = "Lateef" },
+	-- Season Story 1, batch 2 (S1-S08 config, S1-A04 Meshy models; the cart and the snake are static meshes).
+	rifleman = { build = "slim", outfit = "uniform", beard = "none", moustache = "thin", hair = DARK, model = "Rifleman" },
+	cart = { build = "giant", outfit = "vest", beard = "none", moustache = "none", hair = GREY, model = "DonkeyCart" },
+	hakim_rival = { build = "slim", outfit = "abaya", beard = "short", moustache = "thin", hair = GREY, cloak = "#2A211B", model = "HakimRival" },
+	snake = { build = "kid", outfit = "vest", beard = "none", moustache = "none", hair = DARK, model = "GraveSnake" },
+	brute = { build = "giant", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK, model = "Brute" },
+	fakhr = { build = "giant", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK, model = "Fakhr" },
+	abu_zira = { build = "slim", outfit = "sherwal", beard = "none", moustache = "handlebar", hair = DARK, model = "AbuZira" },
+	-- The enraged 'akeed re-uses Abu al-Nahr's mesh and clips (no new mesh, STORY_PLAN §6.2); the red
+	-- tint is client work (S1-C03).
+	rival_zaim_enraged = {
+		build = "broad",
+		outfit = "bisht",
+		beard = "full",
+		moustache = "thick",
+		hair = DARK,
+		cloak = "#3E5B3A",
+		model = "AbuNar",
+		clips = "rival_zaim",
+		anims = { walk = 100088303835625 },
+	},
+	-- Abu Jawdan's escort (S1-S05): the gendarme's mesh and clips (no new mesh, STORY_PLAN §6.2).
+	corporal_minion = {
+		build = "slim",
+		outfit = "uniform",
+		beard = "none",
+		moustache = "thin",
+		hair = DARK,
+		model = "Gendarme",
+		clips = "gendarme",
+		anims = { walk = 127807283756558 },
+	},
 }
 
 return Looks

@@ -1,0 +1,34 @@
+{
+  "id": "sergeant",
+  "tasks": {
+    "concept": "01a14ba7-29a5-763f-85ce-0fe2c43bda42",
+    "mesh": "01a14c7a-a622-71d3-82c8-84146d5b9891",
+    "rig": "01a14c7b-cf1c-70de-848b-0fe0bc6cb6d1",
+    "anim_idle": "01a14c7c-1fc8-74a2-bcca-1fd3e5ebbc4c",
+    "anim_attack": "01a14c7c-4276-72d3-8150-ac1c531178ce",
+    "clip_chestpound": "01a14c7f-5e93-7246-ab71-014219566363",
+    "clip_hitreact": "01a14c7f-80c1-7445-8f1f-e56dec206f97",
+    "clip_knockdown": "01a14c7f-a197-7769-839d-c209292d16e4",
+    "clip_stagewalk": "01a14c7f-c226-70eb-a370-5f8188909eb1",
+    "clip_waisthit": "01a14c7f-e34c-72c8-a450-9548d9cc3264"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "anim_idle": 3,
+    "anim_attack": 3,
+    "clip_chestpound": 3,
+    "clip_hitreact": 3,
+    "clip_knockdown": 3,
+    "clip_stagewalk": 3,
+    "clip_waisthit": 3
+  },
+  "clips": {
+    "chestpound": 88,
+    "hitreact": 178,
+    "knockdown": 187,
+    "stagewalk": 55,
+    "waisthit": 171
+  }
+}

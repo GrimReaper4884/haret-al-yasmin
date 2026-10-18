@@ -1,0 +1,30 @@
+{
+  "id": "abu_shatour",
+  "tasks": {
+    "concept": "01a14e70-afdf-72f3-acd2-5ae897b5570f",
+    "mesh": "01a14e96-102a-7069-a4e9-45c9bb6da3cd",
+    "rig": "01a14e97-6cc3-73ba-9c15-c9bc114b2e3e",
+    "clip_axebreathe": "01a14ec4-fbc3-7594-9817-41a783d5d432",
+    "clip_dyingback": "01a14ec5-36fc-76e5-93f6-b4c64aa60774",
+    "clip_hitreact": "01a14ec5-581f-75d5-97d9-d437a75986f8",
+    "clip_waisthit": "01a14ec5-79b5-7457-bd64-ac5b0b3a7425",
+    "clip_walkfight": "01a14ec5-9b52-7368-b24f-fa6ebab86cb8"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_axebreathe": 3,
+    "clip_dyingback": 3,
+    "clip_hitreact": 3,
+    "clip_waisthit": 3,
+    "clip_walkfight": 3
+  },
+  "clips": {
+    "axebreathe": 335,
+    "dyingback": 189,
+    "hitreact": 178,
+    "waisthit": 171,
+    "walkfight": 21
+  }
+}

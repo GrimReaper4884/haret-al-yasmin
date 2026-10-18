@@ -11,6 +11,7 @@ local Economy = require(Shared.Config.Economy)
 local Items = require(Shared.Config.Items)
 local Units = require(Shared.Config.Units)
 local Traits = require(Shared.Config.Traits)
+local Beads = require(Shared.Config.Beads)
 local SeasonPass = require(Shared.Config.SeasonPass)
 local TD = require(Shared.Config.TD)
 local ProfileSchema = require(Shared.Logic.ProfileSchema)
@@ -52,6 +53,7 @@ local schemaCtx: ProfileSchema.Context = {
 	starterUnit = TD.STARTER_UNIT,
 	starterLira = TD.STARTER_LIRA,
 	season = SeasonPass.season,
+	beads = Beads,
 }
 
 local function keyFor(player: Player): string

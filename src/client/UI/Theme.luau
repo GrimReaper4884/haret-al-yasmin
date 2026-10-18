@@ -10,6 +10,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Palette = require(ReplicatedStorage:WaitForChild("Shared").Config.Palette)
 local Create = require(script.Parent.Create)
 local Juice = require(script.Parent.Juice)
+local Icons = require(script.Parent.Icons)
 
 local Theme = {}
 
@@ -141,12 +142,41 @@ function Theme.button(props: { [string]: any }): TextButton
 end
 
 -- A currency / counter pill: coloured disc icon on the left edge, outlined number.
-function Theme.pill(props: { [string]: any }, iconColor: Color3): (Frame, TextLabel)
+-- With `iconName` the left edge shows that UI/Icons icon (painted or primitive) instead of the disc.
+function Theme.pill(props: { [string]: any }, iconColor: Color3, iconName: string?): (Frame, TextLabel)
 	local pill = Create("Frame", props, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
 	pill.BackgroundColor3 = Color3.fromHex("#2A1E14")
 	pill.BackgroundTransparency = 0.25
 	pill.BorderSizePixel = 0
 	border(pill, 2.5)
+	if iconName then
+		local holder = Create("Frame", {
+			Name = "Icon",
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.new(0, 4, 0.5, 0),
+			Size = UDim2.fromOffset(36, 36),
+			BackgroundTransparency = 1,
+			ZIndex = (props.ZIndex or 1) + 1,
+			Parent = pill,
+		})
+		Icons.draw(iconName, holder)
+		for _, d in holder:GetDescendants() do
+			if d:IsA("GuiObject") then
+				d.ZIndex = holder.ZIndex
+			end
+		end
+		local label = Theme.display({
+			Name = "Amount",
+			Text = "",
+			TextSize = 20,
+			Position = UDim2.fromOffset(24, 0),
+			Size = UDim2.new(1, -30, 1, 0),
+			ZIndex = (props.ZIndex or 1) + 1,
+			Parent = pill,
+		})
+		label.TextXAlignment = Enum.TextXAlignment.Center
+		return pill, label
+	end
 	local disc = Create("Frame", {
 		Name = "Icon",
 		AnchorPoint = Vector2.new(0.5, 0.5),

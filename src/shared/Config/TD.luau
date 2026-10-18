@@ -12,6 +12,13 @@ return {
 	PREP_SECONDS = 15, -- before wave 1
 	STUN_CHAIN_MAX = 6, -- seconds a chain of stuns can hold an enemy (stun-locks end) …
 	STUN_IMMUNITY = 3, -- … then it ignores stuns for this long (an enemy walks at least a third of the time)
+	-- Burning gate (torchbearers, Enemies[id].burn; STORY_PLAN §5.2 ep5): each stack costs the gate
+	-- BURN_DAMAGE HP every BURN_TICK seconds for BURN_SECONDS after the newest stack, at most
+	-- BURN_MAX_STACKS; dousing defenders (Units[id].douse) take stacks off; a cleared wave puts it out.
+	BURN_MAX_STACKS = 5,
+	BURN_TICK = 2,
+	BURN_DAMAGE = 1,
+	BURN_SECONDS = 20,
 	BETWEEN_WAVES = 9, -- countdown between waves
 	TICK = 1 / 20, -- simulation step (seconds of game time)
 	POSITION_RATE = 0.1, -- seconds between enemy position broadcasts
@@ -67,13 +74,27 @@ return {
 	STAR_BONUS = 0.05, -- +5% damage per star
 	MAX_LIRA = 10000000,
 	MAX_TRAIT_STONES = 100000,
-	TRAIT_REROLL_COST = 1, -- trait stones
+	TRAIT_REROLL_COST = 1, -- trait stones (either slot)
+	TRAIT2_STARS = 3, -- stars a unit needs before its second trait slot opens (traits v2)
 
 	-- Rewards (base; × difficulty.reward; × 2 on first clear of a story episode)
 	STORY_REWARDS = {
 		ep1 = { lira = 80, qirsh = 120, xp = 120 },
 		ep2 = { lira = 140, qirsh = 180, xp = 180 },
 		ep3 = { lira = 240, qirsh = 260, xp = 260 },
+		-- Season Story 1 (STORY_PLAN §5.4)
+		ep4 = { lira = 300, qirsh = 300, xp = 320 },
+		ep5 = { lira = 360, qirsh = 340, xp = 380 },
+		ep6 = { lira = 420, qirsh = 380, xp = 440 },
+		ep7 = { lira = 480, qirsh = 420, xp = 500 },
+		ep8 = { lira = 560, qirsh = 480, xp = 580 },
+		ep9 = { lira = 650, qirsh = 540, xp = 680 },
+	},
+	-- One-off gifts for the first clear of an episode at (or above) a difficulty, on top of the reward:
+	-- trait stones and/or a unit (a copy already owned stars it). Beads are in Config/Beads.firstClear.
+	STORY_FIRST_CLEAR = {
+		ep4 = { normal = { traitStones = 1 } },
+		ep6 = { normal = { unit = "qabilah" } }, -- Umm Baki the midwife, the story gift (S1-A03)
 	},
 	LOSS_SHARE = 0.25, -- a lost match still pays this share (scaled by waves reached)
 	-- Infinite: lira per 10-wave tier (100, 230, 390, +30 per tier to wave 50, then +5)
@@ -82,5 +103,15 @@ return {
 	INFINITE_QIRSH_PER_WAVE = 8,
 	INFINITE_XP_PER_WAVE = 3,
 	TRAIT_STONE_DROP = 0.15, -- chance of 1 trait stone on a story win (Hard+)
+	-- The secret unit (STORY_PLAN §7.6, owner 2026-10-18, D-048): every win of `episode` rolls it at
+	-- `chance[difficulty]`; after `pity` wins without it the next win guarantees it; the first
+	-- Nightmare clear of the episode always gives it. Not a paid random item (no Robux buys a roll);
+	-- the odds are shown on the episode card anyway.
+	SECRET_DROP = {
+		unit = "adashari",
+		episode = "ep9",
+		chance = { normal = 0.01, hard = 0.025, nightmare = 0.06 },
+		pity = 40,
+	},
 	VIP_LIRA_BONUS = 0.25,
 }

@@ -1,0 +1,30 @@
+{
+  "id": "abu_jawdan",
+  "tasks": {
+    "concept": "01a14e70-73d3-75d1-afdb-aefedd141e03",
+    "mesh": "01a14e92-e4b4-741c-841e-d88cdb72fac8",
+    "rig": "01a14e95-c18a-7554-b575-25f2a81432dd",
+    "clip_chestpound": "01a14ec4-9737-7276-88f7-17d13540d0d6",
+    "clip_hitreact": "01a14ec4-b900-70fd-bc6a-557e98905329",
+    "clip_knockdown1": "01a14ec4-dcb7-72f7-bab2-71b59cd08189",
+    "clip_proud": "01a14ec5-0020-7406-a6dd-8d0b550cfada",
+    "clip_waisthit": "01a14ec5-20eb-7656-92b9-ad629306f2ae"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_chestpound": 3,
+    "clip_hitreact": 3,
+    "clip_knockdown1": 3,
+    "clip_proud": 3,
+    "clip_waisthit": 3
+  },
+  "clips": {
+    "chestpound": 88,
+    "hitreact": 178,
+    "knockdown1": 190,
+    "proud": 114,
+    "waisthit": 171
+  }
+}

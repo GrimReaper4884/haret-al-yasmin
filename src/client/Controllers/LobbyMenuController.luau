@@ -19,7 +19,7 @@ local LocaleController = require(script.Parent.LocaleController)
 
 local LobbyMenuController = {}
 
-local LOBBY_WIDGETS = { "Coins", "Errand", "Language", "Wardrobe", "Lira", "Menu", "TestMode" }
+local LOBBY_WIDGETS = { "Coins", "Errand", "Language", "Wardrobe", "Music", "Lira", "Menu", "TestMode" }
 
 local liraLabel: TextLabel
 local bar: Frame
@@ -58,8 +58,8 @@ local function build()
 		Position = UDim2.new(0.5, -204, 0, 10),
 		Size = UDim2.fromOffset(132, 36),
 		Parent = root,
-	}, Color3.fromHex("#7B3FA0"))
-	liraLabel.TextColor3 = Color3.fromHex("#E9D2FF")
+	}, Color3.fromHex("#7B3FA0"), "lira")
+	liraLabel.TextColor3 = Color3.fromHex("#FFE08A")
 
 	-- Left rail of big icon buttons with red notification badges (the genre's lobby pattern,
 	-- docs/research/ROBLOX_TD_UI_PATTERNS.md §2). Leaves the bottom free for dialogue.
@@ -114,6 +114,12 @@ local function build()
 			Parent = b,
 		})
 		Icons.draw("ui_" .. it.key, icon)
+		if it.key == "daily" then
+			Juice.wobble(icon, function()
+				local badge: Frame? = badges.daily
+				return if badge then badge.Visible else false
+			end)
+		end
 		local caption = Theme.display({
 			Name = "Caption",
 			TextSize = 11,
@@ -184,8 +190,9 @@ local function render()
 	local t = LocaleController.t
 	local snapshot = StateController.get()
 	if snapshot then
+		-- The lira icon carries the unit; the pill shows the number only.
 		local function fmt(n: number): string
-			return t("hud.lira", { n = n })
+			return tostring(n)
 		end
 		if lastLira and lastLira ~= snapshot.lira then
 			Juice.count(liraLabel, lastLira, snapshot.lira, fmt)

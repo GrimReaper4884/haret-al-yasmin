@@ -39,12 +39,13 @@ local function snapshot(player: Player, profile: any): { [string]: any }
 	end
 	local units = {}
 	for id, rec in profile.units do
-		units[id] = { copies = rec.copies, trait = rec.trait, at = rec.at }
+		units[id] = { copies = rec.copies, trait = rec.trait, trait2 = rec.trait2, beads = if rec.beads then table.clone(rec.beads) else nil, at = rec.at }
 	end
 	local s = {
 		qirsh = profile.qirsh,
 		lira = profile.lira,
 		traitStones = profile.traitStones,
+		beads = profile.beads or 0,
 		inventory = table.clone(profile.inventory),
 		equipped = table.clone(profile.equipped),
 		quests = quests,

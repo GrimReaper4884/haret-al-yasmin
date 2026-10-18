@@ -518,3 +518,267 @@ MCP driving, so no honest FPS number exists yet; the phone check needs the Devic
 | Session lock: foreign lock + reload | `session lock lost … not saving` and `load failed …: locked`; client kicked in 7.2 s; record intact and the lock cleared afterwards |
 
 Full table and the driver: `docs/review/REDTEAM_P3-09.md`.
+
+## Phase V polish (branch `phase/polish`, TEST place, Studio Play Solo through MCP)
+
+### PV-B08 music and sound toggles (2026-10-17)
+
+*Persistence: real DataStore (the owner's TEST profile); every setting was put back to on afterwards. Console:
+`[HaretAlYasmin] server ready`, nothing from `src/` (engine-only CorePackages warnings and the external
+`rbxassetid://203785492` line, PV-B00).*
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | selene 0/0, 228 Lune specs passed (new: music/sfx accept true/false, reject `"off"`/`1`/nil, default true, sanitize), strict analyze clean, `rojo build` OK |
+| Sync | `script_grep "ui_music"` finds `UI.Icons` and `Controllers.SettingsController` |
+| Lobby mute | GUI click on `HaretHud.Music` (MCP `user_mouse_input` by instance path works for GUI buttons): `lobby` loop gone within 0.8 s, tooltip "Music off (tap to play)"; profile `settings.music = false` |
+| Persists | `HaretDebug "reload"` → `settings = { music = false, … }`; Stop + Play: no loop is ever created on join (the controller waits for the first snapshot) |
+| Muted match | Episode 1 Normal via `M`; waves 1–20 polled every second: **no looped Sound at all**, including the wave-10 Sergeant and wave-20 Al-Idaashari boss waves |
+| Unmute mid-match | wave 11 → `match` fades in (0.17 → 0.40 over 1.5 s); re-muted, then unmuted during the wave-20 boss → `boss` at 0.45 (its Config volume) |
+| Sound effects off | Settings → Sound effects Off → profile `sfx = false`; a new match to wave 2: SoundService holds only the `match` loop, no sting was ever created (`gate_close`, `wave_start` skipped); set back to On |
+| Settings screen | 8 rows now scroll inside a 280 px body (fits 390 px phones); Music and Sound effects sit under Effects; Arabic labels "الموسيقى" / "المؤثرات الصوتية" right-aligned |
+
+Screenshots: `docs/art/pvb08_lobby_music_on_2026-10-17.jpg`, `pvb08_lobby_music_off_…`,
+`pvb08_match_boss_muted_…` (wave 10, slashed speaker beside Leave and the gear), `pvb08_match_music_on_…` (hover
+hint to the left of the button), `pvb08_settings_en_…`, `pvb08_settings_ar_…`.
+
+### PV-C02 icon registry (2026-10-17)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 233 Lune specs (new `tests/icons.spec.luau`: ids whole and ≥ 0, every id-0 name has a primitive drawer, every rail/HUD/item icon, every reward key in SeasonPass/Daily/Codes/Events and every product kind resolves), strict analyze clean, `rojo build` OK |
+| Sync | `script_grep "IconIds.images"` finds `UI.Icons` |
+| Image branch (Client `execute_luau`, fresh module copies) | `Config/Icons.images.lira = { id = 123456, tint = "#FFD970" }` → one `ImageLabel`, `rbxassetid://123456`, ScaleType Fit, tint ffd970; back to id 0 → the primitive drawer (2 frames, no image); unknown name → TextLabel |
+| No visual change | live rail buttons hold 0 ImageLabels; screenshot `docs/art/pvc02_rail_unchanged_2026-10-17.jpg` matches the PV-B08 lobby shots |
+
+### PV-C03 currency and reward icons (2026-10-18)
+
+*Icons drawn by the primitive fallbacks (Config/Icons ids are 0 until the painted PNGs are uploaded).*
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | selene 0/0, 233 specs, strict analyze clean, `rojo build` OK |
+| Sync | `script_grep "Amount.reward"` finds Codes, Pass, Daily, Match and `UI.Amount` |
+| Lobby pills | gold lira coin + `50940`, copper qirsh coin + `50398` (no unit text) |
+| Summon | balance row lira icon + number; buttons "Summon ×1 · [lira] 50" and "Summon ×10 · [lira] 500" |
+| Lane Diary | every free/premium cell shows icon + number (lira, qirsh, stone); Arabic: icon right of the number, first entry rightmost |
+| Daily | 7 cards, Day 7 wraps three entries (lira, qirsh, xp) inside the card |
+| Codes | granted row "[lira] +50 [qirsh] +150 [stone] +1" under the result line (rendered into the live row; no one-time code spent) |
+| Store | lira packs use the `lira_stack` icon (Icons.product) |
+| Play panel | "20 waves · Rewards: [lira] 80 [qirsh] 120 [xp] 120 (First clear ×2)" |
+| Match | cash pill: cash coin + `600`; hotbar card costs: cash coin + 350/1500/180/220/280/300 |
+| Result screen | stacked: waves + "Rewards", icon row, "First clear!" (no overlap after the stack fix) |
+| Console | nothing from `src/` |
+
+Screenshots: `docs/art/pvc03_{summon,diary,diary_ar,daily,codes,store,play,match_hud,result}_2026-10-18.jpg`;
+the painted kit at 256/64/28 px on light and dark: `docs/art/icons_currency_2026-10-18.png`.
+
+### PV-B00 console hygiene (2026-10-18)
+
+| Check | Result |
+|---|---|
+| Repo | `grep -r 203785492 src default.project.json assets` and every `.rbxm`: no match |
+| Edit DataModel | 24 content properties over 101,597 instances: no match |
+| Play server | the same over 110,723 instances incl. the player's character; HumanoidDescription items do not use it |
+| What it is | economy API: "Pop Close Sound", AssetTypeId 3 (Audio), created 2015 by a third party |
+| Join log otherwise | `[World] built 1498 parts`, `[HaretAlYasmin] server ready`, then engine-only CorePackages warnings; nothing from `src/` |
+
+Verdict: external (Studio or a plugin), ignored (D-020).
+
+### PV-B02 hit feedback (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 237 specs (new: `HitFx` plans per Effects level, number pool reuses free then oldest and never grows, 100 hits/s for 10 s stays inside 32 slots, rise/knock curves; `TdSim` attack events carry `damage` = stats × multiplier × (1 − armour)), strict analyze clean, `rojo build` OK |
+| Sync | `script_grep "EnemyRenderController.impact"` finds EnemyRender and RigAnim |
+| Numbers | Episode 1 Normal, six towers: white numbers rise over hit gendarmes ("9 / 9 / 5"), `docs/art/pvb02_damage_numbers_2026-10-18.jpg` (one frozen copy kept 8 s for the capture; numbers live 0.5 s) |
+| Boss flash | wave 10, the Sergeant: Highlight frames seen 5×, at most 3 at once, 2 pooled Highlights created in total; `docs/art/pvb02_boss_flash_2026-10-18.jpg` (frozen copy) |
+| Budget | 60 s through waves 10–12: `[Fx] live` peak 14 of 80, skipped 0; damage numbers peak 3 on screen, pool 32 fixed |
+| Not reproduced | the Endless wave-30 run with four players' towers (no multi-client tool, one player caps at 15 towers); covered by the 100 hits/s pool spec and the `VfxBudget` hard cap of 80 parts |
+| Console | nothing from `src/` |
+
+### PV-B03 deaths, reward coins, gate hits (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 238 specs (new: coin arc ends at both points and lifts its middle above both ends; shake decays to 0; coin/dust caps), strict analyze clean, `rojo build` OK |
+| Sync | `script_grep "gateShudder"` finds MatchFxController |
+| Gate hit | undefended wave 1: the west leaf turns 3° on its hinge 25 s in (LookVector delta 0.052) and 4 dust puffs rise at the foot of the doors with the red disc and edge flash; before/after the scatter fix: `pvb03_gate_hit_before_scatter_*.jpg` (a neat row) → `pvb03_gate_hit_dust_*.jpg` |
+| Reward coins | watchtower view: 2 coins in flight at once from kills toward the cash pill; pool of 6 frames built once; `pvb03_reward_coins_*.jpg` (frozen copies) |
+| Boss death | wave 10 Sergeant killed: the static watchtower camera shook for 12 frames, peak 0.82 studs, 0 drift afterwards |
+| Console | nothing from `src/` |
+
+### PV-A03 attacker clips, first five (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 240 specs (new `tests/clips.spec.luau`: every attacker with a baked file has walk/hit/death, bosses intro/stagger, rotations = frames × bones × 6 bytes, hips per frame; the six awaiting PV-A02 are listed and must have no file) |
+| Previews | `blender -b … preview.py` of the baked slots: `docs/art/pva03_clip_previews_2026-10-18.jpg` (thief run, gendarme quick walk, four deaths, the boss intro) |
+| Stride (Studio, Episode 1, 6 towers) | measured speed ÷ clip speed: gendarme median 1.64× (range 0.15–1.74, never clamped, 570 samples); thief median 0.87× (189 samples; 4 below 0.15 while stunned). Before the change: gendarme 2.3–3.6× (clamped), in-place walks unmatched |
+| Deaths before the poof | time from a figure stopping on the road to its removal: gendarme 2.95–2.97 s ×6 (77-frame knock-down 2.53 s + 0.4 s fade), thief 1.78 s (fly-up 1.57 s + fade) |
+| Boss intro / stagger | code path in place (spawn event with `boss`, flinch uses `stagger` when the figure has it); the in-game check rides on PV-B06 (wave 20) |
+| Still open | thug, bandit, rider, sapper, the Sergeant and the Commandant: clips after their import (PV-A02) |
+
+### PV-B04 per-role impacts (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 241 specs (new: every `Units[id].role` has a `Config/Vfx.ROLES` entry with a known kind; hit-stop ≤ 0.1 s; splash fits one frame's budget) |
+| Studio | the five impacts drawn side by side on the Episode 1 road via the Studio-only `HaretFxDemo` hook and frozen ~0.08 s in (12 pooled parts): melee white blade sweep + spark, ranged dust puff, splash ground ring + 3 dust puffs, support soft gold pulse, healer rising green-white motes. `docs/art/pvb04_roles_labelled_2026-10-18.jpg` (with labels, before softening the pulse) and `pvb04_roles_2026-10-18.jpg` |
+| Not captured | the 0.05 s hit-stop and the 0.3 s ability slow-in are too short for a still; code path `BoneAnim.slow` |
+
+### PV-B05 placement, upgrade, sell (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 242 specs (new: dust + petals and the star burst fit one frame, the sell shower never outgrows the 6-coin pool, punch ≤ 1.25, even dash count, hex colours) |
+| Range ring | placement ghost: soft disc with 24 alternating basalt/cream dashes welded to it (follows the ghost); `pvb05_ablaq_range_ring_2026-10-18.jpg` |
+| Upgrade | `P` then `U` ×2: the level-3 figure glows gold (pooled Highlight, 0.4 s), gold sparks and the scale punch play; `pvb05_upgrade_glow_2026-10-18.jpg` |
+| Sell | `J`: 6 coins (the whole pool) fly into the cash pill; `pvb05_sell_coins_2026-10-18.jpg` |
+| Pooling | 40 s of placing, upgrading, hits and selling used 22 distinct pooled effect parts (pool cap 80); coin frames fixed at 6; one upgrade Highlight |
+
+### PV-B06 wave and boss presentation (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 248 specs (new `tests/moments.spec.luau`: plain/boss/final wave starts, camera push gated by cutscenes / effects off / reduced motion, clears carry the bonus but not after the last wave, victory fx need full effects, defeat fx unless off, `cutscenes` setting; Vfx MOMENTS budget) |
+| Wave cleared | "Wave 1 cleared! · +130 cash" drops over the wave panel; before/after the move: `pvb06_wave_cleared_before_move_*.jpg` (overlapped the skip toast) → `pvb06_wave_cleared_*.jpg` |
+| Boss intro | Episode 1 wave 10: the camera moved 9.8 studs toward the spawn gate (Scriptable during the push, then restored); Olive Harvest wave 8 and 15 banners: "The Sergeant · الشاويش", "Al-Idaashari · الإدعشري" (`pvb06_final_wave_boss_banner_*.jpg`) |
+| Final wave | Olive Harvest wave 15: tint `#FFE2C2`, arena lantern 1.10 → 1.32 (+20 %), Atmosphere density 0.30 → 0.40; all restored when the match ends |
+| Victory | "The lane is safe!" + result with icon rewards (`pvb06_victory_result_*.jpg`); 24 pooled parts frozen 0.9 s in: red and gold ribbon segments above the gate and falling petals (`pvb06_victory_ribbons_petals_*.jpg`, seen from the lobby after the arena streamed out; ribbons thickened afterwards) |
+| Defeat | gate set to 1 HP: `ColorCorrection` saturation −1 for 1.77 s, then back to 0 |
+| Console | nothing from `src/` (the "execute_luau changed camera type. Resetting" line is Studio reacting to a probe during the push) |
+
+### PV-A04 enemies at a glance (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 249 specs (ENEMY_READ config; `shield` / `eye` registered with primitive drawers) |
+| Phone (Device Simulator, iPhone 17 Pro, viewport 750×381) | wave 10: the boss bar under the wave panel with the Sergeant's portrait, name and red meter (`pva04_phone_boss_bar_2026-10-18.jpg`); the ultimate banner covers it for its 2 s; simulator reset to default afterwards |
+| Health bars | every enemy bar has a dark-red ring; stealth thieves show the eye marker left of the bar, gendarmes (no armour) none (`pva04_stealth_marker_*.jpg`, zoom `pva04_bar_ring_zoom_*.png`) |
+| Boss disc | one pooled part follows the boss in the existing `BulkMoveTo`; released on death |
+| Not yet seen | the shield marker on an armoured attacker in play (thug, bandit, rider and sapper come later in the waves and are still block figures); same code path as the eye |
+
+### PV-B07 lobby and UI motion (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 250 specs (new: `Motion.allowed` for every kind under Reduced Motion, Effects off/reduced/full and with/without a mouse) |
+| Daily chest | badge shown (client-only): the rail icon wobbles −7°…+8°; badge hidden: back to 0 within 2.5 s |
+| Card tilt | hovering a Units grid card: Rotation −3°, scale 1.04 (`pvb07_card_tilt_2026-10-18.jpg`) |
+| ×10 summon | 10 cards flipped face up in reading order (StartCorner TopLeft in English, TopRight in Arabic by code); `pvb07_summon_flip_grid_2026-10-18.jpg` (one ×10 pull spent 500 TEST-profile lira) |
+| Toasts | the skip-vote toast slides −12 → +2 → 0 px (Back easing) |
+| Not seen live | the Legendary+ petal burst (no Legendary in the pull), the Diary XP shine (needs an XP gain) and Reduced Motion itself (a user setting scripts cannot change); all go through the same gate, specced |
+
+### PV-B01 particle sprites, code half (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 251 specs (TEXTURES: eight kinds, whole ids, life ≤ 2 s, emitter cap ≤ 24) |
+| Sprites | 8 × 256² PNG with alpha in `assets/marketing/vfx/`, registered (id 0) in `tools/upload_manifest.json`; preview over black and green `docs/art/vfx_sprites_2026-10-18.png` |
+| Emitter path (Studio Client, fresh module copies) | id 0 → `Fx.emitter` nil; id patched → one ParticleEmitter on an Attachment, `rbxassetid://123456`, Rate 0, the same instance on the next call; Effects reduced → nil; `Fx.emit("dust")` with id 0 → false (part fallback) |
+| Open | upload the eight sprites (owner), paste ids into `Config/Vfx.TEXTURES` |
+
+### PV-C04 rail, action and role icons, art half (2026-10-18)
+
+| Check | Result |
+|---|---|
+| Art | 23 painted icons cut to 256² alpha (`assets/marketing/icons/`); all 23 at 30 px on dark and light (`pvc04_icons_at_30px_2026-10-18.png`): every one reads, the sling recut with `--all-white` (its loop kept a white fill) |
+| Registry | `Config/Icons` gains ui_shop, act_*, role_*, gem; primitive fallbacks drawn for each (`pvc04_fallback_drawers_2026-10-18.jpg`); `tests/icons.spec.luau` green (251) |
+| Open | upload (41 images now pending in `tools/upload_manifest.json`), then the rail / match buttons / role badges show the painted versions with no further code: `Icons.draw` already prefers ids |
+
+### PV-E01 atmosphere and lighting (2026-10-18)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 252 specs (new: flicker stays in 0.9–1.1, moves smoothly at 15 Hz, seeds differ; night denser than day; ≤ 40 lights) |
+| Lighting children before | place `Atmosphere` d 0.30 + our `LaneHaze` d 0.32, place `Bloom` 1.0/24 + our `SoftBloom` 0.35/22, SunRays 0.04 |
+| After | one `LaneHaze` 0.32 (day) / 0.45 (night, #2E3550), one `SoftBloom` 0.35/24, SunRays 0.08, `NightGrade` cool +0.05 contrast at night and neutral by day; Sky stars 3000 |
+| Lanterns | 17 lights flickering near the camera in the lobby |
+| FPS (Studio window, focused) | lobby 60.0, Episode 1 match 60.0 (same as before) |
+| Captures (same cameras) | lobby `[0,10,75]→[0,6,0]`: `pve01_lobby_before_*` → `pve01_lobby_after_*` (warm daylight, softer bloom); arena `[3000,75,50]→[3000,20,-12]`: `pve01_arena_night_before_*` (grey fog) → `pve01_arena_night_after_*` (blue night, lantern pools) |
+| Restore | leaving the match: haze 0.32 #DEC8AA, NightGrade neutral, ClockTime 15.6 |
+
+### Natour lantern reveals stealth to nearby defenders (2026-10-18, D-031)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 253 specs (new: a tailor inside the lantern's range is revealed and attacks the thief; out of range it stays blind; selling the lantern removes the reveal; the lantern doesn't count itself) |
+| Play (Episode 1, 2×, waves 1–6) | lit Khayyat at (-23,0) beside a Natour at (-18,6): 6 hits on thieves; unlit Khayyat at (17,0): 0 hits on thieves (28 on gendarmes); Natour 3 thief hits |
+| Panels | lit Khayyat "Sees hidden thieves: lit by Abu Fares the Watchman's lantern" (`reveal_lit_defender_2026-10-18.jpg`); Natour "Lantern: defenders in its range see hidden thieves / Defenders in his light: 1" (`reveal_natour_panel_2026-10-18.jpg`); after selling the Natour the open Khayyat panel turns to red "Can't see hidden thieves" live (`reveal_after_sell_2026-10-18.jpg`) |
+| Console | no errors from our code |
+| Restore | owner's loadout restored (qahwaji, zaim_akbar, natour, farran, hallaq, saqqa), language en, no lira spent |
+
+### PV-E02 lobby life (2026-10-18, D-032)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 261 specs (new `lobbylife.spec`: Effects tiers, 120-stud gate, sway bound and smoothness, flock on its circle and heading, cat turns the short way without overshoot, ripple stagger, oven trigger/cooldown/flare, config budgets) |
+| `[World] built` | 1,499 parts (was 1,498; +1 crate under the bakery cat), plan cap 2,200. Client-only parts: 6 vines × 12 = 72, 6 birds, 4 ripples, 2 emitter anchors |
+| Play (lobby) | 6/6 vines found their walls; 5 cloths swaying; flock at y 34 moving 4.8 studs/s; spray + steam enabled; the two cats within 24 studs turned to face the player (0° off), farther ones held still; oven light Boost 1.85 → 1.43 over 1.2 s after walking past, cooldown 6 s |
+| Effects | full: vines 6, birds 6, spray/steam on; reduced: vines 6, birds 6, spray/steam off; off: vines 0, birds 0, emitters off |
+| FPS (Studio, square) | 60.0 with Effects off, 60.0 with full |
+| Server | nothing new runs server-side (HaretDebug state unchanged apart from the Effects setting I toggled and restored) |
+| Captures (Effects off = before, full = after, same cameras) | square `[16,11,19]→[0,5,0]` (`pve02_square_*`), fountain `[6,8,7]→[0,6,0]` (`pve02_fountain_*`, ripples + spray), lane `[3,7,44]→[0,11,80]` (`pve02_lane_*`, vines); also `pve02_bakery_cat`, `pve02_samovar_steam`, `pve02_birds`, `pve02_laundry` |
+| Console | no errors from our code; the shard/steam textures logged "Asset content representation is being generated" once (Roblox processing on first use) |
+| Restore | Effects back to full, language en, loadout unchanged, no lira spent |
+
+### PV-E03 arena dressing and the Rival Lane (2026-10-18, D-033)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 266 specs (new `arenadressing.spec`: every arena has a complete theme; Episode 2 = `rival_lane` on the orchard's exact road/bounds/spawn; kerb props off the road, off the spawn, inside the field, 8–40 per arena, deterministic; wire lanterns hang over the road with posts clear of it; house fronts outside the field, clear of both gates, facing in) |
+| `tests/balance` | identical to the D-031 run, row for row (the dressing touches nothing the sim reads) |
+| Parts per arena (cap 1,200) | orchard 393 (kerb props 72, wire lanterns 12, haze 7, gate wall with jasmine 106); Rival Lane 382 (houses 81, kerb props 72, wire lanterns 18); lights 4 / 10 (≤ 40) |
+| Haze | Effects full 7/7 emitters on, reduced 0/7, full again 7/7 |
+| FPS (Studio, Episode 1 match) | 60.0 at full, 60.0 at reduced |
+| Captures | overhead `[3000,75,50]→[3000,20,-12]`: before `pve01_arena_night_after_2026-10-18.jpg`, after `pve03_orchard_overhead_after_2026-10-18.jpg` (jasmine on the home wall, lantern pools on the road) and `pve03_rival_lane_overhead_2026-10-18.jpg` (cool paving, dark road, houses all round); close-ups `pve03_orchard_kerb_wire_*` (crate and copper jug on the kerb, hanging lantern), `pve03_orchard_haze_jasmine_*` (haze wisps over the road), `pve03_rival_lane_street_*` (rival gate at the start, wire lantern, house fronts) |
+| Tuning during the run | Rival Lane road #8E8D86 → #625D55 (it barely read against the paving); haze transparency 0.86 → 0.76, size 7 → 8, rate 0.12 → 0.16 per stud (invisible at first) |
+| Console | no errors from our code |
+| Restore | Effects full, language en, loadout unchanged, no lira spent |
+
+### PV-E04 Meshy props: hanging lantern, market bundle, jasmine pot (2026-10-18, D-035)
+
+| Check | Result |
+|---|---|
+| Meshes | hanging_lantern 1,354 tris, market_bundle 1,961, jasmine_pot 1,893 (all ≤ 2k); one 1024² base-colour map each after `tools/meshy/shrink_textures.py`; re-imported headless in Blender 5.2 (1 object, 1024×1024 each) |
+| Import | Studio 3D importer (File → Import, Studio Default preset, Creator Me), one MeshPart per model; saved to `assets/production/PropModels/*.rbxm`; Rojo synced them into `ReplicatedStorage.PropModels` |
+| Lobby swap | 16 hanging lanterns, 4 market bundles, 9 jasmine pots; no tagged primitive left; 16 lights now on the lantern meshes; `[World] built` 1,499 → 1,423 parts |
+| Arena swap (orchard) | 8 market bundles (kerb and garden crates), 2 jasmine pots, 4 hanging lanterns (gate wall and two wires); 393 → 333 parts; lights 4 |
+| `tools/check.ps1` | green, 267 specs (new: swap config names the three props with prop-sized heights) |
+| Captures | `pve04_lane_bundle_lanterns_*` (bundle on the kerb, brass lanterns on their brackets), `pve04_lane_jasmine_pots_*`, `pve04_arena_kerb_bundles_*` |
+| Console | no errors from our code |
+
+### PV-D01 logo and PV-D05 loading screen (2026-10-18, D-036)
+
+| Check | Result |
+|---|---|
+| Logo | 4 generated marks (`logo_mark_variants_2026-10-18.jpg`), owner picked variant 3; set composed with the shaped Arabic + English wordmark (`logo_set_v2_2026-10-18.jpg`); readable at 150 px on light and dark |
+| Uploads | mark 94560000612541, wide logo 89973783873794, text wordmark 124741548596324 (Open Cloud, in moderation at upload) |
+| `tools/check.ps1` | my specs green (loading.spec: bar progress and easing, finish rule, cached ≤ 2.5 s with the fade, 30 s cap under the 60 s join rule, line cycling, stripe stops within ColorSequence rules, copied colours = Palette, petal id = Vfx, logo ids = manifest). Two failures belong to another session's in-progress PV-A02/A03 attacker work (Icons portraits, Baked clips) |
+| Sync | `script_grep RemoveDefaultLoadingScreen` finds `ReplicatedFirst.LoadingScreen` (after restarting `rojo serve` for the new tree) |
+| Desktop | fallback mark, petals, ablaq bands and bar, bilingual line (`pvd05_loading_fallback_desktop_2026-10-18.jpg`, held 12 s with `DebugHoldLoading`) |
+| Phone (Device Simulator, iPhone 17 Pro, viewport 750×381) | the uploaded mark and wordmark swapped in, full bleed after `ScreenInsets = None` (the first capture showed the world round the safe area) (`pvd05_loading_iphone17pro_2026-10-18.jpg`) |
+| Timing (cached Studio join, no hold) | `[Loading] done in 2.32 s` (hand-over; gone after the 0.4 s fade); the wait is the character spawning, the screen's own minimum is 1.2 s |
+| Bugs found and fixed in the run | `ColorSequence.new(): table is too long` (40 stripes = 80 keypoints) and `ColorSequence must end at time=1.0` |
+| Restore | Device Simulator back to default, `DebugHoldLoading` removed, Studio in Edit |
+
+## PV-A02/A03: the last six attackers (2026-10-18)
+
+| Check | Evidence |
+|---|---|
+| Models synced | `ReplicatedStorage.CharacterModels` lists 27 models; Thug, Bandit, Rider, Sapper, Sergeant, Commandant each have their skinned `Mesh_0` |
+| Tris | thug 5,628 · bandit 5,604 · rider 5,603 · sapper 5,616 (≤ 6k) · sergeant 8,067 · colonel 8,300 (≤ 12k) |
+| Live match, Episode 1 Normal | wave 7: 2 thugs imported; wave 10: the Sergeant as the Meshy figure with his new portrait on the boss bar (`docs/art/pva02_sergeant_boss_bar_2026-10-18.jpg`); wave 12: bandit, 5 thugs, 9 gendarmes, 8 thieves, all imported, no primitive enemy |
+| Walk clips | all six built by `RigBuilder` and walking on their baked clips (`docs/art/pva02_six_attackers_walk_2026-10-18.jpg`) |
+| Console | `[HaretAlYasmin] server ready`; no errors from our code (UIBlox and D-020 noise only) |
+| Specs | `tools/check.ps1` green, 276 passed (clips spec now requires all 11 attackers; icons spec checks every portrait matches its model) |
+
+### Sabotaged lantern goes dark (2026-10-18, D-038)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | green, 328 specs (new: revealerFor returns nil while the Natour's `disabledUntil` runs and the lantern again once it passes) |
+| Play (Episode 1, orchard; Natour 4 studs off the road, Khayyat 7 studs from it; 3 then 4 riflemen via `HaretDebug spawn`) | 5.0 s `towerDisabled` Natour → Khayyat `towerReveal` by nil at once; re-sabotaged 7.4 s and 10.0 s; 12.5 s `towerEnabled` → Khayyat lit by the Natour again. Second run the same (48.3 s off, 56.0 s back) |
+| Panel (Device Simulator 844×370, the other session's device) | sabotaged Natour: red "Sabotaged: can't attack for now" and "Lantern out: no hidden thieves revealed" (`lantern_sabotaged_panel_2026-10-18.jpg`); after `towerEnabled` back to "Lantern: defenders in its range see hidden thieves / Defenders in his light: 1" |
+| Restore | owner's loadout restored (qitt, arada, zaim_akbar, pahlawan, umm_hara, zaim), settings unchanged, Studio in Edit |

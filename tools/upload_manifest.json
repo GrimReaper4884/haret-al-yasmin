@@ -1,0 +1,701 @@
+{
+  "_comment": "Open Cloud uploads (tools/upload_asset.py, POLISH_PLAN PV-C01). Key = repo path; id 0 = registered, not uploaded yet. Ids are pasted into src/shared/Config (Icons, Vfx).",
+  "files": {
+    "assets/marketing/icons/lira.png": {
+      "name": "Haret icon lira",
+      "type": "Image",
+      "id": 91594568838206,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/qirsh.png": {
+      "name": "Haret icon qirsh",
+      "type": "Image",
+      "id": 140599145045126,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/cash.png": {
+      "name": "Haret icon cash",
+      "type": "Image",
+      "id": 129410440388323,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/lira_stack.png": {
+      "name": "Haret icon lira_stack",
+      "type": "Image",
+      "id": 93445954754265,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/qirsh_pouch.png": {
+      "name": "Haret icon qirsh_pouch",
+      "type": "Image",
+      "id": 82947809330849,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/stone.png": {
+      "name": "Haret icon stone",
+      "type": "Image",
+      "id": 121079621002145,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/stones_3.png": {
+      "name": "Haret icon stones_3",
+      "type": "Image",
+      "id": 80815170078106,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/xp.png": {
+      "name": "Haret icon xp",
+      "type": "Image",
+      "id": 87817934165202,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/pass.png": {
+      "name": "Haret icon pass",
+      "type": "Image",
+      "id": 111255187450298,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/ticket.png": {
+      "name": "Haret icon ticket",
+      "type": "Image",
+      "id": 113199979121197,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/vfx/spark.png": {
+      "name": "Haret vfx spark",
+      "type": "Image",
+      "id": 74879464229953,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/vfx/dust.png": {
+      "name": "Haret vfx dust",
+      "type": "Image",
+      "id": 77870170170422,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/vfx/petal.png": {
+      "name": "Haret vfx petal",
+      "type": "Image",
+      "id": 134057751781553,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/vfx/smoke.png": {
+      "name": "Haret vfx smoke",
+      "type": "Image",
+      "id": 100319124340565,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/vfx/steam.png": {
+      "name": "Haret vfx steam",
+      "type": "Image",
+      "id": 81355377598187,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/vfx/crumb.png": {
+      "name": "Haret vfx crumb",
+      "type": "Image",
+      "id": 116915557453058,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/vfx/shard.png": {
+      "name": "Haret vfx shard",
+      "type": "Image",
+      "id": 136345368143259,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/vfx/star.png": {
+      "name": "Haret vfx star",
+      "type": "Image",
+      "id": 138138713844695,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/ui_units.png": {
+      "name": "Haret icon ui_units",
+      "type": "Image",
+      "id": 93072318807029,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/ui_summon.png": {
+      "name": "Haret icon ui_summon",
+      "type": "Image",
+      "id": 139894468545667,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/ui_pass.png": {
+      "name": "Haret icon ui_pass",
+      "type": "Image",
+      "id": 100612098218612,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/ui_codes.png": {
+      "name": "Haret icon ui_codes",
+      "type": "Image",
+      "id": 129498450392895,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/ui_play.png": {
+      "name": "Haret icon ui_play",
+      "type": "Image",
+      "id": 119124942337695,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/ui_event.png": {
+      "name": "Haret icon ui_event",
+      "type": "Image",
+      "id": 81866345377315,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/ui_settings.png": {
+      "name": "Haret icon ui_settings",
+      "type": "Image",
+      "id": 126392875254573,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/ui_afk.png": {
+      "name": "Haret icon ui_afk",
+      "type": "Image",
+      "id": 73616718849628,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/ui_daily.png": {
+      "name": "Haret icon ui_daily",
+      "type": "Image",
+      "id": 79760059433884,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/ui_shop.png": {
+      "name": "Haret icon ui_shop",
+      "type": "Image",
+      "id": 91398480705014,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/act_upgrade.png": {
+      "name": "Haret icon act_upgrade",
+      "type": "Image",
+      "id": 118839200965690,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/act_sell.png": {
+      "name": "Haret icon act_sell",
+      "type": "Image",
+      "id": 136960612732395,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/act_target.png": {
+      "name": "Haret icon act_target",
+      "type": "Image",
+      "id": 130728713809801,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/act_speed.png": {
+      "name": "Haret icon act_speed",
+      "type": "Image",
+      "id": 115153852782730,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/act_skip.png": {
+      "name": "Haret icon act_skip",
+      "type": "Image",
+      "id": 84586717628744,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/act_leave.png": {
+      "name": "Haret icon act_leave",
+      "type": "Image",
+      "id": 79507462286688,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/role_melee.png": {
+      "name": "Haret icon role_melee",
+      "type": "Image",
+      "id": 123022930977561,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/role_ranged.png": {
+      "name": "Haret icon role_ranged",
+      "type": "Image",
+      "id": 120445918635830,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/role_splash.png": {
+      "name": "Haret icon role_splash",
+      "type": "Image",
+      "id": 102067809885629,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/role_support.png": {
+      "name": "Haret icon role_support",
+      "type": "Image",
+      "id": 93302330771605,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/role_healer.png": {
+      "name": "Haret icon role_healer",
+      "type": "Image",
+      "id": 138499908268330,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/role_farm.png": {
+      "name": "Haret icon role_farm",
+      "type": "Image",
+      "id": 123072503034014,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/gem.png": {
+      "name": "Haret icon gem",
+      "type": "Image",
+      "id": 112303897320983,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/ui_music.png": {
+      "name": "Haret icon ui_music",
+      "type": "Image",
+      "id": 116428282368219,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/ui_music_off.png": {
+      "name": "Haret icon ui_music_off",
+      "type": "Image",
+      "id": 118573460190934,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/coins.png": {
+      "name": "Haret icon coins",
+      "type": "Image",
+      "id": 119537322287101,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/shield.png": {
+      "name": "Haret icon shield",
+      "type": "Image",
+      "id": 80380706316361,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/eye.png": {
+      "name": "Haret icon eye",
+      "type": "Image",
+      "id": 114096895353976,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/basket.png": {
+      "name": "Haret icon basket",
+      "type": "Image",
+      "id": 132706876306427,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/tarboosh.png": {
+      "name": "Haret icon tarboosh",
+      "type": "Image",
+      "id": 82053544513629,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/cap.png": {
+      "name": "Haret icon cap",
+      "type": "Image",
+      "id": 127837332858213,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/hatta.png": {
+      "name": "Haret icon hatta",
+      "type": "Image",
+      "id": 138327566793330,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/vest.png": {
+      "name": "Haret icon vest",
+      "type": "Image",
+      "id": 112033811845338,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/robe.png": {
+      "name": "Haret icon robe",
+      "type": "Image",
+      "id": 139723744408376,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/trousers.png": {
+      "name": "Haret icon trousers",
+      "type": "Image",
+      "id": 133519985927952,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/sash.png": {
+      "name": "Haret icon sash",
+      "type": "Image",
+      "id": 134035941908098,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/cloak.png": {
+      "name": "Haret icon cloak",
+      "type": "Image",
+      "id": 70826930774461,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuBadr.png": {
+      "name": "Haret portrait AbuBadr",
+      "type": "Image",
+      "id": 71493269450072,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuBashir.png": {
+      "name": "Haret portrait AbuBashir",
+      "type": "Image",
+      "id": 136063904564645,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuFares.png": {
+      "name": "Haret portrait AbuFares",
+      "type": "Image",
+      "id": 93314435304199,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuGhalib.png": {
+      "name": "Haret portrait AbuGhalib",
+      "type": "Image",
+      "id": 93177367730945,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuHatem.png": {
+      "name": "Haret portrait AbuHatem",
+      "type": "Image",
+      "id": 133770563324554,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuIssam.png": {
+      "name": "Haret portrait AbuIssam",
+      "type": "Image",
+      "id": 95850884167044,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuKhater.png": {
+      "name": "Haret portrait AbuKhater",
+      "type": "Image",
+      "id": 80513823020473,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuNar.png": {
+      "name": "Haret portrait AbuNar",
+      "type": "Image",
+      "id": 93232597039986,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuSaleh.png": {
+      "name": "Haret portrait AbuSaleh",
+      "type": "Image",
+      "id": 70842411073565,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuShehab.png": {
+      "name": "Haret portrait AbuShehab",
+      "type": "Image",
+      "id": 139294337065178,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Arada.png": {
+      "name": "Haret portrait Arada",
+      "type": "Image",
+      "id": 112960454245872,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Cat.png": {
+      "name": "Haret portrait Cat",
+      "type": "Image",
+      "id": 110431322219183,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Fawzia.png": {
+      "name": "Haret portrait Fawzia",
+      "type": "Image",
+      "id": 97661723924568,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Gendarme.png": {
+      "name": "Haret portrait Gendarme",
+      "type": "Image",
+      "id": 115451910060448,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Idaashari.png": {
+      "name": "Haret portrait Idaashari",
+      "type": "Image",
+      "id": 131496373841818,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Issam.png": {
+      "name": "Haret portrait Issam",
+      "type": "Image",
+      "id": 78904073713642,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/LaneBoy.png": {
+      "name": "Haret portrait LaneBoy",
+      "type": "Image",
+      "id": 137506377504428,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Motaz.png": {
+      "name": "Haret portrait Motaz",
+      "type": "Image",
+      "id": 138798466079086,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Nims.png": {
+      "name": "Haret portrait Nims",
+      "type": "Image",
+      "id": 117876863565509,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Strongman.png": {
+      "name": "Haret portrait Strongman",
+      "type": "Image",
+      "id": 139062433898050,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Thief.png": {
+      "name": "Haret portrait Thief",
+      "type": "Image",
+      "id": 102539531902290,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/banners/mode_ep1.png": {
+      "name": "Haret banner ep1",
+      "type": "Image",
+      "id": 98610965293669,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/banners/mode_ep2.png": {
+      "name": "Haret banner ep2",
+      "type": "Image",
+      "id": 70959689012811,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/banners/mode_ep3.png": {
+      "name": "Haret banner ep3",
+      "type": "Image",
+      "id": 93089947848285,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/banners/mode_ev_olive.png": {
+      "name": "Haret banner ev_olive",
+      "type": "Image",
+      "id": 119222103493381,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/banners/mode_infinite.png": {
+      "name": "Haret banner infinite",
+      "type": "Image",
+      "id": 108697701587533,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/diff_normal.png": {
+      "name": "Haret icon diff_normal",
+      "type": "Image",
+      "id": 84262010666406,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/diff_hard.png": {
+      "name": "Haret icon diff_hard",
+      "type": "Image",
+      "id": 126028072998521,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icons/diff_nightmare.png": {
+      "name": "Haret icon diff_nightmare",
+      "type": "Image",
+      "id": 119398560683518,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/logo/mark_256.png": {
+      "name": "Haret logo mark",
+      "type": "Image",
+      "id": 94560000612541,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/logo/logo_wide_1600x400.png": {
+      "name": "Haret logo wordmark",
+      "type": "Image",
+      "id": 89973783873794,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/logo/wordmark.png": {
+      "name": "Haret logo wordmark text",
+      "type": "Image",
+      "id": 124741548596324,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Bandit.png": {
+      "name": "Haret portrait Bandit",
+      "type": "Image",
+      "id": 120949810630957,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Thug.png": {
+      "name": "Haret portrait Thug",
+      "type": "Image",
+      "id": 135478284152010,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Rider.png": {
+      "name": "Haret portrait Rider",
+      "type": "Image",
+      "id": 101117813202159,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Sapper.png": {
+      "name": "Haret portrait Sapper",
+      "type": "Image",
+      "id": 101949803501935,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Sergeant.png": {
+      "name": "Haret portrait Sergeant",
+      "type": "Image",
+      "id": 73566511528622,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Commandant.png": {
+      "name": "Haret portrait Commandant",
+      "type": "Image",
+      "id": 106285960688999,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Pickpocket.png": {
+      "name": "Haret portrait Pickpocket",
+      "type": "Image",
+      "id": 104937576576070,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Drummer.png": {
+      "name": "Haret portrait Drummer",
+      "type": "Image",
+      "id": 135608077051671,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Torchbearer.png": {
+      "name": "Haret portrait Torchbearer",
+      "type": "Image",
+      "id": 104828458020182,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Porter.png": {
+      "name": "Haret portrait Porter",
+      "type": "Image",
+      "id": 115073087355888,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Disguised.png": {
+      "name": "Haret portrait Disguised",
+      "type": "Image",
+      "id": 73390391883285,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Beggar.png": {
+      "name": "Haret portrait Beggar",
+      "type": "Image",
+      "id": 82706323206891,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Corporal.png": {
+      "name": "Haret portrait Corporal",
+      "type": "Image",
+      "id": 135092251624966,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuJawdan.png": {
+      "name": "Haret portrait AbuJawdan",
+      "type": "Image",
+      "id": 99981072657403,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuShatour.png": {
+      "name": "Haret portrait AbuShatour",
+      "type": "Image",
+      "id": 104141919130883,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Lateef.png": {
+      "name": "Haret portrait Lateef",
+      "type": "Image",
+      "id": 100259993440842,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/UmmBaki.png": {
+      "name": "Haret portrait UmmBaki",
+      "type": "Image",
+      "id": 134168283413116,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Rifleman.png": {
+      "name": "Haret portrait Rifleman",
+      "type": "Image",
+      "id": 82824029232245,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/DonkeyCart.png": {
+      "name": "Haret portrait DonkeyCart",
+      "type": "Image",
+      "id": 115383986277883,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/HakimRival.png": {
+      "name": "Haret portrait HakimRival",
+      "type": "Image",
+      "id": 99400540596434,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/GraveSnake.png": {
+      "name": "Haret portrait GraveSnake",
+      "type": "Image",
+      "id": 95632074308862,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Brute.png": {
+      "name": "Haret portrait Brute",
+      "type": "Image",
+      "id": 92274296106421,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Fakhr.png": {
+      "name": "Haret portrait Fakhr",
+      "type": "Image",
+      "id": 124184204799611,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuZira.png": {
+      "name": "Haret portrait AbuZira",
+      "type": "Image",
+      "id": 93274551501564,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Adashari.png": {
+      "name": "Haret portrait Adashari",
+      "type": "Image",
+      "id": 129480120172448,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuBasim.png": {
+      "name": "Haret portrait AbuBasim",
+      "type": "Image",
+      "id": 94554642685040,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuSamih.png": {
+      "name": "Haret portrait AbuSamih",
+      "type": "Image",
+      "id": 134954871256848,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuHamoud.png": {
+      "name": "Haret portrait AbuHamoud",
+      "type": "Image",
+      "id": 108276284703172,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/SudaKhanum.png": {
+      "name": "Haret portrait SudaKhanum",
+      "type": "Image",
+      "id": 136188622806631,
+      "uploaded": "2026-10-18"
+    }
+  }
+}

@@ -21,6 +21,22 @@ return function(t)
 			t.eq(Settings.accept({}, true), false)
 		end)
 
+		t.it("accepts the music and sfx toggles as booleans only, default on", function()
+			for _, key in { "music", "sfx" } do
+				t.truthy(Settings.accept(key, true))
+				t.truthy(Settings.accept(key, false))
+				t.eq(Settings.accept(key, "off"), false)
+				t.eq(Settings.accept(key, 1), false)
+				t.eq(Settings.accept(key, nil), false)
+				t.eq(Settings.get(nil, key), true, key .. " defaults on")
+				t.eq(Settings.get({ [key] = "off" }, key), true, "bad stored value falls back to the default")
+				t.eq(Settings.get({ [key] = false }, key), false)
+			end
+			local s = Settings.sanitize({ music = 0, sfx = false })
+			t.eq(s.music, nil)
+			t.eq(s.sfx, false)
+		end)
+
 		t.it("resolves defaults for missing or bad values", function()
 			local r = Settings.resolve({ effects = "off", camera = "sideways" })
 			t.eq(r.effects, "off")

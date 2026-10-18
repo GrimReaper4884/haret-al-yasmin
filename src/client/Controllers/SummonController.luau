@@ -18,6 +18,7 @@ local SummonLogic = require(Shared.Logic.SummonLogic)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
+local Amount = require(UI.Amount)
 local Root = require(UI.Root)
 local Modal = require(UI.Modal)
 local UnitCard = require(UI.UnitCard)
@@ -187,6 +188,7 @@ local function showCards(results: { any })
 	revealGrid.Size = UDim2.fromOffset(5 * 110, 2 * 150)
 	local grid = revealGrid:FindFirstChildOfClass("UIGridLayout") :: UIGridLayout
 	grid.CellSize = UDim2.fromOffset(100, 140)
+	grid.StartCorner = if LocaleController.isRtl() then Enum.StartCorner.TopRight else Enum.StartCorner.TopLeft
 	local cards = {}
 	for i, r in results do
 		local c = card(r, i, Vector2.new(100, 140), false)
@@ -208,7 +210,11 @@ local function showCards(results: { any })
 			if skipped then
 				continue
 			end
-			Juice.pop(c, 0.3)
+			if Juice.allowed("flip") then
+				Juice.flip(c, Color3.fromHex("#4A2E18"), 0.18)
+			else
+				Juice.pop(c, 0.3)
+			end
 			if rank >= 3 then
 				best = math.max(best, rank)
 				SummonController.shabriyehFlash(t("match.shabriyeh"))
@@ -327,9 +333,14 @@ render = function()
 	local vip: boolean = snapshot.perks ~= nil and (snapshot.perks :: any).vip == true
 	local c1 = SummonLogic.cost(1, TD.SUMMON_COST, TD.SUMMON_TEN_COST, TD.VIP_SUMMON_DISCOUNT, vip)
 	local c10 = SummonLogic.cost(10, TD.SUMMON_COST, TD.SUMMON_TEN_COST, TD.VIP_SUMMON_DISCOUNT, vip)
-	liraLabel.Text = t("hud.lira", { n = snapshot.lira }) .. (if snapshot.restricted then "  ·  " .. t("summon.restricted") else "")
-	oneButton.Text = t("summon.one", { n = c1 })
-	tenButton.Text = t("summon.ten", { n = c10 })
+	liraLabel.Text = ""
+	local balance: { Amount.Entry } = { { icon = "lira", text = tostring(snapshot.lira) } }
+	if snapshot.restricted then
+		table.insert(balance, { text = "·  " .. t("summon.restricted") })
+	end
+	Amount.fill(liraLabel, balance, { iconSize = 24, textSize = 15, color = Theme.lira, rtl = rtl })
+	Amount.button(oneButton, { { text = t("summon.x1") .. " ·" }, { icon = "lira", text = tostring(c1) } }, { rtl = rtl, iconSize = 24 })
+	Amount.button(tenButton, { { text = t("summon.x10") .. " ·" }, { icon = "lira", text = tostring(c10) } }, { rtl = rtl, iconSize = 24 })
 	-- Greyed when short of lira; still clickable so the tap explains why and offers the store
 	oneButton.BackgroundColor3 = if snapshot.lira >= c1
 		then Theme.colors.button

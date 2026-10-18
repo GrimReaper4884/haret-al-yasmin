@@ -1,0 +1,21 @@
+{
+  "id": "hummus",
+  "tasks": {
+    "concept": "01a14f24-551f-7448-b00d-129939780af3",
+    "mesh": "01a14f38-01e3-710f-a190-1705de589fb0",
+    "rig": "01a14f39-76b5-76ae-874a-ea9a5887b7d4",
+    "clip_idle5": "01a14f41-b339-7158-9b03-31c08d1ba261",
+    "clip_pitch": "01a14f41-d4d5-77b3-bd43-b4631d34343a"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_idle5": 0,
+    "clip_pitch": 3
+  },
+  "clips": {
+    "idle5": 245,
+    "pitch": 393
+  }
+}

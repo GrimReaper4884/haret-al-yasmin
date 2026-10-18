@@ -18,6 +18,8 @@ local L = _G.LogicRequire
 local TdSim = L("TdSim")
 local TdTowers = L("TdTowers")
 local Traits = require("../src/shared/Config/Traits")
+local Beads = require("../src/shared/Config/Beads")
+local UnitLogic = L("UnitLogic")
 local WaveLogic = L("WaveLogic")
 local Path = L("Path")
 
@@ -67,10 +69,24 @@ AutoBattle.POLICIES = {
 		plan = { "walad", "hallaq", "hallaq", "zaim", "qabaday", "pahlawan", "mukhtar", "zaim", "pahlawan", "mukhtar" },
 		upgrades = true,
 	},
+	-- Season Story 1 power steps (STORY_PLAN §5.3); AutoBattle.adapt brings lanterns or water when an
+	-- episode asks for them.
+	["leg10up+sig"] = {
+		label = "10 with Legendaries + upgrades + level-7 signatures (path a)",
+		plan = { "walad", "hallaq", "hallaq", "zaim", "qabaday", "pahlawan", "mukhtar", "zaim", "pahlawan", "mukhtar" },
+		upgrades = true,
+		signature = "a",
+	},
 	myth12up = {
 		label = "12 Mythic/Legendary + upgrades",
 		plan = { "hallaq", "hallaq", "hallaq", "zaim", "zaim_akbar", "arada", "mukhtar", "pahlawan", "zaim", "pahlawan", "mukhtar", "hallaq" },
 		upgrades = true,
+	},
+	["myth12up+beads"] = {
+		label = "12 Mythic/Legendary + upgrades + beads in 2 of 3 slots (cooldown, range)",
+		plan = { "hallaq", "hallaq", "hallaq", "zaim", "zaim_akbar", "arada", "mukhtar", "pahlawan", "zaim", "pahlawan", "mukhtar", "hallaq" },
+		upgrades = true,
+		beads = { "cooldown", "range" },
 	},
 	whale = {
 		label = "16 Mythic/Legendary, 5 stars, za'im's-blood traits + upgrades (7 slots)",
@@ -84,7 +100,22 @@ AutoBattle.POLICIES = {
 		slots = 7, -- Extra Slot pass
 	},
 }
-AutoBattle.POLICY_ORDER = { "re6", "re4up", "re6up", "re10up", "leg6", "leg10up", "myth12up", "whale" }
+-- whale2: the whale with traits v2 (za'im's blood + hawk), beads and signatures.
+AutoBattle.POLICIES.whale2 = {
+	label = "16 Mythic/Legendary, 5 stars, two traits, beads, signatures + upgrades (7 slots)",
+	plan = {
+		"hallaq", "hallaq", "hallaq", "zaim", "zaim_akbar", "arada", "mukhtar", "pahlawan", "zaim", "pahlawan",
+		"mukhtar", "qabaday", "qabaday", "qabaday", "qabaday", "hallaq",
+	},
+	upgrades = true,
+	stars = 5,
+	trait = "zaim",
+	trait2 = "hawk",
+	beads = { "cooldown", "range" },
+	signature = "a",
+	slots = 7,
+}
+AutoBattle.POLICY_ORDER = { "re6", "re4up", "re6up", "re10up", "leg6", "leg10up", "leg10up+sig", "myth12up", "myth12up+beads", "whale", "whale2" }
 
 local SAMPLE_STEP = 1 -- studs between road samples for coverage
 local MAX_SPOT_DIST = 9 -- spots farther than this from the road are never considered
@@ -98,19 +129,23 @@ local function spotsFor(arenaId: string, rules)
 		return spotCache[arenaId]
 	end
 	local arena = Arenas[arenaId]
-	local path = Path.build(arena.path)
+	-- Twin-gate arenas: sample every road (a shared stretch counts twice, as both halves of the
+	-- wave walk it), so the bot defends the side road too.
+	local roads = Path.buildAll(arena)
 	local samples = {}
-	local d = 0
-	while d <= path.length do
-		local x, z = Path.position(path, d)
-		table.insert(samples, { x, z })
-		d += SAMPLE_STEP
+	for _, road in roads do
+		local d = 0
+		while d <= road.length do
+			local x, z = Path.position(road, d)
+			table.insert(samples, { x, z })
+			d += SAMPLE_STEP
+		end
 	end
 	local cands = {}
 	local b = arena.bounds
 	for x = b[1], b[3] do
 		for z = b[2], b[4] do
-			local dp = Path.distanceTo(path, x, z)
+			local dp = Path.distanceToAll(roads, x, z)
 			if dp >= rules.pathHalfWidth + 0.2 and dp <= MAX_SPOT_DIST then
 				table.insert(cands, { x = x, z = z, dp = dp, cov = {} })
 			end
@@ -185,6 +220,7 @@ local function rulesFor(arenaId: string)
 		towerCap = TD.TOWER_CAP,
 		sellRefund = TD.SELL_REFUND,
 		starBonus = TD.STAR_BONUS,
+		traitCaps = Traits.caps,
 	}
 end
 
@@ -192,7 +228,7 @@ end
 -- splash counts double, shabriyeh/sweep add their average, supports are worth their buff on the
 -- damage towers they cover.
 local function dps(def, level: number): number
-	local lv = def.levels[level]
+	local lv = def.levels[math.min(level, #def.levels)] -- a level-7 signature counts as its last level here
 	if lv.damage <= 0 then
 		return 0
 	end
@@ -208,7 +244,7 @@ local function dps(def, level: number): number
 end
 
 levelValue = function(state, t, def, level: number): number
-	local lv = def.levels[level]
+	local lv = def.levels[math.min(level, #def.levels)]
 	if lv.buff then
 		local covered = 0
 		for _, o in state.towers do
@@ -233,7 +269,21 @@ local function think(bot, state, spots, rules)
 		end
 		local spot = bestSpot(state, spots, def, rules)
 		if spot then
-			local ok, err = TdTowers.place(state, bot.key, unitId, def, spot.x, spot.z, policy.stars or 0, policy.trait and Traits.traits[policy.trait], rules)
+			-- Beads: the policy's kinds where this unit takes them, else its first allowed kind.
+			local bead = nil
+			if policy.beads then
+				local allowed = UnitLogic.beadKinds(def, Beads)
+				local slots = {}
+				for _, k in policy.beads do
+					table.insert(slots, if table.find(allowed, k) then k else allowed[1])
+				end
+				bead = UnitLogic.beadBonus(slots, Beads)
+			end
+			local trait = policy.trait and Traits.traits[policy.trait]
+			if policy.trait2 then
+				trait = UnitLogic.combineTraits(trait, Traits.traits[policy.trait2])
+			end
+			local ok, err = TdTowers.place(state, bot.key, unitId, def, spot.x, spot.z, policy.stars or 0, trait, rules, bead)
 			if not ok and err == "cannot_afford" then
 				return
 			end
@@ -245,35 +295,118 @@ local function think(bot, state, spots, rules)
 	end
 	-- 2) The upgrade with the most damage per cash: saves for it while the gate holds, settles for
 	-- the best affordable one after a wave that leaked.
+	-- A level-7 signature (policy.signature = its path) is one more candidate, valued as a 15 % gain
+	-- on the last level (its paths add up to +35 % damage or one effect, D-047).
+	local function nextStep(t, def): (number?, number, string?)
+		local nextLv = def.levels[t.level + 1]
+		if nextLv and (policy.maxLevel == nil or t.level < policy.maxLevel) then
+			return nextLv.cost, (levelValue(state, t, def, t.level + 1) - levelValue(state, t, def, t.level)) / nextLv.cost, nil
+		end
+		local sig = policy.signature and def.signature
+		if sig and t.level == #def.levels then
+			local cost = sig[policy.signature].cost
+			return cost, 0.15 * levelValue(state, t, def, t.level) / cost, policy.signature
+		end
+		return nil, 0, nil
+	end
 	while true do
-		local best, bestValue = nil, -1
-		local afford, affordValue = nil, -1
+		local best, bestValue, bestCost, bestPath = nil, -1, 0, nil
+		local afford, affordValue, affordPath = nil, -1, nil
 		for _, t in state.towers do
 			if t.owner == bot.key then
 				local def = Units[t.unitId]
-				local nextLv = def.levels[t.level + 1]
-				if nextLv and (policy.maxLevel == nil or t.level < policy.maxLevel) then
-					local value = (levelValue(state, t, def, t.level + 1) - levelValue(state, t, def, t.level)) / nextLv.cost
+				local cost, value, path = nextStep(t, def)
+				if cost then
 					if value > bestValue then
-						best, bestValue = t, value
+						best, bestValue, bestCost, bestPath = t, value, cost, path
 					end
-					if nextLv.cost <= p.cash and value > affordValue then
-						afford, affordValue = t, value
+					if cost <= p.cash and value > affordValue then
+						afford, affordValue, affordPath = t, value, path
 					end
 				end
 			end
 		end
-		local pick = if best and Units[best.unitId].levels[best.level + 1].cost <= p.cash then best elseif bot.leaking then afford else nil
+		local pick, path = nil, nil
+		if best and bestCost <= p.cash then
+			pick, path = best, bestPath
+		elseif bot.leaking then
+			pick, path = afford, affordPath
+		end
 		if not pick then
 			return
 		end
-		TdTowers.upgrade(state, bot.key, pick.id, Units[pick.unitId], rules)
+		TdTowers.upgrade(state, bot.key, pick.id, Units[pick.unitId], rules, path)
 	end
 end
 
 -- { hp, boss, cash } scaling for a party of `party` players (as MatchService.create applies it).
 function AutoBattle.partyScale(party: number)
 	return WaveLogic.partyScale(TD, party)
+end
+
+-- A sensible player brings what an episode asks for (STORY_PLAN §5.3: "needs 2 revealers", "needs a
+-- douser") and pays for it with a loadout slot: the unit type the plan uses least (after the opener;
+-- ties go to the later one) gives its towers to the newcomer, whose first `copies` go down right after
+-- the opener. Disguised attackers bring two watchmen, burning ones Fawza. Stock episodes 1–3 are
+-- never touched.
+local function swapIn(plan, unitId: string, copies: number)
+	local count = {}
+	for i, id in plan do
+		if i > 1 then
+			count[id] = (count[id] or 0) + 1
+		end
+	end
+	local drop, least = nil, math.huge
+	for i, id in plan do
+		if i > 1 and id ~= unitId and count[id] <= least then
+			drop, least = id, count[id]
+		end
+	end
+	local out = {}
+	for _, id in plan do
+		if id ~= drop then
+			table.insert(out, id)
+		end
+	end
+	for c = 1, math.max(copies, least) do
+		table.insert(out, if c <= copies then 1 + c else #out + 1, unitId)
+	end
+	return out
+end
+
+function AutoBattle.adapt(policy, episode)
+	if not episode then
+		return policy
+	end
+	local disguised, burning = false, false
+	for _, entry in episode.pool do
+		local def = Enemies[entry.enemy]
+		disguised = disguised or (def and def.disguised == true)
+		burning = burning or (def and def.burn ~= nil)
+	end
+	for _, boss in episode.bosses do
+		local def = Enemies[boss]
+		disguised = disguised or (def and def.disguised == true)
+		burning = burning or (def and def.burn ~= nil)
+	end
+	local lit, wet = false, false
+	for _, id in policy.plan do
+		lit = lit or Units[id].revealsStealth == true
+		wet = wet or Units[id].douse ~= nil
+	end
+	if (not disguised or lit) and (not burning or wet) then
+		return policy
+	end
+	local plan = policy.plan
+	if disguised and not lit then
+		plan = swapIn(plan, "natour", 2)
+	end
+	if burning and not wet then
+		plan = swapIn(plan, "saqqa", 1)
+	end
+	local adapted = table.clone(policy)
+	adapted.plan = plan
+	return adapted
 end
 
 local function resolvePolicy(policyId)
@@ -313,12 +446,22 @@ function AutoBattle.play(modeId: string, difficulty: string, policyId: any, opts
 		table.insert(bots, { key = key, policy = resolvePolicy(list[i] or list[1]), planIndex = 1 })
 	end
 	local scale = WaveLogic.partyScale(TD, party)
-	local episode = if mode.kind == "story" then Waves.episodes[mode.episode] else nil
+	-- Story episodes and events play their wave script (as MatchService does); opts.arena tries the
+	-- mode on another map (e.g. an event on its new arena before the switch).
+	local episode = if mode.kind == "story" then Waves.episodes[mode.episode] elseif mode.kind == "event" then Waves.events[mode.event] else nil
+	if not opts.raw then -- opts.raw: the loadout exactly as written (to show what the episode asks for)
+		for _, bot in bots do
+			bot.policy = AutoBattle.adapt(bot.policy, episode)
+		end
+	end
 	local total = if episode then episode.waves else nil
-	local arena = Arenas[mode.arena]
-	local rules = rulesFor(mode.arena)
-	local spots = spotsFor(mode.arena, rules)
-	local state = TdSim.new(arena.path, keys, math.floor(TD.START_CASH * scale.cash + 0.5), opts.gate or diff.gate, total, TD.PREP_SECONDS, {
+	local arenaId = opts.arena or mode.arena
+	local arena = Arenas[arenaId]
+	local rules = rulesFor(arenaId)
+	local spots = spotsFor(arenaId, rules)
+	-- Twin roads only where the mode walks them (Modes.twinRoads, as MatchService does).
+	local roads = if mode.twinRoads and arena.paths then arena.paths else arena.path
+	local state = TdSim.new(roads, keys, math.floor(TD.START_CASH * scale.cash + 0.5), opts.gate or diff.gate, total, TD.PREP_SECONDS, {
 		between = TD.BETWEEN_WAVES,
 		waveBonusBase = TD.WAVE_BONUS_BASE * scale.cash,
 		waveBonusPerWave = TD.WAVE_BONUS_PER_WAVE * scale.cash,
@@ -326,11 +469,16 @@ function AutoBattle.play(modeId: string, difficulty: string, policyId: any, opts
 		enemies = Enemies,
 		stunChainMax = TD.STUN_CHAIN_MAX,
 		stunImmunity = TD.STUN_IMMUNITY,
+		maxSpeedMul = WaveLogic.MAX_SPEED_MUL,
+		burnMax = TD.BURN_MAX_STACKS,
+		burnTick = TD.BURN_TICK,
+		burnDamage = TD.BURN_DAMAGE,
+		burnFor = TD.BURN_SECONDS,
 	}, function(wave)
 		if episode then
-			return WaveLogic.story(episode, wave, diff, scale)
+			return WaveLogic.story(episode, wave, diff, scale, Enemies)
 		end
-		return WaveLogic.infinite(Waves.infinite, wave, diff, scale)
+		return WaveLogic.infinite(Waves.infinite, wave, diff, scale, Enemies)
 	end)
 	local turn = 0
 	local maxWaves = opts.maxWaves or 150
@@ -358,6 +506,10 @@ function AutoBattle.play(modeId: string, difficulty: string, policyId: any, opts
 			if e.type == "waveStart" then
 				cur = { wave = e.wave, count = e.count, boss = e.boss, leaked = 0, gateLost = 0, bossLeaked = false, leakedBy = {} }
 				guard = 0
+				-- Scripted beats (the ally of Episodes 8 and 9), as MatchService runs them.
+				if episode and episode.script then
+					TdTowers.runScript(state, episode.script, e.wave, Units, rules, arena.allySpot)
+				end
 			elseif e.type == "spawn" then
 				kinds[e.id] = e.enemyId
 			end
@@ -413,6 +565,15 @@ function AutoBattle.play(modeId: string, difficulty: string, policyId: any, opts
 		wavesCleared = state.wavesCleared,
 		gateHp = state.gateHp,
 		gateMax = state.gateMax,
+		signatures = (function()
+			local n = 0
+			for _, t in state.towers do
+				if t.path then
+					n += 1
+				end
+			end
+			return n
+		end)(),
 		waves = rows,
 		totalWaves = total,
 		party = party,

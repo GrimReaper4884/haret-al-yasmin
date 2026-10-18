@@ -12,8 +12,12 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared.Net)
 local TD = require(Shared.Config.TD)
 local Modes = require(Shared.Config.Modes)
+local Story = require(Shared.Config.Story)
+local IconIds = require(Shared.Config.Icons)
 local Signal = require(Shared.Util.Signal)
 local PartyLogic = require(Shared.Logic.PartyLogic)
+local MechanicFx = require(Shared.Logic.MechanicFx)
+local Vfx = require(Shared.Config.Vfx)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
@@ -21,9 +25,11 @@ local Root = require(UI.Root)
 local Modal = require(UI.Modal)
 local Juice = require(UI.Juice)
 local Icons = require(UI.Icons)
+local Amount = require(UI.Amount)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
+local SettingsController = require(script.Parent.SettingsController)
 local ToastController = require(script.Parent.ToastController)
 
 local MatchController = {}
@@ -42,6 +48,9 @@ local hud: Frame
 local waveLabel: TextLabel
 local countLabel: TextLabel
 local gateMeter: Theme.Meter
+local burnRow: Frame -- flame pips under the gate bar, one per burn stack (S1-C02)
+local burnPips: { Frame } = {}
+local lastBurn = 0
 local cashLabel: TextLabel
 local cashBox: Frame
 local flash: Frame
@@ -50,7 +59,12 @@ local speedButton: TextButton
 local leaveButton: TextButton
 local codesButton: TextButton
 local result: Modal.Modal
+local resultBanner: ImageLabel
+local resultOutro: TextLabel
+local resultOutroShade: Frame
 local resultBody: TextLabel
+local resultAmounts: Frame
+local resultExtra: TextLabel
 local replayButton: TextButton
 local nextButton: TextButton
 local replayBusy = false
@@ -62,6 +76,11 @@ end
 
 function MatchController.state(): any
 	return state
+end
+
+-- The cash pill (the reward coins fly into it, PV-B03).
+function MatchController.cashPill(): Frame?
+	return cashBox
 end
 
 function MatchController.active(): boolean
@@ -81,10 +100,18 @@ local function build()
 	countLabel = Theme.display({ TextSize = 14, TextColor3 = Color3.fromHex("#FFE9B8"), Size = UDim2.new(1, 0, 0, 16), Position = UDim2.fromOffset(0, 36), ZIndex = 3, Parent = top })
 	countLabel.TextXAlignment = Enum.TextXAlignment.Center
 	gateMeter = Theme.meter({ Position = UDim2.fromOffset(10, 55), Size = UDim2.new(1, -20, 0, 20), ZIndex = 3, Parent = top }, Theme.colors.hpHigh)
+	local pip = Vfx.STORY.burnPip
+	burnRow = Create("Frame", { Name = "Burn", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 76), Size = UDim2.fromOffset((pip + 2) * TD.BURN_MAX_STACKS, pip), BackgroundTransparency = 1, Visible = false, ZIndex = 3, Parent = top })
+	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, Padding = UDim.new(0, 2), SortOrder = Enum.SortOrder.LayoutOrder, Parent = burnRow })
+	for i = 1, TD.BURN_MAX_STACKS do
+		local holder = Create("Frame", { LayoutOrder = i, BackgroundTransparency = 1, Size = UDim2.fromOffset(pip, pip), Visible = false, ZIndex = 4, Parent = burnRow })
+		Icons.draw("mech_burn", holder)
+		table.insert(burnPips, holder)
+	end
 
 	-- Cash: bottom centre, just above the unit bar, so cost and wallet read in one glance.
 	local cashPill
-	cashPill, cashLabel = Theme.pill({ Name = "Cash", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -108), Size = UDim2.fromOffset(150, 36), ZIndex = 3, Parent = hud }, Theme.colors.gold)
+	cashPill, cashLabel = Theme.pill({ Name = "Cash", AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -108), Size = UDim2.fromOffset(150, 36), ZIndex = 3, Parent = hud }, Theme.colors.gold, "cash")
 	cashLabel.TextColor3 = Color3.fromHex("#FFD970")
 	cashBox = cashPill
 
@@ -103,6 +130,16 @@ local function build()
 	end
 	local gearIcon = Create("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(28, 28), BackgroundTransparency = 1, ZIndex = 4, Parent = gear })
 	Icons.draw("ui_settings", gearIcon)
+	-- Music mute just left of the column, level with the gear.
+	SettingsController.muteButton({
+		Name = "Music",
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.fromOffset(-6, -3),
+		Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH),
+		BackgroundColor3 = Color3.fromHex("#6E5E50"),
+		ZIndex = 3,
+		Parent = lastRow,
+	}, true)
 	gear.Activated:Connect(function()
 		local open = LobbyMenuController.opener("settings")
 		if open then
@@ -142,8 +179,56 @@ local function build()
 	Create("UIGradient", { Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.5, 0.85), NumberSequenceKeypoint.new(1, 0) }), Parent = flash })
 
 	result = Modal.create("MatchResult", 460, 150)
-	resultBody = Theme.label({ TextSize = 15, Size = UDim2.new(1, 0, 0, 100), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 11, Parent = result.body })
+	-- The mode's painted banner (PV-C06) between the title and the rewards.
+	resultBanner = Create("ImageLabel", {
+		Name = "Banner",
+		LayoutOrder = 2,
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, 0, 0, 110),
+		ScaleType = Enum.ScaleType.Crop,
+		ZIndex = 11,
+		Visible = false,
+		Parent = result.panel,
+	}, { Create("UICorner", { CornerRadius = UDim.new(0, 10) }) })
+	Theme.border(resultBanner, 2.5)
+	-- The Hakawati's outro over the bottom of the banner after a story win (S1-C01, Config/Story).
+	resultOutroShade = Create("Frame", {
+		Name = "OutroShade",
+		BackgroundColor3 = Color3.new(0, 0, 0),
+		BorderSizePixel = 0,
+		AnchorPoint = Vector2.new(0, 1),
+		Position = UDim2.fromScale(0, 1),
+		Size = UDim2.fromScale(1, 0.72),
+		ZIndex = 11,
+		Parent = resultBanner,
+	}, { Create("UICorner", { CornerRadius = UDim.new(0, 10) }) })
+	Create("UIGradient", {
+		Rotation = 90,
+		Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.35, 0.35), NumberSequenceKeypoint.new(1, 0.2) }),
+		Parent = resultOutroShade,
+	})
+	resultOutro = Theme.display({
+		Name = "Outro",
+		TextSize = 13,
+		TextColor3 = Color3.fromHex("#FFF1D0"),
+		AnchorPoint = Vector2.new(0.5, 1),
+		Position = UDim2.new(0.5, 0, 1, -6),
+		Size = UDim2.new(1, -20, 0.68, 0),
+		TextYAlignment = Enum.TextYAlignment.Bottom,
+		ZIndex = 12,
+		Parent = resultBanner,
+	})
+	resultOutro.TextXAlignment = Enum.TextXAlignment.Center
+	result.body.LayoutOrder = 3
+	-- Waves held and the "Rewards" header, then the rewards as icon + number, then first clear and
+	-- event currency (three stacked pieces so the icon row never overlaps text).
+	local stack = Create("Frame", { Name = "Stack", BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 100), ZIndex = 11, Parent = result.body })
+	Create("UIListLayout", { Padding = UDim.new(0, 2), HorizontalAlignment = Enum.HorizontalAlignment.Center, SortOrder = Enum.SortOrder.LayoutOrder, Parent = stack })
+	resultBody = Theme.label({ LayoutOrder = 1, TextSize = 15, Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, ZIndex = 11, Parent = stack })
 	resultBody.TextXAlignment = Enum.TextXAlignment.Center
+	resultAmounts = Amount.row({ Name = "Rewards", LayoutOrder = 2, Size = UDim2.new(1, 0, 0, 30), ZIndex = 11, Parent = stack }, {})
+	resultExtra = Theme.label({ LayoutOrder = 3, TextSize = 15, FontFace = Theme.fontBold, TextColor3 = Theme.colors.quest, Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, ZIndex = 11, Parent = stack })
+	resultExtra.TextXAlignment = Enum.TextXAlignment.Center
 	-- Replay · Next · Back to the lane (the genre's end screen: keep playing without walking back).
 	local row = Create("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.fromScale(0.5, 1), Size = UDim2.new(1, 0, 0, Theme.TOUCH), ZIndex = 11, Parent = result.body })
 	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = row })
@@ -211,10 +296,21 @@ local function render()
 	local frac = if state.gateMax > 0 then state.gateHp / state.gateMax else 0
 	gateMeter.fill.BackgroundColor3 = if frac > 0.5 then Theme.colors.hpHigh elseif frac > 0.25 then Theme.colors.hpMid else Theme.colors.hpLow
 	gateMeter.set(frac, t("match.gate") .. "  " .. state.gateHp .. " / " .. state.gateMax)
+	-- Burn stacks on the gate (Episode 5's torchbearers): one flame each; a new one punches.
+	local burn = MechanicFx.burnPips(state.gateBurn, TD.BURN_MAX_STACKS)
+	for i, holder in burnPips do
+		holder.Visible = i <= burn
+	end
+	burnRow.Visible = burn > 0
+	if burn > lastBurn then
+		Juice.punch(burnRow, 0.2)
+	end
+	lastBurn = burn
 
 	local cash = state.cash
+	-- The cash icon carries the unit; the pill shows the number only.
 	local function fmt(n: number): string
-		return t("match.cash", { n = n })
+		return tostring(n)
 	end
 	if lastCash and cash ~= lastCash then
 		Juice.count(cashLabel, lastCash, cash, fmt)
@@ -244,22 +340,22 @@ local function showResult(payload: any)
 	result.title.Text = if payload.won then t("match.victory") else t("match.defeat")
 	result.title.TextColor3 = if payload.won then Theme.colors.quest else Theme.colors.danger
 	local lines = { t("match.waves_held", { n = payload.waves or 0 }) }
+	local extra = {}
 	local r = payload.reward
 	if r then
-		table.insert(lines, "")
 		table.insert(lines, t("match.rewards"))
-		table.insert(lines, t("reward.lira", { n = r.lira }) .. " · " .. t("reward.qirsh", { n = r.qirsh }) .. " · " .. t("reward.xp", { n = r.xp }))
-		if r.traitStones and r.traitStones > 0 then
-			table.insert(lines, t("reward.stones", { n = r.traitStones }))
-		end
 		if r.firstClear then
-			table.insert(lines, t("match.first_clear"))
+			table.insert(extra, t("match.first_clear"))
 		end
 		if r.eventCurrency and r.eventCurrencyKey then
-			table.insert(lines, "+" .. t(r.eventCurrencyKey, { n = r.eventCurrency }))
+			table.insert(extra, "+" .. t(r.eventCurrencyKey, { n = r.eventCurrency }))
 		end
 	end
 	resultBody.Text = table.concat(lines, "\n")
+	resultExtra.Text = table.concat(extra, "\n")
+	resultAmounts.Visible = r ~= nil
+	local rewardEntries = if r then Amount.reward(t, { lira = r.lira, qirsh = r.qirsh, xp = r.xp, traitStones = r.traitStones }) else {}
+	Amount.fill(resultAmounts, rewardEntries, { textSize = 16, iconSize = 26, rtl = LocaleController.isRtl(), display = true })
 	backButton.Text = t("match.back")
 	replayBusy = false
 	replayButton.Active = true
@@ -267,6 +363,27 @@ local function showResult(payload: any)
 	replayButton.Text = t("match.replay")
 	nextButton.Text = t("match.next")
 	local modeId = if info then info.modeId else nil
+	local art = if modeId then IconIds.modes[modeId] else nil
+	local hasArt = art ~= nil and art.id > 0
+	local ep = if modeId and payload.won and not payload.left then (Story.episodes :: any)[modeId] else nil
+	local outro = {}
+	for _, key in if ep then ep.outro else {} do
+		table.insert(outro, t(key))
+	end
+	resultOutro.Text = table.concat(outro, " ")
+	resultOutroShade.Visible = #outro > 0
+	resultOutro.Visible = #outro > 0
+	-- Without a painted banner the outro sits on a plain dark plate.
+	resultBanner.Visible = hasArt or #outro > 0
+	resultBanner.Image = if art and hasArt then "rbxassetid://" .. tostring(art.id) else ""
+	resultBanner.BackgroundTransparency = if hasArt then 1 else 0
+	resultBanner.BackgroundColor3 = Theme.colors.text
+	-- On a painting the outro sits low over the shade; on the plain plate it is centred.
+	resultOutro.AnchorPoint = if hasArt then Vector2.new(0.5, 1) else Vector2.new(0.5, 0.5)
+	resultOutro.Position = if hasArt then UDim2.new(0.5, 0, 1, -6) else UDim2.fromScale(0.5, 0.5)
+	resultOutro.Size = if hasArt then UDim2.new(1, -20, 0.68, 0) else UDim2.new(1, -24, 1, -12)
+	resultOutro.TextYAlignment = if hasArt then Enum.TextYAlignment.Bottom else Enum.TextYAlignment.Center
+	resultOutro.TextSize = if hasArt then 13 else 15
 	local snapshot: any = StateController.get()
 	replayButton.Visible = not payload.left and modeId ~= nil
 	nextButton.Visible = not payload.left

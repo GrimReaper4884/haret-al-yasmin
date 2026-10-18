@@ -15,6 +15,7 @@ export type Context = {
 	starterUnit: string,
 	starterLira: number?,
 	season: string,
+	beads: any?, -- Config/Beads: bead slots and the bead count are sanitised when present
 }
 
 local function sibling(name: string): any
@@ -35,10 +36,41 @@ local FunnelLogic = sibling("FunnelLogic")
 
 local ProfileSchema = {}
 
+-- Lira paid with the Cat → Al-Adashari swap (v2 → v3).
+local CAT_COMPENSATION_LIRA = 100
+
 -- Migration steps: MIGRATIONS[n] upgrades a version-n profile to version n + 1.
 local MIGRATIONS: { [number]: (any) -> any } = {
 	-- v1 → v2: tower-defense fields. All of them have defaults filled in by sanitize.
 	[1] = function(p: any): any
+		return p
+	end,
+	-- v2 → v3 (S1-S12b, STORY_PLAN §7.7, owner D-048): the Cat (`qitt`) leaves the game. Whoever owned
+	-- it keeps a secret unit: one copy of Al-Adashari with the Cat's trait (a copy more if they already
+	-- have him) plus the compensation lira; the Cat leaves the loadout.
+	[2] = function(p: any): any
+		local units = if type(p.units) == "table" then p.units else nil
+		local cat = units and units.qitt
+		if type(cat) == "table" then
+			units.qitt = nil
+			local owned = units.adashari
+			if type(owned) == "table" then
+				owned.copies = (if type(owned.copies) == "number" then owned.copies else 0) + 1
+			else
+				local at = if type(p.stats) == "table" and type(p.stats.lastJoin) == "number" then p.stats.lastJoin else 0
+				units.adashari = { copies = 0, trait = if type(cat.trait) == "string" then cat.trait else "steady", at = at }
+			end
+			p.lira = (if type(p.lira) == "number" then p.lira else 0) + CAT_COMPENSATION_LIRA
+		end
+		if type(p.loadout) == "table" then
+			local kept = {}
+			for _, id in p.loadout do
+				if id ~= "qitt" then
+					table.insert(kept, id)
+				end
+			end
+			p.loadout = kept
+		end
 		return p
 	end,
 }
@@ -84,7 +116,8 @@ function ProfileSchema.default(now: number, schemaVersion: number, ctx: Context?
 		events = {}, -- Logic/EventLogic: { [eventId] = { currency, bought } }
 		daily = { streak = 0, lastDay = 0 },
 		afk = { day = 0, lira = 0, carry = 0, cups = 0, tales = 0, seconds = 0 }, -- Logic/AfkLogic
-		td = { matches = 0, wins = 0, kills = 0, cleared = {}, bestInfinite = 0 },
+		td = { matches = 0, wins = 0, kills = 0, cleared = {}, bestInfinite = 0, beadDay = 0, beadDayCount = 0, secretPity = 0 },
+		beads = 0, -- shabriyeh beads to thread onto units (Config/Beads)
 	}
 end
 
@@ -206,6 +239,24 @@ function ProfileSchema.sanitize(p: any, ctx: Context, now: number): any
 			if type(rec.trait) ~= "string" or ctx.traits[rec.trait] == nil then
 				rec.trait = "steady"
 			end
+			if rec.trait2 ~= nil and (type(rec.trait2) ~= "string" or ctx.traits[rec.trait2] == nil) then
+				rec.trait2 = nil -- the second slot (traits v2) is optional
+			end
+			if rec.beads ~= nil then
+				-- Bead slots: exactly `slots` strings, each "" or a kind this unit takes.
+				local cfg = ctx.beads
+				if type(rec.beads) ~= "table" or not cfg then
+					rec.beads = nil
+				else
+					local allowed = ctx.units[id].beads or cfg.byRole[ctx.units[id].role] or {}
+					local clean = {}
+					for i = 1, cfg.slots do
+						local k = rec.beads[i]
+						clean[i] = if type(k) == "string" and table.find(allowed, k) then k else ""
+					end
+					rec.beads = clean
+				end
+			end
 			rec.at = if isFinite(rec.at) then rec.at else now
 		end
 	end
@@ -271,6 +322,10 @@ function ProfileSchema.sanitize(p: any, ctx: Context, now: number): any
 	td.wins = nonNegInt(td.wins, 0)
 	td.kills = nonNegInt(td.kills, 0)
 	td.bestInfinite = nonNegInt(td.bestInfinite, 0)
+	td.beadDay = nonNegInt(td.beadDay, 0)
+	td.beadDayCount = nonNegInt(td.beadDayCount, 0)
+	td.secretPity = nonNegInt(td.secretPity, 0)
+	p.beads = math.clamp(nonNegInt(p.beads, 0), 0, if ctx.beads then ctx.beads.maxBeads else 0)
 	local cleared = tableOr(td.cleared)
 	for mode, diff in pairs(cleared) do
 		if type(mode) ~= "string" or (diff ~= "normal" and diff ~= "hard" and diff ~= "nightmare") then

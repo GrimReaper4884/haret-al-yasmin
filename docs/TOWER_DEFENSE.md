@@ -47,7 +47,8 @@ clearing N on Normal; Hard after Normal, Nightmare after Hard, per episode.
 | Placement | anywhere inside the arena bounds, ≥ 3.2 studs from the road centreline, ≥ 2.6 from another defender, ≤ 20 per player, per-unit cap (`maxPlaced`) |
 | Upgrades | 5 levels (Rare) / 6 (Epic+); sell refunds 60 % of everything spent |
 | Targeting | first / last / strongest / closest (per defender) |
-| Stealth | night thieves and spies are invisible to defenders without `hitsStealth` (watchman, barber, 'akeed, za'im, 'arada, cat) |
+| Stealth | night thieves and spies are invisible to defenders without `hitsStealth` (watchman, barber, 'akeed, za'im, 'arada, cat), unless the defender stands inside a watchman's lantern (`revealsStealth`: any other defender within his range sees them too; D-031). A sabotaged watchman's lantern is dark until he is back (D-038) |
+| Story mechanics (Season Story 1, D-040) | built in the sim, used from Episode 4 on: **swarm** (groups up to 60, half weight in the 90-per-wave cap), **speed aura** (others nearby walk up to ×aura, best one, never past ×1.6 of base), **shield** (enemies near the bearer, itself too, take less damage; not stacking), **burn** (stacks on the gate: 1 HP per stack every 2 s for 20 s, max 5, out at wave end; `douse` defenders such as Fawza take a stack off per attack), **disguised** (only a lantern bearer or a defender in a lantern's light can hit one; lanterns and those single hits reveal it; splash never) |
 | Armor | fraction of damage ignored (bandit 15 %, rider 20 %, sapper 35 %, bosses 20–40 %) |
 | Parties | up to 4; regular enemy HP ×1 / 1.65 / 2.3 / 3.0 and boss HP ×1 / 1.35 / 1.65 / 2.1 for 1–4 players (§5) |
 | Stuns | chain, but after 6 s of a chain an enemy ignores stuns for 3 s (it walks at least a third of the time) |
@@ -59,29 +60,31 @@ clearing N on Normal; Hard after Normal, Nightmare after Hard, per episode.
 
 The simulation is pure (`TdSim.step(state, dt)` returns events) and covered by `tests/td.spec.luau`.
 
-## 4. Defenders (`Config/Units`)
+## 4. Defenders (`Config/Units`; names one letter off since 2026-10-18, STORY_PLAN §3, C-241)
 
 | Id | Name (EN) | Rarity | Role | Signature |
 |----|-----------|--------|------|-----------|
 | walad | Lane Boy | Rare | ranged | starter unit, cheap, 8 max |
-| natour | Abu Fares the Watchman | Rare | ranged | sees stealth, lantern slows |
-| farran | Abu Bashir the Baker | Rare | splash | hot loaves |
-| saqqa | Fawzia | Rare | splash | broom sweep, slows |
-| hallaq | Issam, the Barber's Son | Rare | melee | fast razor, sees stealth |
-| khayyat | Abu Ghalib the Chickpea Seller | Rare | ranged | longest range |
-| qahwaji | Abu Hatem of the Coffee House | Rare | farm | cash per wave |
-| qabaday | Mo'taz | Epic | melee | shabriyeh ×6 |
-| haddad | Abu Khater the Blacksmith | Epic | splash | stuns |
-| mukhtar | Abu Badr | Epic | support | +15–65 % damage aura |
-| zaim | Za'im Abu Saleh | Legendary | melee | shabriyeh ×10 |
+| natour | Abu Hares the Watchman | Rare | ranged | sees stealth, lantern slows and reveals stealth to defenders in his range |
+| farran | Abu Baseer the Baker | Rare | splash | hot loaves |
+| saqqa | Fawza | Rare | splash | broom sweep, slows |
+| hallaq | Hissam, the Barber's Son | Rare | melee | fast razor, sees stealth |
+| khayyat | Abu Ghadeb the Chickpea Seller | Rare | ranged | longest range |
+| qahwaji | Abu Hazem of the Coffee House | Rare | farm | cash per wave |
+| qabaday | Mo'ez | Epic | melee | shabriyeh ×6 |
+| haddad | Abu Shater the Blacksmith | Epic | splash | stuns |
+| mukhtar | Abu Bader | Epic | support | +15–65 % damage aura |
+| zaim | Za'im Abu Faleh | Legendary | melee | shabriyeh ×10 |
 | pahlawan | The Strongman | Legendary | splash | sweep, stun |
-| umm_hara | Abu Issam, the Barber-Hakim | Legendary | healer | repairs the gate, small aura |
+| umm_hara | Abu Hissam, the Barber-Hakim | Legendary | healer | repairs the gate, small aura |
 | arada | The 'Arada Troupe | Mythic | splash | wide sweep |
-| zaim_akbar | Al-'Akeed Abu Shehab | Mythic | melee | shabriyeh ×15; season-1 pass level 50 |
-| qitt | Cat of the Lane | Secret | melee | code `QITT`, never from a banner |
+| zaim_akbar | Al-'Akeed Abu Shehan | Mythic | melee | shabriyeh ×15; season-1 pass level 50 |
+| adashari | Al-Adashari, the Night Guard | Secret | melee | the only secret unit: Episode 9 wins (1 / 2.5 / 6 %, pity 40, first Nightmare clear guarantees him), never from a banner. The Cat (`qitt`) retired in S1-S12b (D-052) |
 
-Copies → stars (+5 % damage each; 1/2/4/7/11 extra copies). Each owned unit has one **trait**
-(`Config/Traits`: steady, swift, keen, sharp, golden, hawk, za'im's blood, legend), rerolled with trait stones.
+Copies → stars (+5 % damage each; 1/2/4/7/11 extra copies). Each owned unit has one **trait**, and a second
+slot from 3 stars (traits v2, D-041; `Config/Traits`: steady, swift, keen, sharp, golden, hawk, za'im's blood,
+legend, lantern, fireproof, miser, twins), each rerolled with a trait stone. Two traits never stack a stat (the
+better one wins) and traits are capped at damage ×1.5, range ×1.25, cooldown ×0.85.
 
 ## 5. Attackers and balance (`Config/Enemies`, `Config/Waves`, `Config/TD`)
 
@@ -171,6 +174,64 @@ quantized by tens; a fully maxed Mythic team stalls at 79–80 on Normal with si
 spend (whale endless was w93 / w82 on Normal / Hard before stun chains were capped, see below). Known
 limits: the bot never sells, and its placement is greedy, so margins of a few gate HP (ep2 Nightmare myth12up
 3/35) should be treated as coin flips.
+
+### Season Story 1 ladder (2026-10-18, S1-S04, D-057)
+
+Episodes 4–6 continue the solo ladder (STORY_PLAN §5.3) with the Season 1 loadouts: **leg10up+sig** leg10up
+buying level-7 signatures (path a) · **myth12up+beads** myth12up with beads in 2 of 3 slots (cooldown, range)
+· **whale2** the whale with two traits (za'im's blood + hawk), beads and signatures, 7 slots. The bot brings
+what an episode asks for and pays a loadout slot for it (`AutoBattle.adapt`): two Watchmen against disguised
+attackers (Episode 6), Fawza against burning ones (Episode 5), in place of the plan's least-used unit type.
+Episodes 1–3 and Infinite are unchanged (frozen in `tests/td.spec.luau`).
+
+| Mode | Diff. | re6 | re4up | re6up | re10up | leg6 | leg10up | leg10up+sig | myth12up | myth12up+beads | whale | whale2 |
+|------|-------|------|------|------|------|------|------|------|------|------|------|------|
+| ep4 | normal | lost w11 | lost w18 | lost w20 | lost w20 | lost w14 | WIN 96/100 | WIN 96/100 | WIN 99/100 | WIN 100/100 | WIN 100/100 | WIN 100/100 |
+| ep4 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | WIN 31/60 | WIN 31/60 | WIN 35/60 | WIN 40/60 | WIN 60/60 | WIN 60/60 |
+| ep4 | nightmare | lost w8 | lost w9 | lost w8 | lost w8 | lost w6 | lost w10 | lost w10 | lost w8 | lost w20 | WIN 30/35 | WIN 35/35 |
+| ep5 | normal | lost w12 | lost w17 | lost w30 | lost w30 | lost w13 | WIN 98/100 | WIN 98/100 | WIN 78/100 | WIN 87/100 | WIN 98/100 | WIN 99/100 |
+| ep5 | hard | lost w9 | lost w9 | lost w12 | lost w12 | lost w10 | WIN 24/60 | WIN 24/60 | lost w9 | WIN 6/60 | WIN 58/60 | WIN 60/60 |
+| ep5 | nightmare | lost w7 | lost w6 | lost w7 | lost w7 | lost w7 | lost w6 | lost w6 | lost w7 | lost w8 | WIN 29/35 | WIN 34/35 |
+| ep6 | normal | lost w11 | lost w13 | lost w25 | lost w50 | lost w13 | lost w50 | WIN 80/100 | WIN 78/100 | WIN 83/100 | WIN 96/100 | WIN 100/100 |
+| ep6 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | WIN 9/60 | WIN 19/60 | WIN 51/60 | WIN 58/60 |
+| ep6 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w7 | lost w8 | lost w50 | WIN 35/35 |
+
+Reading it: Episode 4 (the saha, two roads) is the Legendary wall at Abu Jawdan's first visit on wave 20;
+Episode 5's torchbearers and Abu Shatour burn the door, but in the harness the burn costs less than the
+loadout slot Fawza takes, so the bot wins Episode 5 without her (D-058); Episode 6 needs two
+lanterns and, on Normal, the level-7 signatures to get Lateef down before his jump. Nightmare stays
+whale territory (whale2 only in Episode 6): the frozen Nightmare multipliers (boss ×1.8, growth ×4.5) put a
+boss ~6× further from Normal than the step between two loadouts, so no single boss HP could make
+myth12up+beads the Nightmare answer without also handing Normal to Rare/Epic teams. Lateef's window is narrow
+(4,750–4,925 HP keeps all three Episode 6 targets): retune him with the harness, never by feel.
+
+### Episodes 7–9 (2026-10-18, S1-S09, D-066)
+
+Same loadouts and bot. Episode 7 is the police-post road (one road); Episodes 8 and 9 the twin gates, where
+spawns alternate between both roads (`Modes.twinRoads`) and the one-armed guard stands as an ally (Episode 8
+from wave 41, after he comes as the thief on wave 40; Episode 9 from wave 1, taking the first 20 gate damage).
+Every cell meets the STORY_PLAN §5.3 target and no lower tier wins it (asserted in `tests/td.spec.luau`).
+
+| Mode | Diff. | re6 | re4up | re6up | re10up | leg6 | leg10up | leg10up+sig | myth12up | myth12up+beads | whale | whale2 |
+|------|-------|------|------|------|------|------|------|------|------|------|------|------|
+| ep7 | normal | lost w10 | lost w12 | lost w31 | lost w35 | lost w12 | lost w50 | lost w50 | WIN 80/100 | WIN 83/100 | WIN 100/100 | WIN 100/100 |
+| ep7 | hard | lost w8 | lost w10 | lost w9 | lost w10 | lost w10 | lost w10 | lost w10 | lost w8 | WIN 10/60 | WIN 56/60 | WIN 58/60 |
+| ep7 | nightmare | lost w7 | lost w8 | lost w7 | lost w7 | lost w7 | lost w7 | lost w7 | lost w7 | lost w7 | lost w50 | WIN 35/35 |
+| ep8 | normal | lost w12 | lost w15 | lost w15 | lost w15 | lost w13 | lost w55 | lost w55 | lost w55 | WIN 84/100 | WIN 100/100 | WIN 100/100 |
+| ep8 | hard | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w55 | lost w55 | WIN 56/60 |
+| ep8 | nightmare | lost w5 | lost w5 | lost w5 | lost w5 | lost w5 | lost w5 | lost w5 | lost w6 | lost w7 | lost w55 | WIN 31/35 |
+| ep9 | normal | lost w13 | lost w14 | lost w15 | lost w15 | lost w14 | lost w30 | lost w30 | lost w30 | WIN 100/100 | WIN 100/100 | WIN 100/100 |
+| ep9 | hard | lost w10 | lost w10 | lost w12 | lost w12 | lost w11 | lost w13 | lost w13 | lost w13 | lost w15 | lost w15 | WIN 60/60 |
+| ep9 | nightmare | lost w9 | lost w8 | lost w9 | lost w9 | lost w9 | lost w10 | lost w10 | lost w10 | lost w11 | lost w15 | WIN 35/35 |
+
+Reading it: in this harness a maxed bot kills every regular enemy late, so the ladder is set by bosses
+(`Waves.bossHp`, a factor per boss wave, optionally one per difficulty): Episode 7's commandant is the
+finale's damage check (×2.5 Normal, ×1.8 Hard, ×1.6 Nightmare); Episode 8 softens Fakhr at wave 15 (×0.5)
+and tunes the enraged 'akeed so that only beads beat him on Normal (×1.25, a narrow window) and whale2 just
+holds on Nightmare (×0.44 wins 31/35, ×0.45 loses: the plan's coin flip); Episode 9 pins its bosses to the
+long road (`bossRoad = 2`), sends Fakhr and the commandant down the other one as escorts at 0.3 HP
+(`Waves` pool `path`, `hp`), and makes Lateef at wave 30 the Normal wall (×1). The ally does not decide
+Episode 9 Nightmare in the harness (whale2 wins without him too).
 
 ### Party scaling (2026-10-16)
 

@@ -10,6 +10,7 @@ local TweenService = game:GetService("TweenService")
 local Create = require(script.Parent.Create)
 local Theme = require(script.Parent.Theme)
 local Fx = require(script.Parent.Fx)
+local Juice = require(script.Parent.Juice)
 
 local SummonSequence = {}
 
@@ -153,6 +154,29 @@ local function sparks(parent: Instance, color: Color3, z: number)
 	end
 end
 
+-- Jasmine petals bursting from the lantern (Legendary and better, PV-B07). UI frames, freed after.
+local function petals(parent: Instance, z: number)
+	for i = 1, 14 do
+		local a = (i / 14) * math.pi * 2 + math.random() * 0.4
+		local d = 140 + math.random() * 160
+		local p = Create("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.42),
+			Size = UDim2.fromOffset(14, 9),
+			Rotation = math.deg(a),
+			BackgroundColor3 = if i % 3 == 0 then Color3.fromHex("#F6D4DC") else Color3.fromHex("#FFF6EA"),
+			BorderSizePixel = 0,
+			ZIndex = z,
+			Parent = parent,
+		}, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+		local t = 0.9 + math.random() * 0.6
+		tween(p, t, { Position = UDim2.new(0.5, math.cos(a) * d, 0.42, math.sin(a) * d + 60), Rotation = math.deg(a) + 160, BackgroundTransparency = 1 }, Enum.EasingStyle.Sine)
+		task.delay(t, function()
+			p:Destroy()
+		end)
+	end
+end
+
 export type Handle = { skip: () -> () }
 
 -- Plays the build-up inside `parent` (a full-screen frame). `best` is the best rarity rolled.
@@ -188,6 +212,9 @@ function SummonSequence.play(parent: GuiObject, best: string, onBurst: () -> (),
 			end
 			if high then
 				sparks(stage, color, z + 3)
+				if Juice.allowed("petals") then
+					petals(stage, z + 4)
+				end
 			end
 		end
 		onBurst()

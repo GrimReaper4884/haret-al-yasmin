@@ -28,7 +28,11 @@ type Profile = {
 	inventory: { [string]: number },       -- itemId → count (>0); removed keys mean 0
 	equipped: { head: string? },           -- slot → itemId (must be owned)
 	quests: { [string]: QuestRecord },
-	settings: { language: string? },       -- "en" | "ar" | nil (= follow the Roblox locale)
+	settings: { language: string? },       -- "en" | "ar" | nil (= follow the Roblox locale); the other keys are
+	                                       -- Logic/Settings.defs (effects, skipSummon, autoUlt, camera, autoAfk,
+	                                       -- autoSkip, music: boolean = true, sfx: boolean = true, cutscenes: boolean = true), checked by
+	                                       -- Settings.accept and dropped by Settings.sanitize when invalid.
+	                                       -- music / sfx are client-side only (AudioController); the server just stores them.
 	stats: { firstJoin: number, lastJoin: number, sessions: number },
 	receipts: { [string]: number },        -- RESERVED: Robux PurchaseId → os.time(); idempotent ProcessReceipt
 }
@@ -105,7 +109,8 @@ published **test** experience.
 | `lira` | integer 0..10,000,000 | summon currency |
 | `welcomeLira` | `true` once paid | the one-time `TD.STARTER_LIRA` gift (500) was added to `lira`; sanitize pays it to any profile without the flag |
 | `traitStones` | integer 0..100,000 | trait rerolls |
-| `units` | `{ [unitId]: { copies, trait, at } }` | unknown ids and traits are dropped; the starter unit (`TD.STARTER_UNIT`) is always present |
+| `beads` | integer 0..999 | shabriyeh beads to thread onto units (S1-S11, `Config/Beads`); `units[id].beads` = 3 strings, each "" or a kind the unit takes; `td.beadDay` / `td.beadDayCount` hold the daily drop cap |
+| `units` | `{ [unitId]: { copies, trait, trait2?, beads?, at } }` | unknown ids and traits are dropped (an unknown `trait2` becomes nil); `trait2` is the second trait slot, rolled with a stone once the unit has `TD.TRAIT2_STARS` stars (traits v2, DECISIONS D-041); the starter unit (`TD.STARTER_UNIT`) is always present |
 | `loadout` | `{ unitId }` | owned, unique, de-duplicated; defaults to the starter |
 | `summons` | `{ total, sinceLegendary, sinceMythic }` | pity counters |
 | `pass` | `{ season, xp, premium, claimedFree{tier->true}, claimedPremium }` | reset when `season ~= SeasonPass.season` |

@@ -3,7 +3,7 @@
 -- Pure data: no requires, no Roblox datatypes (loaded by Lune tests).
 
 return {
-	SCHEMA_VERSION = 2,
+	SCHEMA_VERSION = 3, -- v3 (S1-S12b): the Cat becomes Al-Adashari (ProfileSchema MIGRATIONS[2])
 	DATASTORE_NAME = "PlayerData_v1",
 	KEY_PREFIX = "u_",
 

@@ -7,9 +7,11 @@ local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Units = require(Shared.Config.Units)
+local Enemies = require(Shared.Config.Enemies)
 local Palette = require(Shared.Config.Palette)
 local RigBuilder = require(Shared.Util.RigBuilder)
 local Looks = require(Shared.Config.CharacterLooks)
+local IconIds = require(Shared.Config.Icons)
 local BoneAnim = require(Shared.Anim.BoneAnim)
 local Create = require(script.Parent.Create)
 local Theme = require(script.Parent.Theme)
@@ -42,9 +44,11 @@ local function posePreview(vp: ViewportFrame, rig: Model, unitId: string, loop: 
 		if not p then
 			return
 		end
-		BoneAnim.loop(p, "idle")
+		-- Attackers have no idle: they pose on their walk.
+		local slot = if BoneAnim.length(p, "idle") > 0 then "idle" else "walk"
+		BoneAnim.loop(p, slot)
 		if not loop then
-			BoneAnim.pose(p, "idle")
+			BoneAnim.pose(p, slot)
 			return
 		end
 		local conn: RBXScriptConnection
@@ -110,8 +114,10 @@ local function posePreview(vp: ViewportFrame, rig: Model, unitId: string, loop: 
 end
 
 -- A viewport showing the unit rig (feet at y 0, facing the camera).
-function UnitCard.preview(unitId: string, props: { [string]: any }, spin: boolean?): ViewportFrame
-	local def = (Units :: any)[unitId]
+-- `portrait` frames head and shoulders (boss bar); otherwise the whole figure. Works for
+-- defenders and attackers (Config/Enemies) alike.
+function UnitCard.preview(unitId: string, props: { [string]: any }, spin: boolean?, portrait: boolean?): ViewportFrame
+	local def = (Units :: any)[unitId] or (Enemies :: any)[unitId]
 	local vp = Create("ViewportFrame", props)
 	vp.BackgroundColor3 = Palette.stoneWarm
 	vp.BackgroundTransparency = 0.35
@@ -131,8 +137,8 @@ function UnitCard.preview(unitId: string, props: { [string]: any }, spin: boolea
 	camera.Parent = vp
 	vp.CurrentCamera = camera
 	local isCat = def.visual.weapon == "cat"
-	local height = if isCat then 1.2 * s else 3.0 * s
-	local dist = if isCat then 6 * s else 9.6 * s
+	local height = if isCat then 1.2 * s elseif portrait then 4.1 * s else 3.0 * s
+	local dist = if isCat then 6 * s elseif portrait then 4.2 * s else 9.6 * s
 	local function place(yawDeg: number)
 		local yaw = math.rad(yawDeg)
 		local target = Vector3.new(0, height, 0)
@@ -153,6 +159,35 @@ function UnitCard.preview(unitId: string, props: { [string]: any }, spin: boolea
 		end)
 	end
 	return vp
+end
+
+-- The painted portrait's image id (Config/Icons.portraits, PV-C05) while it still matches the
+-- character's model, else nil.
+function UnitCard.portraitId(unitId: string): number?
+	local p = IconIds.portraits[unitId]
+	if not p or p.id == 0 then
+		return nil
+	end
+	local look = (Looks :: any)[unitId]
+	local model = if look and look.model then look.model else ""
+	return if p.model == model then p.id else nil
+end
+
+-- Head and shoulders for slots, hotbars and the boss bar: the painted portrait (no per-frame cost) or,
+-- without a current one, the live figure framed the same way.
+function UnitCard.portrait(unitId: string, props: { [string]: any }): GuiObject
+	local id = UnitCard.portraitId(unitId)
+	if not id then
+		return UnitCard.preview(unitId, props, false, true)
+	end
+	local img = Create("ImageLabel", props)
+	img.Name = "Portrait"
+	img.Image = "rbxassetid://" .. tostring(id)
+	img.ScaleType = Enum.ScaleType.Crop
+	img.BackgroundColor3 = Palette.stoneWarm
+	img.BackgroundTransparency = 0.35
+	Create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = img })
+	return img
 end
 
 function UnitCard.create(unitId: string, props: { [string]: any }, opts: Options?): Frame
@@ -177,15 +212,23 @@ function UnitCard.create(unitId: string, props: { [string]: any }, opts: Options
 	end
 
 	local hasText = o.name ~= nil
-	local vp = UnitCard.preview(unitId, {
+	-- Grids show the painted portrait; only a spinning showcase card keeps a live viewport
+	-- (ANIME_VANGUARDS_STUDY §7: a grid of viewports costs a render each).
+	local figureProps = {
 		Position = UDim2.fromOffset(4, 4),
 		Size = UDim2.new(1, -8, if hasText then 0.62 else 1, if hasText then 0 else -8),
 		ZIndex = z,
-	}, o.spin)
-	vp.BackgroundTransparency = 1
-	vp.Parent = card
-	if o.dim then
-		vp.ImageTransparency = 0.5
+	}
+	if o.spin or not UnitCard.portraitId(unitId) then
+		local vp = UnitCard.preview(unitId, figureProps, o.spin)
+		vp.BackgroundTransparency = 1
+		vp.ImageTransparency = if o.dim then 0.5 else 0
+		vp.Parent = card
+	else
+		local img = UnitCard.portrait(unitId, figureProps) :: ImageLabel
+		img.BackgroundTransparency = 1
+		img.ImageTransparency = if o.dim then 0.5 else 0
+		img.Parent = card
 	end
 	if o.stars and o.stars > 0 then
 		local stars = Theme.display({
