@@ -906,3 +906,18 @@ behind it). The one Episode 1 match was ended by stopping Play at wave 1 (nothin
 | MH-20 · iPhone 17 Pro / 640×360 entry (640×282) | Lane Diary: free and premium rows on screen, content window = canvas (230 / 188, no sheet scroll), premium buttons end at 244 of 262 (640); desktop shape unchanged | 22 · 0 / 20 · 0 (controls hidden) | `mh20_iphone17pro_pass_both_tracks`, `mh20_640_pass_both_tracks`, `mh20_desktop_pass_unchanged` |
 | MH-21 · iPhone 17 Pro / 640 | Summon: content window = canvas (230 / 188), no outer bar; Rates panel with the pity line fits; desktop row layout unchanged | 11 · 0 / 11 · 0 (controls hidden) | `mh21_iphone17pro_summon_no_outer_scroll`, `_rates`, `mh21_640_*`, `mh21_desktop_summon_unchanged` |
 | MH-22 · 640 / iPhone 17 Pro | Play detail scrolled to the end: last line (Episode 1 bosses; Episode 9 odds + enemies) ends at 202, Create top 206 (640); 244 / 248 (iPhone) | 13 · 0 / 13 · 0 (controls hidden) | `mh22_640_play_detail_top`, `_scrolled_enemies_above_create`, `mh22_640_play_ep9_*`, `mh22_iphone17pro_*` |
+
+## LP: look-and-play fixes (2026-10-19)
+
+### LP-A01 the health bar hides on death
+
+*Play Solo on the TEST place, desktop 1636×584, Episode 1 Normal started with `M`, three defenders placed with
+`C` + `B`, autoSkip on; Play stopped at wave 11/20 (nothing paid). Probes run in the Client VM on the
+`MatchEvents` remote.*
+
+| Check | Result | Capture |
+|---|---|---|
+| 0.15 s after each `death` event, enabled `BillboardGui`s under the dying model (4 deaths, all models still present playing the death clip) | 0 of 4 | `docs/captures/lp/a01_death_thief.jpg` (the dying gendarme in its petal poof has no bar; living ones keep theirs), `a01_death_thief_close.jpg` |
+| Boss (`sergeant` via `HaretDebug spawn`): top meter fill / visible after its `death` at 0.05 · 0.20 · 0.30 · 0.45 · 0.60 s | 0.37 · 0.02 · 0.00 · 0.00 · 0.00 / shown, shown, shown, **hidden**, hidden; model present, 0 enabled billboards throughout | — |
+| Boss `chief_thief` falling | no bar over the figure, top meter gone, thieves behind still barred | `a01_death_boss.jpg` |
+| Console, waves 1–11 | no errors or warnings from our code (only the engine's `203785492` and UIBlox lines, LP-C00) | — |

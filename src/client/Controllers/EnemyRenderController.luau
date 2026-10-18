@@ -243,10 +243,35 @@ local function showBoss(id: number, enemyId: string)
 	Juice.pop(bossBar)
 end
 
-local function hideBoss(id: number)
-	if bossId == id then
-		bossId = nil
+-- `drain`: the boss fell, so the meter runs to 0 before it hides (LP-A01); a boss that walks
+-- through the gate hides it at once. A new boss shown during the drain keeps the bar.
+local function hideBoss(id: number, drain: boolean?)
+	if bossId ~= id then
+		return
+	end
+	bossId = nil
+	if not drain then
 		bossBar.Visible = false
+		return
+	end
+	bossMeter.set(0, "")
+	task.delay(Vfx.ENEMY_READ.bossDrainHold, function()
+		if bossId == nil then
+			bossBar.Visible = false
+		end
+	end)
+end
+
+-- A defeated figure keeps playing its death clip for a second or more: its health bar and markers
+-- go first (LP-A01), so no stale HP hangs over the fall. The record is already out of `enemies`,
+-- so a late position packet for this id finds nothing to redraw.
+local function hideBars(rec: Enemy)
+	rec.bar = nil
+	rec.disguise = nil
+	for _, d in rec.model:GetDescendants() do
+		if d:IsA("BillboardGui") then
+			d.Enabled = false
+		end
 	end
 end
 
@@ -484,6 +509,9 @@ local function remove(id: number, died: boolean, death: any?)
 	end
 	enemies[id] = nil
 	byModel[rec.model] = nil
+	if died then
+		hideBars(rec)
+	end
 	local disc = rec.disc
 	if disc then
 		rec.disc = nil
@@ -501,7 +529,7 @@ local function remove(id: number, died: boolean, death: any?)
 		fellAt[id] = rec.model:GetPivot().Position
 	end
 	if rec.boss then
-		hideBoss(id)
+		hideBoss(id, died)
 	end
 	if died then
 		local at = rec.model:GetPivot().Position

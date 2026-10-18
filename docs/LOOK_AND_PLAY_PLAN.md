@@ -519,7 +519,7 @@ DECISIONS; every name goes through §4.2's STOP first.
 
 ### Workstream A: fixes players feel today (do first)
 
-- [ ] **LP-A01 Hide the health bar on death** · deps: none
+- [x] **LP-A01 Hide the health bar on death** · deps: none
   - Goal: §3.1.
   - Change: `EnemyRenderController.remove` disables the BillboardGui and the ring before `poof`; the position
     stream ignores ids with a pending death; `bossMeter` drains then hides.
@@ -640,7 +640,7 @@ Meshy budget: ≈ 330 credits (240 for four NPC looks + 90 for the merchant and 
 
 ## 9. Checklist (tick with the commit hash)
 
-- [ ] LP-A01 · [ ] LP-A02 · [ ] LP-A03
+- [x] LP-A01 · [ ] LP-A02 · [ ] LP-A03
 - [ ] LP-B01 · [ ] LP-B02 · [ ] LP-B03 · [ ] LP-B04 · [ ] LP-B05
 - [ ] LP-C00 · [ ] LP-C01 · [ ] LP-C02 · [ ] LP-C03 · [ ] LP-C04 · [ ] LP-C05 · [ ] LP-C06 · [ ] LP-C07
 - [ ] LP-D00 · [ ] LP-D01 · [ ] LP-D02 · [ ] LP-D03 · [ ] LP-D04 · [ ] LP-D05 · [ ] LP-D06 · [ ] LP-D07 · [ ] LP-D08 · [ ] LP-D09 · [ ] LP-D10 · [ ] LP-D11

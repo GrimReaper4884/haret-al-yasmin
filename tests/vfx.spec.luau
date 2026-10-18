@@ -251,6 +251,10 @@ return function(t)
 			t.truthy(r.portrait >= 48, "the boss portrait reads on a phone")
 			t.truthy(r.discTransparency > 0 and r.discTransparency < 1)
 		end)
+		t.it("a fallen boss's meter is seen to drain before it hides, but not for long (LP-A01)", function()
+			local hold = Vfx.ENEMY_READ.bossDrainHold
+			t.truthy(type(hold) == "number" and hold >= 0.35 and hold <= 1, "covers the meter's 0.35 s tween, under a second")
+		end)
 	end)
 
 	t.describe("Match moments (PV-B06)", function()
