@@ -63,6 +63,7 @@ export type Match = {
 	eventBuffer: { any },
 	buffShown: { [number]: number }, -- tower id → the support buff on its badge (absent = none)
 	revealShown: { [number]: number }, -- tower id → the lantern tower letting it see stealth (absent = none)
+	sabotaged: { [number]: number }, -- tower id → game time its sabotage ends (towerDisabled; D-038)
 	script: any?, -- the episode's scripted beats (Config/Waves episodes[id].script): the ally's turn
 }
 
@@ -415,6 +416,7 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 		eventBuffer = {},
 		buffShown = {},
 		revealShown = {},
+		sabotaged = {},
 	}
 	nextMatchId += 1
 	matches[match.id] = match
@@ -706,11 +708,26 @@ local function stepMatch(match: Match, dt: number)
 					queueEvent(match, { type = "towerPlaced", id = ally.id, owner = nil, ally = true, unitId = ally.unitId, x = ally.x, z = ally.z, level = ally.level, range = ally.stats.range })
 					queueEvent(match, { type = "ally", id = ally.id, unitId = ally.unitId, shield = match.state.allyShield })
 				end
+			elseif t == "towerDisabled" then
+				-- A saboteur's shot: the tower can't attack and, if it is a lantern, goes dark
+				if type(e.tower) == "number" and type(e.untilT) == "number" then
+					match.sabotaged[e.tower] = e.untilT
+				end
+				queueEvent(match, e)
+				refreshBuffs(match)
 			elseif t == "waveEnd" or t == "reached" or t == "gateBurn" then
 				changed = true
 				queueEvent(match, e)
 				if t == "waveEnd" then
 					autoSkip = true
+					-- The sim clears every sabotage at wave end
+					for id in match.sabotaged do
+						queueEvent(match, { type = "towerEnabled", id = id })
+					end
+					if next(match.sabotaged) ~= nil then
+						table.clear(match.sabotaged)
+						refreshBuffs(match)
+					end
 					for p in match.players do
 						FunnelService.waveCleared(p, e.wave)
 					end
@@ -732,6 +749,18 @@ local function stepMatch(match: Match, dt: number)
 				queueEvent(match, e)
 			end
 		end
+	end
+	-- Sabotage wearing off mid-wave: the tower is back (and a lantern lights up again)
+	local back = false
+	for id, untilT in match.sabotaged do
+		if match.state.time >= untilT then
+			match.sabotaged[id] = nil
+			queueEvent(match, { type = "towerEnabled", id = id })
+			back = true
+		end
+	end
+	if back then
+		refreshBuffs(match)
 	end
 	if match.accum > TD.TICK * MAX_STEPS_PER_FRAME then
 		match.accum = 0 -- the server fell behind; drop time instead of spiralling

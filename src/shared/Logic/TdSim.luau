@@ -549,7 +549,9 @@ local function revealerFor(state: State, t: Tower): Tower?
 	local best: Tower? = nil
 	local bestD2 = math.huge
 	for _, s in state.towers do
-		if s.stats.revealsStealth and s ~= t then
+		-- A sabotaged lantern is dark until it is back (disabledUntil, cleared at wave end; D-038)
+		local dark = s.disabledUntil ~= nil and state.time < s.disabledUntil
+		if s.stats.revealsStealth and s ~= t and not dark then
 			local d2 = dist2(s.x, s.z, t.x, t.z)
 			if d2 <= s.stats.range * s.stats.range and d2 < bestD2 then
 				best, bestD2 = s, d2
