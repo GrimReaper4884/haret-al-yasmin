@@ -144,7 +144,7 @@ return {
 		},
 		enrage = { color = "#C0281E", fill = 0.7, outline = 0.3, maxHighlights = 6, barColor = "#FF5A1F" },
 		split = { color = "#8C6B43", radius = 4, life = 0.45, crumbs = 5, crumbSize = 0.5, rise = 2.5 },
-		pinned = { color = "#8A8F96", radius = 2.6, transparency = 0.35, height = 0.15, labelSize = 14, labelColor = "#E8E8E8" },
+		pinned = { color = "#8A8F96", radius = 2.6, transparency = 0.35, height = 0.15, labelSize = 16, labelColor = "#E8E8E8", labelHeight = 5 },
 	},
 
 	-- Ultimate strikes (EnemyRenderController.ultimateStrike): kept from P1-15.

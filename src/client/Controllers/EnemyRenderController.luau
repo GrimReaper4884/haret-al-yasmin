@@ -881,11 +881,15 @@ local function pin(towerId: number)
 		CFrame = CFrame.new(at + Vector3.new(0, 0.12, 0)) * CFrame.Angles(0, 0, math.rad(90)),
 		Parent = folder,
 	})
+	-- The tag hangs on an attachment straight over the defender's head (the flat ring is a rotated
+	-- cylinder, so offsets in its own frame point sideways; a camera-relative one slid under the top
+	-- HUD). Not AlwaysOnTop, like the health bars (an always-on-top billboard skipped the Studio captures).
+	local over = Create("Attachment", { Name = "Tag", Parent = ring })
+	over.WorldCFrame = CFrame.new(at + Vector3.new(0, cfg.labelHeight, 0))
 	local gui = Create("BillboardGui", {
-		Adornee = ring,
+		Adornee = over,
 		Size = UDim2.fromOffset(120, 24),
-		StudsOffset = Vector3.new(0, 7, 0),
-		AlwaysOnTop = true,
+		AlwaysOnTop = false,
 		LightInfluence = 0,
 		MaxDistance = 160,
 		Parent = ring,
