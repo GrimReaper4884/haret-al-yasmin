@@ -36,10 +36,11 @@ export type Level = {
 }
 
 export type Ability = {
-	kind: "shabriyeh" | "sweep",
+	kind: "shabriyeh" | "sweep" | "mark",
 	cooldown: number, -- seconds
-	multiplier: number, -- damage multiplier on the target (shabriyeh) or on everything in radius (sweep)
+	multiplier: number, -- damage multiplier on the target (shabriyeh), on everything in radius (sweep), or that the marked enemy takes from every defender (mark; cap 1.4, D-045)
 	radius: number?,
+	duration: number?, -- mark: seconds the mark lasts
 }
 
 export type Visual = {

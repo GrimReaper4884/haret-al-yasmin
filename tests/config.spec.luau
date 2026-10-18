@@ -154,6 +154,24 @@ return function(t)
 		end)
 	end)
 
+	-- Defender abilities: a known kind; the mark (S1-S06) is capped at ×1.4 (STORY_PLAN §7.6, D-045).
+	t.describe("Unit abilities", function()
+		local Units = t.config("Units")
+		t.it("every ability has a known kind, a cooldown and a capped mark", function()
+			for id, u in Units do
+				local ab = u.ability
+				if ab then
+					t.truthy(ab.kind == "shabriyeh" or ab.kind == "sweep" or ab.kind == "mark", id .. " ability kind")
+					t.truthy(type(ab.cooldown) == "number" and ab.cooldown >= 3, id .. " ability cooldown")
+					if ab.kind == "mark" then
+						t.truthy(ab.multiplier > 1 and ab.multiplier <= 1.4, id .. " mark ≤ ×1.4")
+						t.truthy(type(ab.duration) == "number" and ab.duration > 0 and ab.duration < ab.cooldown, id .. " mark duration")
+					end
+				end
+			end
+		end)
+	end)
+
 	-- Season Story 1 (Config/Story, STORY_PLAN §5, S1-N02): every line resolves in every language.
 	t.describe("Story", function()
 		local Story = t.config("Story")
@@ -240,7 +258,7 @@ return function(t)
 		local KNOWN = {
 			nameKey = true, hp = true, speed = true, reward = true, gateDamage = true, armor = true, stealth = true,
 			boss = true, swarm = true, aura = true, shield = true, burn = true, disguised = true, visual = true,
-			summon = true, teleport = true,
+			summon = true, teleport = true, sabotage = true, split = true, enrage = true, healAura = true,
 		}
 		t.it("names resolve, numbers are sane, every flag is known and typed, every attacker has a look", function()
 			for id, def in Enemies do
@@ -279,6 +297,21 @@ return function(t)
 					t.truthy(num(def.teleport.atHp, 0.05, 0.95), id .. " teleport atHp")
 					t.truthy(num(def.teleport.fraction, 0.01, 0.5), id .. " teleport fraction")
 					t.truthy(num(def.teleport.telegraph, 0.5, 10), id .. " teleport telegraph")
+				end
+				if def.sabotage then
+					local sb = def.sabotage
+					t.truthy(num(sb.range, 2, 30) and num(sb.duration, 0.5, 5) and num(sb.cooldown, sb.duration, 60), id .. " sabotage")
+				end
+				if def.split then
+					local child = Enemies[def.split.enemy]
+					t.truthy(child and not child.boss and not child.split, id .. " splits into a plain attacker")
+					t.truthy(num(def.split.count, 1, 8) and def.split.count % 1 == 0, id .. " split count")
+				end
+				if def.enrage then
+					t.truthy(num(def.enrage.belowHp, 0.05, 0.95) and num(def.enrage.speed, 1.01, WaveLogic.MAX_SPEED_MUL), id .. " enrage")
+				end
+				if def.healAura then
+					t.truthy(num(def.healAura.radius, 1, 20) and num(def.healAura.pct, 0.001, 0.05), id .. " heal aura")
 				end
 				local look = Looks[id]
 				if look and look.clips then

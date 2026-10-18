@@ -609,6 +609,181 @@ return function(t)
 		end)
 	end)
 
+	-- Story mechanics, batch 2 (STORY_PLAN §10.1, S1-S06): sabotage, split, enrage, heal aura and the
+	-- `mark` ability. Stand-in attackers until S1-S08 adds the real rifleman, cart, brute and hakim.
+	t.describe("Story mechanics (S1-S06)", function()
+		local straight = { { 0, 0 }, { 200, 0 } }
+		local V = Enemies.gendarme.visual
+		local E = setmetatable({
+			rifle = { nameKey = "x", hp = 1e6, speed = 5, reward = 38, gateDamage = 2, sabotage = { range = 10, duration = 2.5, cooldown = 8 }, visual = V },
+			cart = { nameKey = "x", hp = 3, speed = 3.4, reward = 60, gateDamage = 3, split = { enemy = "thug", count = 4 }, visual = V },
+			brute = { nameKey = "x", hp = 380, speed = 4.2, reward = 65, gateDamage = 3, enrage = { belowHp = 0.5, speed = 1.6 }, visual = V },
+			hakim = { nameKey = "x", hp = 200, speed = 4.6, reward = 50, gateDamage = 1, healAura = { radius = 8, pct = 0.02 }, visual = V },
+			wall = { nameKey = "x", hp = 1e6, speed = 0.5, reward = 0, gateDamage = 0, visual = V },
+		}, { __index = Enemies })
+		local function simE(list, totalWaves)
+			return TdSim.new(straight, { "p1" }, 100000, 100, totalWaves or 2, 1, {
+				between = 2,
+				waveBonusBase = TD.WAVE_BONUS_BASE,
+				waveBonusPerWave = TD.WAVE_BONUS_PER_WAVE,
+				rewardMul = 1,
+				enemies = E,
+				maxSpeedMul = WaveLogic.MAX_SPEED_MUL,
+			}, function()
+				local spawns = {}
+				for _, sp in list do
+					table.insert(spawns, { at = sp[2] or 0, enemy = sp[1], hpMul = sp[3] or 1, speedMul = sp[4] or 1 })
+				end
+				return { spawns = spawns, count = #spawns }
+			end)
+		end
+		local function find(state, enemyId)
+			for _, e in state.enemies do
+				if e.enemyId == enemyId and e.alive then
+					return e
+				end
+			end
+			return nil
+		end
+		local function attacksBy(ev, towerId)
+			local n = 0
+			for _, e in ev do
+				if e.type == "attack" and e.tower == towerId then
+					n += 1
+				end
+			end
+			return n
+		end
+
+		t.it("sabotage: the rifleman stops, the nearest defender goes quiet for 2.5 s, again after 8 s", function()
+			local s = simE({ { "rifle" } })
+			local _, _, w = TdTowers.place(s, "p1", "walad", Units.walad, 30, 4, 0, nil, rules())
+			local _, _, far = TdTowers.place(s, "p1", "walad", Units.walad, 60, 4, 0, nil, rules())
+			local ev = run(s, 1 + 4.5)
+			local hitTower
+			for _, e in ev do
+				if e.type == "towerDisabled" then
+					hitTower = e.tower
+				end
+			end
+			t.eq(hitTower, w.id, "the nearest defender")
+			t.eq(far.disabledUntil, nil, "one defender per shot")
+			local r = find(s, "rifle")
+			local d0 = r.dist
+			ev = run(s, 2.0)
+			t.eq(attacksBy(ev, w.id), 0, "disabled: no attacks")
+			t.truthy(math.abs(r.dist - d0) < 1e-9, "the rifleman stands still while aiming")
+			ev = run(s, 1.5)
+			t.truthy(attacksBy(ev, w.id) > 0, "back after the duration")
+			t.truthy(r.dist > d0, "and he walks on")
+			ev = run(s, 6)
+			t.eq(count(ev, "towerDisabled"), 1, "the next shot only after the cooldown")
+		end)
+
+		t.it("split: a cart releases 4 thugs where it dies, with its wave HP; its reward is paid once", function()
+			local s = simE({ { "cart", 0, 2 } })
+			local _, _, w = TdTowers.place(s, "p1", "walad", Units.walad, 12, 4, 0, nil, rules())
+			local cash0 = s.players.p1.cash
+			local ev = run(s, 4)
+			local deaths, splits = 0, 0
+			for _, e in ev do
+				if e.type == "death" and e.tower == w.id then
+					deaths += 1
+				elseif e.type == "split" then
+					splits += 1
+				end
+			end
+			t.eq(splits, 1)
+			local thugs = 0
+			for _, e in s.enemies do
+				if e.enemyId == "thug" then
+					thugs += 1
+					t.eq(e.maxHp, Enemies.thug.hp * 2, "inherits the wave HP")
+				end
+			end
+			t.eq(thugs + math.max(0, deaths - 1), 4, "four passengers")
+			t.truthy(s.players.p1.cash - cash0 >= E.cart.reward, "the cart's reward")
+		end)
+
+		t.it("enrage: below half HP the brute walks ×1.6, held at the speed cap", function()
+			local s = simE({ { "brute" }, { "brute", 0, 1, 1.5 } })
+			run(s, 1.05)
+			local b1, b2
+			for _, e in s.enemies do
+				if e.speed == E.brute.speed then
+					b1 = e
+				else
+					b2 = e
+				end
+			end
+			local d0 = b1.dist
+			run(s, 1)
+			local calm = b1.dist - d0
+			b1.hp = b1.maxHp * 0.4
+			b2.hp = b2.maxHp * 0.4
+			d0 = b1.dist
+			local e0 = b2.dist
+			run(s, 1)
+			t.truthy(math.abs((b1.dist - d0) / calm - E.brute.enrage.speed) < 0.06, "×1.6 when wounded")
+			t.truthy(b2.dist - e0 <= E.brute.speed * WaveLogic.MAX_SPEED_MUL + 0.01, "a fast brute stops at the cap")
+		end)
+
+		t.it("heal aura: others nearby regain 2 %/s of max HP, never past max, the hakim not himself", function()
+			local s = simE({ { "hakim" }, { "gendarme" }, { "wall" } })
+			run(s, 1.05)
+			local h, g = find(s, "hakim"), find(s, "gendarme")
+			g.hp = g.maxHp * 0.5
+			h.hp = h.maxHp * 0.5
+			run(s, 1)
+			t.truthy(math.abs(g.hp - g.maxHp * 0.52) < g.maxHp * 0.002, "≈ +2 % in one second")
+			t.eq(h.hp, h.maxHp * 0.5, "no self-heal")
+			g.hp = g.maxHp - 0.01
+			run(s, 1)
+			t.eq(g.hp, g.maxHp, "capped at max")
+		end)
+
+		t.it("mark: the strongest in range takes ×1.4 from every defender for 4 s; marks don't stack", function()
+			local marker = table.clone(Units.hallaq)
+			marker.ability = { kind = "mark", cooldown = 10, multiplier = 1.4, duration = 4 }
+			local s = simE({ { "wall" }, { "gendarme" } })
+			run(s, 1.05)
+			local wall = find(s, "wall")
+			local _, _, m = TdTowers.place(s, "p1", "hallaq", marker, 2, 4, 0, nil, rules())
+			local _, _, m2 = TdTowers.place(s, "p1", "hallaq", marker, 2, -4, 0, nil, rules())
+			local ev = run(s, TD.TICK * 2)
+			t.truthy(count(ev, "mark") >= 1)
+			t.eq(wall.markMul, 1.4, "the strongest one, and two markers don't make it 1.96")
+			t.truthy(wall.markedUntil > s.time and wall.markedUntil <= s.time + 4)
+			-- A plain defender's hit on the marked enemy lands ×1.4.
+			local _, _, w = TdTowers.place(s, "p1", "walad", Units.walad, 6, 4, 0, nil, rules())
+			w.targeting = "strong"
+			local before = wall.hp
+			ev = run(s, TD.TICK)
+			local hitsW = attacksBy(ev, w.id)
+			local hitsM = attacksBy(ev, m.id) + attacksBy(ev, m2.id)
+			t.eq(hitsW, 1)
+			local expect = Units.walad.levels[1].damage * 1.4 + hitsM * Units.hallaq.levels[1].damage * 1.4
+			t.truthy(math.abs((before - wall.hp) - expect) < 1e-6, "every defender's damage ×1.4")
+			run(s, 4.2)
+			t.truthy(s.time >= wall.markedUntil, "the mark wears off")
+			before = wall.hp
+			ev = run(s, TD.TICK)
+			local plain = attacksBy(ev, w.id) * Units.walad.levels[1].damage + (attacksBy(ev, m.id) + attacksBy(ev, m2.id)) * Units.hallaq.levels[1].damage
+			t.truthy(math.abs((before - wall.hp) - plain) < 1e-6, "back to plain damage")
+		end)
+
+		t.it("a sabotaged defender is back for the next wave", function()
+			local s = simE({ { "rifle" } }, 3)
+			local _, _, w = TdTowers.place(s, "p1", "walad", Units.walad, 30, 4, 0, nil, rules())
+			run(s, 1 + 4.5)
+			t.truthy(w.disabledUntil ~= nil)
+			find(s, "rifle").alive = false
+			run(s, TD.TICK * 2)
+			t.eq(s.phase, "prep")
+			t.eq(w.disabledUntil, nil)
+		end)
+	end)
+
 	-- Traits v2 (docs/STORY_PLAN.md §7.2, S1-S02): 12 traits, a second slot at TD.TRAIT2_STARS
 	-- stars, the better trait per stat, and the D-041 caps.
 	t.describe("Traits v2 (S1-S02)", function()

@@ -40,6 +40,14 @@ export type Enemy = {
 	teleport: { atHp: number, fraction: number, telegraph: number }?, -- one jump forward (Lateef)
 	teleportAt: number?, -- set when the jump is telegraphed; it lands at this time …
 	teleportTo: number?, -- … at this path distance
+	sabotage: { range: number, duration: number, cooldown: number }?, -- disables the nearest defender (rifleman)
+	sabotageAt: number, -- earliest time of its next shot
+	holdUntil: number, -- it stands still (aiming) until then
+	split: { enemy: string, count: number }?, -- releases attackers when it dies (cart)
+	enrage: { belowHp: number, speed: number }?, -- walks faster once wounded (brute)
+	healAura: { radius: number, pct: number }?, -- mends others nearby, pct of their max HP per second (rival hakim)
+	markedUntil: number, -- marked by a defender's ability until then …
+	markMul: number, -- … and takes this much more damage from every defender
 	reward: number,
 	gateDamage: number,
 	boss: boolean,
@@ -60,6 +68,7 @@ export type Tower = {
 	targeting: string, -- "first" | "last" | "strong" | "close"
 	invested: number,
 	kills: number,
+	disabledUntil: number?, -- a saboteur's shot: no attacks until then
 }
 
 -- autoAbility: ultimates fire as soon as they are ready (nil counts as on).
@@ -88,6 +97,7 @@ export type State = {
 	gateMax: number,
 	gateBurn: GateBurn,
 	shields: { Shield }?, -- this step's shield bearers (nil = none alive)
+	pendingSplits: { { enemy: string, count: number, dist: number, hpMul: number, speedMul: number, by: number } }, -- deaths that release attackers, spawned after the towers act
 	enemies: { Enemy },
 	towers: { Tower },
 	players: { [string]: PlayerState },
@@ -130,6 +140,7 @@ function TdSim.new(pathPoints: { { number } }, players: { string }, startCash: n
 		gateHp = gateHp,
 		gateMax = gateHp,
 		gateBurn = { stacks = 0, untilT = 0, nextTick = 0 },
+		pendingSplits = {},
 		enemies = {},
 		towers = {},
 		players = ps,
@@ -194,6 +205,14 @@ local function addEnemy(state: State, enemyId: string, hpMul: number, speedMul: 
 		summon = def.summon,
 		summonAt = if def.summon then state.time + def.summon.every else 0,
 		teleport = def.teleport,
+		sabotage = def.sabotage,
+		sabotageAt = 0,
+		holdUntil = 0,
+		split = def.split,
+		enrage = def.enrage,
+		healAura = def.healAura,
+		markedUntil = 0,
+		markMul = 1,
 		reward = def.reward,
 		gateDamage = def.gateDamage,
 		boss = def.boss == true,
@@ -337,12 +356,20 @@ end
 
 local function moveEnemies(state: State, dt: number, events: { Event })
 	local auras = auraMuls(state)
+	local cap = state.cfg.maxSpeedMul
 	for _, e in state.enemies do
-		if e.alive and state.time >= e.stunUntil then
+		if e.alive and state.time >= e.stunUntil and state.time >= e.holdUntil then
 			local mul = if state.time < e.slowUntil then e.slowMul else 1
-			if auras and auras[e] then
-				mul *= auras[e]
+			-- Speed-ups (an aura, an enraged brute) multiply but share one cap: never past base × maxSpeedMul.
+			local boost = if auras and auras[e] then auras[e] else 1
+			local en = e.enrage
+			if en and e.hp <= en.belowHp * e.maxHp then
+				boost *= en.speed
 			end
+			if boost > 1 and cap then
+				boost = math.max(1, math.min(boost, cap * e.baseSpeed / e.speed))
+			end
+			mul *= boost
 			e.dist += e.speed * mul * dt
 			if e.dist >= state.path.length then
 				e.alive = false
@@ -387,6 +414,78 @@ local function shieldFor(state: State, e: Enemy): number
 	return best
 end
 TdSim.shieldFor = shieldFor
+
+-- Heal auras (rival hakim): every other enemy within the radius regains pct of its max HP per
+-- second from the best aura covering it (not stacking), never past its max. nil-cost when none live.
+local function healAuras(state: State, dt: number)
+	local bearers: { { e: Enemy, x: number, z: number, r2: number, pct: number } } = {}
+	for _, e in state.enemies do
+		local h = e.healAura
+		if e.alive and h then
+			local x, z = Path.position(state.path, e.dist)
+			table.insert(bearers, { e = e, x = x, z = z, r2 = h.radius * h.radius, pct = h.pct })
+		end
+	end
+	if #bearers == 0 then
+		return
+	end
+	for _, e in state.enemies do
+		if e.alive and e.hp < e.maxHp then
+			local ex, ez = Path.position(state.path, e.dist)
+			local best = 0
+			for _, b in bearers do
+				if b.e ~= e and b.pct > best and dist2(ex, ez, b.x, b.z) <= b.r2 then
+					best = b.pct
+				end
+			end
+			if best > 0 then
+				e.hp = math.min(e.maxHp, e.hp + best * e.maxHp * dt)
+			end
+		end
+	end
+end
+
+-- Saboteurs (riflemen): when a defender is within `range`, stop for `duration` s to shoot the nearest
+-- one, which then cannot attack for `duration` s; again after `cooldown`. One defender per shot.
+local function saboteursAct(state: State, events: { Event })
+	for _, e in state.enemies do
+		local sb = e.sabotage
+		if e.alive and sb and state.time >= e.sabotageAt and state.time >= e.stunUntil then
+			local ex, ez = Path.position(state.path, e.dist)
+			local best: Tower? = nil
+			local bestD2 = sb.range * sb.range
+			for _, t in state.towers do
+				if not (t.disabledUntil and state.time < t.disabledUntil) then
+					local d2 = dist2(ex, ez, t.x, t.z)
+					if d2 <= bestD2 then
+						best, bestD2 = t, d2
+					end
+				end
+			end
+			if best then
+				best.disabledUntil = state.time + sb.duration
+				e.holdUntil = state.time + sb.duration
+				e.sabotageAt = state.time + sb.cooldown
+				table.insert(events, { type = "towerDisabled", tower = best.id, by = e.id, untilT = best.disabledUntil })
+			end
+		end
+	end
+end
+
+-- Attackers that split on death (carts) release their passengers at the same spot, with the wave's
+-- HP and speed, after the towers have acted (so one splash never hits the cart and its passengers).
+local function releaseSplits(state: State, events: { Event })
+	if #state.pendingSplits == 0 then
+		return
+	end
+	for _, sp in state.pendingSplits do
+		for k = 1, sp.count do
+			addEnemy(state, sp.enemy, sp.hpMul, sp.speedMul, math.max(0, sp.dist - (k - 1) * 0.6), events, sp.by)
+		end
+		table.insert(events, { type = "split", id = sp.by, enemy = sp.enemy, count = sp.count })
+	end
+	state.pendingSplits = {}
+end
 
 -- Best buff multiplier from support/healer towers whose range covers the tower.
 local function buffFor(state: State, t: Tower): number
@@ -512,7 +611,8 @@ local function hit(state: State, t: Tower, e: Enemy, damage: number, events: { E
 		end
 		reveal(e, t.id, events)
 	end
-	e.hp -= damage * (1 - e.armor) * (1 - shieldFor(state, e))
+	local marked = if state.time < e.markedUntil then e.markMul else 1
+	e.hp -= damage * marked * (1 - e.armor) * (1 - shieldFor(state, e))
 	if t.stats.slow and t.stats.slowFor then
 		e.slowMul = math.min(e.slowMul, t.stats.slow)
 		e.slowUntil = math.max(e.slowUntil, state.time + t.stats.slowFor)
@@ -542,6 +642,10 @@ local function hit(state: State, t: Tower, e: Enemy, damage: number, events: { E
 			p.kills += 1
 		end
 		table.insert(events, { type = "death", id = e.id, tower = t.id, owner = t.owner, cash = cash, boss = e.boss })
+		local sp = e.split
+		if sp then
+			table.insert(state.pendingSplits, { enemy = sp.enemy, count = sp.count, dist = e.dist, hpMul = e.hpMul, speedMul = e.speed / e.baseSpeed, by = e.id })
+		end
 	end
 end
 
@@ -560,7 +664,8 @@ end
 local function towersAct(state: State, events: { Event })
 	for _, t in state.towers do
 		local st = t.stats
-		if st.damage > 0 and state.time >= t.nextAt then
+		local disabled = t.disabledUntil ~= nil and state.time < t.disabledUntil
+		if st.damage > 0 and not disabled and state.time >= t.nextAt then
 			local sees = seesStealth(state, t)
 			local target, tx, tz = pickTarget(state, t, sees)
 			if target then
@@ -580,6 +685,20 @@ local function towersAct(state: State, events: { Event })
 						ability = true
 						t.abilityAt = state.time + ab.cooldown
 						splashHits(state, t, t.x, t.z, ab.radius or st.range, damage * ab.multiplier, sees, events)
+					elseif ab.kind == "mark" then
+						-- The Oath: the strongest enemy it can see in range takes ×multiplier from every
+						-- defender for `duration` s. Marks never stack: the stronger one holds.
+						local keep = t.targeting
+						t.targeting = "strong"
+						local m = pickTarget(state, t, sees)
+						t.targeting = keep
+						if m then
+							ability = true
+							t.abilityAt = state.time + ab.cooldown
+							m.markMul = if state.time < m.markedUntil then math.max(m.markMul, ab.multiplier) else ab.multiplier
+							m.markedUntil = math.max(m.markedUntil, state.time + (ab.duration or 0))
+							table.insert(events, { type = "mark", tower = t.id, target = m.id, untilT = m.markedUntil })
+						end
 					end
 				end
 				local perHit = damage
@@ -592,6 +711,7 @@ local function towersAct(state: State, events: { Event })
 						hit(state, t, target, damage, events, true)
 					end
 				end
+				local shownMark = if state.time < target.markedUntil then target.markMul else 1
 				-- Water on the flames: every attack of a dousing defender takes stacks off the gate.
 				local douse = st.douse
 				if douse and state.gateBurn.stacks > 0 then
@@ -599,7 +719,7 @@ local function towersAct(state: State, events: { Event })
 					table.insert(events, { type = "gateBurn", stacks = state.gateBurn.stacks, doused = t.id, gateHp = state.gateHp })
 				end
 				-- `damage`: what the primary target lost (after armour), for the client's damage numbers.
-				local shown = math.floor(perHit * (1 - target.armor) * (1 - shieldFor(state, target)) + 0.5)
+				local shown = math.floor(perHit * shownMark * (1 - target.armor) * (1 - shieldFor(state, target)) + 0.5)
 				table.insert(events, { type = "attack", tower = t.id, target = target.id, ability = ability, x = tx, z = tz, damage = shown })
 			end
 		end
@@ -619,6 +739,9 @@ end
 local function endWave(state: State, events: { Event })
 	state.wavesCleared = state.wave
 	clearBurn(state, events) -- no burning between waves
+	for _, t in state.towers do
+		t.disabledUntil = nil -- a sabotaged defender is back for the next wave
+	end
 	local bonus = math.floor(state.cfg.waveBonusBase + state.cfg.waveBonusPerWave * state.wave + 0.5)
 	for _, p in state.players do
 		p.cash += bonus
@@ -666,11 +789,14 @@ function TdSim.step(state: State, dt: number): { Event }
 	end
 	spawnDue(state, events)
 	moveEnemies(state, dt, events)
+	healAuras(state, dt)
 	burnGate(state, events)
 	revealInLight(state, events)
+	saboteursAct(state, events)
 	gatherShields(state)
 	towersAct(state, events)
 	bossActs(state, events)
+	releaseSplits(state, events)
 	compact(state)
 	if state.gateHp <= 0 then
 		state.phase = "lost"

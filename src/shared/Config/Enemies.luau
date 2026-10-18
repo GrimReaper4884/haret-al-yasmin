@@ -23,6 +23,10 @@ export type EnemyDef = {
 	disguised: boolean?, -- untargetable and splash-immune until a lantern lights it or a lit defender's single hit lands
 	summon: { enemy: string, count: number, every: number }?, -- boss: calls `count` escorts every `every` s until it dies
 	teleport: { atHp: number, fraction: number, telegraph: number }?, -- boss: once, at `atHp` of its HP, jumps `fraction` of the road after a `telegraph` s warning
+	sabotage: { range: number, duration: number, cooldown: number }?, -- stops to shoot the nearest defender within range; it can't attack for `duration` s
+	split: { enemy: string, count: number }?, -- releases `count` attackers where it dies
+	enrage: { belowHp: number, speed: number }?, -- walks speed× faster below belowHp of its HP (capped like auras)
+	healAura: { radius: number, pct: number }?, -- other enemies within radius regain pct of max HP per second (best one)
 	visual: {
 		robe: string,
 		accent: string,
