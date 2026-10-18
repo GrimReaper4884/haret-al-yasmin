@@ -328,7 +328,8 @@
       },
       "intro": {
         "clip": "axebreathe",
-        "yaw": 0
+        "yaw": 0,
+        "to": 150
       },
       "stagger": {
         "clip": "waisthit",

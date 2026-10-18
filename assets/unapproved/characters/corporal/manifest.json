@@ -1,9 +1,30 @@
 {
   "id": "corporal",
   "tasks": {
-    "concept": "01a14e70-3664-75c6-9f31-7f168eda4a05"
+    "concept": "01a14e70-3664-75c6-9f31-7f168eda4a05",
+    "mesh": "01a14e90-ecaa-7418-92ae-77a343ec8d78",
+    "rig": "01a14e92-9650-774b-b9cd-74eaf7ef11df",
+    "clip_chestpound": "01a14ec4-9720-77c0-89d1-63d3b6d502af",
+    "clip_hitreact": "01a14ec4-b8b7-70b6-908a-e65af5c1bfce",
+    "clip_knockdown": "01a14ec4-db27-7198-8663-7b766f63fb2f",
+    "clip_quickwalk": "01a14ec4-fc1e-7260-9bb2-dca578c4664e",
+    "clip_waisthit": "01a14ec5-1cac-75b1-a427-29b4074f4f22"
   },
   "credits": {
-    "concept": 6
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_chestpound": 0,
+    "clip_hitreact": 3,
+    "clip_knockdown": 3,
+    "clip_quickwalk": 3,
+    "clip_waisthit": 3
+  },
+  "clips": {
+    "chestpound": 88,
+    "hitreact": 178,
+    "knockdown": 187,
+    "quickwalk": 115,
+    "waisthit": 171
   }
 }

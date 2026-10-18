@@ -1,9 +1,24 @@
 {
   "id": "porter",
   "tasks": {
-    "concept": "01a14e6f-662a-7288-bc2b-c221e6516075"
+    "concept": "01a14e6f-662a-7288-bc2b-c221e6516075",
+    "mesh": "01a14e8c-074a-7297-84f8-eb485f7f98cd",
+    "rig": "01a14e8d-9787-713d-95d5-dcdd79debb8e",
+    "clip_hitreact": "01a14ec4-972a-734b-99c2-7177c92bc7d8",
+    "clip_knockdown1": "01a14ec4-b88c-73a6-911d-78629200748b",
+    "clip_orc": "01a14ec4-db22-71cf-902e-217524f96919"
   },
   "credits": {
-    "concept": 6
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_hitreact": 3,
+    "clip_knockdown1": 3,
+    "clip_orc": 3
+  },
+  "clips": {
+    "hitreact": 178,
+    "knockdown1": 190,
+    "orc": 119
   }
 }

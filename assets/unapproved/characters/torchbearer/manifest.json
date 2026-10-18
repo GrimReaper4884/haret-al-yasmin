@@ -1,9 +1,24 @@
 {
   "id": "torchbearer",
   "tasks": {
-    "concept": "01a14e6f-290e-73f4-b714-766a84675d54"
+    "concept": "01a14e6f-290e-73f4-b714-766a84675d54",
+    "mesh": "01a14e8a-a85f-724e-ab6b-4b6107b813bf",
+    "rig": "01a14e8b-b93b-70b9-b79b-380b526b03ac",
+    "clip_hitreact": "01a14ec4-9720-740b-ab6d-a98c0bbe53a1",
+    "clip_knockdown": "01a14ec4-b8a9-71cf-93ee-492f991e06f4",
+    "clip_run2": "01a14ec4-da8e-7436-a598-45a2abfa0675"
   },
   "credits": {
-    "concept": 6
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_hitreact": 3,
+    "clip_knockdown": 3,
+    "clip_run2": 3
+  },
+  "clips": {
+    "hitreact": 178,
+    "knockdown": 187,
+    "run2": 14
   }
 }

@@ -160,6 +160,17 @@ Icons.portraits = {
 	rival_zaim = { id = 93232597039986, model = "AbuNar" },
 	rival_zaim_enraged = { id = 93232597039986, model = "AbuNar" }, -- same mesh as Abu al-Nahr (S1-S08)
 	colonel = { id = 106285960688999, model = "Commandant" },
+	-- Season Story 1, batch 1 (S1-A02)
+	pickpocket = { id = 104937576576070, model = "Pickpocket" },
+	drummer = { id = 135608077051671, model = "Drummer" },
+	torchbearer = { id = 104828458020182, model = "Torchbearer" },
+	porter = { id = 115073087355888, model = "Porter" },
+	disguised = { id = 73390391883285, model = "Disguised" },
+	beggar = { id = 82706323206891, model = "Beggar" },
+	corporal = { id = 135092251624966, model = "Corporal" },
+	abu_jawdan = { id = 99981072657403, model = "AbuJawdan" },
+	abu_shatour = { id = 104141919130883, model = "AbuShatour" },
+	lateef = { id = 100259993440842, model = "Lateef" },
 } :: { [string]: Portrait }
 
 -- Reward table key (SeasonPass, Daily, Events, Codes rewards) → icon name. `item` uses the item's

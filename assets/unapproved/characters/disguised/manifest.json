@@ -1,9 +1,24 @@
 {
   "id": "disguised",
   "tasks": {
-    "concept": "01a14e6f-bc07-706c-8fb1-7826fc866529"
+    "concept": "01a14e6f-bc07-706c-8fb1-7826fc866529",
+    "mesh": "01a14e8d-e545-702f-8594-b274c8c60f88",
+    "rig": "01a14e8f-0d7b-779b-b2a2-7d04061b8e8f",
+    "clip_hitreact": "01a14ec4-9738-775b-b00f-69fa45246718",
+    "clip_knockdown": "01a14ec4-b8dd-7011-902f-3a109207e809",
+    "clip_quickwalk": "01a14ec4-dd64-7431-a62b-e1ecb326c6f3"
   },
   "credits": {
-    "concept": 6
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_hitreact": 3,
+    "clip_knockdown": 3,
+    "clip_quickwalk": 3
+  },
+  "clips": {
+    "hitreact": 178,
+    "knockdown": 187,
+    "quickwalk": 115
   }
 }

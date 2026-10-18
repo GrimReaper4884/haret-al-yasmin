@@ -249,17 +249,17 @@ local Looks: { [string]: Look } = {
 	},
 	colonel = { build = "giant", outfit = "uniform", beard = "none", moustache = "handlebar", hair = GREY, model = "Commandant" },
 
-	-- Season Story 1, batch 1 (S1-S03): primitive figures until the Meshy models (S1-A02) are approved.
-	pickpocket = { build = "kid", outfit = "sherwal", beard = "none", moustache = "none", hair = DARK },
-	drummer = { build = "stout", outfit = "qumbaz", beard = "stubble", moustache = "thick", hair = DARK },
-	torchbearer = { build = "slim", outfit = "vest", beard = "stubble", moustache = "thin", hair = DARK },
-	porter = { build = "broad", outfit = "vest", beard = "short", moustache = "thick", hair = DARK },
-	disguised = { build = "normal", outfit = "qumbaz", beard = "short", moustache = "thin", hair = DARK, cloak = "#D9C9A8" },
-	beggar = { build = "slim", outfit = "abaya", beard = "stubble", moustache = "none", hair = GREY, cloak = "#6E6A64" },
-	corporal = { build = "slim", outfit = "uniform", beard = "none", moustache = "thin", hair = DARK },
-	abu_jawdan = { build = "stout", outfit = "uniform", beard = "none", moustache = "handlebar", hair = DARK },
-	abu_shatour = { build = "broad", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK },
-	lateef = { build = "slim", outfit = "abaya", beard = "stubble", moustache = "thin", hair = DARK, cloak = "#6E6A64" },
+	-- Season Story 1, batch 1 (S1-S03 config, S1-A02 Meshy models; register C-242..C-251).
+	pickpocket = { build = "kid", outfit = "sherwal", beard = "none", moustache = "none", hair = DARK, model = "Pickpocket" },
+	drummer = { build = "stout", outfit = "qumbaz", beard = "stubble", moustache = "thick", hair = DARK, model = "Drummer" },
+	torchbearer = { build = "slim", outfit = "vest", beard = "stubble", moustache = "thin", hair = DARK, model = "Torchbearer" },
+	porter = { build = "broad", outfit = "vest", beard = "short", moustache = "thick", hair = DARK, model = "Porter" },
+	disguised = { build = "normal", outfit = "qumbaz", beard = "short", moustache = "thin", hair = DARK, cloak = "#D9C9A8", model = "Disguised" },
+	beggar = { build = "slim", outfit = "abaya", beard = "stubble", moustache = "none", hair = GREY, cloak = "#6E6A64", model = "Beggar" },
+	corporal = { build = "slim", outfit = "uniform", beard = "none", moustache = "thin", hair = DARK, model = "Corporal" },
+	abu_jawdan = { build = "stout", outfit = "uniform", beard = "none", moustache = "handlebar", hair = DARK, model = "AbuJawdan" },
+	abu_shatour = { build = "broad", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK, model = "AbuShatour" },
+	lateef = { build = "slim", outfit = "abaya", beard = "stubble", moustache = "thin", hair = DARK, cloak = "#6E6A64", model = "Lateef" },
 	-- Season Story 1, batch 2 (S1-S08): primitive figures until S1-A04.
 	rifleman = { build = "slim", outfit = "uniform", beard = "none", moustache = "thin", hair = DARK },
 	cart = { build = "giant", outfit = "vest", beard = "none", moustache = "none", hair = GREY },

@@ -1,9 +1,24 @@
 {
   "id": "beggar",
   "tasks": {
-    "concept": "01a14e6f-f908-72ce-a05c-f804561b9198"
+    "concept": "01a14e6f-f908-72ce-a05c-f804561b9198",
+    "mesh": "01a14e8f-59d7-76dd-8b70-2fd29bc7453b",
+    "rig": "01a14e90-9c1d-77df-8402-60b59b236ce1",
+    "clip_cautious": "01a14ec4-9720-77be-b8dd-00940643c249",
+    "clip_flyup": "01a14ec4-b888-77cc-8d4e-820b0d3a0dc9",
+    "clip_hitreact": "01a14ec4-daa7-7637-8714-8434e25ccf1f"
   },
   "credits": {
-    "concept": 6
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_cautious": 3,
+    "clip_flyup": 3,
+    "clip_hitreact": 3
+  },
+  "clips": {
+    "cautious": 524,
+    "flyup": 7,
+    "hitreact": 178
   }
 }

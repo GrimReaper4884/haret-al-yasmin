@@ -1,9 +1,24 @@
 {
   "id": "pickpocket",
   "tasks": {
-    "concept": "01a14e6e-af41-7594-87a8-e2790b301b46"
+    "concept": "01a14e6e-af41-7594-87a8-e2790b301b46",
+    "mesh": "01a14e87-884e-722c-833b-92dc0fdef08b",
+    "rig": "01a14e88-ca65-7289-af1f-ff16e4eb18cb",
+    "clip_flyup": "01a14ec4-9720-77e5-8a23-84bfe1b9a42a",
+    "clip_hitreact": "01a14ec4-b89d-749b-a755-30d1b5924fcc",
+    "clip_runfast": "01a14ec4-db1d-750c-919c-e3af933172dc"
   },
   "credits": {
-    "concept": 6
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_flyup": 3,
+    "clip_hitreact": 3,
+    "clip_runfast": 3
+  },
+  "clips": {
+    "flyup": 7,
+    "hitreact": 178,
+    "runfast": 16
   }
 }

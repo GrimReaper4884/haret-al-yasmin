@@ -1,9 +1,24 @@
 {
   "id": "drummer",
   "tasks": {
-    "concept": "01a14e6e-ec32-76fb-8d5b-556776dd06d0"
+    "concept": "01a14e6e-ec32-76fb-8d5b-556776dd06d0",
+    "mesh": "01a14e89-1892-77a2-9248-865ec45d9565",
+    "rig": "01a14e8a-5b25-7784-8128-9d11bf9cd65f",
+    "clip_confident": "01a14ec4-9729-722a-a193-64ecb766b4d2",
+    "clip_hitreact": "01a14ec4-b8f9-7448-889c-c025a8a5a0c4",
+    "clip_knockdown": "01a14ec4-dab9-72cf-bec7-94f8ea5fc1ae"
   },
   "credits": {
-    "concept": 6
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_confident": 3,
+    "clip_hitreact": 3,
+    "clip_knockdown": 3
+  },
+  "clips": {
+    "confident": 107,
+    "hitreact": 178,
+    "knockdown": 187
   }
 }

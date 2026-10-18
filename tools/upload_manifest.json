@@ -558,6 +558,66 @@
       "type": "Image",
       "id": 106285960688999,
       "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Pickpocket.png": {
+      "name": "Haret portrait Pickpocket",
+      "type": "Image",
+      "id": 104937576576070,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Drummer.png": {
+      "name": "Haret portrait Drummer",
+      "type": "Image",
+      "id": 135608077051671,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Torchbearer.png": {
+      "name": "Haret portrait Torchbearer",
+      "type": "Image",
+      "id": 104828458020182,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Porter.png": {
+      "name": "Haret portrait Porter",
+      "type": "Image",
+      "id": 115073087355888,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Disguised.png": {
+      "name": "Haret portrait Disguised",
+      "type": "Image",
+      "id": 73390391883285,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Beggar.png": {
+      "name": "Haret portrait Beggar",
+      "type": "Image",
+      "id": 82706323206891,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Corporal.png": {
+      "name": "Haret portrait Corporal",
+      "type": "Image",
+      "id": 135092251624966,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuJawdan.png": {
+      "name": "Haret portrait AbuJawdan",
+      "type": "Image",
+      "id": 99981072657403,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuShatour.png": {
+      "name": "Haret portrait AbuShatour",
+      "type": "Image",
+      "id": 104141919130883,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Lateef.png": {
+      "name": "Haret portrait Lateef",
+      "type": "Image",
+      "id": 100259993440842,
+      "uploaded": "2026-10-18"
     }
   }
 }

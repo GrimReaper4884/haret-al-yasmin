@@ -1,9 +1,30 @@
 {
   "id": "lateef",
   "tasks": {
-    "concept": "01a14e70-ebd5-7157-92ee-b3ab92f470a4"
+    "concept": "01a14e70-ebd5-7157-92ee-b3ab92f470a4",
+    "mesh": "01a14e97-ba82-72f8-8c2e-e3e2fcd15188",
+    "rig": "01a14e98-e3e1-7450-a045-9b78e62232b3",
+    "clip_battlepose": "01a14ec4-fc2b-7039-adaf-8e541032a93e",
+    "clip_flyup": "01a14ec5-1e7a-77d2-bb1f-39c04434feaf",
+    "clip_hitreact": "01a14ec5-3f80-7281-b97b-94966f1f426e",
+    "clip_run3": "01a14ec5-6159-75cd-a413-0fa380361024",
+    "clip_waisthit": "01a14ec5-8294-751a-b30d-7f542c576e4b"
   },
   "credits": {
-    "concept": 6
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_battlepose": 3,
+    "clip_flyup": 3,
+    "clip_hitreact": 3,
+    "clip_run3": 3,
+    "clip_waisthit": 3
+  },
+  "clips": {
+    "battlepose": 377,
+    "flyup": 7,
+    "hitreact": 178,
+    "run3": 15,
+    "waisthit": 171
   }
 }

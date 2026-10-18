@@ -142,6 +142,45 @@ local BUILD: { [string]: Builder } = {
 		piece(m, CYL, Vector3.new(d * 0.35, d, d), CFrame.new(0, d * 0.05, 0) * UP, "#B8733A", M.Metal)
 		piece(m, CYL, Vector3.new(d * 0.08, d * 0.85, d * 0.85), CFrame.new(0, d * 0.22, 0) * UP, "#E8C778", M.SmoothPlastic)
 	end,
+	torch = function(m, H)
+		-- Held upright (hang mount): a wooden shaft through the fist, rag wrap and flame on top.
+		local L = H * 0.42
+		piece(m, CYL, Vector3.new(L, H * 0.035, H * 0.035), CFrame.new(0, L * 0.18, 0) * UP, "#5A3A22", M.Wood)
+		piece(m, CYL, Vector3.new(L * 0.18, H * 0.055, H * 0.055), CFrame.new(0, L * 0.68, 0) * UP, "#4A3B2E", M.Fabric)
+		local flame = piece(m, BALL, Vector3.new(H * 0.08, H * 0.12, H * 0.08), CFrame.new(0, L * 0.84, 0), "#FF8A2A", M.Neon, 0.1)
+		piece(m, BALL, Vector3.new(H * 0.045, H * 0.07, H * 0.045), CFrame.new(0, L * 0.9, 0), "#FFE08A", M.Neon)
+		local light = Instance.new("PointLight")
+		light.Color = Color3.fromHex("#FF9A3C")
+		light.Range = 10
+		light.Brightness = 1.4
+		light.Shadows = false
+		light.Parent = flame
+	end,
+	drumstick = function(m, H)
+		-- A short beater with a padded knob (fist mount, knob forward).
+		local L = H * 0.26
+		piece(m, CYL, Vector3.new(L, H * 0.022, H * 0.022), CFrame.new(0, 0, -L * 0.3) * ALONG, "#C9A76B", M.Wood)
+		piece(m, BALL, Vector3.new(H * 0.05, H * 0.05, H * 0.05), CFrame.new(0, 0, -L * 0.8), "#7A2E3A", M.Fabric)
+	end,
+	cleaver = function(m, H)
+		-- Butcher's cleaver (fist mount): wooden grip, a broad square blade standing above the edge line.
+		local L = H * 0.3
+		piece(m, BLOCK, Vector3.new(L * 0.1, L * 0.12, L * 0.38), CFrame.new(0, 0, L * 0.02), "#3B2A20", M.Wood)
+		piece(m, BLOCK, Vector3.new(L * 0.035, L * 0.42, L * 0.55), CFrame.new(0, L * 0.12, -L * 0.45), "#C8CED2", M.Metal)
+		piece(m, BLOCK, Vector3.new(L * 0.04, L * 0.04, L * 0.55), CFrame.new(0, -L * 0.07, -L * 0.45), "#EEF2F4", M.Metal)
+	end,
+	staff = function(m, H)
+		-- A beggar's crooked staff, gripped a third of the way down and reaching the ground (hang mount).
+		local L = H * 0.78
+		piece(m, CYL, Vector3.new(L, H * 0.03, H * 0.03), CFrame.new(0, -L * 0.3, 0) * UP, "#A88A5C", M.Wood)
+		piece(m, CYL, Vector3.new(L * 0.14, H * 0.028, H * 0.028), CFrame.new(0, L * 0.23, -L * 0.03) * CFrame.Angles(math.rad(-25), 0, 0) * UP, "#A88A5C", M.Wood)
+	end,
+	dagger = function(m, H)
+		local L = H * 0.24
+		piece(m, BLOCK, Vector3.new(L * 0.1, L * 0.1, L * 0.3), CFrame.new(0, 0, L * 0.02), "#2B1D14", M.Wood)
+		piece(m, BLOCK, Vector3.new(L * 0.28, L * 0.06, L * 0.06), CFrame.new(0, 0, -L * 0.14), "#8A8F94", M.Metal)
+		piece(m, BLOCK, Vector3.new(L * 0.03, L * 0.11, L * 0.55), CFrame.new(0, 0, -L * 0.44), "#E8ECEF", M.Metal)
+	end,
 }
 
 -- Chibi figures read best with oversized props: per-kind enlargement over the builders' sizes.
@@ -156,6 +195,10 @@ local BOOST: { [string]: number } = {
 	stick = 1.15,
 	broom = 1.1,
 	bowl = 1.2,
+	torch = 1.2,
+	drumstick = 1.2,
+	cleaver = 1.3,
+	dagger = 1.3,
 }
 
 -- What each character holds. `throws` = hidden for a moment after it leaves the hand (ThrowFx).
@@ -180,6 +223,16 @@ HandProps.HELD = {
 		{ kind = "shield", hand = "LeftHand", mount = "fist" },
 	},
 	gendarme = { { kind = "rifle", hand = "RightHand", mount = "hang" } },
+	-- Season Story 1 attackers (S1-A02): the items their concepts carried.
+	torchbearer = { { kind = "torch", hand = "RightHand", mount = "hang" } },
+	drummer = { { kind = "drumstick", hand = "RightHand", mount = "fist", tilt = 30 } },
+	beggar = { { kind = "staff", hand = "RightHand", mount = "hang" } },
+	corporal = { { kind = "rifle", hand = "LeftHand", mount = "hang" } },
+	abu_shatour = {
+		{ kind = "cleaver", hand = "RightHand", mount = "fist", tilt = 25 },
+		{ kind = "torch", hand = "LeftHand", mount = "hang" },
+	},
+	lateef = { { kind = "dagger", hand = "RightHand", mount = "fist", tilt = 20 } },
 } :: { [string]: { { kind: string, hand: string, mount: string, throws: string?, tilt: number? } } }
 
 -- Builds and binds the props for `id` on `model`. Must run while the bones are at rest (no

@@ -131,6 +131,9 @@ prompt, and never feed a photo of an actor (docs/COPYRIGHT_REGISTER.md).
   most hand props (hammer, sword/shield, rifle).
 - 2026-10-18: **all 27 characters imported** — thug, bandit, rider, sapper (decimated to ~5.6k by
   `tools/anim/decimate.py`), the Sergeant and the Commandant (DECISIONS D-037), baked clips only.
+- 2026-10-18: **Season Story 1 batch 1, ten attackers** (S1-A02, DECISIONS D-060): pickpocket, drummer,
+  torchbearer, porter, disguised, beggar (decimated to ~5.6k), bosses Corporal, Abu Jawdan, Abu Shatour, Lateef
+  (~8.3k); 37 characters in all. Sheet `docs/art/story_enemies_batch1_2026-10-18.png`.
 - Prop facing checked in Studio: the arena barber shop faces the road. `lantern_post` is a
   free-standing stone pillar (arm along the mesh's X axis per its vertices), so it is only used in
   the open arenas; Jasmine Lane uses wall lanterns instead (players reported posts in the market).

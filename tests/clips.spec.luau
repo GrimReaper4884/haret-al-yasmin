@@ -6,19 +6,9 @@
 
 local fs = require("@lune/fs")
 
--- Attackers still waiting for their Meshy model: the Season Story 1 attackers of S1-S03 and S1-S08,
--- until S1-A02 / S1-A04 import and bake them.
+-- Attackers still waiting for their Meshy model: the Season Story 1 attackers of S1-S08, until
+-- S1-A04 imports and bakes them (batch 1 landed with S1-A02).
 local AWAITING_MODEL: { [string]: boolean } = {
-	pickpocket = true,
-	drummer = true,
-	torchbearer = true,
-	porter = true,
-	disguised = true,
-	beggar = true,
-	corporal = true,
-	abu_jawdan = true,
-	abu_shatour = true,
-	lateef = true,
 	rifleman = true,
 	cart = true,
 	hakim_rival = true,
@@ -69,7 +59,7 @@ return function(t)
 					checked += 1
 				end
 			end
-			t.truthy(checked >= 11, "all eleven imported attackers are covered")
+			t.truthy(checked >= 21, "all twenty-one imported attackers are covered")
 		end)
 
 		t.it("each slot is well-formed: frames, fps, rotations for every bone, hips per frame", function()
