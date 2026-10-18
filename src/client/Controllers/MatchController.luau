@@ -80,6 +80,7 @@ local flash: Frame
 local skipButton: TextButton
 local speedButton: TextButton
 local viewButton: TextButton
+local defendersButton: TextButton -- opens the Defenders panel (LP-B02, DefendersController)
 local menuButton: TextButton
 local railContainer: Frame -- holds the rail buttons (hidden while a defender sheet leaves no room)
 local railLabels: { [TextButton]: TextLabel } = {}
@@ -108,15 +109,26 @@ function MatchController.cashPill(): Frame?
 	return cashBox
 end
 
+-- Hides the cash pill while a phone sheet holds the bottom band (the Defenders sheet shows the cash).
+function MatchController.setCashHidden(on: boolean)
+	if cashBox then
+		cashBox.Visible = not on
+	end
+end
+
 function MatchController.active(): boolean
 	return info ~= nil
 end
 
 -- A rail button and its label ("view" belongs to MatchCameraController, which sets its text).
 function MatchController.railButton(name: string): (TextButton, TextLabel)
-	local b = if name == "skip" then skipButton elseif name == "speed" then speedButton else viewButton
+	local b = if name == "skip" then skipButton elseif name == "speed" then speedButton elseif name == "defenders" then defendersButton else viewButton
 	return b, railLabels[b]
 end
+
+-- Set by DefendersController: the rail's Defenders button calls it (MatchController can't require
+-- that controller: it sits above PlacementController, which requires this one).
+MatchController.onDefenders = nil :: (() -> ())?
 
 -- The top of a bottom element taller than the hotbar (the defender sheet), design px, or nil.
 local railFloor: number? = nil
@@ -130,7 +142,7 @@ local function layoutRail()
 	-- View first, Skip last: the buttons that come and go (Skip between waves) fill the inner column, so
 	-- View never moves under a thumb when Skip appears or hides.
 	local shown = {}
-	for _, b in { viewButton, speedButton, skipButton } do
+	for _, b in { viewButton, defendersButton, speedButton, skipButton } do
 		if b.Visible then
 			table.insert(shown, b)
 		end
@@ -309,6 +321,14 @@ local function build()
 	skipButton = railButtonOf("skip", Theme.colors.confirm, "act_skip")
 	speedButton = railButtonOf("speed", Theme.colors.gold, "act_speed")
 	viewButton = railButtonOf("view", Theme.colors.textMuted, "ui_view")
+	defendersButton = railButtonOf("defenders", Theme.colors.quest, "ui_defenders")
+	railLabels[defendersButton].Text = LocaleController.t("match.defenders")
+	defendersButton.Activated:Connect(function()
+		local open = MatchController.onDefenders
+		if open then
+			open()
+		end
+	end)
 	menuButton = Theme.button({ Name = "MatchMenu", Text = "", Size = UDim2.fromOffset(Hud.RAIL.menu, Hud.RAIL.menu), BackgroundColor3 = Color3.fromHex("#6E5E50"), ZIndex = 3, Parent = hud })
 	local mp = menuButton:FindFirstChildOfClass("UIPadding")
 	if mp then
@@ -503,6 +523,7 @@ local function render()
 	speedButton.Visible = speedShown
 	speedButton.BackgroundColor3 = if state.host == me then Theme.colors.gold else Theme.colors.textMuted
 	railLabels[speedButton].Text = t("match.speed", { n = state.speed or 1 })
+	railLabels[defendersButton].Text = t("match.defenders")
 	if speedSheet and state.host ~= me then
 		closeSpeedSheet()
 	end

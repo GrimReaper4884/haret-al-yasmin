@@ -53,7 +53,20 @@ return {
 
 	-- Right rail (Skip, Speed, View) in the thumb arc, above the jump zone; the match menu `≡` sits at
 	-- the top of the same edge. When a column cannot hold every button the rest go into the next one in.
-	RAIL = { button = 56, gap = 8, maxButtons = 3, margin = 12, menu = 48 },
+	RAIL = { button = 56, gap = 8, maxButtons = 4, margin = 12, menu = 48 },
+	-- The Defenders panel (LP-B02): a left column on desktop, a centred sheet on touch, both ending
+	-- above the cash pill. Rows: a name line over a line of buttons (row heights per input).
+	DEFENDERS = {
+		width = 400, -- desktop column
+		heightFrac = 0.8, -- touch sheet: at most this share of the safe height (it may cover the wave pill)
+		header = 40,
+		row = { desktop = 86, touch = 100 },
+		button = { desktop = 40, touch = 48 },
+		line = { desktop = 34, touch = 40 }, -- name and level over the stat line
+		portrait = { desktop = 56, touch = 64 },
+		gap = 6,
+		sellConfirmS = 3, -- the red "Sure?" state of Sell lasts this long
+	},
 	-- The speed sheet beside the rail's Speed button (LP-A03): one chip per TD.SPEEDS entry.
 	SPEED_SHEET = { chip = 52, gap = 6, pad = 10, title = 18, caption = 16, lock = 16 },
 
@@ -75,7 +88,7 @@ return {
 
 	-- Watchtower view on touch (B5): studs per dragged px (× zoom), the pinch zoom range as a factor of
 	-- the default height, and how far past the arena bounds the look-at point may go.
-	CAMERA = { PAN_STUDS_PER_PX = 0.12, ZOOM = { min = 0.6, max = 1.4 }, BOUNDS_MARGIN = 12 },
+	CAMERA = { PAN_STUDS_PER_PX = 0.12, ZOOM = { min = 0.6, max = 1.4 }, BOUNDS_MARGIN = 12, FOCUS_S = 0.4 },
 
 	-- A touch screen whose safe area is shorter than this is a phone (taller is a tablet).
 	PHONE_MAX_HEIGHT = 500,

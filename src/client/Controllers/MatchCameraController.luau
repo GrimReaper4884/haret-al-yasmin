@@ -147,6 +147,32 @@ function MatchCameraController.push(at: Vector3, seconds: number, distance: numb
 	end)
 end
 
+-- Centres the watchtower view on an arena point (arena studs) in Hud.CAMERA.FOCUS_S, switching to the
+-- watchtower first: the Defenders panel's portrait tap (LP-B02). Reduced Motion jumps there.
+function MatchCameraController.focus(x: number, z: number)
+	local i = info
+	local camera = Workspace.CurrentCamera
+	if not i or not camera or not MatchController.active() then
+		return
+	end
+	local b = Arenas[i.arenaId].bounds
+	panX, panZ = x - (b[1] + b[3]) / 2, z - (b[2] + b[4]) / 2
+	overhead = true
+	Device.blockTouchControls("overhead", true)
+	local target = overheadCFrame()
+	if target then
+		camera.CameraType = Enum.CameraType.Scriptable
+		if reducedMotion() then
+			camera.CFrame = target
+		else
+			TweenService:Create(camera, TweenInfo.new(Hud.CAMERA.FOCUS_S, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), { CFrame = target }):Play()
+		end
+	end
+	if label then
+		label.Text = LocaleController.t("match.view_walk")
+	end
+end
+
 function MatchCameraController.toggle()
 	if not MatchController.active() then
 		return

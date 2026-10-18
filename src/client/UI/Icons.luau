@@ -465,6 +465,14 @@ local drawers: { [string]: (Frame, Color3) -> () } = {
 			rectO(h, WHITE, 0.22 + k * 0.28, 0.5, 0.2, 0.2, 1)
 		end
 	end,
+	-- Three fezzes in a row: the Defenders panel (LP-B02).
+	ui_defenders = function(h, _c)
+		for k, x in { 0.22, 0.5, 0.78 } do
+			local y = if k == 2 then 0.42 else 0.56
+			rectO(h, Palette.fabricRed, x, y, 0.26, 0.3, 0.15)
+			rect(h, Palette.woodDark, x + 0.04, y - 0.17, 0.05, 0.1, 1)
+		end
+	end,
 	-- A padlock: a speed the host's passes don't unlock yet (LP-A03).
 	ui_lock = function(h, _c)
 		rectO(h, Palette.woodDark, 0.5, 0.34, 0.46, 0.46, 1)

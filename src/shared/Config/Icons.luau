@@ -30,6 +30,7 @@ Icons.images = {
 	ui_view = { id = 0 },
 	ui_more = { id = 0 },
 	ui_lock = { id = 0 }, -- a locked speed chip (LP-A03)
+	ui_defenders = { id = 0 }, -- the Defenders panel's rail button: three fezzes (LP-B02)
 
 	-- Match actions and defender roles (PV-C04)
 	act_upgrade = { id = 118839200965690 },

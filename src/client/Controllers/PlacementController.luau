@@ -28,6 +28,7 @@ local TdTowers = require(Shared.Logic.TdTowers)
 local PlaceFlow = require(Shared.Logic.PlaceFlow)
 local RigBuilder = require(Shared.Util.RigBuilder)
 local BoneAnim = require(Shared.Anim.BoneAnim)
+local Signal = require(Shared.Util.Signal)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Icons = require(UI.Icons)
@@ -49,6 +50,10 @@ local HudLayout = require(Shared.Logic.HudLayout)
 local Device = require(UI.Device)
 
 local PlacementController = {}
+-- Fires after match events changed the placed defenders (the Defenders panel re-renders).
+PlacementController.Changed = Signal.new()
+-- Fires when a defender is selected on the field (the Defenders panel gives the column back).
+PlacementController.Selected = Signal.new()
 
 local TARGETING = { "first", "last", "strong", "close" }
 
@@ -561,6 +566,14 @@ local function round(n: number, places: number): number
 	return math.floor(n * k + 0.5) / k
 end
 
+-- A defender's ultimate fires by itself: its own switch (LP-B01), else the player's setting.
+local function effectiveAuto(rec: any): boolean
+	if rec.autoAbility ~= nil then
+		return rec.autoAbility == true
+	end
+	return SettingsController.get("autoUlt") == true
+end
+
 local portraitFor: string? = nil
 
 local function renderTowerPanel()
@@ -717,7 +730,7 @@ local function renderTowerPanel()
 	local ab = def.ability
 	ultRow.Visible = mine and ab ~= nil
 	if ab then
-		local auto = SettingsController.get("autoUlt") == true
+		local auto = effectiveAuto(rec)
 		ultButton.Text = t("ult." .. rec.unitId)
 		autoButton.Text = t("match.ult_auto") .. "\n" .. (if auto then t("settings.on") else t("settings.off"))
 		autoButton.BackgroundColor3 = if auto then Theme.colors.confirm else Theme.colors.buttonDisabled
@@ -749,6 +762,7 @@ local function selectTower(id: number)
 		showCover(id, st.range)
 	end
 	renderTowerPanel()
+	PlacementController.Selected:Fire(id)
 end
 
 -- What a tap or click at `screen` lands on: the ground spot and whether the unit being placed may
@@ -1083,10 +1097,13 @@ local function layoutSheet()
 end
 
 -- The open sheet hides the hotbar (and the bar returns when it closes).
+-- Other panels that take the hotbar's band on a phone (the Defenders sheet, LP-B02).
+local barHiddenBy: { [string]: boolean } = {}
+
 syncSheet = function()
 	local open = activeView.kind == "sheet" and towerPanel.Visible
 	if MatchController.active() and #slots > 0 then
-		bar.Visible = not open
+		bar.Visible = not open and next(barHiddenBy) == nil
 	end
 	Device.blockTouchControls("panel", open and Device.isPhone())
 	if open then
@@ -1187,6 +1204,9 @@ local function onEvents(events: { any })
 		elseif e.type == "towerAuto" and towers[e.id] then
 			-- This defender's own auto ultimate (LP-B01; nil = the player's setting)
 			towers[e.id].autoAbility = if type(e.on) == "boolean" then e.on else nil
+			if selected == e.id then
+				renderTowerPanel()
+			end
 		elseif e.type == "towerBuff" and towers[e.id] then
 			towers[e.id].buff = if type(e.buff) == "number" and e.buff > 1 then e.buff else nil
 			towers[e.id].buffCount = if type(e.count) == "number" and e.count > 1 then e.count else nil
@@ -1220,6 +1240,159 @@ local function onEvents(events: { any })
 	end
 	if #slots > 0 then
 		refreshBar()
+	end
+	PlacementController.Changed:Fire()
+end
+
+---------------------------------------------------------------- The Defenders panel's view (LP-B02)
+
+-- One placed defender as the Defenders panel shows it (DefendersController). Read-only: every
+-- action goes through the functions below, which use the same remotes and checks as the panel.
+export type TowerInfo = {
+	id: number,
+	unitId: string,
+	level: number, -- shown as the panel does: at most maxLevel (a signature is marked by `signature`)
+	maxLevel: number,
+	signature: string?, -- the level-7 path's name key
+	owner: string,
+	mine: boolean,
+	x: number,
+	z: number,
+	targeting: string,
+	readyAt: number, -- os.clock() when its ultimate is ready
+	abilityCooldown: number?, -- seconds at the current speed (nil = no ultimate)
+	auto: boolean, -- its ultimate fires by itself (its own switch, else the player's setting)
+	buff: number, -- damage multiplier from supports (1 = none)
+	buffCount: number,
+	damage: number,
+	cooldown: number,
+	income: number?,
+	supportBuff: number?, -- the buff it gives others
+	heal: number?,
+	step: string, -- UpgradeView.step: "level" | "choose" | "max"
+	nextCost: number?, -- the next level's price (nil at a signature choice or the top)
+	refund: number,
+}
+
+-- Every placed defender, newest first; the player's own before the allies'.
+function PlacementController.list(): { TowerInfo }
+	local me = Players.LocalPlayer.Name
+	local state = MatchController.state()
+	local speed = if state and state.speed then state.speed else 1
+	local out: { TowerInfo } = {}
+	for id, rec in towers do
+		local def = (Units :: any)[rec.unitId]
+		if def then
+			local st = myStats(rec.unitId, rec.level, rec.path)
+			local step = UpgradeView.step(def, rec.level, rec.path)
+			local nextLevel = def.levels[rec.level + 1]
+			local invested = UpgradeView.invested(def, rec.level, rec.path, myTrait(rec.unitId), UnitLogic.costFor)
+			table.insert(out, {
+				id = id,
+				unitId = rec.unitId,
+				level = math.min(rec.level, #def.levels),
+				maxLevel = #def.levels,
+				signature = if rec.path and def.signature and def.signature[rec.path] then "unit." .. rec.unitId .. ".sig." .. def.signature[rec.path].key .. ".name" else nil,
+				owner = rec.owner,
+				mine = rec.owner == me,
+				x = rec.x,
+				z = rec.z,
+				targeting = rec.targeting,
+				readyAt = rec.readyAt,
+				abilityCooldown = if def.ability then def.ability.cooldown / speed else nil,
+				auto = effectiveAuto(rec),
+				buff = rec.buff or 1,
+				buffCount = rec.buffCount or (if rec.buff then 1 else 0),
+				damage = st.damage,
+				cooldown = st.cooldown,
+				income = st.income,
+				supportBuff = st.buff,
+				heal = st.heal,
+				step = step,
+				nextCost = if step == "level" and nextLevel then myCost(rec.unitId, nextLevel.cost) else nil,
+				refund = math.floor(invested * TD.SELL_REFUND),
+			})
+		end
+	end
+	table.sort(out, function(a, b)
+		if a.mine ~= b.mine then
+			return a.mine
+		end
+		return a.id > b.id
+	end)
+	return out
+end
+
+-- Hides the hotbar while another panel holds its band (`reason` names the panel).
+function PlacementController.hideBar(reason: string, on: boolean)
+	if on then
+		barHiddenBy[reason] = true
+	else
+		barHiddenBy[reason] = nil
+	end
+	syncSheet()
+end
+
+-- The unit bar (hotbar) frame, for panels that must stay clear of it.
+function PlacementController.hotbar(): Frame?
+	return bar
+end
+
+-- Closes the selected defender's panel (the Defenders panel takes its place).
+function PlacementController.deselect()
+	if selected then
+		clearSelection()
+	end
+end
+
+-- Opens the defender's own panel (its signature chooser, its stats) as a tap on it would.
+function PlacementController.focus(id: number)
+	if towers[id] then
+		selectTower(id)
+	end
+end
+
+-- Buys the next level; at the level-7 choice it opens the defender's panel to pick a path instead.
+function PlacementController.upgrade(id: number)
+	local rec = towers[id]
+	if not rec then
+		return
+	end
+	if UpgradeView.step((Units :: any)[rec.unitId], rec.level, rec.path) == "choose" then
+		selectTower(id)
+		return
+	end
+	call(Net.Functions.UpgradeTower, id)
+end
+
+function PlacementController.sell(id: number)
+	if towers[id] then
+		call(Net.Functions.SellTower, id)
+	end
+end
+
+function PlacementController.cycleTarget(id: number)
+	local rec = towers[id]
+	if rec then
+		local idx = table.find(TARGETING, rec.targeting) or 1
+		Net.event(Net.Events.SetTargeting):FireServer(id, TARGETING[idx % #TARGETING + 1])
+	end
+end
+
+-- Fires the ultimate if it is ready (false: still recovering).
+function PlacementController.useUltimate(id: number): boolean
+	local rec = towers[id]
+	if not rec or os.clock() < rec.readyAt then
+		return false
+	end
+	Net.event(Net.Events.UseAbility):FireServer(id)
+	return true
+end
+
+-- This defender's own auto ultimate (LP-B01); the server answers with a towerAuto event.
+function PlacementController.setAuto(id: number, on: boolean)
+	if towers[id] then
+		Net.event(Net.Events.SetAutoAbility):FireServer(id, on)
 	end
 end
 
@@ -1288,7 +1461,11 @@ function PlacementController.start()
 			Juice.punch(v.ult)
 		end)
 		v.auto.Activated:Connect(function()
-			SettingsController.set("autoUlt", not (SettingsController.get("autoUlt") == true))
+			-- This defender's own switch (LP-B01); the Settings toggle stays the default for new ones.
+			local rec = selected and towers[selected]
+			if rec and selected then
+				Net.event(Net.Events.SetAutoAbility):FireServer(selected, not effectiveAuto(rec))
+			end
 		end)
 	end
 	SettingsController.Changed:Connect(function(key: string)

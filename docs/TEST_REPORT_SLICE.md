@@ -965,3 +965,18 @@ Abu Bader (18, −6), all level 1.*
 | id as a string, a non-boolean, Abu Ghadeb (no ultimate), id 999, NaN id | 0 each |
 | 1,000 × (za'im id, `true`) at once | 10 (the `AUTO_ABILITY_LIMIT` burst) |
 | Console | nothing from our code |
+
+### LP-B02 the Defenders panel
+
+*Play Solo, Episode 1 Normal (`M` or `HaretDebug match ep1,normal`), nine defenders placed with `HaretDebug
+place`, stopped at wave 2 (nothing paid). Desktop 1636×584 (UIScale 1.273) and a custom 844×390 phone device
+(ActualResolution, reset to default afterwards). Tower ids checked from the server's `MatchEvents`.*
+
+| Check | Result | Capture |
+|---|---|---|
+| Desktop column | header "Your defenders · 9 / 20 placed", rows newest first, column ends at the bottom margin left of the hotbar and the cash pill | `docs/captures/lp/b02_desktop_column.jpg` |
+| Row actions (desktop) | Auto on the 'Arada (id 8) → `towerAuto:8=false`; Upgrade on Al-Adashari (id 7) → `towerUpgraded:7=L2`; Target → `towerTargeting:7=last`; Sell twice on the 'Arada → first tap "Sure? $720" in red, second `towerSold:8`, 8 rows, "8 / 20 placed" | `b02_desktop_actions_sell_sure.jpg` |
+| Ult | the za'im's Auto off, ready for 6 s with no ultimate; Ult tapped → his ultimate fired at the next attack and the fill read 0.98, then 0.75 two seconds later (9 s cooldown) | — |
+| Phone 844×390 | rail in two columns (Speed, Tower / Skip, Defenders); the sheet takes the bottom band: two full rows of 48 px buttons, cash in the header, the hotbar, cash pill and thumbstick hidden; closing brings them back (`UnitBar`, `Cash` visible) | `b02_phone_844x390_rail.jpg`, `b02_phone_844x390_sheet.jpg` |
+| Portrait tap (phone) | the panel closes, the watchtower view swings to the 'Arada and his own sheet opens | `b02_phone_portrait_focus.jpg` |
+| Console | no errors or warnings from our code | — |
