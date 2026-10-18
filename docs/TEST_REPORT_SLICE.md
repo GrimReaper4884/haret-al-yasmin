@@ -994,3 +994,18 @@ paid). Counts from the server's `MatchEvents` in the Client VM; attackers added 
 | Ready glow | rows whose ultimate is ready glow gold (pulsing when motion is allowed) | `docs/captures/lp/b03_header_ready_glow.jpg` |
 | Lock + Sell all | the 'Arada locked (gold lock, Sell greyed); Sell all → "Farms only" sold nothing (no farm in this loadout); → "Everything" sold 9, 7, 6, 5, 4, 3, 2, 1 and kept the locked 8; cash 34,560 → 37,862, "1 / 20 placed" | `b03_lock_and_sell_all_confirm.jpg`, `b03_after_sell_all_locked_kept.jpg` |
 | Console | no errors or warnings from our code | — |
+
+### LP-B04 the rail with four buttons
+
+*`tests/hud.spec.luau` "lays out four rail buttons" (right and left rail) on a 640×282 phone with the measured
+jump zone, a 750×381 phone, a 1024×768 tablet, 1920×1080 and 1636×584 desktops: four buttons, all on screen
+on the rail's half, under the menu button, off the hotbar, clear of the touch corners, never overlapping; one
+column on the tablet and the 1080p desktop, at most two on the short desktop. Studio during the prep countdown
+(all four showing):*
+
+| Profile | Rail | Capture |
+|---|---|---|
+| Desktop 1636×584 | one column: View (Tower), Defenders, 1x, Skip | `docs/captures/lp/b04_desktop_1636x584_rail_four.jpg` |
+| iPad 6th gen 1024×768 | one column above the jump button | `b04_ipad_rail_four.jpg` |
+| Phone 844×390 | two columns (Speed, Tower / Skip, Defenders) | `b02_phone_844x390_rail.jpg` |
+| 640×282 phone (spec) | four single-button columns on the right half (the jump zone leaves one row), as three did before | — |

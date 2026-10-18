@@ -149,6 +149,46 @@ return function(t)
 			t.eq(left.menu.x, Hud.RAIL.margin)
 		end)
 
+		t.it("lays out four rail buttons (View, Defenders, Speed, Skip) on every profile (LP-B04)", function()
+			t.truthy(Hud.RAIL.maxButtons >= 4, "the rail takes the Defenders button")
+			local cases = {
+				{ name = "phone 640x282", profile = "touch-phone", safe = size(640, 282), jump = { x0 = 545, y0 = 192, x1 = 615, y1 = 262 } },
+				{ name = "phone 750x381", profile = "touch-phone", safe = size(750, 381) },
+				{ name = "tablet 1024x768", profile = "touch-tablet", safe = size(1024, 768) },
+				{ name = "desktop 1920x1080", profile = "desktop", safe = size(1920, 1080) },
+				{ name = "desktop 1636x584", profile = "desktop", safe = size(1636, 584) },
+			}
+			for _, c in cases do
+				local reserved = HudLayout.reserved(Hud, c.profile, c.profile ~= "desktop", c.safe, if c.jump then { jump = c.jump } else nil)
+				local s = HudLayout.scale(Hud, c.profile, c.safe, "default", TD.LOADOUT_SLOTS)
+				local bar = HudLayout.hotbar(Hud, c.profile, s, c.safe, TD.LOADOUT_SLOTS, reserved)
+				for _, side in { "right", "left" } do
+					local rail = HudLayout.rail(Hud, c.profile, s, c.safe, side, 4, reserved)
+					t.eq(#rail.buttons, 4, c.name)
+					local w, h = c.safe.x / s, c.safe.y / s
+					if c.profile ~= "touch-phone" then
+						t.truthy(rail.columns <= 2, c.name .. ": at most two columns off phones, got " .. rail.columns)
+					end
+					if c.name == "tablet 1024x768" or c.name == "desktop 1920x1080" then
+						t.eq(rail.columns, 1, c.name .. ": a tall screen keeps one column")
+					end
+					for i, b in rail.buttons do
+						local r = { x0 = b.x, y0 = b.y, x1 = b.x + rail.size, y1 = b.y + rail.size }
+						t.truthy(r.x0 >= 0 and r.x1 <= w and r.y0 >= 0 and r.y1 <= h, c.name .. ": on screen")
+						t.truthy(if side == "right" then r.x0 >= w / 2 else r.x1 <= w / 2, c.name .. ": on the rail's half (" .. rail.columns .. " columns)")
+						t.truthy(HudLayout.fits(HudLayout.toScreen(r, s), reserved), c.name .. ": clear of the corners")
+						t.truthy(r.y0 >= rail.menu.y + rail.menu.size, c.name .. ": under the menu button")
+						t.truthy(not HudLayout.overlaps(r, hotbarRect(bar)), c.name .. ": off the hotbar")
+						t.truthy(rail.size >= Hud.TOUCH_MIN or c.profile == "desktop", c.name .. ": a thumb-sized button")
+						for j = i + 1, #rail.buttons do
+							local o = rail.buttons[j]
+							t.truthy(not HudLayout.overlaps(r, { x0 = o.x, y0 = o.y, x1 = o.x + rail.size, y1 = o.y + rail.size }), c.name .. ": buttons apart")
+						end
+					end
+				end
+			end
+		end)
+
 		t.it("puts Place on the rail side and Cancel opposite, beside the hotbar, on screen", function()
 			for _, c in CASES do
 				local profile = if c.profile == "desktop" then "touch-tablet" else c.profile

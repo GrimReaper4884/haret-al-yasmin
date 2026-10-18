@@ -560,9 +560,9 @@ DECISIONS; every name goes through §4.2's STOP first.
   - Accept: desktop column and phone sheet captures (Device Emulator 844×390 and 1636×584) with 8 towers; a
     row's Ult fires and its fill drains; Upgrade/Sell/Target act on the right tower (console `[Match]` lines
     name the ids); tapping a portrait pans the camera; the panel never covers the hotbar or the cash pill.
-- [x] **LP-B03 Header controls: all on/off, sort, counts; ready pulse** · deps: LP-B02
+- [x] 5cc73de **LP-B03 Header controls: all on/off, sort, counts; ready pulse** · deps: LP-B02
   - Accept: all-off then one wave: no auto ult fires (server log); all-on: they fire; sort chips reorder.
-- [ ] **LP-B04 Rail to four buttons, phone rail spill verified** · deps: LP-B02
+- [x] **LP-B04 Rail to four buttons, phone rail spill verified** · deps: LP-B02
   - Accept: `tests/hud.spec.luau` cases for 4 buttons at the phone, tablet and desktop profiles; captures.
 - [ ] **LP-B05 Unit types on cards, hotbar glyphs, the detail stat block, filters** · deps: none
   - Create: `UnitLogic.kind`, `UnitLogic.statBlock` (pure, specced for every unit id: no `nil` fields);
@@ -645,7 +645,7 @@ Meshy budget: ≈ 330 credits (240 for four NPC looks + 90 for the merchant and 
 ## 9. Checklist (tick with the commit hash)
 
 - [x] ff75c8d LP-A01 · [x] 19425ee LP-A02 · [x] fb9bdaa LP-A03
-- [x] 01545af LP-B01 · [x] 17c73f4 LP-B02 · [x] LP-B03 · [ ] LP-B04 · [ ] LP-B05
+- [x] 01545af LP-B01 · [x] 17c73f4 LP-B02 · [x] 5cc73de LP-B03 · [x] LP-B04 · [ ] LP-B05
 - [ ] LP-C00 · [ ] LP-C01 · [ ] LP-C02 · [ ] LP-C03 · [ ] LP-C04 · [ ] LP-C05 · [ ] LP-C06 · [ ] LP-C07
 - [ ] LP-D00 · [ ] LP-D01 · [ ] LP-D02 · [ ] LP-D03 · [ ] LP-D04 · [ ] LP-D05 · [ ] LP-D06 · [ ] LP-D07 · [ ] LP-D08 · [ ] LP-D09 · [ ] LP-D10 · [ ] LP-D11
 - [ ] LP-E01 · [ ] LP-E02 · [ ] LP-E03 · [ ] LP-E04
