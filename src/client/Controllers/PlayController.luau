@@ -533,11 +533,13 @@ render = function()
 		local none = Theme.label({ Text = t("play.no_parties"), TextSize = 12, TextColor3 = Theme.colors.textMuted, Size = UDim2.new(1, 0, 0, 18), ZIndex = 12, Parent = partiesList })
 		Theme.align(none, rtl)
 	end
-	-- The parties box takes only the room its rows need; the detail stack gets the rest.
+	-- The parties box takes only the room its rows need; the detail stack gets the rest, ending above
+	-- the taller of the box and the Create button (56 px on a phone, MH-22) so no line hides under it.
 	local partiesHeight = math.max(PARTIES_MIN, 18 + n * PARTY_ROW)
 	partiesBox.Size = UDim2.new(0.6, 0, 0, partiesHeight)
+	local bottomRow = math.max(partiesHeight, if phone then Theme.PRIMARY else Theme.TOUCH)
 	-- (on a phone the back button stands left of the stack)
-	infoHolder.Size = UDim2.new(1, if phone then -(Theme.TOUCH + 8) else 0, 1, -(partiesHeight + 4))
+	infoHolder.Size = UDim2.new(1, if phone then -(Theme.TOUCH + 8) else 0, 1, -(bottomRow + 4))
 end
 
 -- A wrapped label that grows with its text, for the detail stack.
