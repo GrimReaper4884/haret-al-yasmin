@@ -116,14 +116,14 @@ local function build()
 	cashBox = cashPill
 
 	-- Right column: skip, speed, leave, codes
-	local col = Create("Frame", { AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -10, 0, 60), Size = UDim2.fromOffset(112, 220), BackgroundTransparency = 1, ZIndex = 3, Parent = hud })
-	Create("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = col })
+	local col = Create("Frame", { AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -10, 0, 56), Size = UDim2.fromOffset(112, 4 * Theme.TOUCH + 3 * 6), BackgroundTransparency = 1, ZIndex = 3, Parent = hud })
+	Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = col })
 	skipButton = Theme.button({ LayoutOrder = 1, TextSize = 16, Size = UDim2.new(1, 0, 0, Theme.TOUCH), BackgroundColor3 = Theme.colors.confirm, ZIndex = 3, Parent = col })
 	speedButton = Theme.button({ LayoutOrder = 2, TextSize = 20, Size = UDim2.new(1, 0, 0, Theme.TOUCH), BackgroundColor3 = Theme.colors.gold, ZIndex = 3, Parent = col })
 	-- Leave, with the settings gear beside it (effects, camera, auto ultimate mid-match).
-	local lastRow = Create("Frame", { LayoutOrder = 3, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, Theme.TOUCH - 6), ZIndex = 3, Parent = col })
-	leaveButton = Theme.button({ TextSize = 15, Size = UDim2.new(1, -(Theme.TOUCH - 6) - 6, 1, 0), BackgroundColor3 = Theme.colors.danger, ZIndex = 3, Parent = lastRow })
-	local gear = Theme.button({ Name = "Settings", Text = "", AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromOffset(Theme.TOUCH - 6, Theme.TOUCH - 6), BackgroundColor3 = Color3.fromHex("#6E5E50"), ZIndex = 3, Parent = lastRow })
+	local lastRow = Create("Frame", { LayoutOrder = 3, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, Theme.TOUCH), ZIndex = 3, Parent = col })
+	leaveButton = Theme.button({ TextSize = 15, Size = UDim2.new(1, -Theme.TOUCH - 6, 1, 0), BackgroundColor3 = Theme.colors.danger, ZIndex = 3, Parent = lastRow })
+	local gear = Theme.button({ Name = "Settings", Text = "", AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH), BackgroundColor3 = Color3.fromHex("#6E5E50"), ZIndex = 3, Parent = lastRow })
 	local gp = gear:FindFirstChildOfClass("UIPadding")
 	if gp then
 		gp:Destroy()
@@ -134,7 +134,7 @@ local function build()
 	SettingsController.muteButton({
 		Name = "Music",
 		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.fromOffset(-6, -3),
+		Position = UDim2.fromOffset(-6, 0),
 		Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH),
 		BackgroundColor3 = Color3.fromHex("#6E5E50"),
 		ZIndex = 3,
@@ -165,7 +165,7 @@ local function build()
 		Net.event(Net.Events.LeaveMatch):FireServer()
 	end)
 	-- Codes mid-match (match-cash codes only work here); the lobby menu is hidden during a match.
-	codesButton = Theme.button({ Name = "Codes", LayoutOrder = 4, TextSize = 15, Size = UDim2.new(1, 0, 0, Theme.TOUCH - 6), BackgroundColor3 = Color3.fromHex("#5E6F7D"), ZIndex = 3, Parent = col })
+	codesButton = Theme.button({ Name = "Codes", LayoutOrder = 4, TextSize = 15, Size = UDim2.new(1, 0, 0, Theme.TOUCH), BackgroundColor3 = Color3.fromHex("#5E6F7D"), ZIndex = 3, Parent = col })
 	codesButton.Activated:Connect(function()
 		local open = LobbyMenuController.opener("codes")
 		if open then

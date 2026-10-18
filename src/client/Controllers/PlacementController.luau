@@ -92,16 +92,16 @@ local function build()
 	cancelButton = Theme.button({ Name = "CancelPlace", Text = "X", TextSize = 22, AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0.5, 7 * 74 / 2 + 8, 1, -24), Size = UDim2.fromOffset(52, 52), BackgroundColor3 = Theme.colors.danger, Visible = false, ZIndex = 4, Parent = root })
 
 	-- Tower panel: left edge, away from the bar (docs/research/ROBLOX_TD_UI_PATTERNS.md §1).
-	towerPanel = Theme.panel({ Name = "TowerPanel", AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 6), Size = UDim2.fromOffset(232, 0), AutomaticSize = Enum.AutomaticSize.Y, Active = true, Visible = false, ZIndex = 4, Parent = root })
-	Create("UIPadding", { PaddingTop = UDim.new(0, 10), PaddingBottom = UDim.new(0, 10), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), Parent = towerPanel })
-	Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = towerPanel })
+	towerPanel = Theme.panel({ Name = "TowerPanel", AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 0), Size = UDim2.fromOffset(232, 0), AutomaticSize = Enum.AutomaticSize.Y, Active = true, Visible = false, ZIndex = 4, Parent = root })
+	Create("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6), PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8), Parent = towerPanel })
+	Create("UIListLayout", { Padding = UDim.new(0, 4), SortOrder = Enum.SortOrder.LayoutOrder, Parent = towerPanel })
 	local header = Create("Frame", { LayoutOrder = 1, Size = UDim2.new(1, 0, 0, 56), BackgroundTransparency = 1, ZIndex = 4, Parent = towerPanel })
 	towerPortrait = Create("Frame", { Size = UDim2.fromOffset(56, 56), BackgroundTransparency = 1, ZIndex = 4, Parent = header })
-	towerTitle = Theme.display({ TextSize = 16, Position = UDim2.fromOffset(62, 0), Size = UDim2.new(1, -90, 0, 36), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 5, Parent = header })
+	towerTitle = Theme.display({ TextSize = 16, Position = UDim2.fromOffset(62, 0), Size = UDim2.new(1, -112, 0, 36), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 5, Parent = header })
 	towerTitle.TextXAlignment = Enum.TextXAlignment.Left
 	towerLevel = Theme.display({ TextSize = 14, TextColor3 = Color3.fromHex("#FFD970"), Position = UDim2.fromOffset(62, 38), Size = UDim2.new(1, -62, 0, 18), ZIndex = 5, Parent = header })
 	towerLevel.TextXAlignment = Enum.TextXAlignment.Left
-	closeButton = Theme.button({ Text = "X", TextSize = 16, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, 4, 0, -4), Size = UDim2.fromOffset(32, 32), BackgroundColor3 = Theme.colors.danger, ZIndex = 6, Parent = header })
+	closeButton = Theme.button({ Text = "X", TextSize = 18, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, 2, 0, -2), Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH), BackgroundColor3 = Theme.colors.danger, ZIndex = 6, Parent = header })
 	local cp = closeButton:FindFirstChildOfClass("UIPadding")
 	if cp then
 		cp:Destroy()
@@ -127,13 +127,13 @@ local function build()
 		costLabel.TextXAlignment = Enum.TextXAlignment.Center
 		sigCards[pathKey] = card
 	end
-	upgradeButton = Theme.button({ LayoutOrder = 5, TextSize = 17, Size = UDim2.new(1, 0, 0, 46), BackgroundColor3 = Theme.colors.confirm, ZIndex = 4, Parent = towerPanel })
-	local row = Create("Frame", { LayoutOrder = 6, Size = UDim2.new(1, 0, 0, 40), BackgroundTransparency = 1, ZIndex = 4, Parent = towerPanel })
+	upgradeButton = Theme.button({ LayoutOrder = 5, TextSize = 17, Size = UDim2.new(1, 0, 0, Theme.TOUCH), BackgroundColor3 = Theme.colors.confirm, ZIndex = 4, Parent = towerPanel })
+	local row = Create("Frame", { LayoutOrder = 6, Size = UDim2.new(1, 0, 0, Theme.TOUCH), BackgroundTransparency = 1, ZIndex = 4, Parent = towerPanel })
 	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6), Parent = row })
 	targetButton = Theme.button({ TextSize = 13, Size = UDim2.new(0.5, -3, 1, 0), BackgroundColor3 = Theme.colors.quest, ZIndex = 4, Parent = row })
 	sellButton = Theme.button({ TextSize = 13, Size = UDim2.new(0.5, -3, 1, 0), BackgroundColor3 = Theme.colors.danger, ZIndex = 4, Parent = row })
 	-- Ultimate: the button fills back up as the cooldown recovers; Auto fires it when ready.
-	ultRow = Create("Frame", { LayoutOrder = 7, Size = UDim2.new(1, 0, 0, 44), BackgroundTransparency = 1, ZIndex = 4, Parent = towerPanel })
+	ultRow = Create("Frame", { LayoutOrder = 7, Size = UDim2.new(1, 0, 0, Theme.TOUCH), BackgroundTransparency = 1, ZIndex = 4, Parent = towerPanel })
 	ultButton = Theme.button({ TextSize = 14, Size = UDim2.new(1, -62, 1, 0), BackgroundColor3 = Theme.lira, ClipsDescendants = true, ZIndex = 4, Parent = ultRow })
 	ultFill = Create("Frame", { Name = "Cooldown", AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromScale(0, 1), BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.45, BorderSizePixel = 0, ZIndex = 4, Parent = ultButton })
 	autoButton = Theme.button({ TextSize = 12, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(0, 56, 1, 0), ZIndex = 4, Parent = ultRow })

@@ -40,6 +40,7 @@ local function build()
 		Parent = Root.get(),
 	})
 	Create("UISizeConstraint", { MaxSize = Vector2.new(600, math.huge), Parent = panel })
+	panel:SetAttribute(Theme.LEGACY_ATTR, true) -- pre-touch sizes until MOBILE_HUD_PLAN MH-13
 	Create("UIPadding", {
 		PaddingTop = UDim.new(0, 12),
 		PaddingBottom = UDim.new(0, 14),

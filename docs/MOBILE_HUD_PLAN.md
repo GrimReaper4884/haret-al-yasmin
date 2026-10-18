@@ -405,7 +405,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
   - **Accept:** `lune run tests/run` green with the new spec (list the count); selene and luau-lsp clean;
     no Roblox globals in either module (the runner bans them).
 
-- [x] **MH-02 `UI/Device` and the new Root scale** · deps: MH-01
+- [x] b40dd2e **MH-02 `UI/Device` and the new Root scale** · deps: MH-01
   - **Goal:** The client knows its profile and scale and re-lays out when they change.
   - **Change:** new `src/client/UI/Device.luau`: reads `UserInputService.PreferredInput`,
     `GuiService.ViewportDisplaySize`, `GuiService.TopbarInset`, `Root.get().AbsoluteSize` and the
@@ -421,7 +421,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
     `UIScale.Scale` value moves to ≥ 1.0; DECISIONS row for B9-1 and B9-6; `SYSTEMS_ARCHITECTURE.md:17`
     corrected in the same commit.
 
-- [ ] **MH-03 Theme touch tokens and the button audit helper** · deps: MH-02
+- [x] **MH-03 Theme touch tokens and the button audit helper** · deps: MH-02
   - **Goal:** One place that makes a button touch-legal.
   - **Change:** `Theme.button` enforces a minimum drawn size of `Hud.TOUCH_MIN` unless `props.compact`
     is set (desktop-only decorations), and adds a transparent hit-pad child when the drawn size is smaller

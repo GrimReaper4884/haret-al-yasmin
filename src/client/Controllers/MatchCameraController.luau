@@ -149,8 +149,8 @@ function MatchCameraController.start()
 		Name = "CameraToggle",
 		TextSize = 13,
 		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.new(1, -10, 0, 272), -- below MatchController's right column (skip, speed, leave, codes)
-		Size = UDim2.fromOffset(120, Theme.TOUCH - 4),
+		Position = UDim2.new(1, -10, 0, 56 + 4 * Theme.TOUCH + 4 * 6), -- below MatchController's right column (skip, speed, leave, codes)
+		Size = UDim2.fromOffset(120, Theme.TOUCH),
 		BackgroundColor3 = Theme.colors.textMuted,
 		Visible = false,
 		ZIndex = 3,

@@ -8,9 +8,11 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Palette = require(ReplicatedStorage:WaitForChild("Shared").Config.Palette)
+local Hud = require(ReplicatedStorage:WaitForChild("Shared").Config.Hud)
 local Create = require(script.Parent.Create)
 local Juice = require(script.Parent.Juice)
 local Icons = require(script.Parent.Icons)
+local Root = require(script.Parent.Root)
 
 local Theme = {}
 
@@ -51,7 +53,8 @@ Theme.fontBold = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.Fon
 -- Chunky display face for titles, numbers and buttons (Arabic falls back automatically).
 Theme.fontDisplay = Font.new("rbxasset://fonts/families/FredokaOne.json", Enum.FontWeight.Regular)
 
-Theme.TOUCH = 48 -- minimum touch target, px at UIScale 1
+Theme.TOUCH = Hud.TOUCH_MIN -- minimum touch target, px at UIScale 1 (Config/Hud)
+Theme.PRIMARY = Hud.PRIMARY -- primary actions (Place, Upgrade, Create party)
 Theme.RADIUS = UDim.new(0, 12)
 
 -- Dark glyph outline on a text object (the "sticker" look that reads on any background).
@@ -121,7 +124,79 @@ function Theme.display(props: { [string]: any }): TextLabel
 	return l
 end
 
+-- Makes `gui` at least `minPx` (default Hud.TOUCH_MIN) on both axes in design px, whatever its Size
+-- says, through a UISizeConstraint named "TouchMin" (MOBILE_HUD_PLAN B1: ≥ 48 px at the final scale,
+-- and touch profiles never scale below 1.0). Returns the constraint.
+function Theme.touchPad(gui: GuiObject, minPx: number?): UISizeConstraint
+	local m = minPx or Hud.TOUCH_MIN
+	local existing = gui:FindFirstChild("TouchMin")
+	local c = if existing and existing:IsA("UISizeConstraint") then existing else Instance.new("UISizeConstraint")
+	c.Name = "TouchMin"
+	c.MinSize = Vector2.new(m, m)
+	c.Parent = gui
+	return c
+end
+
+-- Screens that still carry their pre-touch sizes until MOBILE_HUD_PLAN MH-13 resizes them mark their
+-- root with this attribute; buttons created inside such a root are not enlarged yet.
+Theme.LEGACY_ATTR = "TouchLegacy"
+
+local function insideLegacy(parent: Instance?): boolean
+	local node = parent
+	while node do
+		if node:GetAttribute(Theme.LEGACY_ATTR) then
+			return true
+		end
+		node = node.Parent
+	end
+	return false
+end
+
+-- A pressed-in look while a finger or the mouse holds the button (no hover exists on touch): the
+-- shading flips so the top reads darker by the lip's depth (MH-16 applies it through Juice.press).
+function Theme.lip(button: GuiButton)
+	local shade = button:FindFirstChild("Shade")
+	if not (shade and shade:IsA("UIGradient")) then
+		return
+	end
+	local normal = shade.Rotation
+	local function down(input: InputObject)
+		local t = input.UserInputType
+		if t == Enum.UserInputType.Touch or t == Enum.UserInputType.MouseButton1 then
+			shade.Rotation = normal + 180
+		end
+	end
+	local function up(input: InputObject)
+		local t = input.UserInputType
+		if t == Enum.UserInputType.Touch or t == Enum.UserInputType.MouseButton1 then
+			shade.Rotation = normal
+		end
+	end
+	button.InputBegan:Connect(down)
+	button.InputEnded:Connect(up)
+end
+
+-- One UIClick haptic shared by every button (GuiButton.PressHapticEffect plays it on press; inert
+-- where the device has no haptics).
+local clickHaptic: HapticEffect? = nil
+function Theme.clickHaptic(): HapticEffect
+	if clickHaptic and clickHaptic.Parent then
+		return clickHaptic
+	end
+	local h = Instance.new("HapticEffect")
+	h.Name = "UIClickHaptic"
+	h.Type = Enum.HapticEffectType.UIClick
+	h.Parent = Root.get()
+	clickHaptic = h
+	return h
+end
+
+-- A touch-legal button: at least Hud.TOUCH_MIN on both axes unless `props.compact` (desktop-only
+-- decorations) or it is built inside a screen still marked TouchLegacy.
 function Theme.button(props: { [string]: any }): TextButton
+	local compact = props.compact == true
+	props.compact = nil
+	local legacy = compact or insideLegacy(props.Parent)
 	local b = Create("TextButton", props, {
 		Create("UICorner", { CornerRadius = UDim.new(0, 10) }),
 		Create("UIPadding", {
@@ -138,6 +213,10 @@ function Theme.button(props: { [string]: any }): TextButton
 	border(b, 2.5)
 	Theme.outline(b, 1.6)
 	Juice.press(b)
+	if not legacy then
+		Theme.touchPad(b)
+	end
+	b.PressHapticEffect = Theme.clickHaptic()
 	return b
 end
 

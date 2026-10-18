@@ -11,6 +11,9 @@
 --     thumbstick and jump zones), while those touch controls would be shown.
 -- Corners default to MOBILE_HUD_PLAN B1's numbers; when PlayerGui.TouchGui.TouchControlFrame exists
 -- the measured thumbstick / jump frames are reported too.
+-- Pass condition from MH-03 on: "undersized 0" on the phone presets for every screen an MH task has
+-- moved to the touch layout (screens still marked TouchLegacy are MH-13's), and from MH-18 "corner
+-- collisions 0" while the touch controls show.
 
 local MIN = 48
 local LEFT = { 160, 160 }

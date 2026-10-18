@@ -50,8 +50,8 @@ local function build()
 		Text = "+",
 		TextSize = 22,
 		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, 4, 0.5, 0),
-		Size = UDim2.fromOffset(38, 38),
+		Position = UDim2.new(1, 8, 0.5, 0),
+		Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH),
 		BackgroundColor3 = Theme.colors.confirm,
 		Parent = coinPill,
 	})
@@ -114,8 +114,8 @@ local function build()
 
 	langButton = Theme.button({
 		Name = "Language",
-		Position = UDim2.new(0.5, 6, 0, 6),
-		Size = UDim2.fromOffset(96, Theme.TOUCH - 4),
+		Position = UDim2.new(0.5, 10, 0, 4),
+		Size = UDim2.fromOffset(96, Theme.TOUCH),
 		TextSize = 18,
 		Parent = root,
 	})
@@ -123,8 +123,8 @@ local function build()
 
 	wardrobeButton = Theme.button({
 		Name = "Wardrobe",
-		Position = UDim2.new(0.5, 108, 0, 6),
-		Size = UDim2.fromOffset(112, Theme.TOUCH - 4),
+		Position = UDim2.new(0.5, 112, 0, 4),
+		Size = UDim2.fromOffset(112, Theme.TOUCH),
 		TextSize = 17,
 		BackgroundColor3 = Theme.colors.quest,
 		Parent = root,
@@ -134,7 +134,7 @@ local function build()
 	-- One-tap music mute beside the pills (the match HUD has its own next to the gear).
 	SettingsController.muteButton({
 		Name = "Music",
-		Position = UDim2.new(0.5, 226, 0, 4),
+		Position = UDim2.new(0.5, 230, 0, 4),
 		Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH),
 		BackgroundColor3 = Color3.fromHex("#6E5E50"),
 		Parent = root,

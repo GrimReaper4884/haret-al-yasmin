@@ -75,6 +75,8 @@ function Modal.create(name: string, maxWidth: number, bodyHeight: number?): Moda
 		Parent = Root.get(),
 	})
 	panel:SetAttribute("ModalName", name)
+	-- Modal bodies keep their pre-touch button sizes until MOBILE_HUD_PLAN MH-13 (sheet mode).
+	panel:SetAttribute(Theme.LEGACY_ATTR, true)
 	Create("UISizeConstraint", { MaxSize = Vector2.new(maxWidth, math.huge), Parent = panel })
 	Create("UIPadding", {
 		PaddingTop = UDim.new(0, 10),

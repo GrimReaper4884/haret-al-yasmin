@@ -50,7 +50,7 @@ local function build()
 		Name = "Header",
 		LayoutOrder = 1,
 		BackgroundTransparency = 1,
-		Size = UDim2.new(1, 0, 0, Theme.TOUCH - 8),
+		Size = UDim2.new(1, 0, 0, Theme.TOUCH),
 		Parent = panel,
 	})
 	speaker = Theme.label({
@@ -65,7 +65,7 @@ local function build()
 		Name = "Close",
 		Text = "X",
 		TextSize = 18,
-		Size = UDim2.fromOffset(Theme.TOUCH - 8, Theme.TOUCH - 8),
+		Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH),
 		BackgroundColor3 = Theme.colors.danger,
 		Parent = header,
 	})
