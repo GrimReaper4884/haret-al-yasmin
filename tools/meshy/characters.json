@@ -1,6 +1,7 @@
 {
   "_comment": "Meshy prompts (docs/CHARACTER_PIPELINE.md). Characters are the lane drama's main cast by the owner's decision (COPYRIGHT_REGISTER C-201); keys are the unit/enemy ids they play. Never name the series or an actor, never ask for a real person's likeness: describe period costume and props only. 'style'/'texture_style' are prepended to character prompts, 'prop_style' to props.",
   "style": "Chibi-proportioned stylized cartoon game character (oversized head about one third of total height, short sturdy body, big hands and feet), like a collectible vinyl toy for a mobile tower-defense game, clean simple shapes, bold readable silhouette, full body standing in T-pose, facing the camera, no base, no background.",
+  "creature_style": "Stylized cartoon game model for a mobile tower-defense game, chunky toy-like proportions, like a collectible vinyl toy, clean simple shapes, bold readable silhouette, one single subject only (no extra characters), full body seen from a three-quarter front view, no base, no background.",
   "texture_style": "Hand-painted flat colors, soft shading, no photorealism, warm Mediterranean palette, clean cloth folds, friendly expressive face.",
   "enemy_texture_style": "Hand-painted flat colors, soft shading, no photorealism, colder palette of indigo, basalt grey and olive with red accents, clean cloth folds, hostile scowling expressive face, menacing but never grotesque, no caricature.",
   "animations": {
@@ -218,6 +219,54 @@
       "texture_style": "enemy",
       "prompt": "1930s false blind beggar revealed as a spy, gaunt man ripping a dark blindfold off with one hand, dagger in the other, patched grey cloak flying, bare feet, cruel grin.",
       "texture": "Patched grey cloak, dark blindfold, steel dagger, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "rifleman": {
+      "height": 1.8,
+      "texture_style": "enemy",
+      "prompt": "Colonial-era infantry rifleman of the 1930s, lean soldier with a tall red felt cap with a tassel, khaki tunic with a leather belt, puttees, holding a long rifle across the chest, stern face.",
+      "texture": "Red felt cap with a black tassel, khaki tunic, brown leather belt and puttees, dark wooden rifle, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "cart": {
+      "height": 2.0,
+      "texture_style": "enemy",
+      "pose": false,
+      "rig": false,
+      "prompt": "Small wooden two-wheeled cart pulled by a grey donkey, piled high with burlap sacks, four small scowling faces in dark caps peeking out between the sacks, 1930s Levantine style, no driver, no people standing beside it.",
+      "texture": "Weathered brown wood, burlap sacks, grey donkey with a red harness, the peeking faces scowling under dark caps.",
+      "style": "creature_style"
+    },
+    "hakim_rival": {
+      "height": 1.7,
+      "texture_style": "enemy",
+      "prompt": "Rival-lane healer of 1930s Damascus, thin old man with a grey goatee, green turban, long dark robe, a leather satchel of bottles over the shoulder, holding a glass vial up.",
+      "texture": "Dark green turban, charcoal robe, brown leather satchel, green glass vial, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "snake": {
+      "height": 0.5,
+      "texture_style": "enemy",
+      "pose": false,
+      "rig": false,
+      "prompt": "Cartoon viper snake with no arms and no legs, a long legless body coiled in an S-shape, raised head ready to strike, forked tongue out.",
+      "texture": "Sand yellow and black diamond scales, pale belly, red forked tongue, amber eyes.",
+      "style": "creature_style"
+    },
+    "brute": {
+      "height": 1.95,
+      "texture_style": "enemy",
+      "prompt": "Hulking rival-lane fighter, shaved head with a scar, dark head cloth around the neck, sleeveless striped vest, wide red belt, iron knuckles, fists raised, drunken swagger.",
+      "texture": "Dark striped vest, red belt, black neck cloth, iron grey knuckles, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "fakhr": {
+      "height": 2.05,
+      "texture_style": "enemy",
+      "prompt": "One-handed rival-lane bruiser of 1930s Damascus, massive shoulders, a bandaged stump for the left hand, a spiked club in the right, dark head cloth, open black vest, red sash, roaring.",
+      "texture": "Dark head cloth, black vest, red sash, white bandage on the left stump, dark wooden spiked club, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "abu_zira": {
+      "height": 1.95,
+      "texture_style": "enemy",
+      "prompt": "Drunken rival-lane fighter of 1930s Damascus, lanky man with a long drooping moustache, tarboosh fallen backwards, unbuttoned striped shirt, a broken bottle in one hand and a short knife in the other, reeling stance.",
+      "texture": "Red tarboosh, blue and white striped shirt, dark trousers, green glass bottle, warm tan skin (not grey), arms straight out to the sides."
     }
   },
   "prop_style": "Stylized chunky cartoon game prop for a mobile tower-defense game set in a 1930s Damascus old-city lane, toy-like proportions, clean simple shapes, bold readable silhouette, hand-painted flat colors with soft shading, warm limestone and wood palette, single object centered, three-quarter view, no characters, no text, no background.",
