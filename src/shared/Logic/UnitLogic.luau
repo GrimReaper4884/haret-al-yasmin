@@ -190,7 +190,7 @@ function UnitLogic.stats(def: any, level: number, stars: number, trait: any?, st
 		beadBuff = if lv.buff then math.min(bead.buff, cap * lv.buff) else 0
 		beadCash = bead.cash
 	end
-	local douse = def.douse
+	local douse = (lv :: any).douse or def.douse -- a signature may set it (Guard of the Warehouse)
 	if trait and trait.douse and (douse == nil or trait.douse > douse) then
 		douse = trait.douse
 	end

@@ -17,6 +17,7 @@
 --   print(D:Invoke("qirsh", 500))    -- grant test qirsh (Studio only)
 --   print(D:Invoke("lira", 5000))    -- grant test lira and 5 trait stones (Studio only)
 --   print(D:Invoke("spawn", "porter,drummer")) -- queue attackers into the running wave, 1 per second
+--   print(D:Invoke("ally", "adashari,3"))  -- a story ally at your feet (no profile change)
 
 local HttpService = game:GetService("HttpService")
 local Net = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared").Net)
@@ -119,6 +120,13 @@ function DebugService.start()
 				return "bad arg"
 			end
 			return MatchService.debugPlace(player, unitId, tonumber(x) :: number, tonumber(z) :: number)
+		elseif cmd == "ally" then
+			-- "unitId,level": a story ally at your feet (S1-S12 checks; no profile change)
+			local unitId, lvl = string.match(tostring(arg), "^([%w_]+),(%d+)$")
+			if not unitId then
+				return "bad arg"
+			end
+			return MatchService.debugAlly(player, unitId, tonumber(lvl) :: number)
 		elseif cmd == "spawn" then
 			-- "id,id,…": queue these attackers into the running wave, one per second (S1-S03 checks)
 			return MatchService.debugSpawn(player, string.split(tostring(arg), ","), 1)

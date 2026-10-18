@@ -85,7 +85,7 @@ function ProfileSchema.default(now: number, schemaVersion: number, ctx: Context?
 		events = {}, -- Logic/EventLogic: { [eventId] = { currency, bought } }
 		daily = { streak = 0, lastDay = 0 },
 		afk = { day = 0, lira = 0, carry = 0, cups = 0, tales = 0, seconds = 0 }, -- Logic/AfkLogic
-		td = { matches = 0, wins = 0, kills = 0, cleared = {}, bestInfinite = 0, beadDay = 0, beadDayCount = 0 },
+		td = { matches = 0, wins = 0, kills = 0, cleared = {}, bestInfinite = 0, beadDay = 0, beadDayCount = 0, secretPity = 0 },
 		beads = 0, -- shabriyeh beads to thread onto units (Config/Beads)
 	}
 end
@@ -293,6 +293,7 @@ function ProfileSchema.sanitize(p: any, ctx: Context, now: number): any
 	td.bestInfinite = nonNegInt(td.bestInfinite, 0)
 	td.beadDay = nonNegInt(td.beadDay, 0)
 	td.beadDayCount = nonNegInt(td.beadDayCount, 0)
+	td.secretPity = nonNegInt(td.secretPity, 0)
 	p.beads = math.clamp(nonNegInt(p.beads, 0), 0, if ctx.beads then ctx.beads.maxBeads else 0)
 	local cleared = tableOr(td.cleared)
 	for mode, diff in pairs(cleared) do

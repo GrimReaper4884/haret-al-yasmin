@@ -846,6 +846,12 @@ return function(t)
 			abSlow = function(st)
 				return st.ability and (tostring(st.ability.slow) .. "/" .. tostring(st.ability.slowFor))
 			end,
+			abCount = function(st)
+				return st.ability and st.ability.count
+			end,
+			douse = function(st)
+				return st.douse
+			end,
 		}
 
 		t.it("every Epic+ banner unit has paths a and b, priced ≈ 1.5 × its last level, with EN/AR names", function()
@@ -866,7 +872,7 @@ return function(t)
 					t.truthy(u.signature.a.key ~= u.signature.b.key, id .. " two different paths")
 				end
 			end
-			t.eq(n, 8)
+			t.eq(n, 9, "the eight Epic+ banner units and Al-Adashari")
 		end)
 
 		t.it("cap (D-047): a path adds ≤ +35 % damage per second or exactly one effect, never both", function()
@@ -1256,6 +1262,112 @@ return function(t)
 			t.eq(table.concat(p.units.walad.beads, ","), "range,,", "unknown kinds and the 4th slot dropped")
 			t.eq(p.units.zaim.beads, nil)
 			t.eq(p.td.beadDayCount, 0)
+		end)
+	end)
+
+	-- Al-Adashari, the secret unit (STORY_PLAN §7.6, owner's drop rule D-048, S1-S12).
+	t.describe("Al-Adashari (S1-S12)", function()
+		local drop = TD.SECRET_DROP
+		local ep9 = { kind = "story", episode = "ep9" }
+		local win = { won = true, wavesCleared = 60, totalWaves = 60 }
+		local function prof(cleared)
+			return { td = { cleared = cleared or {}, secretPity = 0 } }
+		end
+
+		t.it("is a secret, never from a banner, one per player, with the capped Oath", function()
+			local u = Units.adashari
+			t.eq(u.rarity, "secret")
+			t.eq(u.noBanner, true)
+			t.eq(u.maxPlaced, 1)
+			t.eq(u.hitsStealth, true)
+			t.eq(u.ability.kind, "mark")
+			t.truthy(u.ability.multiplier <= 1.4)
+			t.eq(drop.unit, "adashari")
+			t.eq(drop.chance.normal, 0.01)
+			t.eq(drop.chance.hard, 0.025)
+			t.eq(drop.chance.nightmare, 0.06)
+			t.eq(drop.pity, 40)
+		end)
+
+		t.it("the roll: 1 / 2.5 / 6 %, only Episode 9 wins, pity 40, the first Nightmare clear guarantees", function()
+			local function always(v)
+				return function()
+					return v
+				end
+			end
+			-- The chance, exactly at the edge.
+			for d, c in drop.chance do
+				local cleared = if d == "nightmare" then { ep9 = "nightmare" } else {}
+				t.eq(MatchRewards.secretDrop(prof(cleared), "ep9", ep9, d, win, drop, TD, always(c - 1e-6)), "adashari", d .. " just under the chance")
+				t.eq(MatchRewards.secretDrop(prof(cleared), "ep9", ep9, d, win, drop, TD, always(c + 1e-6)), nil, d .. " just over")
+			end
+			-- Never on a loss or another episode.
+			t.eq(MatchRewards.secretDrop(prof(), "ep9", ep9, "hard", { won = false, wavesCleared = 50, totalWaves = 60 }, drop, TD, always(0)), nil)
+			t.eq(MatchRewards.secretDrop(prof(), "ep8", { kind = "story", episode = "ep8" }, "hard", win, drop, TD, always(0)), nil)
+			-- Pity: an unlucky player gets him on the 40th win at the latest, and the counter resets.
+			local p = prof()
+			local got
+			for i = 1, drop.pity do
+				got = MatchRewards.secretDrop(p, "ep9", ep9, "normal", win, drop, TD, always(0.999))
+				if i < drop.pity then
+					t.eq(got, nil, "win " .. i)
+					t.eq(p.td.secretPity, i)
+				end
+			end
+			t.eq(got, "adashari", "the 40th win")
+			t.eq(p.td.secretPity, 0)
+			-- The first Nightmare clear guarantees him; later Nightmare wins roll normally.
+			t.eq(MatchRewards.secretDrop(prof({ ep9 = "hard" }), "ep9", ep9, "nightmare", win, drop, TD, always(0.999)), "adashari")
+			t.eq(MatchRewards.secretDrop(prof({ ep9 = "nightmare" }), "ep9", ep9, "nightmare", win, drop, TD, always(0.999)), nil)
+			-- The long-run rate on Hard (pity aside) is the configured 2.5 %.
+			local n, hits = 20000, 0
+			local seed = 7
+			local function rng()
+				seed = (seed * 1103515245 + 12345) % 2147483648
+				return seed / 2147483648
+			end
+			for _ = 1, n do
+				local q = prof()
+				if MatchRewards.secretDrop(q, "ep9", ep9, "hard", win, drop, TD, rng) then
+					hits += 1
+				end
+			end
+			local rate = hits / n
+			t.truthy(math.abs(rate - 0.025) < 0.005, "hard rate " .. rate)
+		end)
+
+		t.it("the Oath marks the strongest; Repentance marks two; the Warehouse douses two stacks", function()
+			local straight = { { 0, 0 }, { 200, 0 } }
+			local function twoBosses()
+				return { spawns = { { at = 0, enemy = "colonel", hpMul = 10, speedMul = 1 }, { at = 0, enemy = "sergeant", hpMul = 10, speedMul = 1 } }, count = 2 }
+			end
+			local function maxed(s, path)
+				local _, _, tw = TdTowers.place(s, "p1", "adashari", Units.adashari, 2, 4, 0, nil, rules())
+				for _ = 2, #Units.adashari.levels do
+					TdTowers.upgrade(s, "p1", tw.id, Units.adashari, rules())
+				end
+				if path then
+					TdTowers.upgrade(s, "p1", tw.id, Units.adashari, rules(), path)
+				end
+				return tw
+			end
+			local s = sim(straight, twoBosses, 1)
+			run(s, 1.05)
+			maxed(s, nil)
+			local ev = run(s, TD.TICK * 2)
+			t.eq(count(ev, "mark"), 1, "one mark")
+			local strongest = if s.enemies[1].hp > s.enemies[2].hp then s.enemies[1] else s.enemies[2]
+			t.eq(strongest.markMul, 1.4)
+			local s2 = sim(straight, twoBosses, 1)
+			run(s2, 1.05)
+			local r = maxed(s2, "a")
+			t.eq(r.stats.ability.count, 2)
+			ev = run(s2, TD.TICK * 2)
+			t.eq(count(ev, "mark"), 2, "Repentance marks two")
+			t.truthy(s2.enemies[1].markMul == 1.4 and s2.enemies[2].markMul == 1.4)
+			local s3 = sim(straight, twoBosses, 1)
+			local w = maxed(s3, "b")
+			t.eq(w.stats.douse, 2, "Guard of the Warehouse")
 		end)
 	end)
 

@@ -240,8 +240,11 @@ local function rewardPlayer(match: Match, player: Player, outcome: any): any
 		-- Beads first: they read the first-clear state that record() is about to update (S1-S11).
 		local beads = MatchRewards.beads(p, match.modeId, match.mode, match.difficulty, outcome, Beads, TD, os.time() // 86400)
 		;(reward :: any).beads = beads
+		-- Episode 9's secret unit roll (S1-S12), granted in this same mutation.
+		local secret = MatchRewards.secretDrop(p, match.modeId, match.mode, match.difficulty, outcome, TD.SECRET_DROP, TD, math.random)
+		;(reward :: any).secretUnit = secret
 		MatchRewards.record(p, match.modeId, match.mode, match.difficulty, outcome, if ps then ps.kills else 0, TD)
-		Grants.apply(p, { lira = reward.lira, qirsh = reward.qirsh, xp = reward.xp, traitStones = reward.traitStones, beads = beads }, {
+		Grants.apply(p, { lira = reward.lira, qirsh = reward.qirsh, xp = reward.xp, traitStones = reward.traitStones, beads = beads, unit = secret }, {
 			maxQirsh = Economy.MAX_QIRSH,
 			maxLira = TD.MAX_LIRA,
 			maxStones = TD.MAX_TRAIT_STONES,
@@ -256,6 +259,10 @@ local function rewardPlayer(match: Match, player: Player, outcome: any): any
 	end, { src = "match:" .. match.modeId })
 	Analytics.custom(player, (if outcome.won then "MatchWon_" else "MatchLost_") .. match.modeId .. "_" .. match.difficulty, outcome.wavesCleared)
 	PlayerStateService.notify(player, "notify.match_rewards", { lira = reward.lira, qirsh = reward.qirsh, xp = reward.xp })
+	local secret = (reward :: any).secretUnit
+	if secret and (Units :: any)[secret] then
+		PlayerStateService.notify(player, "notify.secret_unit", { unitKey = (Units :: any)[secret].nameKey })
+	end
 	if eventGain > 0 and eventDef then
 		(reward :: any).eventCurrency = eventGain;
 		(reward :: any).eventCurrencyKey = eventDef.currencyKey
@@ -477,6 +484,22 @@ end
 
 function MatchService.debugAddCash(player: Player, amount: number)
 	MatchService.addCash(player, amount)
+end
+
+-- Studio test hook (DebugService only): stands a story ally (no owner, no profile change) at the
+-- player's feet, e.g. Al-Adashari to watch his Oath without granting him (S1-S12).
+function MatchService.debugAlly(player: Player, unitId: string, level: number): (boolean, string?)
+	local match = byPlayer[player]
+	local def = (Units :: any)[unitId]
+	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not match or match.ended or not def or not root then
+		return false, "not in a match / unknown unit"
+	end
+	local lx, lz = ArenaService.toLocal(match.slot, root.Position)
+	local ally = TdTowers.addAlly(match.state, unitId, def, level, lx, lz, rulesFor(match), 0)
+	ArenaService.buildTower(match.slot, ally, "")
+	queueEvent(match, { type = "towerPlaced", id = ally.id, owner = nil, ally = true, unitId = unitId, x = lx, z = lz, level = ally.level, range = ally.stats.range })
+	return true, nil
 end
 
 -- Studio test hook (DebugService only): queues the given attackers into the running wave, one every

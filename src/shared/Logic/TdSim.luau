@@ -737,18 +737,29 @@ local function towersAct(state: State, events: { Event })
 						t.abilityAt = state.time + ab.cooldown
 						splashHits(state, t, t.x, t.z, ab.radius or st.range, damage * ab.multiplier, sees, events, ab)
 					elseif ab.kind == "mark" then
-						-- The Oath: the strongest enemy it can see in range takes ×multiplier from every
-						-- defender for `duration` s. Marks never stack: the stronger one holds.
+						-- The Oath: the `count` strongest enemies it can see in range take ×multiplier
+						-- from every defender for `duration` s. Marks never stack: the stronger one holds.
 						local keep = t.targeting
 						t.targeting = "strong"
-						local m = pickTarget(state, t, sees)
+						local marked: { Enemy } = {}
+						for _ = 1, ab.count or 1 do
+							local m = pickTarget(state, t, sees)
+							if not m then
+								break
+							end
+							table.insert(marked, m)
+							m.alive = false -- hidden from the next pick for a moment
+						end
 						t.targeting = keep
-						if m then
+						for _, m in marked do
+							m.alive = true
 							ability = true
-							t.abilityAt = state.time + ab.cooldown
 							m.markMul = if state.time < m.markedUntil then math.max(m.markMul, ab.multiplier) else ab.multiplier
 							m.markedUntil = math.max(m.markedUntil, state.time + (ab.duration or 0))
 							table.insert(events, { type = "mark", tower = t.id, target = m.id, untilT = m.markedUntil })
+						end
+						if ability then
+							t.abilityAt = state.time + ab.cooldown
 						end
 					end
 				end

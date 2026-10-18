@@ -104,6 +104,27 @@ function MatchRewards.beads(profile: any, modeId: string, mode: any, difficulty:
 	return n
 end
 
+-- The secret unit roll (TD.SECRET_DROP, S1-S12). Call inside the reward's DataService.mutate,
+-- BEFORE MatchRewards.record (the Nightmare guarantee reads the old clear). Updates
+-- profile.td.secretPity; returns the unit id to grant, or nil. rng() → [0, 1).
+function MatchRewards.secretDrop(profile: any, modeId: string, mode: any, difficulty: string, outcome: Outcome, drop: any, td: any, rng: () -> number): string?
+	if not drop or not outcome.won or mode.kind ~= "story" or mode.episode ~= drop.episode then
+		return nil
+	end
+	local t = profile.td
+	local chance = drop.chance[difficulty] or 0
+	local cleared = t.cleared[modeId]
+	local clearedOrder = if cleared then td.DIFFICULTIES[cleared].order else 0
+	local firstNightmare = difficulty == "nightmare" and clearedOrder < td.DIFFICULTIES.nightmare.order
+	local pity = (t.secretPity or 0) + 1
+	if firstNightmare or pity >= drop.pity or rng() < chance then
+		t.secretPity = 0
+		return drop.unit
+	end
+	t.secretPity = pity
+	return nil
+end
+
 -- Records the outcome in profile.td (stats and unlocks). Call inside DataService.mutate.
 function MatchRewards.record(profile: any, modeId: string, mode: any, difficulty: string, outcome: Outcome, kills: number, td: any)
 	local t = profile.td

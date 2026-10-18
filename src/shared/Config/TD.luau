@@ -90,5 +90,15 @@ return {
 	INFINITE_QIRSH_PER_WAVE = 8,
 	INFINITE_XP_PER_WAVE = 3,
 	TRAIT_STONE_DROP = 0.15, -- chance of 1 trait stone on a story win (Hard+)
+	-- The secret unit (STORY_PLAN §7.6, owner 2026-10-18, D-048): every win of `episode` rolls it at
+	-- `chance[difficulty]`; after `pity` wins without it the next win guarantees it; the first
+	-- Nightmare clear of the episode always gives it. Not a paid random item (no Robux buys a roll);
+	-- the odds are shown on the episode card anyway.
+	SECRET_DROP = {
+		unit = "adashari",
+		episode = "ep9",
+		chance = { normal = 0.01, hard = 0.025, nightmare = 0.06 },
+		pity = 40,
+	},
 	VIP_LIRA_BONUS = 0.25,
 }

@@ -149,6 +149,7 @@ return function(t)
 				brute = true,
 				fakhr = true,
 				abu_zira = true,
+				adashari = true, -- the secret unit, primitive until S1-A05
 			}
 			local function check(id)
 				if AWAITING[id] then

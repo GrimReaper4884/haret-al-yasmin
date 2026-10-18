@@ -44,6 +44,7 @@ export type Ability = {
 	multiplier: number, -- damage multiplier on the target (shabriyeh), on everything in radius (sweep), or that the marked enemy takes from every defender (mark; cap 1.4, D-045)
 	radius: number?,
 	duration: number?, -- mark: seconds the mark lasts
+	count: number?, -- mark: how many enemies one Oath marks (default 1; signature Repentance 2)
 }
 
 export type Visual = {
@@ -408,6 +409,34 @@ local Units: { [string]: UnitDef } = {
 			L(800, 960, 10, 0.25),
 		},
 		visual = { robe = "#C98A4B", accent = "#C98A4B", skin = "#C98A4B", hat = "none", hatColor = "#000000", weapon = "cat", scale = 0.5 },
+	},
+
+	-- The secret unit of Season Story 1 (STORY_PLAN §7.6, S1-S12): the thief of Episodes 1–3, the
+	-- one-armed night guard after his confession. Only from Episode 9 wins (TD.SECRET_DROP).
+	adashari = {
+		nameKey = "unit.adashari.name",
+		descKey = "unit.adashari.desc",
+		rarity = "secret",
+		role = "melee",
+		maxPlaced = 1,
+		hitsStealth = true,
+		revealsStealth = true, -- his lantern (D-051: lights his attack range for now)
+		noBanner = true,
+		levels = {
+			L(900, 60, 8, 0.6),
+			L(600, 90, 8.5, 0.58),
+			L(1000, 135, 9, 0.55),
+			L(1600, 200, 9.5, 0.5),
+			L(2400, 300, 10, 0.46),
+			L(3600, 450, 11, 0.42),
+		},
+		-- The Oath: marks the strongest enemy in range; every defender hits it ×1.4 for 4 s.
+		ability = { kind = "mark", cooldown = 10, multiplier = 1.4, duration = 4 },
+		signature = {
+			a = { key = "repentance", cost = 5400, ability = { count = 2 } },
+			b = { key = "warehouse", cost = 5400, set = { douse = 2 } },
+		},
+		visual = { robe = "#7A6A55", accent = "#1F1B18", skin = "#B97F5A", hat = "hatta", hatColor = "#2A211B", weapon = "lantern", scale = 0.95 },
 	},
 }
 

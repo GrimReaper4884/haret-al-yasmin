@@ -767,6 +767,14 @@ local en: { [string]: string } = {
 	["bead.heal.name"] = "Bead of mending (+2 gate repair)",
 	["bead.buff.name"] = "Bead of spirit (+3 % boost)",
 	["units.beads"] = "{n} shabriyeh beads",
+	-- Al-Adashari, the secret unit (S1-S12)
+	["unit.adashari.name"] = "Al-Adashari, the Night Guard",
+	["unit.adashari.desc"] = "The thief who confessed. One arm, one lantern, one oath: the strongest enemy he marks takes 40 % more from everyone. (Secret: Episode 9 wins only)",
+	["unit.adashari.sig.repentance.name"] = "Repentance",
+	["unit.adashari.sig.repentance.desc"] = "His oath marks two enemies at once.",
+	["unit.adashari.sig.warehouse.name"] = "Guard of the Warehouse",
+	["unit.adashari.sig.warehouse.desc"] = "Each blow puts out two burn stacks on the gate.",
+	["notify.secret_unit"] = "The night guard joins you: {unit}!",
 }
 
 local ar: { [string]: string } = {
@@ -1518,6 +1526,14 @@ local ar: { [string]: string } = {
 	["bead.heal.name"] = "خرزة التصليح (+٢ للباب)",
 	["bead.buff.name"] = "خرزة الهمّة (+٣٪ تشجيع)",
 	["units.beads"] = "{n} خرزات شبرية",
+	-- العدشري (S1-S12)
+	["unit.adashari.name"] = "العدشري، حارس الليل",
+	["unit.adashari.desc"] = "الحرامي اللي اعترف. إيد وحدة، وفانوس واحد، ويمين واحد: أقوى عدو بيعلّم عليه بياخد ٤٠٪ زيادة من الكل. (سرّي: من انتصارات الحلقة ٩ بس)",
+	["unit.adashari.sig.repentance.name"] = "التوبة",
+	["unit.adashari.sig.repentance.desc"] = "يمينه بيعلّم على عدوّين مع بعض.",
+	["unit.adashari.sig.warehouse.name"] = "حارس البوايكية",
+	["unit.adashari.sig.warehouse.desc"] = "كل ضربة بتطفي حرقتين عن الباب.",
+	["notify.secret_unit"] = "حارس الليل صار معك: {unit}!",
 }
 
 return {
