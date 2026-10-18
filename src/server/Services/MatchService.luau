@@ -62,6 +62,7 @@ export type Match = {
 	eventBuffer: { any },
 	buffShown: { [number]: number }, -- tower id → the support buff on its badge (absent = none)
 	revealShown: { [number]: number }, -- tower id → the lantern tower letting it see stealth (absent = none)
+	script: any?, -- the episode's scripted beats (Config/Waves episodes[id].script): the ally's turn
 }
 
 local matches: { [number]: Match } = {}
@@ -398,6 +399,7 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 		posAt = 0,
 		ended = false,
 		outcome = nil,
+		script = if episode then (episode :: any).script else nil,
 		eventBuffer = {},
 		buffShown = {},
 		revealShown = {},
@@ -668,6 +670,13 @@ local function stepMatch(match: Match, dt: number)
 				match.votes = {}
 				changed = true
 				queueEvent(match, e)
+				-- Story beats: Al-Adashari turns at the gate (Episode 8) or guards it from wave 1 (Episode 9).
+				local ally = TdTowers.runScript(match.state, match.script, e.wave, Units :: any, rulesFor(match), (Arenas[match.slot.arenaId] :: any).allySpot)
+				if ally then
+					ArenaService.buildTower(match.slot, ally, "")
+					queueEvent(match, { type = "towerPlaced", id = ally.id, owner = nil, ally = true, unitId = ally.unitId, x = ally.x, z = ally.z, level = ally.level, range = ally.stats.range })
+					queueEvent(match, { type = "ally", id = ally.id, unitId = ally.unitId, shield = match.state.allyShield })
+				end
 			elseif t == "waveEnd" or t == "reached" or t == "gateBurn" then
 				changed = true
 				queueEvent(match, e)

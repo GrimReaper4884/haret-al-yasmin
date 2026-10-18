@@ -44,6 +44,7 @@ local EnemyRenderController = {}
 type Enemy = {
 	model: Model,
 	enemyId: string,
+	road: number, -- which road of the arena it walks (S1-S07; 1 on one-road arenas)
 	dist: number, -- drawn distance along the path
 	target: number, -- predicted server distance (advanced by vel between updates)
 	vel: number, -- measured speed along the path (studs / s)
@@ -67,6 +68,7 @@ local byModel: { [Model]: Enemy } = {}
 local towerPos: { [number]: Vector3 } = {}
 local towerUnit: { [number]: string } = {}
 local arenaPath: Path.Path? = nil
+local arenaPaths: { Path.Path } = {} -- every road (twin-gate arenas have two; S1-S07)
 local origin: CFrame? = nil
 local selectedTower: number? = nil -- PlacementController tells us; its target gets the flash
 
@@ -191,6 +193,7 @@ local function spawn(e: any)
 	local rec: Enemy = {
 		model = model,
 		enemyId = e.enemyId,
+		road = if type(e.path) == "number" then e.path else 1,
 		dist = 0,
 		target = 0,
 		vel = def.speed,
@@ -232,7 +235,7 @@ local function spawn(e: any)
 	end
 	enemies[e.id] = rec
 	byModel[model] = rec
-	local x, z, ux, uz = Path.position(arenaPath :: Path.Path, 0)
+	local x, z, ux, uz = Path.position(arenaPaths[rec.road] or arenaPath :: Path.Path, 0)
 	model:PivotTo(origin * CFrame.lookAt(Vector3.new(x, 0, z), Vector3.new(x + ux, 0, z + uz)))
 end
 
@@ -796,7 +799,7 @@ local function step(dt: number)
 			rec.dist += math.max(0, rec.vel * dt + delta * math.min(1, dt * 4))
 		end
 		rec.bob += dt * 10 * speedMul
-		local x, z, ux, uz = Path.position(p, rec.dist)
+		local x, z, ux, uz = Path.position(arenaPaths[rec.road] or p, rec.dist)
 		local bob = if rec.walks then 0 else math.abs(math.sin(rec.bob)) * 0.25
 		local punched = rec.punchAt
 		if punched then
@@ -865,6 +868,7 @@ function EnemyRenderController.start()
 		bossId = nil
 		bossBar.Visible = false
 		arenaPath = Path.build(Arenas[info.arenaId].path)
+		arenaPaths = Path.buildAll(Arenas[info.arenaId] :: any)
 		origin = CFrame.new(info.origin)
 	end)
 	MatchController.Ended:Connect(function()

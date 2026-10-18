@@ -75,6 +75,7 @@ local selected: number? = nil
 local selectedRing: Part? = nil
 local towers: { [number]: { unitId: string, level: number, owner: string, x: number, z: number, range: number, targeting: string, readyAt: number, buff: number?, revealedBy: string?, revealedByTower: number? } } = {}
 local arenaPath: Path.Path? = nil
+local arenaPaths: { Path.Path } = {} -- every road: the ghost keeps clear of all of them (S1-S07)
 local origin: CFrame? = nil
 local busy = false
 
@@ -298,7 +299,7 @@ local function valid(x: number, z: number): (boolean, string?)
 	if x < b[1] or x > b[3] or z < b[2] or z > b[4] then
 		return false, "out_of_bounds"
 	end
-	if Path.distanceTo(arenaPath, x, z) < TD.PATH_HALF_WIDTH then
+	if Path.distanceToAll(arenaPaths, x, z) < TD.PATH_HALF_WIDTH then
 		return false, "on_path"
 	end
 	for _, t in towers do
@@ -860,6 +861,7 @@ function PlacementController.start()
 	MatchController.Started:Connect(function(info: MatchController.Info)
 		towers = {}
 		arenaPath = Path.build(Arenas[info.arenaId].path)
+		arenaPaths = Path.buildAll(Arenas[info.arenaId] :: any)
 		origin = CFrame.new(info.origin)
 		clearGhost()
 		clearSelection()

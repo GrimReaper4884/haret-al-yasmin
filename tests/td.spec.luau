@@ -1021,6 +1021,117 @@ return function(t)
 		end)
 	end)
 
+	-- Twin gates and the ally (STORY_PLAN §10.1, S1-S07): two roads that merge before the gate, and a
+	-- story defender that belongs to nobody.
+	t.describe("Two roads and the ally (S1-S07)", function()
+		local A = { { 0, 40 }, { 50, 0 }, { 120, 0 } }
+		local B = { { 0, -40 }, { 50, 0 }, { 120, 0 } }
+		local function twin(list, totalWaves)
+			return TdSim.new({ A, B }, { "p1" }, 100000, 100, totalWaves or 2, 1, {
+				between = 2,
+				waveBonusBase = TD.WAVE_BONUS_BASE,
+				waveBonusPerWave = TD.WAVE_BONUS_PER_WAVE,
+				rewardMul = 1,
+				enemies = Enemies,
+			}, function()
+				local spawns = {}
+				for i, id in list do
+					table.insert(spawns, { at = (i - 1) * 0.2, enemy = id, hpMul = 1, speedMul = 1 })
+				end
+				return { spawns = spawns, count = #spawns }
+			end)
+		end
+
+		t.it("merge geometry: both roads meet at their first shared point and end at the same gate", function()
+			local paths = Path.buildAll({ path = A, paths = { A, B } })
+			t.eq(#paths, 2)
+			local da, db = Path.merge(paths[1], paths[2])
+			t.truthy(math.abs(da - math.sqrt(50 * 50 + 40 * 40)) < 1e-9)
+			t.eq(da, db, "symmetric roads merge at the same distance")
+			t.eq(Path.merge(Path.build({ { 0, 0 }, { 10, 0 } }), Path.build({ { 0, 5 }, { 10, 5 } })), nil, "parallel roads never merge")
+			t.eq(#Path.buildAll({ path = A }), 1, "a one-road arena")
+			local ax, az = Path.position(paths[1], paths[1].length)
+			local bx, bz = Path.position(paths[2], paths[2].length)
+			t.eq(ax, bx)
+			t.eq(az, bz)
+		end)
+
+		t.it("placement keeps clear of either road", function()
+			local s = twin({})
+			local ok, err = TdTowers.place(s, "p1", "walad", Units.walad, 25, 22, 0, nil, rules())
+			t.eq(err, "on_path", "next to road A")
+			ok, err = TdTowers.place(s, "p1", "walad", Units.walad, 25, -22, 0, nil, rules())
+			t.eq(err, "on_path", "next to road B")
+			ok = TdTowers.place(s, "p1", "walad", Units.walad, 25, 0, 0, nil, rules())
+			t.truthy(ok, "between the roads is fine")
+			t.truthy(TdSim.distanceToRoads(s, 25, -22) < TD.PATH_HALF_WIDTH)
+		end)
+
+		t.it("spawns alternate between the roads; escorts keep their boss's road; both roads reach the gate", function()
+			local s = twin({ "gendarme", "gendarme", "gendarme", "abu_jawdan" })
+			local ev = run(s, 1.7)
+			local roads = {}
+			for _, e in s.enemies do
+				roads[e.id] = e.pathIndex
+			end
+			local seq = {}
+			for _, e in ev do
+				if e.type == "spawn" then
+					table.insert(seq, roads[e.id])
+				end
+			end
+			t.eq(table.concat(seq, ","), "1,2,1,2")
+			local _, z1 = TdSim.enemyPosition(s, s.enemies[1])
+			local _, z2 = TdSim.enemyPosition(s, s.enemies[2])
+			t.truthy(z1 > 30 and z2 < -30, "each on its own road")
+			local boss = s.enemies[4]
+			run(s, Enemies.abu_jawdan.summon.every)
+			for _, e in s.enemies do
+				if e.enemyId == "corporal_minion" then
+					t.eq(e.pathIndex, boss.pathIndex, "escort on the boss's road")
+				end
+			end
+			ev = run(s, 40)
+			local reached = 0
+			for _, e in ev do
+				if e.type == "reached" then
+					reached += 1
+				end
+			end
+			t.truthy(reached >= 3, "gendarmes from both roads reach the gate")
+		end)
+
+		t.it("the ally: nobody can sell, upgrade, retarget or trigger it; its shield absorbs exactly its amount", function()
+			local s = twin({ "gendarme", "gendarme", "gendarme" }, 1)
+			local ally = TdTowers.addAlly(s, "walad", Units.walad, 3, 200, 200, rules(), 2)
+			t.eq(ally.ally, true)
+			t.eq(ally.level, 3)
+			t.eq(s.allyShield, 2)
+			for _, who in { "p1", TdTowers.ALLY_OWNER } do
+				t.eq(select(2, TdTowers.sell(s, who, ally.id, rules())), "not_yours", who .. " cannot sell it")
+				t.eq(select(2, TdTowers.upgrade(s, who, ally.id, Units.walad, rules())), "not_yours", who .. " cannot upgrade it")
+				t.eq(select(2, TdTowers.setTargeting(s, who, ally.id, "last")), "not_yours")
+				t.eq(select(2, TdTowers.useAbility(s, who, ally.id)), "not_yours")
+			end
+			run(s, 30)
+			t.eq(s.gateHp, 100 - (3 * Enemies.gendarme.gateDamage - 2), "two points absorbed, the rest on the gate")
+			t.eq(s.allyShield, 0)
+			t.eq(s.players.p1.cash, 100000 + TD.WAVE_BONUS_BASE + TD.WAVE_BONUS_PER_WAVE, "the ally pays nobody")
+		end)
+
+		t.it("a wave script puts the ally at the arena's spot on its wave, once", function()
+			local script = { [2] = { kind = "ally", unit = "walad", level = 3, shield = 20 } }
+			local s = twin({})
+			t.eq(TdTowers.runScript(s, script, 1, Units, rules(), { 10, 10 }), nil, "not on wave 1")
+			local ally = TdTowers.runScript(s, script, 2, Units, rules(), { 10, 10 })
+			t.truthy(ally and ally.ally)
+			t.eq(ally.x, 10)
+			t.eq(s.allyShield, 20)
+			t.eq(TdTowers.runScript(s, script, 2, Units, rules(), nil), nil, "no spot, no ally")
+			t.eq(TdTowers.runScript(s, { [3] = { kind = "ally", unit = "nobody" } }, 3, Units, rules(), { 0, 0 }), nil, "unknown unit")
+		end)
+	end)
+
 	-- Traits v2 (docs/STORY_PLAN.md §7.2, S1-S02): 12 traits, a second slot at TD.TRAIT2_STARS
 	-- stars, the better trait per stat, and the D-041 caps.
 	t.describe("Traits v2 (S1-S02)", function()

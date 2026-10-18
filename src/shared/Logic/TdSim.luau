@@ -35,6 +35,7 @@ export type Enemy = {
 	shield: { radius: number, reduce: number }?, -- enemies nearby (itself too) take less damage (porter)
 	burn: number?, -- burn stacks it lays on the gate when it reaches it (torchbearer)
 	hpMul: number, -- the wave's HP multiplier it spawned with (summons inherit it)
+	pathIndex: number, -- which road it walks (state.paths); escorts and passengers keep their parent's
 	summon: { enemy: string, count: number, every: number }?, -- calls escorts on a timer (Abu Jawdan)
 	summonAt: number, -- time of the next summon
 	teleport: { atHp: number, fraction: number, telegraph: number }?, -- one jump forward (Lateef)
@@ -69,6 +70,7 @@ export type Tower = {
 	invested: number,
 	kills: number,
 	disabledUntil: number?, -- a saboteur's shot: no attacks until then
+	ally: boolean?, -- a story ally (TdTowers.addAlly): no owner, cannot be sold, upgraded or retargeted
 	path: string?, -- "a" | "b": its level-7 signature
 }
 
@@ -86,7 +88,10 @@ export type GateBurn = { stacks: number, untilT: number, nextTick: number }
 export type Shield = { x: number, z: number, r2: number, reduce: number }
 
 export type State = {
-	path: PathData,
+	path: PathData, -- the first road (back-compat); every road is in `paths`
+	paths: { PathData }, -- one road, or several that merge before the gate (twin gates)
+	spawnCount: number, -- wave spawns so far: they alternate between the roads
+	allyShield: number, -- gate damage an ally still absorbs before the gate takes any
 	time: number,
 	phase: string, -- "prep" | "wave" | "won" | "lost"
 	wave: number, -- the wave being fought or prepared (1-based)
@@ -98,7 +103,7 @@ export type State = {
 	gateMax: number,
 	gateBurn: GateBurn,
 	shields: { Shield }?, -- this step's shield bearers (nil = none alive)
-	pendingSplits: { { enemy: string, count: number, dist: number, hpMul: number, speedMul: number, by: number } }, -- deaths that release attackers, spawned after the towers act
+	pendingSplits: { { enemy: string, count: number, dist: number, hpMul: number, speedMul: number, by: number, pathIndex: number } }, -- deaths that release attackers, spawned after the towers act
 	enemies: { Enemy },
 	towers: { Tower },
 	players: { [string]: PlayerState },
@@ -124,13 +129,22 @@ export type State = {
 
 local TdSim = {}
 
-function TdSim.new(pathPoints: { { number } }, players: { string }, startCash: number, gateHp: number, totalWaves: number?, prep: number, cfg: any, buildWave: (number) -> any): State
+-- pathPoints: one road ({ {x, z}, … }) or several ({ road, road }, twin gates).
+function TdSim.new(pathPoints: { any }, players: { string }, startCash: number, gateHp: number, totalWaves: number?, prep: number, cfg: any, buildWave: (number) -> any): State
 	local ps = {}
 	for _, key in players do
 		ps[key] = { cash = startCash, kills = 0, spent = 0 }
 	end
+	local roads: { any } = if type(pathPoints[1][1]) == "table" then pathPoints else { pathPoints }
+	local paths = {}
+	for _, pts in roads do
+		table.insert(paths, Path.build(pts))
+	end
 	return {
-		path = Path.build(pathPoints),
+		path = paths[1],
+		paths = paths,
+		spawnCount = 0,
+		allyShield = 0,
 		time = 0,
 		phase = "prep",
 		wave = 1,
@@ -154,7 +168,12 @@ function TdSim.new(pathPoints: { { number } }, players: { string }, startCash: n
 end
 
 function TdSim.enemyPosition(state: State, e: Enemy): (number, number, number, number)
-	return Path.position(state.path, e.dist)
+	return Path.position(state.paths[e.pathIndex], e.dist)
+end
+
+-- Every defender of a match must keep clear of every road.
+function TdSim.distanceToRoads(state: State, x: number, z: number): number
+	return Path.distanceToAll(state.paths, x, z)
 end
 
 local function startWave(state: State, events: { Event })
@@ -175,7 +194,7 @@ end
 
 -- Adds one live enemy at path distance `dist` (0 = the spawn) and emits its spawn event.
 -- `by`: the summoner's id for escorts (the client places them at the summoner).
-local function addEnemy(state: State, enemyId: string, hpMul: number, speedMul: number, dist: number, events: { Event }, by: number?): Enemy?
+local function addEnemy(state: State, enemyId: string, hpMul: number, speedMul: number, dist: number, events: { Event }, by: number?, pathIndex: number?): Enemy?
 	local def = state.cfg.enemies[enemyId]
 	if not def then
 		return nil
@@ -203,6 +222,7 @@ local function addEnemy(state: State, enemyId: string, hpMul: number, speedMul: 
 		shield = def.shield,
 		burn = def.burn,
 		hpMul = hpMul,
+		pathIndex = pathIndex or 1,
 		summon = def.summon,
 		summonAt = if def.summon then state.time + def.summon.every else 0,
 		teleport = def.teleport,
@@ -220,7 +240,7 @@ local function addEnemy(state: State, enemyId: string, hpMul: number, speedMul: 
 		alive = true,
 	}
 	table.insert(state.enemies, e)
-	table.insert(events, { type = "spawn", id = id, enemyId = enemyId, boss = def.boss == true, hp = hp, dist = if dist > 0 then dist else nil, by = by })
+	table.insert(events, { type = "spawn", id = id, enemyId = enemyId, boss = def.boss == true, hp = hp, dist = if dist > 0 then dist else nil, by = by, path = if (pathIndex or 1) > 1 then pathIndex else nil })
 	return e
 end
 
@@ -230,7 +250,10 @@ local function spawnDue(state: State, events: { Event })
 	while state.queueIndex <= #q and q[state.queueIndex].at + offset <= state.time do
 		local s = q[state.queueIndex]
 		state.queueIndex += 1
-		addEnemy(state, s.enemy, s.hpMul, s.speedMul, 0, events)
+		-- Twin gates: spawns alternate between the roads (a script may pin one with `path`).
+		state.spawnCount += 1
+		local road = s.path or ((state.spawnCount - 1) % #state.paths + 1)
+		addEnemy(state, s.enemy, s.hpMul, s.speedMul, 0, events, nil, road)
 	end
 end
 
@@ -240,9 +263,9 @@ end
 -- to `atHp`, telegraphs a jump of `fraction` of the road (event `telegraph`) and lands `telegraph`
 -- seconds later (event `teleport`), never past the last stud before the gate. Once per enemy.
 local function bossActs(state: State, events: { Event })
-	local length = state.path.length
 	for i = 1, #state.enemies do
 		local e = state.enemies[i]
+		local length = state.paths[e.pathIndex].length
 		if e.alive then
 			local sm = e.summon
 			if sm and state.time >= e.summonAt then
@@ -250,7 +273,7 @@ local function bossActs(state: State, events: { Event })
 				local speedMul = e.speed / e.baseSpeed
 				for k = 1, sm.count do
 					-- Escorts step out just behind him, spread a little so they don't stack.
-					addEnemy(state, sm.enemy, e.hpMul, speedMul, math.max(0, e.dist - k * 0.8), events, e.id)
+					addEnemy(state, sm.enemy, e.hpMul, speedMul, math.max(0, e.dist - k * 0.8), events, e.id, e.pathIndex)
 				end
 				table.insert(events, { type = "summon", id = e.id, enemy = sm.enemy, count = sm.count })
 			end
@@ -286,7 +309,7 @@ local function auraMuls(state: State): { [Enemy]: number }?
 	for _, e in state.enemies do
 		local a = e.aura
 		if e.alive and a then
-			local x, z = Path.position(state.path, e.dist)
+			local x, z = Path.position(state.paths[e.pathIndex], e.dist)
 			table.insert(bearers, { e = e, x = x, z = z, r2 = a.radius * a.radius, mul = a.speed })
 		end
 	end
@@ -297,7 +320,7 @@ local function auraMuls(state: State): { [Enemy]: number }?
 	local out: { [Enemy]: number } = {}
 	for _, e in state.enemies do
 		if e.alive then
-			local ex, ez = Path.position(state.path, e.dist)
+			local ex, ez = Path.position(state.paths[e.pathIndex], e.dist)
 			local best = 1
 			for _, b in bearers do
 				if b.e ~= e and b.mul > best and dist2(ex, ez, b.x, b.z) <= b.r2 then
@@ -372,10 +395,14 @@ local function moveEnemies(state: State, dt: number, events: { Event })
 			end
 			mul *= boost
 			e.dist += e.speed * mul * dt
-			if e.dist >= state.path.length then
+			if e.dist >= state.paths[e.pathIndex].length then
 				e.alive = false
-				state.gateHp = math.max(0, state.gateHp - e.gateDamage)
-				table.insert(events, { type = "reached", id = e.id, damage = e.gateDamage, gateHp = state.gateHp })
+				-- A story ally standing at the gate takes the first blows (allyShield, TdTowers.addAlly).
+				local absorbed = math.min(state.allyShield, e.gateDamage)
+				state.allyShield -= absorbed
+				local damage = e.gateDamage - absorbed
+				state.gateHp = math.max(0, state.gateHp - damage)
+				table.insert(events, { type = "reached", id = e.id, damage = damage, absorbed = if absorbed > 0 then absorbed else nil, gateHp = state.gateHp })
 				if e.burn then
 					addBurn(state, e.burn, events)
 				end
@@ -390,7 +417,7 @@ local function gatherShields(state: State)
 	for _, e in state.enemies do
 		local s = e.shield
 		if e.alive and s then
-			local x, z = Path.position(state.path, e.dist)
+			local x, z = Path.position(state.paths[e.pathIndex], e.dist)
 			local l = list or {}
 			table.insert(l, { x = x, z = z, r2 = s.radius * s.radius, reduce = s.reduce })
 			list = l
@@ -405,7 +432,7 @@ local function shieldFor(state: State, e: Enemy): number
 	if not list then
 		return 0
 	end
-	local ex, ez = Path.position(state.path, e.dist)
+	local ex, ez = Path.position(state.paths[e.pathIndex], e.dist)
 	local best = 0
 	for _, s in list do
 		if s.reduce > best and dist2(ex, ez, s.x, s.z) <= s.r2 then
@@ -423,7 +450,7 @@ local function healAuras(state: State, dt: number)
 	for _, e in state.enemies do
 		local h = e.healAura
 		if e.alive and h then
-			local x, z = Path.position(state.path, e.dist)
+			local x, z = Path.position(state.paths[e.pathIndex], e.dist)
 			table.insert(bearers, { e = e, x = x, z = z, r2 = h.radius * h.radius, pct = h.pct })
 		end
 	end
@@ -432,7 +459,7 @@ local function healAuras(state: State, dt: number)
 	end
 	for _, e in state.enemies do
 		if e.alive and e.hp < e.maxHp then
-			local ex, ez = Path.position(state.path, e.dist)
+			local ex, ez = Path.position(state.paths[e.pathIndex], e.dist)
 			local best = 0
 			for _, b in bearers do
 				if b.e ~= e and b.pct > best and dist2(ex, ez, b.x, b.z) <= b.r2 then
@@ -452,7 +479,7 @@ local function saboteursAct(state: State, events: { Event })
 	for _, e in state.enemies do
 		local sb = e.sabotage
 		if e.alive and sb and state.time >= e.sabotageAt and state.time >= e.stunUntil then
-			local ex, ez = Path.position(state.path, e.dist)
+			local ex, ez = Path.position(state.paths[e.pathIndex], e.dist)
 			local best: Tower? = nil
 			local bestD2 = sb.range * sb.range
 			for _, t in state.towers do
@@ -481,7 +508,7 @@ local function releaseSplits(state: State, events: { Event })
 	end
 	for _, sp in state.pendingSplits do
 		for k = 1, sp.count do
-			addEnemy(state, sp.enemy, sp.hpMul, sp.speedMul, math.max(0, sp.dist - (k - 1) * 0.6), events, sp.by)
+			addEnemy(state, sp.enemy, sp.hpMul, sp.speedMul, math.max(0, sp.dist - (k - 1) * 0.6), events, sp.by, sp.pathIndex)
 		end
 		table.insert(events, { type = "split", id = sp.by, enemy = sp.enemy, count = sp.count })
 	end
@@ -568,7 +595,7 @@ local function revealInLight(state: State, events: { Event })
 			local r2 = s.stats.range * s.stats.range
 			for _, e in state.enemies do
 				if e.alive and e.disguised then
-					local ex, ez = Path.position(state.path, e.dist)
+					local ex, ez = Path.position(state.paths[e.pathIndex], e.dist)
 					if dist2(ex, ez, s.x, s.z) <= r2 then
 						reveal(e, s.id, events)
 					end
@@ -593,7 +620,7 @@ local function pickTarget(state: State, t: Tower, sees: boolean): (Enemy?, numbe
 			ok = lit == true
 		end
 		if ok then
-			local ex, ez = Path.position(state.path, e.dist)
+			local ex, ez = Path.position(state.paths[e.pathIndex], e.dist)
 			local d2 = dist2(ex, ez, t.x, t.z)
 			if d2 <= r2 then
 				local score
@@ -668,7 +695,7 @@ local function hit(state: State, t: Tower, e: Enemy, damage: number, events: { E
 		table.insert(events, { type = "death", id = e.id, tower = t.id, owner = t.owner, cash = cash, boss = e.boss })
 		local sp = e.split
 		if sp then
-			table.insert(state.pendingSplits, { enemy = sp.enemy, count = sp.count, dist = e.dist, hpMul = e.hpMul, speedMul = e.speed / e.baseSpeed, by = e.id })
+			table.insert(state.pendingSplits, { enemy = sp.enemy, count = sp.count, dist = e.dist, hpMul = e.hpMul, speedMul = e.speed / e.baseSpeed, by = e.id, pathIndex = e.pathIndex })
 		end
 	end
 end
@@ -677,7 +704,7 @@ local function splashHits(state: State, t: Tower, cx: number, cz: number, radius
 	local r2 = radius * radius
 	for _, e in state.enemies do
 		if e.alive and not e.disguised and (sees or not e.stealth) then
-			local ex, ez = Path.position(state.path, e.dist)
+			local ex, ez = Path.position(state.paths[e.pathIndex], e.dist)
 			if dist2(ex, ez, cx, cz) <= r2 then
 				hit(state, t, e, damage, events, nil, extra)
 			end

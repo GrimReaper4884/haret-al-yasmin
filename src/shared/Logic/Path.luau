@@ -44,6 +44,39 @@ function Path.position(path: Path, dist: number): (number, number, number, numbe
 	return a[1] + dx * t, a[2] + dz * t, ux, uz
 end
 
+-- Every road of an arena: `paths` (two or more polylines that end at the same gate, twin-gate
+-- arenas, STORY_PLAN §10.1) or the single `path`. Built.
+function Path.buildAll(arena: { path: { { number } }, paths: { { { number } } }? }): { Path }
+	local out = {}
+	local roads: { { { number } } } = arena.paths or { arena.path }
+	for _, pts in roads do
+		table.insert(out, Path.build(pts))
+	end
+	return out
+end
+
+-- Where two roads merge: the distance along each at their first shared point (they share every
+-- point after it, up to the gate). nil when they never meet.
+function Path.merge(a: Path, b: Path): (number?, number?)
+	for i, p in a.pts do
+		for j, q in b.pts do
+			if p[1] == q[1] and p[2] == q[2] then
+				return a.cum[i], b.cum[j]
+			end
+		end
+	end
+	return nil, nil
+end
+
+-- Shortest distance from a point to any of several roads.
+function Path.distanceToAll(paths: { Path }, x: number, z: number): number
+	local best = math.huge
+	for _, p in paths do
+		best = math.min(best, Path.distanceTo(p, x, z))
+	end
+	return best
+end
+
 -- Shortest distance from a point to the polyline.
 function Path.distanceTo(path: Path, x: number, z: number): number
 	local best = math.huge

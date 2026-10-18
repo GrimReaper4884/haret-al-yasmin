@@ -2,7 +2,8 @@
 -- Turns a wave script (Config/Waves) into a concrete spawn list for one wave. Pure.
 
 -- swarm: a swarm enemy (Enemies[id].swarm): counts SWARM_WEIGHT toward MAX_PER_WAVE.
-export type Spawn = { at: number, enemy: string, hpMul: number, speedMul: number, boss: boolean?, swarm: boolean? }
+-- path: pins the spawn to one road of a twin-gate arena (default: spawns alternate between roads).
+export type Spawn = { at: number, enemy: string, hpMul: number, speedMul: number, boss: boolean?, swarm: boolean?, path: number? }
 export type Wave = { spawns: { Spawn }, boss: string?, count: number }
 
 type PoolEntry = { enemy: string, from: number, to: number?, base: number, perWave: number, gap: number, delay: number? }
