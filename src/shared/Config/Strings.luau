@@ -760,6 +760,13 @@ local en: { [string]: string } = {
 	["unit.zaim_akbar.sig.rally.desc"] = "Defenders within 10 studs strike 10 % faster.",
 	["units.signature"] = "Level 7 · choose one:",
 	["match.err.bad_path"] = "Choose a level-7 path.",
+	-- Shabriyeh beads (Config/Beads, S1-S11)
+	["bead.range.name"] = "Bead of reach (+1 range)",
+	["bead.cooldown.name"] = "Bead of haste (−4 % cooldown)",
+	["bead.cash.name"] = "Bead of fortune (+8 % kill cash)",
+	["bead.heal.name"] = "Bead of mending (+2 gate repair)",
+	["bead.buff.name"] = "Bead of spirit (+3 % boost)",
+	["units.beads"] = "{n} shabriyeh beads",
 }
 
 local ar: { [string]: string } = {
@@ -1504,6 +1511,13 @@ local ar: { [string]: string } = {
 	["unit.zaim_akbar.sig.rally.desc"] = "رجالك ضمن ١٠ بيضربوا أسرع بـ ١٠٪.",
 	["units.signature"] = "المستوى ٧ · اختار وحدة:",
 	["match.err.bad_path"] = "اختار طريق المستوى ٧.",
+	-- خرزات الشبرية (S1-S11)
+	["bead.range.name"] = "خرزة المدى (+١ مدى)",
+	["bead.cooldown.name"] = "خرزة السرعة (−٤٪ وقت)",
+	["bead.cash.name"] = "خرزة الرزق (+٨٪ مصاري)",
+	["bead.heal.name"] = "خرزة التصليح (+٢ للباب)",
+	["bead.buff.name"] = "خرزة الهمّة (+٣٪ تشجيع)",
+	["units.beads"] = "{n} خرزات شبرية",
 }
 
 return {

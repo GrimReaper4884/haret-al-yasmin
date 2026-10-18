@@ -85,6 +85,7 @@ export type UnitDef = {
 	visual: Visual,
 	noBanner: boolean?, -- secret / event units never come from a banner
 	signature: { a: Signature, b: Signature }?, -- level 7 (Epic and above): one of two paths, bought once at max level
+	beads: { string }?, -- the three bead kinds its slots take (default Config/Beads.byRole[role])
 }
 
 local function L(cost: number, damage: number, range: number, cooldown: number, extra: { [string]: any }?): Level

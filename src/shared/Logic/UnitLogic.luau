@@ -3,7 +3,11 @@
 -- tower gets from (unit, level, stars, trait). Pure.
 
 -- trait2: the second trait slot (traits v2), rolled once the unit has `TD.TRAIT2_STARS` stars.
-export type OwnedUnit = { copies: number, trait: string, trait2: string?, at: number }
+-- beads: its three bead slots (Config/Beads), "" when empty.
+export type OwnedUnit = { copies: number, trait: string, trait2: string?, beads: { string }?, at: number }
+
+-- Raw bead bonuses of a unit's slots, before the cap (UnitLogic.stats clamps with `cap`).
+export type BeadBonus = { range: number, cooldown: number, cash: number, heal: number, buff: number, cap: number }
 
 export type Stats = {
 	damage: number,
@@ -80,6 +84,61 @@ function UnitLogic.ownedTrait(owned: any?, traits: { [string]: any }, starCopies
 	return first
 end
 
+-- The three bead kinds a unit's slots take (Units[id].beads, else Config/Beads.byRole[role]).
+function UnitLogic.beadKinds(def: any, beads: any): { string }
+	return def.beads or beads.byRole[def.role] or {}
+end
+
+-- Sums the beads on a unit's slots (unknown or empty slots count nothing). nil when none is set.
+function UnitLogic.beadBonus(slots: { string }?, beads: any): BeadBonus?
+	if not slots then
+		return nil
+	end
+	local b: BeadBonus = { range = 0, cooldown = 1, cash = 0, heal = 0, buff = 0, cap = beads.cap }
+	local any = false
+	for _, kind in slots do
+		local k = beads.kinds[kind]
+		if k then
+			any = true
+			b.range += k.range or 0
+			b.cooldown *= k.cooldown or 1
+			b.cash += k.cash or 0
+			b.heal += k.heal or 0
+			b.buff += k.buff or 0
+		end
+	end
+	return if any then b else nil
+end
+
+-- Threads a bead of `kind` onto slot `slot` of an owned unit, spending beads.setCost beads.
+-- Errors: not_owned, bad_request (slot or kind not allowed for this unit), same_bead, no_beads.
+function UnitLogic.setBead(profile: any, unitId: string, def: any, slot: any, kind: any, beads: any): (boolean, string?)
+	local owned = profile.units[unitId]
+	if not owned or not def then
+		return false, "not_owned"
+	end
+	if type(slot) ~= "number" or slot % 1 ~= 0 or slot < 1 or slot > beads.slots then
+		return false, "bad_request"
+	end
+	if type(kind) ~= "string" or not table.find(UnitLogic.beadKinds(def, beads), kind) then
+		return false, "bad_request"
+	end
+	local slots = owned.beads or {}
+	for i = 1, beads.slots do
+		slots[i] = slots[i] or ""
+	end
+	if slots[slot] == kind then
+		return false, "same_bead"
+	end
+	if (profile.beads or 0) < beads.setCost then
+		return false, "no_beads"
+	end
+	profile.beads -= beads.setCost
+	slots[slot] = kind
+	owned.beads = slots
+	return true, nil
+end
+
 -- A price after the trait's cost multiplier (miser), rounded to whole cash.
 function UnitLogic.costFor(cost: number, trait: any?): number
 	if trait and trait.costMul then
@@ -90,7 +149,8 @@ end
 
 -- caps (Config/Traits.caps): clamps the trait multipliers (damage ≤, range ≤, cooldown ≥); nil = no clamp.
 -- path ("a" | "b"): the level-7 signature (level above the last one); ignored otherwise.
-function UnitLogic.stats(def: any, level: number, stars: number, trait: any?, starBonus: number, caps: any?, path: string?): Stats
+-- bead (UnitLogic.beadBonus): the unit's beads, each stat clamped to +bead.cap of its value.
+function UnitLogic.stats(def: any, level: number, stars: number, trait: any?, starBonus: number, caps: any?, path: string?, bead: BeadBonus?): Stats
 	local lv = def.levels[math.clamp(level, 1, #def.levels)]
 	local sig = if level > #def.levels and path and def.signature then def.signature[path] else nil
 	local ability = def.ability
@@ -120,22 +180,32 @@ function UnitLogic.stats(def: any, level: number, stars: number, trait: any?, st
 		cdMul = math.max(cdMul, caps.cooldown)
 	end
 	local dmgMul = (1 + starBonus * stars) * tDmg
+	-- Beads (S1-S11): never more than +cap on any one stat, whatever the three slots hold.
+	local beadRange, beadCd, beadHeal, beadBuff, beadCash = 0, 1, 0, 0, 0
+	if bead then
+		local cap = bead.cap
+		beadRange = math.min(bead.range, cap * lv.range * rangeMul)
+		beadCd = math.max(bead.cooldown, 1 - cap)
+		beadHeal = if lv.heal then math.min(bead.heal, cap * lv.heal) else 0
+		beadBuff = if lv.buff then math.min(bead.buff, cap * lv.buff) else 0
+		beadCash = bead.cash
+	end
 	local douse = def.douse
 	if trait and trait.douse and (douse == nil or trait.douse > douse) then
 		douse = trait.douse
 	end
 	return {
 		damage = lv.damage * dmgMul,
-		range = lv.range * rangeMul,
-		cooldown = lv.cooldown * cdMul,
+		range = lv.range * rangeMul + beadRange,
+		cooldown = lv.cooldown * cdMul * beadCd,
 		splash = lv.splash,
 		slow = lv.slow,
 		slowFor = lv.slowFor,
 		stun = lv.stun,
-		buff = lv.buff,
+		buff = if lv.buff then lv.buff + beadBuff else nil,
 		income = lv.income,
-		heal = lv.heal,
-		cash = if trait and trait.cash then trait.cash else 1,
+		heal = if lv.heal then lv.heal + beadHeal else nil,
+		cash = (if trait and trait.cash then trait.cash else 1) * (1 + (if bead then math.min(beadCash, bead.cap) else 0)),
 		hitsStealth = def.hitsStealth == true or (trait ~= nil and trait.hitsStealth == true),
 		revealsStealth = def.revealsStealth == true or (sig ~= nil and sig.revealsStealth == true),
 		douse = douse,

@@ -18,6 +18,8 @@ local L = _G.LogicRequire
 local TdSim = L("TdSim")
 local TdTowers = L("TdTowers")
 local Traits = require("../src/shared/Config/Traits")
+local Beads = require("../src/shared/Config/Beads")
+local UnitLogic = L("UnitLogic")
 local WaveLogic = L("WaveLogic")
 local Path = L("Path")
 
@@ -78,6 +80,12 @@ AutoBattle.POLICIES = {
 		plan = { "hallaq", "hallaq", "hallaq", "zaim", "zaim_akbar", "arada", "mukhtar", "pahlawan", "zaim", "pahlawan", "mukhtar", "hallaq" },
 		upgrades = true,
 	},
+	["myth12up+beads"] = {
+		label = "12 Mythic/Legendary + upgrades + beads in 2 of 3 slots (cooldown, range)",
+		plan = { "hallaq", "hallaq", "hallaq", "zaim", "zaim_akbar", "arada", "mukhtar", "pahlawan", "zaim", "pahlawan", "mukhtar", "hallaq" },
+		upgrades = true,
+		beads = { "cooldown", "range" },
+	},
 	whale = {
 		label = "16 Mythic/Legendary, 5 stars, za'im's-blood traits + upgrades (7 slots)",
 		plan = {
@@ -90,7 +98,7 @@ AutoBattle.POLICIES = {
 		slots = 7, -- Extra Slot pass
 	},
 }
-AutoBattle.POLICY_ORDER = { "re6", "re4up", "re6up", "re10up", "leg6", "leg10up", "leg10up+sig", "myth12up", "whale" }
+AutoBattle.POLICY_ORDER = { "re6", "re4up", "re6up", "re10up", "leg6", "leg10up", "leg10up+sig", "myth12up", "myth12up+beads", "whale" }
 
 local SAMPLE_STEP = 1 -- studs between road samples for coverage
 local MAX_SPOT_DIST = 9 -- spots farther than this from the road are never considered
@@ -240,7 +248,17 @@ local function think(bot, state, spots, rules)
 		end
 		local spot = bestSpot(state, spots, def, rules)
 		if spot then
-			local ok, err = TdTowers.place(state, bot.key, unitId, def, spot.x, spot.z, policy.stars or 0, policy.trait and Traits.traits[policy.trait], rules)
+			-- Beads: the policy's kinds where this unit takes them, else its first allowed kind.
+			local bead = nil
+			if policy.beads then
+				local allowed = UnitLogic.beadKinds(def, Beads)
+				local slots = {}
+				for _, k in policy.beads do
+					table.insert(slots, if table.find(allowed, k) then k else allowed[1])
+				end
+				bead = UnitLogic.beadBonus(slots, Beads)
+			end
+			local ok, err = TdTowers.place(state, bot.key, unitId, def, spot.x, spot.z, policy.stars or 0, policy.trait and Traits.traits[policy.trait], rules, bead)
 			if not ok and err == "cannot_afford" then
 				return
 			end

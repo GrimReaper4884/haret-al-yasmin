@@ -12,6 +12,7 @@ local TD = require(Shared.Config.TD)
 local Units = require(Shared.Config.Units)
 local Banners = require(Shared.Config.Banners)
 local Traits = require(Shared.Config.Traits)
+local Beads = require(Shared.Config.Beads)
 local SeasonPass = require(Shared.Config.SeasonPass)
 local Codes = require(Shared.Config.Codes)
 local Daily = require(Shared.Config.Daily)
@@ -173,6 +174,24 @@ local function rerollTrait(player: Player, unitId: any, slot: any): { [string]: 
 	return { ok = true, trait = trait, slot = which }
 end
 
+-- Threads a shabriyeh bead onto one slot of an owned unit (S1-S11): slot 1..Beads.slots, a kind
+-- the unit takes, one bead spent (UnitLogic.setBead validates ownership and cost).
+local function setBead(player: Player, unitId: any, slot: any, kind: any): { [string]: any }
+	if not Validate.isIdentifier(unitId) or not (Units :: any)[unitId] then
+		return { ok = false, err = "bad_request" }
+	end
+	if not Validate.isPositiveInteger(slot) or slot > Beads.slots or not Validate.isIdentifier(kind) or not Beads.kinds[kind] then
+		return { ok = false, err = "bad_request" }
+	end
+	local ok, err = DataService.mutate(player, function(p)
+		return UnitLogic.setBead(p, unitId, (Units :: any)[unitId], slot, kind, Beads)
+	end, { src = "bead:" .. unitId })
+	if not ok then
+		return { ok = false, err = err }
+	end
+	return { ok = true }
+end
+
 local function claimPass(player: Player, tier: any, track: any): { [string]: any }
 	if not Validate.isPositiveInteger(tier) or (track ~= "free" and track ~= "premium") then
 		return { ok = false, err = "bad_request" }
@@ -244,6 +263,7 @@ function MetaService.start()
 	RemoteGuard.func(Net.Functions.Summon, RemoteGuard.STRICT, summon)
 	RemoteGuard.func(Net.Functions.SetLoadout, RemoteGuard.DEFAULT, setLoadout)
 	RemoteGuard.func(Net.Functions.RerollTrait, RemoteGuard.STRICT, rerollTrait)
+	RemoteGuard.func(Net.Functions.SetBead, RemoteGuard.STRICT, setBead)
 	RemoteGuard.func(Net.Functions.ClaimPass, RemoteGuard.DEFAULT, claimPass)
 	RemoteGuard.func(Net.Functions.RedeemCode, RemoteGuard.STRICT, redeemCode)
 	RemoteGuard.func(Net.Functions.ClaimDaily, RemoteGuard.STRICT, claimDaily)

@@ -17,6 +17,7 @@ local Waves = require(Shared.Config.Waves)
 local Arenas = require(Shared.Config.Arenas)
 local Modes = require(Shared.Config.Modes)
 local Traits = require(Shared.Config.Traits)
+local Beads = require(Shared.Config.Beads)
 local Items = require(Shared.Config.Items)
 local Economy = require(Shared.Config.Economy)
 local TdSim = require(Shared.Logic.TdSim)
@@ -236,8 +237,11 @@ local function rewardPlayer(match: Match, player: Player, outcome: any): any
 		if eventId and eventDef then
 			eventGain = EventLogic.addCurrency(p, eventId, eventDef, EventLogic.matchCurrency(eventDef, outcome.won, outcome.wavesCleared))
 		end
+		-- Beads first: they read the first-clear state that record() is about to update (S1-S11).
+		local beads = MatchRewards.beads(p, match.modeId, match.mode, match.difficulty, outcome, Beads, TD, os.time() // 86400)
+		;(reward :: any).beads = beads
 		MatchRewards.record(p, match.modeId, match.mode, match.difficulty, outcome, if ps then ps.kills else 0, TD)
-		Grants.apply(p, { lira = reward.lira, qirsh = reward.qirsh, xp = reward.xp, traitStones = reward.traitStones }, {
+		Grants.apply(p, { lira = reward.lira, qirsh = reward.qirsh, xp = reward.xp, traitStones = reward.traitStones, beads = beads }, {
 			maxQirsh = Economy.MAX_QIRSH,
 			maxLira = TD.MAX_LIRA,
 			maxStones = TD.MAX_TRAIT_STONES,
@@ -246,6 +250,7 @@ local function rewardPlayer(match: Match, player: Player, outcome: any): any
 			traits = Traits,
 			rng = math.random,
 			now = os.time(),
+			maxBeads = Beads.maxBeads,
 		})
 		return true
 	end, { src = "match:" .. match.modeId })
@@ -565,8 +570,9 @@ local function placeTower(player: Player, unitId: any, x: any, z: any): { [strin
 	local owned = profile.units[unitId]
 	local stars = UnitLogic.stars(owned.copies, TD.STAR_COPIES)
 	local trait = UnitLogic.ownedTrait(owned, Traits.traits, TD.STAR_COPIES, TD.TRAIT2_STARS)
+	local bead = UnitLogic.beadBonus(owned.beads, Beads)
 	local key = match.players[player]
-	local ok, perr, tower = TdTowers.place(match.state, key, unitId, def, lx, lz, stars, trait, rulesFor(match))
+	local ok, perr, tower = TdTowers.place(match.state, key, unitId, def, lx, lz, stars, trait, rulesFor(match), bead)
 	if not ok then
 		return { ok = false, err = perr }
 	end

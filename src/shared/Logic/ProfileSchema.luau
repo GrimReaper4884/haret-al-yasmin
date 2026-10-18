@@ -15,6 +15,7 @@ export type Context = {
 	starterUnit: string,
 	starterLira: number?,
 	season: string,
+	beads: any?, -- Config/Beads: bead slots and the bead count are sanitised when present
 }
 
 local function sibling(name: string): any
@@ -84,7 +85,8 @@ function ProfileSchema.default(now: number, schemaVersion: number, ctx: Context?
 		events = {}, -- Logic/EventLogic: { [eventId] = { currency, bought } }
 		daily = { streak = 0, lastDay = 0 },
 		afk = { day = 0, lira = 0, carry = 0, cups = 0, tales = 0, seconds = 0 }, -- Logic/AfkLogic
-		td = { matches = 0, wins = 0, kills = 0, cleared = {}, bestInfinite = 0 },
+		td = { matches = 0, wins = 0, kills = 0, cleared = {}, bestInfinite = 0, beadDay = 0, beadDayCount = 0 },
+		beads = 0, -- shabriyeh beads to thread onto units (Config/Beads)
 	}
 end
 
@@ -209,6 +211,21 @@ function ProfileSchema.sanitize(p: any, ctx: Context, now: number): any
 			if rec.trait2 ~= nil and (type(rec.trait2) ~= "string" or ctx.traits[rec.trait2] == nil) then
 				rec.trait2 = nil -- the second slot (traits v2) is optional
 			end
+			if rec.beads ~= nil then
+				-- Bead slots: exactly `slots` strings, each "" or a kind this unit takes.
+				local cfg = ctx.beads
+				if type(rec.beads) ~= "table" or not cfg then
+					rec.beads = nil
+				else
+					local allowed = ctx.units[id].beads or cfg.byRole[ctx.units[id].role] or {}
+					local clean = {}
+					for i = 1, cfg.slots do
+						local k = rec.beads[i]
+						clean[i] = if type(k) == "string" and table.find(allowed, k) then k else ""
+					end
+					rec.beads = clean
+				end
+			end
 			rec.at = if isFinite(rec.at) then rec.at else now
 		end
 	end
@@ -274,6 +291,9 @@ function ProfileSchema.sanitize(p: any, ctx: Context, now: number): any
 	td.wins = nonNegInt(td.wins, 0)
 	td.kills = nonNegInt(td.kills, 0)
 	td.bestInfinite = nonNegInt(td.bestInfinite, 0)
+	td.beadDay = nonNegInt(td.beadDay, 0)
+	td.beadDayCount = nonNegInt(td.beadDayCount, 0)
+	p.beads = math.clamp(nonNegInt(p.beads, 0), 0, if ctx.beads then ctx.beads.maxBeads else 0)
 	local cleared = tableOr(td.cleared)
 	for mode, diff in pairs(cleared) do
 		if type(mode) ~= "string" or (diff ~= "normal" and diff ~= "hard" and diff ~= "nightmare") then

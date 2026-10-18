@@ -1132,6 +1132,133 @@ return function(t)
 		end)
 	end)
 
+	-- Shabriyeh beads (STORY_PLAN §7.4, S1-S11): kinds per unit, the +12 % cap (D-050), threading a
+	-- bead, and the drops (first clears, Hard+ wins of Episodes 7–9 within a daily cap).
+	t.describe("Beads (S1-S11)", function()
+		local Beads = t.config("Beads")
+		local Grants = t.logic("Grants")
+		local ProfileSchema = t.logic("ProfileSchema")
+
+		t.it("every unit takes three known bead kinds", function()
+			for id, u in Units do
+				local kinds = UnitLogic.beadKinds(u, Beads)
+				t.eq(#kinds, Beads.slots, id .. " has three kinds")
+				for _, k in kinds do
+					t.truthy(Beads.kinds[k], id .. " kind " .. k)
+				end
+			end
+		end)
+
+		t.it("cap: whatever three beads a unit wears, no stat gains more than +12 %", function()
+			local cap = Beads.cap
+			for id, u in Units do
+				local kinds = UnitLogic.beadKinds(u, Beads)
+				for lvl = 1, #u.levels do
+					local base = UnitLogic.stats(u, lvl, 0, nil, 0)
+					t.eq(UnitLogic.beadBonus({ "", "", "" }, Beads), nil, "empty slots: no bonus")
+					for _, a in kinds do
+						for _, b in kinds do
+							for _, c in kinds do
+								local st = UnitLogic.stats(u, lvl, 0, nil, 0, nil, nil, UnitLogic.beadBonus({ a, b, c }, Beads))
+								local where = id .. " L" .. lvl .. " " .. a .. "+" .. b .. "+" .. c
+								t.truthy(st.range <= base.range * (1 + cap) + 1e-9, where .. " range")
+								t.truthy(st.cooldown >= base.cooldown * (1 - cap) - 1e-9, where .. " cooldown")
+								t.truthy(st.cash <= base.cash * (1 + cap) + 1e-9, where .. " cash")
+								if base.heal then
+									t.truthy(st.heal <= base.heal * (1 + cap) + 1e-9, where .. " heal")
+								end
+								if base.buff then
+									t.truthy(st.buff <= base.buff * (1 + cap) + 1e-9, where .. " buff")
+								end
+								t.eq(st.damage, base.damage, where .. " beads never add damage")
+							end
+						end
+					end
+				end
+			end
+			-- And they do something below the cap: one range bead on the Lane Boy is +1 stud.
+			local one = UnitLogic.stats(Units.walad, 1, 0, nil, 0, nil, nil, UnitLogic.beadBonus({ "range", "", "" }, Beads))
+			t.eq(one.range, Units.walad.levels[1].range + 1)
+			local cd = UnitLogic.stats(Units.walad, 1, 0, nil, 0, nil, nil, UnitLogic.beadBonus({ "cooldown", "cooldown", "" }, Beads))
+			t.truthy(math.abs(cd.cooldown - Units.walad.levels[1].cooldown * 0.96 * 0.96) < 1e-9)
+		end)
+
+		t.it("threading a bead: owned unit, slot 1–3, a kind it takes, one bead spent, no double charge", function()
+			local p = { units = { walad = { copies = 0, trait = "steady", at = 0 } }, beads = 2 }
+			t.eq(select(2, UnitLogic.setBead(p, "zaim", Units.zaim, 1, "range", Beads)), "not_owned")
+			t.eq(select(2, UnitLogic.setBead(p, "walad", Units.walad, 4, "range", Beads)), "bad_request", "slot 4")
+			t.eq(select(2, UnitLogic.setBead(p, "walad", Units.walad, 1.5, "range", Beads)), "bad_request")
+			t.eq(select(2, UnitLogic.setBead(p, "walad", Units.walad, 1, "heal", Beads)), "bad_request", "a healer's bead on the boy")
+			t.truthy(UnitLogic.setBead(p, "walad", Units.walad, 2, "range", Beads))
+			t.eq(p.beads, 1)
+			t.eq(table.concat(p.units.walad.beads, ","), ",range,")
+			t.eq(select(2, UnitLogic.setBead(p, "walad", Units.walad, 2, "range", Beads)), "same_bead")
+			t.eq(p.beads, 1, "no charge for the same bead")
+			t.truthy(UnitLogic.setBead(p, "walad", Units.walad, 2, "cash", Beads))
+			t.eq(p.beads, 0)
+			t.eq(select(2, UnitLogic.setBead(p, "walad", Units.walad, 3, "cash", Beads)), "no_beads")
+		end)
+
+		t.it("drops: first Hard clears of Episodes 5 and 7, then one per Hard+ win of Episodes 7–9, 3 a day", function()
+			local function prof()
+				return { td = { cleared = {}, beadDay = 0, beadDayCount = 0 }, beads = 0 }
+			end
+			local ep5 = { kind = "story", episode = "ep5" }
+			local ep7 = { kind = "story", episode = "ep7" }
+			local ep1 = { kind = "story", episode = "ep1" }
+			local win = { won = true, wavesCleared = 45, totalWaves = 45 }
+			local p = prof()
+			t.eq(MatchRewards.beads(p, "ep5", ep5, "normal", win, Beads, TD, 100), 0, "Normal: nothing")
+			p.td.cleared.ep5 = "normal"
+			t.eq(MatchRewards.beads(p, "ep5", ep5, "hard", win, Beads, TD, 100), 1, "first Hard clear of ep5")
+			p.td.cleared.ep5 = "hard"
+			t.eq(MatchRewards.beads(p, "ep5", ep5, "hard", win, Beads, TD, 100), 0, "only once (ep5 drops nothing per win)")
+			local q = prof()
+			t.eq(MatchRewards.beads(q, "ep7", ep7, "nightmare", win, Beads, TD, 100), 3, "a first Nightmare clear counts as the first Hard one: 2 + the win's 1")
+			q.td.cleared.ep7 = "nightmare"
+			t.eq(MatchRewards.beads(q, "ep7", ep7, "hard", win, Beads, TD, 100), 1)
+			t.eq(MatchRewards.beads(q, "ep7", ep7, "hard", win, Beads, TD, 100), 1)
+			t.eq(MatchRewards.beads(q, "ep7", ep7, "hard", win, Beads, TD, 100), 0, "3 a day")
+			t.eq(MatchRewards.beads(q, "ep7", ep7, "hard", win, Beads, TD, 101), 1, "next day")
+			t.eq(MatchRewards.beads(q, "ep7", ep7, "hard", { won = false, wavesCleared = 9, totalWaves = 50 }, Beads, TD, 101), 0, "a loss")
+			t.eq(MatchRewards.beads(q, "ep1", ep1, "nightmare", win, Beads, TD, 101), 0, "Episode 1 drops none")
+			-- Granted through Grants (capped at Beads.maxBeads), in the reward's own mutation.
+			local r = { beads = Beads.maxBeads - 1, pass = { xp = 0 } }
+			local g = Grants.apply(r, { beads = 5 }, { maxQirsh = 1, maxLira = 1, maxStones = 1, items = {}, units = {}, traits = Traits, rng = math.random, now = 0, maxBeads = Beads.maxBeads })
+			t.eq(r.beads, Beads.maxBeads)
+			t.eq(g.beads, 1)
+			local r2 = { beads = 0, pass = { xp = 0 } }
+			Grants.apply(r2, { beads = 2 }, { maxQirsh = 1, maxLira = 1, maxStones = 1, items = {}, units = {}, traits = Traits, rng = math.random, now = 0 })
+			t.eq(r2.beads, 0, "no maxBeads in the context: no beads granted")
+		end)
+
+		t.it("the profile keeps clean bead slots and a clamped bead count", function()
+			local ctx = {
+				schemaVersion = 2,
+				maxQirsh = 1e6,
+				maxLira = 1e7,
+				maxStones = 1e5,
+				receiptHistory = 100,
+				items = {},
+				units = Units,
+				traits = Traits.traits,
+				starterUnit = TD.STARTER_UNIT,
+				season = "s1",
+				beads = Beads,
+			}
+			local p = ProfileSchema.default(0, 2, ctx)
+			p.beads = 5000
+			p.units.walad.beads = { "range", "heal", 7, "x" }
+			p.units.zaim = { copies = 0, trait = "steady", at = 0, beads = "junk" }
+			ProfileSchema.sanitize(p, ctx, 0)
+			t.eq(p.beads, Beads.maxBeads)
+			t.eq(#p.units.walad.beads, 3)
+			t.eq(table.concat(p.units.walad.beads, ","), "range,,", "unknown kinds and the 4th slot dropped")
+			t.eq(p.units.zaim.beads, nil)
+			t.eq(p.td.beadDayCount, 0)
+		end)
+	end)
+
 	-- Traits v2 (docs/STORY_PLAN.md §7.2, S1-S02): 12 traits, a second slot at TD.TRAIT2_STARS
 	-- stars, the better trait per stat, and the D-041 caps.
 	t.describe("Traits v2 (S1-S02)", function()

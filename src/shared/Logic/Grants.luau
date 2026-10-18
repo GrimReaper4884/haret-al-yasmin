@@ -25,6 +25,7 @@ export type Context = {
 	traits: any, -- { traits, order }
 	rng: () -> number,
 	now: number,
+	maxBeads: number?, -- shabriyeh beads cap (Config/Beads.maxBeads); nil = beads are not granted
 }
 
 local Grants = {}
@@ -83,6 +84,11 @@ function Grants.apply(profile: any, reward: any, ctx: Context): { [string]: any 
 	if isPosInt(reward.xp) then
 		granted.xp = reward.xp
 		profile.pass.xp += reward.xp
+	end
+	if isPosInt(reward.beads) and ctx.maxBeads then
+		local before = profile.beads or 0
+		profile.beads = math.min(before + reward.beads, ctx.maxBeads)
+		granted.beads = profile.beads - before
 	end
 	return granted
 end

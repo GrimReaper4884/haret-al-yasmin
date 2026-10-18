@@ -66,6 +66,44 @@ function MatchRewards.compute(modeId: string, mode: any, difficulty: string, out
 	}
 end
 
+-- Beads a finished match earns (Config/Beads, S1-S11). Call inside the reward's DataService.mutate,
+-- BEFORE MatchRewards.record (it reads the old first-clear state) so the grant and the daily counter
+-- land in the same mutation as the rest of the reward. today = the UTC day number. Returns the
+-- number of beads to grant (the daily counter in profile.td is updated here).
+function MatchRewards.beads(profile: any, modeId: string, mode: any, difficulty: string, outcome: Outcome, beads: any, td: any, today: number): number
+	if not outcome.won or mode.kind ~= "story" then
+		return 0
+	end
+	local diff = td.DIFFICULTIES[difficulty]
+	if not diff then
+		return 0
+	end
+	local n = 0
+	local gifts = beads.firstClear[mode.episode]
+	if gifts then
+		local cleared = profile.td.cleared[modeId]
+		local clearedOrder = if cleared then td.DIFFICULTIES[cleared].order else 0
+		for key, count in gifts do
+			local need = td.DIFFICULTIES[key].order
+			if clearedOrder < need and diff.order >= need then
+				n += count
+			end
+		end
+	end
+	if beads.winDrops[mode.episode] and diff.order >= 2 then
+		local t = profile.td
+		if t.beadDay ~= today then
+			t.beadDay = today
+			t.beadDayCount = 0
+		end
+		if (t.beadDayCount or 0) < beads.perDay then
+			t.beadDayCount = (t.beadDayCount or 0) + 1
+			n += 1
+		end
+	end
+	return n
+end
+
 -- Records the outcome in profile.td (stats and unlocks). Call inside DataService.mutate.
 function MatchRewards.record(profile: any, modeId: string, mode: any, difficulty: string, outcome: Outcome, kills: number, td: any)
 	local t = profile.td

@@ -79,8 +79,8 @@ function TdTowers.canPlace(state: any, owner: string, unitId: string, def: any, 
 	return true, nil
 end
 
--- Places a tower. stars/trait come from the owner's collection (validated by the caller).
-function TdTowers.place(state: any, owner: string, unitId: string, def: any, x: number, z: number, stars: number, trait: any?, rules: Rules): (boolean, string?, any?)
+-- Places a tower. stars/trait/bead come from the owner's collection (validated by the caller).
+function TdTowers.place(state: any, owner: string, unitId: string, def: any, x: number, z: number, stars: number, trait: any?, rules: Rules, bead: any?): (boolean, string?, any?)
 	local ok, err = TdTowers.canPlace(state, owner, unitId, def, x, z, rules, trait)
 	if not ok then
 		return false, err, nil
@@ -96,7 +96,7 @@ function TdTowers.place(state: any, owner: string, unitId: string, def: any, x: 
 		level = 1,
 		x = x,
 		z = z,
-		stats = UnitLogic.stats(def, 1, stars, trait, rules.starBonus, rules.traitCaps),
+		stats = UnitLogic.stats(def, 1, stars, trait, rules.starBonus, rules.traitCaps, nil, bead),
 		nextAt = 0,
 		abilityAt = 0,
 		targeting = "first",
@@ -104,6 +104,7 @@ function TdTowers.place(state: any, owner: string, unitId: string, def: any, x: 
 		kills = 0,
 		stars = stars,
 		trait = trait,
+		bead = bead,
 	}
 	state.nextId += 1
 	table.insert(state.towers, tower)
@@ -172,7 +173,7 @@ function TdTowers.upgrade(state: any, owner: string, towerId: any, def: any, rul
 		t.invested += cost
 		t.level = nextLevel
 		t.path = path
-		t.stats = UnitLogic.stats(def, nextLevel, t.stars, t.trait, rules.starBonus, rules.traitCaps, path)
+		t.stats = UnitLogic.stats(def, nextLevel, t.stars, t.trait, rules.starBonus, rules.traitCaps, path, t.bead)
 		return true, nil, t
 	end
 	if path ~= nil then
@@ -186,7 +187,7 @@ function TdTowers.upgrade(state: any, owner: string, towerId: any, def: any, rul
 	p.spent += cost
 	t.invested += cost
 	t.level = nextLevel
-	t.stats = UnitLogic.stats(def, nextLevel, t.stars, t.trait, rules.starBonus, rules.traitCaps)
+	t.stats = UnitLogic.stats(def, nextLevel, t.stars, t.trait, rules.starBonus, rules.traitCaps, nil, t.bead)
 	return true, nil, t
 end
 
