@@ -129,7 +129,26 @@ return function(t)
 		end)
 
 		t.it("every defender and attacker has a portrait of its current model", function()
+			-- Season Story 1 batch-1 attackers (S1-S03) are primitive figures until S1-A02; their boss bar
+			-- uses the live viewport. Listed so a portrait missing anywhere else still fails.
+			local AWAITING = {
+				pickpocket = true,
+				drummer = true,
+				torchbearer = true,
+				porter = true,
+				disguised = true,
+				beggar = true,
+				corporal = true,
+				abu_jawdan = true,
+				abu_shatour = true,
+				lateef = true,
+			}
 			local function check(id)
+				if AWAITING[id] then
+					local look = Looks[id]
+					t.truthy(not (look and look.model), id .. " has a model now: render its portrait and drop it from AWAITING")
+					return
+				end
 				local p = Icons.portraits[id]
 				t.truthy(p and p.id > 0, id .. " has no portrait in Icons.portraits")
 				local look = Looks[id]

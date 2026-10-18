@@ -273,6 +273,16 @@ local en: { [string]: string } = {
 	["enemy.chief_thief.name"] = "Al-Adashari",
 	["enemy.rival_zaim.name"] = "Abu al-Nahr",
 	["enemy.colonel.name"] = "The Commandant",
+	["enemy.pickpocket.name"] = "Pickpocket",
+	["enemy.drummer.name"] = "Rival-lane Drummer",
+	["enemy.torchbearer.name"] = "Torchbearer",
+	["enemy.porter.name"] = "Porter with a Crate",
+	["enemy.disguised.name"] = "A \"Neighbour\"",
+	["enemy.beggar.name"] = "False Beggar",
+	["enemy.corporal.name"] = "Corporal Houri",
+	["enemy.abu_jawdan.name"] = "Sergeant Abu Jawdan",
+	["enemy.abu_shatour.name"] = "Abu Shatour",
+	["enemy.lateef.name"] = "Lateef the \"Blind\"",
 
 	-- Units (original lane archetypes)
 	["unit.walad.name"] = "Lane Boy",
@@ -962,6 +972,16 @@ local ar: { [string]: string } = {
 	["enemy.chief_thief.name"] = "العدشري",
 	["enemy.rival_zaim.name"] = "أبو النهر",
 	["enemy.colonel.name"] = "القومندان",
+	["enemy.pickpocket.name"] = "نشّال",
+	["enemy.drummer.name"] = "طبّال الحارة التانية",
+	["enemy.torchbearer.name"] = "مشعلجي",
+	["enemy.porter.name"] = "عتّال",
+	["enemy.disguised.name"] = "واحد من الحارة",
+	["enemy.beggar.name"] = "شحّاد كذّاب",
+	["enemy.corporal.name"] = "العريف حوري",
+	["enemy.abu_jawdan.name"] = "الرقيب أبو جودان",
+	["enemy.abu_shatour.name"] = "أبو شاطور",
+	["enemy.lateef.name"] = "لطيف \"الأعمى\"",
 
 	-- Units
 	["unit.walad.name"] = "ولد الحارة",

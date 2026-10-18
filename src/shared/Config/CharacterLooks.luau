@@ -245,6 +245,18 @@ local Looks: { [string]: Look } = {
 		anims = { walk = 100088303835625 },
 	},
 	colonel = { build = "giant", outfit = "uniform", beard = "none", moustache = "handlebar", hair = GREY, model = "Commandant" },
+
+	-- Season Story 1, batch 1 (S1-S03): primitive figures until the Meshy models (S1-A02) are approved.
+	pickpocket = { build = "kid", outfit = "sherwal", beard = "none", moustache = "none", hair = DARK },
+	drummer = { build = "stout", outfit = "qumbaz", beard = "stubble", moustache = "thick", hair = DARK },
+	torchbearer = { build = "slim", outfit = "vest", beard = "stubble", moustache = "thin", hair = DARK },
+	porter = { build = "broad", outfit = "vest", beard = "short", moustache = "thick", hair = DARK },
+	disguised = { build = "normal", outfit = "qumbaz", beard = "short", moustache = "thin", hair = DARK, cloak = "#D9C9A8" },
+	beggar = { build = "slim", outfit = "abaya", beard = "stubble", moustache = "none", hair = GREY, cloak = "#6E6A64" },
+	corporal = { build = "slim", outfit = "uniform", beard = "none", moustache = "thin", hair = DARK },
+	abu_jawdan = { build = "stout", outfit = "uniform", beard = "none", moustache = "handlebar", hair = DARK },
+	abu_shatour = { build = "broad", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK },
+	lateef = { build = "slim", outfit = "abaya", beard = "stubble", moustache = "thin", hair = DARK, cloak = "#6E6A64" },
 }
 
 return Looks

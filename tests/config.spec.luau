@@ -226,4 +226,48 @@ return function(t)
 			end
 		end)
 	end)
+
+	-- Attackers (Config/Enemies): every name resolves and every story flag (STORY_PLAN §10.1) is typed
+	-- and inside its cap, so a typo in S1-S03/S1-S08 data fails here, not in a live match.
+	t.describe("Enemies", function()
+		local Enemies = t.config("Enemies")
+		local Looks = t.config("CharacterLooks")
+		local TD = t.config("TD")
+		local WaveLogic = t.logic("WaveLogic")
+		local function num(v, lo, hi)
+			return type(v) == "number" and v == v and v >= lo and v <= hi
+		end
+		local KNOWN = {
+			nameKey = true, hp = true, speed = true, reward = true, gateDamage = true, armor = true, stealth = true,
+			boss = true, swarm = true, aura = true, shield = true, burn = true, disguised = true, visual = true,
+		}
+		t.it("names resolve, numbers are sane, every flag is known and typed, every attacker has a look", function()
+			for id, def in Enemies do
+				checkKey(def.nameKey, "enemy " .. id)
+				t.truthy(num(def.hp, 1, 1e6) and num(def.speed, 0.5, 20), id .. " hp/speed")
+				t.truthy(num(def.reward, 0, 1e5) and def.reward % 1 == 0, id .. " reward")
+				t.truthy(num(def.gateDamage, 0, 200) and def.gateDamage % 1 == 0, id .. " gateDamage")
+				for k in def do
+					t.truthy(KNOWN[k], id .. " has an unknown field '" .. tostring(k) .. "' (typo, or a flag the sim doesn't run yet)")
+				end
+				if def.armor ~= nil then
+					t.truthy(num(def.armor, 0, 0.6), id .. " armor")
+				end
+				for _, flag in { "stealth", "boss", "swarm", "disguised" } do
+					t.truthy(def[flag] == nil or type(def[flag]) == "boolean", id .. "." .. flag .. " is a boolean")
+				end
+				if def.aura then
+					t.truthy(num(def.aura.speed, 1.01, WaveLogic.MAX_SPEED_MUL) and num(def.aura.radius, 1, 20), id .. " aura")
+				end
+				if def.shield then
+					t.truthy(num(def.shield.reduce, 0.01, 0.5) and num(def.shield.radius, 1, 20), id .. " shield")
+				end
+				if def.burn ~= nil then
+					t.truthy(num(def.burn, 1, TD.BURN_MAX_STACKS) and def.burn % 1 == 0, id .. " burn stacks")
+				end
+				t.truthy(not (def.swarm and def.boss), id .. " a boss is never a swarm")
+				t.truthy(Looks[id] ~= nil, id .. " has a CharacterLooks entry (the primitive fallback)")
+			end
+		end)
+	end)
 end

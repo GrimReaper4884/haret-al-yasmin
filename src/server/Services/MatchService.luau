@@ -472,6 +472,26 @@ function MatchService.debugAddCash(player: Player, amount: number)
 	MatchService.addCash(player, amount)
 end
 
+-- Studio test hook (DebugService only): queues the given attackers into the running wave, one every
+-- `gap` seconds from now, at the wave's HP multiplier. Lets a play-test meet enemies no wave script
+-- uses yet (S1-S03). Returns false outside a wave.
+function MatchService.debugSpawn(player: Player, enemyIds: { string }, gap: number): (boolean, string?)
+	local match = byPlayer[player]
+	if not match or match.ended or match.state.phase ~= "wave" then
+		return false, "not in a wave"
+	end
+	local s = match.state
+	local now = s.time - s.waveStartedAt
+	local hpMul = if s.queue[1] then s.queue[1].hpMul else 1
+	for k, id in enemyIds do
+		if not (Enemies :: any)[id] then
+			return false, "unknown enemy " .. id
+		end
+		table.insert(s.queue, s.queueIndex + k - 1, { at = now + (k - 1) * gap, enemy = id, hpMul = hpMul, speedMul = 1, boss = (Enemies :: any)[id].boss })
+	end
+	return true, nil
+end
+
 function MatchService.count(): number
 	local n = 0
 	for _ in matches do

@@ -95,6 +95,65 @@ local Enemies: { [string]: EnemyDef } = {
 		visual = { robe = "#EADFC8", accent = "#2A211B", skin = "#D2A07A", hat = "tarboosh", hatColor = "#A4302A", weapon = "dagger" },
 	},
 
+	-- Season Story 1, batch 1 (STORY_PLAN §6.1, S1-S03): Episodes 4–6. Primitive figures until their
+	-- Meshy models land (S1-A02); numbers are the harness starting points.
+	pickpocket = {
+		nameKey = "enemy.pickpocket.name",
+		hp = 16,
+		speed = 9.5,
+		reward = 6,
+		gateDamage = 1,
+		swarm = true, -- groups of 12, half weight in the wave cap
+		visual = { robe = "#6E6A64", accent = "#3E5B3A", skin = "#C68E64", hat = "cap", hatColor = "#3D3A38", weapon = "sack", scale = 0.8 },
+	},
+	drummer = {
+		nameKey = "enemy.drummer.name",
+		hp = 110,
+		speed = 5.0,
+		reward = 28,
+		gateDamage = 1,
+		aura = { speed = 1.25, radius = 7 }, -- the drum hurries everyone near him
+		visual = { robe = "#3E5B3A", accent = "#A4302A", skin = "#C68E64", hat = "turban", hatColor = "#5E6B3A", weapon = "stick", scale = 1.05 },
+	},
+	torchbearer = {
+		nameKey = "enemy.torchbearer.name",
+		hp = 70,
+		speed = 6.2,
+		reward = 20,
+		gateDamage = 1,
+		burn = 1, -- sets the gate burning (TD.BURN_*)
+		visual = { robe = "#2A211B", accent = "#A4302A", skin = "#B97F5A", hat = "scarf", hatColor = "#1F1B18", weapon = "stick" },
+	},
+	porter = {
+		nameKey = "enemy.porter.name",
+		hp = 260,
+		speed = 3.6,
+		reward = 45,
+		gateDamage = 2,
+		armor = 0.25,
+		shield = { radius = 6, reduce = 0.3 }, -- the crate covers everyone close behind it
+		visual = { robe = "#6E5E50", accent = "#3D3A38", skin = "#B97F5A", hat = "scarf", hatColor = "#8C8079", weapon = "sack", scale = 1.2 },
+	},
+	disguised = {
+		nameKey = "enemy.disguised.name",
+		hp = 120,
+		speed = 5.4,
+		reward = 32,
+		gateDamage = 2,
+		disguised = true, -- walks as a neighbour until a lantern or a lit hit unmasks him
+		visual = { robe = "#D9C9A8", accent = "#8C8079", skin = "#D2A07A", hat = "tarboosh", hatColor = "#A4302A", weapon = "dagger" },
+	},
+	beggar = {
+		nameKey = "enemy.beggar.name",
+		hp = 90,
+		speed = 6.0,
+		reward = 26,
+		gateDamage = 1,
+		disguised = true,
+		stealth = true, -- once unmasked he still slips into the dark
+		visual = { robe = "#6E6A64", accent = "#3D3A38", skin = "#B97F5A", hat = "scarf", hatColor = "#2A211B", weapon = "stick", scale = 0.95 },
+	},
+
 	-- Bosses
 	sergeant = {
 		nameKey = "enemy.sergeant.name",
@@ -135,6 +194,49 @@ local Enemies: { [string]: EnemyDef } = {
 		armor = 0.4,
 		boss = true,
 		visual = { robe = "#1F1B18", accent = "#C9A13B", skin = "#E0B894", hat = "kepi", hatColor = "#1F1B18", weapon = "sword", scale = 1.8 },
+	},
+
+	-- Season Story 1 bosses, batch 1 (STORY_PLAN §6.2, S1-S03). Summon and teleport come with S1-S05.
+	corporal = {
+		nameKey = "enemy.corporal.name",
+		hp = 900,
+		speed = 4.4,
+		reward = 240,
+		gateDamage = 40,
+		armor = 0.2,
+		boss = true,
+		visual = { robe = "#2F3E6B", accent = "#C9A13B", skin = "#E0B894", hat = "kepi", hatColor = "#2F3E6B", weapon = "rifle", scale = 1.4 },
+	},
+	abu_jawdan = {
+		nameKey = "enemy.abu_jawdan.name",
+		hp = 2400,
+		speed = 3.8,
+		reward = 520,
+		gateDamage = 80,
+		armor = 0.3,
+		boss = true,
+		visual = { robe = "#2F3E6B", accent = "#C9A13B", skin = "#E0B894", hat = "kepi", hatColor = "#A4302A", weapon = "stick", scale = 1.65 },
+	},
+	abu_shatour = {
+		nameKey = "enemy.abu_shatour.name",
+		hp = 3000,
+		speed = 4.6,
+		reward = 600,
+		gateDamage = 80,
+		armor = 0.2,
+		boss = true,
+		burn = 3, -- his torch: three burn stacks if he reaches the door
+		visual = { robe = "#1F1B18", accent = "#A4302A", skin = "#B97F5A", hat = "hatta", hatColor = "#1F1B18", weapon = "sword", scale = 1.7 },
+	},
+	lateef = {
+		nameKey = "enemy.lateef.name",
+		hp = 3600,
+		speed = 4.4,
+		reward = 700,
+		gateDamage = 90,
+		boss = true,
+		disguised = true, -- the "blind" beggar: only a lantern or a lit hit unmasks him
+		visual = { robe = "#6E6A64", accent = "#2A211B", skin = "#B97F5A", hat = "scarf", hatColor = "#2A211B", weapon = "dagger", scale = 1.6 },
 	},
 }
 

@@ -16,6 +16,7 @@
 --   print(D:Invoke("foreignLock", "clear")) -- release it again ("clear <userId>" once the player is kicked)
 --   print(D:Invoke("qirsh", 500))    -- grant test qirsh (Studio only)
 --   print(D:Invoke("lira", 5000))    -- grant test lira and 5 trait stones (Studio only)
+--   print(D:Invoke("spawn", "porter,drummer")) -- queue attackers into the running wave, 1 per second
 
 local HttpService = game:GetService("HttpService")
 local Net = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared").Net)
@@ -118,6 +119,9 @@ function DebugService.start()
 				return "bad arg"
 			end
 			return MatchService.debugPlace(player, unitId, tonumber(x) :: number, tonumber(z) :: number)
+		elseif cmd == "spawn" then
+			-- "id,id,…": queue these attackers into the running wave, one per second (S1-S03 checks)
+			return MatchService.debugSpawn(player, string.split(tostring(arg), ","), 1)
 		elseif cmd == "grant" then
 			-- "id,id,…": own these units and make them the loadout (play-testing specific figures)
 			local ids = string.split(tostring(arg), ",")
