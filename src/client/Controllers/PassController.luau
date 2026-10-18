@@ -103,7 +103,7 @@ function PassController.render()
 	if not snapshot then
 		return
 	end
-	modal.title.Text = t("pass.season.s1.name")
+	modal.title.Text = t(SeasonPass.nameKey) -- the season's own name (S1-C06: "… Season 1: The Night Guard")
 	Theme.align(modal.title, LocaleController.isRtl())
 	local level, into, need = PassLogic.level(snapshot.pass.xp, SeasonPass.tiers)
 	levelLabel.Text = t("pass.level", { n = level })

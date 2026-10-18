@@ -6,6 +6,8 @@
 --    tea, today's lira against the cap and this visit's time, plus "Back to the lane". The lobby
 --    HUD is hidden; the storyteller's lines appear in turn above his chair;
 --  * a toast for every cup and tale, and a summary on leaving;
+--  * a "Tales" list of the season's episode outros, each readable once that episode is cleared
+--    (Logic/StoryCards.tales, S1-C06; read-only, the AFK rules are unchanged);
 --  * idle handling: Player.Idled asks the server to hop servers before Roblox's 20-minute kick
 --    while inside, and (setting "autoAfk") walks an idle lobby player up to the room.
 -- Display only: the server owns the clock and the payouts.
@@ -22,6 +24,8 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared.Net)
 local Afk = require(Shared.Config.Afk)
+local Story = require(Shared.Config.Story)
+local StoryCards = require(Shared.Logic.StoryCards)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
@@ -54,6 +58,9 @@ local todayLine: TextLabel
 local sessionLine: TextLabel
 local bonusPill: TextLabel
 local leaveButton: TextButton
+local talesButton: TextButton
+local talesModal: Modal.Modal
+local talesList: ScrollingFrame
 local bubble: BillboardGui?
 local bubbleText: TextLabel?
 
@@ -220,6 +227,7 @@ local function renderHud()
 	bonusPill.Visible = mult > 1
 	bonusPill.Text = t("afk.bonus", { mult = mult })
 	leaveButton.Text = t("afk.leave")
+	talesButton.Text = t("afk.tales")
 end
 
 -- Called every frame (cheaply): the countdown and the visit clock.
@@ -307,6 +315,92 @@ local function buildHud()
 	leaveButton.Activated:Connect(function()
 		Net.event(Net.Events.AfkLeave):FireServer()
 	end)
+	talesButton = Theme.button({
+		Name = "AfkTales",
+		TextSize = 14,
+		AnchorPoint = Vector2.new(0, 1),
+		Position = UDim2.fromScale(0, 1),
+		Size = UDim2.fromOffset(84, 42),
+		BackgroundColor3 = Theme.colors.quest,
+		Parent = hud,
+	})
+	talesButton.Activated:Connect(function()
+		AfkController.openTales()
+	end)
+end
+
+---------------------------------------------------------------- The season's tales (S1-C06)
+
+-- Arabic-Indic digits in Arabic (the episode names in Strings use them).
+local AR_DIGITS = { "٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩" }
+local function digits(n: number): string
+	if not LocaleController.isRtl() then
+		return tostring(n)
+	end
+	return (string.gsub(tostring(n), "%d", function(d)
+		return AR_DIGITS[tonumber(d) :: number + 1]
+	end))
+end
+
+local function renderTales()
+	if not talesModal or not talesModal.isOpen() then
+		return
+	end
+	local t = LocaleController.t
+	local rtl = LocaleController.isRtl()
+	talesModal.title.Text = t("afk.tales_title")
+	Theme.align(talesModal.title, rtl)
+	for _, c in talesList:GetChildren() do
+		if c:IsA("GuiObject") then
+			c:Destroy()
+		end
+	end
+	local snapshot = StateController.get()
+	local cleared = snapshot and snapshot.td and snapshot.td.cleared or nil
+	for _, tale in StoryCards.tales(Story, cleared) do
+		local entry = Create("Frame", { LayoutOrder = tale.number, BackgroundTransparency = 1, Size = UDim2.new(1, -10, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, ZIndex = 12, Parent = talesList })
+		Create("UIListLayout", { Padding = UDim.new(0, 2), SortOrder = Enum.SortOrder.LayoutOrder, Parent = entry })
+		local title = Theme.label({
+			LayoutOrder = 1,
+			Text = t("play.soon_name", { n = digits(tale.number), title = t(tale.titleKey) }),
+			TextSize = 15,
+			FontFace = Theme.fontBold,
+			TextColor3 = if tale.unlocked then Theme.colors.text else Theme.colors.textMuted,
+			Size = UDim2.new(1, 0, 0, 20),
+			ZIndex = 12,
+			Parent = entry,
+		})
+		local lines = {}
+		for _, key in tale.lines do
+			table.insert(lines, t(key))
+		end
+		local body = Theme.label({
+			LayoutOrder = 2,
+			Text = if tale.unlocked then "“" .. table.concat(lines, " ") .. "”" else t("afk.tale_locked", { n = digits(tale.number) }),
+			TextSize = 13,
+			TextColor3 = if tale.unlocked then Color3.fromHex("#5A3E22") else Theme.colors.textMuted,
+			Size = UDim2.fromScale(1, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			TextYAlignment = Enum.TextYAlignment.Top,
+			ZIndex = 12,
+			Parent = entry,
+		})
+		Theme.align(title, rtl)
+		Theme.align(body, rtl)
+	end
+end
+
+-- Opens the read-only list of the season's tales (the Tales button in the room; Studio harness T).
+function AfkController.openTales()
+	if not talesModal then
+		local m = Modal.create("AfkTales", 560, 250)
+		talesList = Modal.scroller(m.body)
+		Create("UIListLayout", { Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder, Parent = talesList })
+		talesModal = m
+	end
+	talesModal.setVisible(true)
+	renderTales()
+	talesList.CanvasPosition = Vector2.zero
 end
 
 ---------------------------------------------------------------- The storyteller's lines
@@ -567,6 +661,9 @@ function AfkController.start()
 	buildIntro()
 	buildHud()
 	LobbyMenuController.register("afk", AfkController.open)
+	-- The tales list follows the language and new clears while it is open.
+	LocaleController.Changed:Connect(renderTales)
+	StateController.Changed:Connect(renderTales)
 	Net.event(Net.Events.AfkState).OnClientEvent:Connect(onState)
 	Net.event(Net.Events.AfkPayout).OnClientEvent:Connect(onPayout)
 	Net.event(Net.Events.QueueState).OnClientEvent:Connect(function(payload: any)

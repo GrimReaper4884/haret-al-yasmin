@@ -35,6 +35,7 @@ local DebugKeysController = require(Controllers.DebugKeysController)
 local MovementController = require(Controllers.MovementController)
 local AmbienceController = require(Controllers.AmbienceController)
 local LobbyLifeController = require(Controllers.LobbyLifeController)
+local LobbyStoryController = require(Controllers.LobbyStoryController)
 
 StateController.start()
 LocaleController.start()
@@ -66,5 +67,6 @@ RigAnimController.start()
 MatchCameraController.start()
 AmbienceController.start()
 LobbyLifeController.start()
+LobbyStoryController.start()
 DebugOverlayController.start() -- Studio only
 DebugKeysController.start() -- Studio only

@@ -9,7 +9,8 @@
 --   In a match: P place the next loadout unit at your feet · B place it at a road-side spot · U upgrade the last tower you placed
 --   · K vote skip · J sell the last tower · T set speed 2x · C +5000 match cash · H leave · G set the gate to 1 HP
 --   · O open the last tower's panel and cycle its level-7 path card · I press Upgrade · - send a wrong path.
---   In the lobby: R a unit's detail (cycles owned units) · F its bead picker (next slot) · = pick the first kind.
+--   In the lobby: R a unit's detail (cycles owned units) · F its bead picker (next slot) · = pick the first kind
+--   · T the Hakawati's tales list.
 -- Never created outside Studio.
 
 local Players = game:GetService("Players")
@@ -32,6 +33,7 @@ local DailyController = require(script.Parent.DailyController)
 local MatchController = require(script.Parent.MatchController)
 local PlayController = require(script.Parent.PlayController)
 local PlacementController = require(script.Parent.PlacementController)
+local AfkController = require(script.Parent.AfkController)
 local LocaleController = require(script.Parent.LocaleController)
 local Story = require(Shared.Config.Story)
 local Modal = require(script.Parent.Parent.UI.Modal)
@@ -171,6 +173,8 @@ function DebugKeysController.start()
 			UnitsController.debugPicker()
 		elseif k == Enum.KeyCode.Equals then
 			UnitsController.debugChoose()
+		elseif k == Enum.KeyCode.T then
+			AfkController.openTales()
 		elseif k == Enum.KeyCode.M then
 			-- Play menu shortcut: create an Episode 1 (normal) party and start it at once.
 			task.spawn(function()

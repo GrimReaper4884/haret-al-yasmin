@@ -427,7 +427,7 @@ local en: { [string]: string } = {
 	["banner.umm_hara.name"] = "The Hakim of the Lane",
 
 	-- Season pass
-	["pass.season.s1.name"] = "Lane Diary · Season 1",
+	["pass.season.s1.name"] = "Lane Diary · Season 1: The Night Guard",
 	["pass.title"] = "Lane Diary",
 	["pass.level"] = "Level {n}",
 	["pass.xp"] = "{n}/{total} XP",
@@ -699,6 +699,15 @@ local en: { [string]: string } = {
 
 	-- Season Story 1 "The Night Guard" (Config/Story): the Hakawati's words. Roles only, no names (S1-N02).
 	["story.season.title"] = "Season Story 1 · The Night Guard",
+	-- The pickle cart by the gate and the Hakawati's tales list (S1-C06)
+	["story.cart.name"] = "Pickle cart",
+	["story.cart.prompt"] = "Look",
+	["story.cart.1"] = "A pickle cart by the gate. Long ago the za'im lent a hard man the money to push it.",
+	["story.cart.2"] = "By day he sold pickles from it. By night he walked the roofs.",
+	["story.cart.3"] = "Its wheels still turn. Some say the man who owned it guards this gate now.",
+	["afk.tales"] = "Tales",
+	["afk.tales_title"] = "The Hakawati's tales",
+	["afk.tale_locked"] = "Clear Episode {n} to hear this tale.",
 	["story.ep1.title"] = "Night of the Thieves",
 	["story.ep1.intro.1"] = "Gather round. In the lane of jasmine, the cloth merchant's gold vanished in one night.",
 	["story.ep1.intro.2"] = "The watchman saw a shadow at the gate, lifted his lantern… and was never seen again.",
@@ -1243,7 +1252,7 @@ local ar: { [string]: string } = {
 	["banner.umm_hara.name"] = "حكيم الحارة",
 
 	-- Season pass
-	["pass.season.s1.name"] = "دفتر الحارة · الموسم ١",
+	["pass.season.s1.name"] = "دفتر الحارة · الموسم ١: الحارس الليلي",
 	["pass.title"] = "دفتر الحارة",
 	["pass.level"] = "مستوى {n}",
 	["pass.xp"] = "{n}/{total} خبرة",
@@ -1515,6 +1524,15 @@ local ar: { [string]: string } = {
 
 	-- حكاية الموسم ١ (Config/Story)
 	["story.season.title"] = "حكاية الموسم ١ · الحارس الليلي",
+	-- عربية المخلّل وحكايات الحكواتي (S1-C06)
+	["story.cart.name"] = "عربية المخلّل",
+	["story.cart.prompt"] = "اتفرّج",
+	["story.cart.1"] = "عربية مخلّل جنب الباب. من زمان الزعيم ديّن زلمة قاسي مصاري ليدفشها.",
+	["story.cart.2"] = "بالنهار كان يبيع منها مخلّل، وبالليل يمشي عالسطوح.",
+	["story.cart.3"] = "دواليبها لسّا بتدور. وفي ناس بتقول صاحبها صار يحرس هالباب.",
+	["afk.tales"] = "حكايات",
+	["afk.tales_title"] = "حكايات الحكواتي",
+	["afk.tale_locked"] = "اربح الحلقة {n} لتسمع هالحكاية.",
 	["story.ep1.title"] = "ليلة الحرامية",
 	["story.ep1.intro.1"] = "يا سادة يا كرام، بحارة الياسمين راح دهب تاجر القماش بليلة وحدة.",
 	["story.ep1.intro.2"] = "الناطور شاف خيال عند الباب، رفع فانوسه… وما حدا شافه بعدها.",

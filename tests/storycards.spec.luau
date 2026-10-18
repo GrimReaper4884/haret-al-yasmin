@@ -223,6 +223,37 @@ return function(t)
 			t.eq(StoryCards.percent(0.5), "50")
 		end)
 
+		t.it("the Hakawati's tales: nine outros in order, unlocked by a clear on any difficulty (S1-C06)", function()
+			local none = StoryCards.tales(Story, nil)
+			t.eq(#none, 9)
+			for i, tale in none do
+				t.eq(tale.id, Story.order[i])
+				t.eq(tale.number, i)
+				t.eq(tale.unlocked, false)
+				t.eq(#tale.lines, 3)
+			end
+			local some = StoryCards.tales(Story, { ep1 = "normal", ep3 = "nightmare" })
+			t.eq(some[1].unlocked, true)
+			t.eq(some[2].unlocked, false)
+			t.eq(some[3].unlocked, true)
+			t.eq(some[1].lines, Story.episodes.ep1.outro)
+		end)
+
+		t.it("the pickle cart has three lines and its names in EN and AR (S1-C06)", function()
+			local cart = Story.cart
+			t.eq(#cart.lines, 3)
+			for _, key in cart.lines do
+				inEveryLanguage(key, "pickle cart")
+			end
+			inEveryLanguage(cart.nameKey, "pickle cart")
+			inEveryLanguage(cart.promptKey, "pickle cart")
+			t.truthy(cart.lineSeconds >= 2 and cart.lineSeconds <= 8, "time to read a line")
+			t.truthy(cart.reach > 4 and cart.reach <= 16, "a walk-up reach")
+			for _, key in { "afk.tales", "afk.tales_title", "afk.tale_locked" } do
+				inEveryLanguage(key, "tales list")
+			end
+		end)
+
 		t.it("the Story tab's strings exist in EN and AR", function()
 			for _, key in
 				{
