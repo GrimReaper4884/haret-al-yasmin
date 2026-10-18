@@ -158,6 +158,66 @@
       "texture_style": "enemy",
       "prompt": "The Commandant, the towering commander of a 1930s colonial garrison, tall man with a grey goatee and monocle, black kepi with heavy gold braid, long black greatcoat with gold epaulettes and a red sash across the chest, white gloves, polished black boots, holding an ornate officer's sabre in his right hand, cold imperious face.",
       "texture": "Black greatcoat, gold braid and epaulettes, crimson sash, white gloves, steel sabre with a gold hilt, pale skin."
+    },
+    "pickpocket": {
+      "height": 1.45,
+      "texture_style": "enemy",
+      "prompt": "Street pickpocket boy of 1930s Damascus, wiry teenager with a smirk, flat cap, patched grey shirt, short baggy trousers, barefoot, clutching a stolen purse, mid-sprint.",
+      "texture": "Grey and olive patched cloth, dark cap, brown leather purse, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "drummer": {
+      "height": 1.75,
+      "texture_style": "enemy",
+      "prompt": "Rival-lane drummer, stocky man with a sneer, olive turban-wrapped tarboosh, dark striped qumbaz, a large frame drum slung on the chest, beating it with a curved stick.",
+      "texture": "Olive turban, dark striped robe, pale drum skin with a dark wooden rim, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "torchbearer": {
+      "height": 1.75,
+      "texture_style": "enemy",
+      "prompt": "Night arsonist of 1930s Damascus, lean man with a scarf over the mouth, dark sherwal and vest, holding a burning rag torch high in the right hand and an oil jar in the left.",
+      "texture": "Black and basalt cloth, red scarf, orange cartoon flame, clay oil jar, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "porter": {
+      "height": 1.85,
+      "texture_style": "enemy",
+      "prompt": "Burly 1930s porter of a Damascus market, thick neck and arms, rolled head scarf as a pad, sleeveless vest, wide belt, carrying a huge wooden crate on his back, bent forward.",
+      "texture": "Grey-brown vest, dark belt, pale wooden crate with rope, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "disguised": {
+      "height": 1.75,
+      "texture_style": "enemy",
+      "prompt": "Shifty man dressed as an ordinary 1930s Damascus neighbour, plain beige qumbaz and red tarboosh, hands hidden in the sleeves, eyes darting sideways, a dagger hilt showing at the belt.",
+      "texture": "Beige robe, red tarboosh, dark belt, small steel dagger hilt, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "beggar": {
+      "height": 1.7,
+      "texture_style": "enemy",
+      "prompt": "1930s street beggar with a dark blindfold pushed up on the forehead, patched grey cloak, bare feet, a wooden staff in one hand and a begging bowl in the other, sly posture.",
+      "texture": "Patched grey cloak, dark blindfold, pale wooden staff, copper bowl, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "corporal": {
+      "height": 1.8,
+      "texture_style": "enemy",
+      "prompt": "Jumpy young colonial-gendarmerie corporal of the 1930s, thin moustache, kepi askew, dark blue uniform one size too big, holding a rifle he clearly cannot handle, wide anxious eyes, comic.",
+      "texture": "Navy uniform, single gold stripe on the sleeve, brass buttons, dark wooden rifle, light skin, arms straight out to the sides."
+    },
+    "abu_jawdan": {
+      "height": 1.95,
+      "texture_style": "enemy",
+      "prompt": "Corrupt 1930s police sergeant over four lanes, portly man with a big curled moustache and heavy brows, red-banded kepi, dark blue jacket straining at brass buttons, baton tucked under the arm, smug half-smile.",
+      "texture": "Navy jacket, red kepi band, brass buttons, black baton and boots, light skin, arms straight out to the sides."
+    },
+    "abu_shatour": {
+      "height": 2.0,
+      "texture_style": "enemy",
+      "prompt": "Rival-lane thug boss of 1930s Damascus, broad man with a cleaver (a wide butcher's blade) in the right hand and a torch in the left, black head cloth wrapped tight, dark striped vest, scar across the nose, snarling.",
+      "texture": "Black head cloth, dark striped vest, steel cleaver, orange cartoon flame, warm tan skin (not grey), arms straight out to the sides."
+    },
+    "lateef": {
+      "height": 1.85,
+      "texture_style": "enemy",
+      "prompt": "1930s false blind beggar revealed as a spy, gaunt man ripping a dark blindfold off with one hand, dagger in the other, patched grey cloak flying, bare feet, cruel grin.",
+      "texture": "Patched grey cloak, dark blindfold, steel dagger, warm tan skin (not grey), arms straight out to the sides."
     }
   },
   "prop_style": "Stylized chunky cartoon game prop for a mobile tower-defense game set in a 1930s Damascus old-city lane, toy-like proportions, clean simple shapes, bold readable silhouette, hand-painted flat colors with soft shading, warm limestone and wood palette, single object centered, three-quarter view, no characters, no text, no background.",
