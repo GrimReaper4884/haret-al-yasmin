@@ -824,7 +824,7 @@ are used by S1-C01 (fallback drawers if absent, as always).
 ## 13. Checklist (tick with the commit hash)
 
 - [x] S1-N01 1eb2504 · [x] S1-N02 f86d874
-- [x] S1-S01 4472de1 · [x] S1-S02 663db30 (+ 4eddbf7) · [ ] S1-S03 · [ ] S1-S04 · [ ] S1-S05 · [ ] S1-S06 · [ ] S1-S07 · [ ] S1-S08 · [ ] S1-S09 · [ ] S1-S10 · [ ] S1-S11 · [ ] S1-S12 · [ ] S1-S13
+- [x] S1-S01 4472de1 · [x] S1-S02 663db30 (+ 4eddbf7) · [x] S1-S03 2f1bc1e · [ ] S1-S04 · [x] S1-S05 74b5873 · [ ] S1-S06 · [ ] S1-S07 · [ ] S1-S08 · [ ] S1-S09 · [ ] S1-S10 · [ ] S1-S11 · [ ] S1-S12 · [ ] S1-S13
 - [ ] S1-A01 · [ ] S1-A02 · [ ] S1-A03 · [ ] S1-A04 · [ ] S1-A05 · [ ] S1-A06 · [ ] S1-A07 · [ ] S1-A08
 - [ ] S1-M01 · [ ] S1-M02 · [ ] S1-M03 · [ ] S1-M04 · [ ] S1-M05 · [ ] S1-M06
 - [ ] S1-C01 · [ ] S1-C02 · [ ] S1-C03 · [ ] S1-C04 · [ ] S1-C05 · [ ] S1-C06
