@@ -8,7 +8,7 @@
 
 The scene holds: objects with a "module" property (kit modules), a `Path` curve (the enemy road;
 twin-gate arenas add `Path_2`), a `Bounds` plane, empties `PlayerSpawn`, `Spawn_1`, `Gate`. The
-scene property "arena_id" names the arena. Axis mapping (see arena_olive_press.py): x = -x_blender,
+scene property "arena_id" names the arena. Axis mapping (see arena_build.py): x = -x_blender,
 z = y_blender, yaw = Blender Z rotation in degrees. Numbers are rounded (0.1 stud, 1 degree) so the
 files regenerate byte-identical from the same .blend.
 """
@@ -81,6 +81,7 @@ def main():
     corners = [b.matrix_world @ v.co for v in b.data.vertices]
     xs = [local(c.x, c.y)[0] for c in corners]
     zs = [local(c.x, c.y)[1] for c in corners]
+    ally = bpy.data.objects.get("AllySpot")
     ps = bpy.data.objects["PlayerSpawn"].location
     sx, sz = local(ps.x, ps.y)
     gate = paths[0][-1]
@@ -111,6 +112,11 @@ def main():
         f"{T}{T}playerSpawn = {{ {fmt(sx)}, {fmt(sz)} }},",
         f'{T}{T}seed = "{scene.get("arena_seed", aid)}",',
         f'{T}{T}theme = "{scene.get("arena_theme", "orchard")}",',
+    ]
+    if ally:
+        ax, az = local(ally.location.x, ally.location.y)
+        entry.append(f"{T}{T}allySpot = {{ {fmt(ax)}, {fmt(az)} }},")
+    entry += [
         f'{T}{T}kit = "{aid}", -- server/World/KitLayout places Config/ArenaLayouts/{aid}',
         f"{T}}},",
         f"{T}-- END GENERATED {aid}",

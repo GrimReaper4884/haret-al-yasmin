@@ -355,7 +355,10 @@ return function(t)
 						local where = id .. " #" .. i .. " " .. p.module
 						t.truthy(m, where .. " is a kit module")
 						t.truthy(p.scale > 0 and p.scale <= 2, where .. " scale")
-						t.truthy(p.x >= b[1] - 4 and p.x <= b[3] + 4 and p.z >= b[2] - 4 and p.z <= b[4] + 4, where .. " in bounds")
+						-- skyline pieces stand far outside on purpose (distant scenery)
+						if not string.find(p.module, "^skyline_") then
+							t.truthy(p.x >= b[1] - 4 and p.x <= b[3] + 4 and p.z >= b[2] - 4 and p.z <= b[4] + 4, where .. " in bounds")
+						end
 						if m and not ON_ROAD[p.module] then
 							-- the footprint radius of the piece (half its larger side, scaled)
 							local r = math.max(m.size[1], m.size[3]) / 2 * p.scale

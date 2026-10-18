@@ -91,6 +91,34 @@ local Arenas: { [string]: ArenaDef } = {
 		kit = "olive_press", -- server/World/KitLayout places Config/ArenaLayouts/olive_press
 	},
 	-- END GENERATED olive_press
+	-- BEGIN GENERATED saha (tools/blender/export_layout.py from assets/blender/arenas/saha.blend)
+	saha = {
+		nameKey = "arena.saha.name",
+		path = { { -62, 30 }, { -34, 30 }, { -34, 6 }, { -6, 6 }, { 22, 6 }, { 22, 28 }, { 54, 28 }, { 54, -30 } },
+		paths = { { { -62, 30 }, { -34, 30 }, { -34, 6 }, { -6, 6 }, { 22, 6 }, { 22, 28 }, { 54, 28 }, { 54, -30 } }, { { -62, -30 }, { -40, -30 }, { -40, -14 }, { -6, -14 }, { -6, 6 }, { 22, 6 }, { 22, 28 }, { 54, 28 }, { 54, -30 } } },
+		bounds = { -72, -40, 70, 36 },
+		gateYaw = 180,
+		spawnYaw = 90,
+		playerSpawn = { 40, -34 },
+		seed = "saha",
+		theme = "rival",
+		allySpot = { 48, -26 },
+		kit = "saha", -- server/World/KitLayout places Config/ArenaLayouts/saha
+	},
+	-- END GENERATED saha
+	-- BEGIN GENERATED warehouse (tools/blender/export_layout.py from assets/blender/arenas/warehouse.blend)
+	warehouse = {
+		nameKey = "arena.warehouse.name",
+		path = { { -70, -30 }, { -70, 20 }, { -40, 20 }, { -40, -14 }, { -6, -14 }, { -6, 14 }, { 20, 14 }, { 20, -24 }, { 44, -24 }, { 44, 12 } },
+		bounds = { -80, -36, 66, 32 },
+		gateYaw = 0,
+		spawnYaw = 0,
+		playerSpawn = { 58, -28 },
+		seed = "warehouse",
+		theme = "orchard",
+		kit = "warehouse", -- server/World/KitLayout places Config/ArenaLayouts/warehouse
+	},
+	-- END GENERATED warehouse
 }
 
 return Arenas

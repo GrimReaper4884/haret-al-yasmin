@@ -1,0 +1,76 @@
+"""Arena definitions for tools/blender/arena_build.py (docs/STORY_PLAN.md §8.3–8.5): roads, bounds,
+spawns and the kit modules each arena is dressed with, in arena-local Roblox studs (x right, z toward
+the back). `scatter` places trees (or any module) on free ground with a fixed seed, keeping their
+footprint clear of every road. Edit here, rebuild the .blend, re-export the layout.
+"""
+
+ARENAS = {
+    # The Olive Harvest event map (§8.4).
+    "olive_press": {
+        "name_key": "arena.olive_press.name",
+        "theme": "orchard",
+        "roads": [[(-70, 30), (-30, 30), (-30, -10), (12, -10), (12, 24), (48, 24), (48, -20)]],
+        "bounds": (-80, -40, 80, 36),
+        "party": (30, -32),
+        "modules": [
+            ("gate_rival", -76, 30, -90), ("warehouse_door", 48, -24, 180), ("olive_press", -9, 9, 0),
+            ("oil_jar_cluster", -2, 3, 40), ("oil_jar_cluster", -15, 15, 120), ("oil_jar_cluster", 5, -30, 200),
+            ("oil_jar_cluster", 36, -30, 80), ("oil_jar_cluster", 24, 30, 300),
+            ("sack_pile", -16, 2, 10), ("sack_pile", 0, 16, 90), ("sack_pile", 40, -14, 180), ("sack_pile", 56, -14, 270),
+            ("sack_pile", -50, 20, 45), ("sack_pile", 20, 4, 135), ("well", -48, -24, 0),
+            ("lantern_wire_span", -30, -10, 45), ("lantern_wire_span", 12, -10, -45), ("lantern_wire_span", 12, 24, 45),
+            ("irrigation_channel_4m", -62, 36, 0), ("irrigation_channel_4m", -46, 36, 0), ("irrigation_channel_4m", -30, 36, 0),
+            ("irrigation_channel_4m", -38, 18, 90), ("irrigation_channel_4m", -38, 2, 90), ("irrigation_channel_4m", -38, -14, 90),
+            ("harvest_net", -56, -6, 84), ("harvest_net", 30, 8, 58), ("harvest_net", -12, -28, 41),
+            ("ladder", -52, -2, 20), ("ladder", 33, 12, 200),
+        ]
+        + [("orchard_wall_low", -72 + i * 8.2, -39, 0) for i in range(7)]
+        + [("orchard_wall_low", -18 + i * 8.2, 35, 180) for i in range(7)]
+        + [("terrace_step", x, -30 + i * 8.5, 90) for i in range(4) for x in (64, 72)],
+        "scatter": [("olive_tree", 22, 2026, (0.6, 0.75), 6.5)],
+    },
+    # The fountain square (Episodes 4 and 6, §8.5): the lobby's saha rebuilt as an arena. Pickpockets
+    # come down the rooftop stair (road 1) and through the side alley (road 2); the roads merge before
+    # the square and end at the lane mouth.
+    "saha": {
+        "name_key": "arena.saha.name",
+        "theme": "rival",
+        "roads": [
+            [(-62, 30), (-34, 30), (-34, 6), (-6, 6), (22, 6), (22, 28), (54, 28), (54, -30)],
+            [(-62, -30), (-40, -30), (-40, -14), (-6, -14), (-6, 6), (22, 6), (22, 28), (54, 28), (54, -30)],
+        ],
+        "bounds": (-72, -40, 70, 36),
+        "party": (40, -34),
+        "ally": (48, -26),
+        "modules": [
+            ("rooftop_stair", -66, 30, -90), ("wall_arch", -66, -30, -90), ("gate_lane", 54, -36, 180),
+            ("well", 6, 18, 0), ("bench_dikkeh", -2, 20, 90), ("bench_dikkeh", 14, 20, -90),
+            ("lantern_wire_span", -34, 6, 45), ("lantern_wire_span", 22, 28, -45), ("lantern_wall", -20, 34, 180),
+            ("bakery_front", -40, 37, 180), ("wall_4m", -18, 37, 180), ("wall_window_grille", -4, 37, 180),
+            ("mashrabiya_bay", -4, 36, 180), ("wall_4m", 12, 37, 180), ("mashrabiya_bay", 12, 36, 180),
+            ("wall_4m", -40, -41, 0), ("wall_window_grille", -24, -41, 0), ("wall_4m", -12, -41, 0),
+            ("mashrabiya_bay", -12, -40, 0), ("wall_4m", 4, -41, 0), ("wall_corner", 20, -41, 0),
+            ("skyline_dome", 30, 60, 0), ("skyline_minaret", -50, 62, 0),
+        ]
+        + [("cobble_tile_4m", x, z, 0) for x in (-2, 14) for z in (-30, 18)],
+        "scatter": [("rubble", 3, 11, (0.8, 1.0), 4.0), ("sack_pile", 4, 12, (1.0, 1.0), 2.5)],
+    },
+    # The warehouse yard (Episode 5, §8.5): an orchard road with two tight bends under lantern wires,
+    # ending at the 'akeed's warehouse door.
+    "warehouse": {
+        "name_key": "arena.warehouse.name",
+        "theme": "orchard",
+        "roads": [[(-70, -30), (-70, 20), (-40, 20), (-40, -14), (-6, -14), (-6, 14), (20, 14), (20, -24), (44, -24), (44, 12)]],
+        "bounds": (-80, -36, 66, 32),
+        "party": (58, -28),
+        "modules": [
+            ("gate_rival", -70, -35, 0), ("warehouse_door", 44, 17, 0), ("warehouse_block", 44, 30, 0),
+            ("lantern_wire_span", -6, -14, 45), ("lantern_wire_span", 20, 14, -45),
+            ("sack_pile", 34, 18, 30), ("sack_pile", 54, 18, 300), ("oil_jar_cluster", 30, 24, 0),
+            ("oil_jar_cluster", 58, 22, 90), ("well", -56, -6, 0), ("ladder", -28, 4, 10),
+        ]
+        + [("orchard_wall_low", -76 + i * 8.2, 31, 180) for i in range(9)]
+        + [("orchard_wall_low", -40 + i * 8.2, -35, 0) for i in range(6)],
+        "scatter": [("olive_tree", 16, 55, (0.6, 0.75), 6.5), ("sack_pile", 3, 56, (1.0, 1.0), 2.5)],
+    },
+}

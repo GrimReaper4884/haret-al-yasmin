@@ -14,13 +14,14 @@ scene.display.shading.light = "STUDIO"
 scene.display.shading.color_type = "TEXTURE"
 scene.render.resolution_x, scene.render.resolution_y = 1600, 800
 b = bpy.data.objects["Bounds"]
-# the road as a visible tube
-path = bpy.data.objects["Path"]
-path.data.bevel_depth = 1.6
-path.data.bevel_resolution = 2
+# every road as a visible tube
 mat = bpy.data.materials.new("road")
 mat.diffuse_color = (0.55, 0.45, 0.32, 1)
-path.data.materials.append(mat)
+for o in scene.objects:
+    if o.type == "CURVE" and o.name.startswith("Path"):
+        o.data.bevel_depth = 1.6
+        o.data.bevel_resolution = 2
+        o.data.materials.append(mat)
 bmat = bpy.data.materials.new("ground")
 bmat.diffuse_color = (0.80, 0.72, 0.55, 1)
 b.data.materials.append(bmat)
