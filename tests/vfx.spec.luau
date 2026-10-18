@@ -37,6 +37,29 @@ return function(t)
 			t.eq(b.live, 0, "never negative")
 		end)
 
+		t.it("play information uses the reserve and skips the frame cap; decoration never touches it", function()
+			local b = VfxBudget.new(10, 2, 4)
+			t.eq(VfxBudget.take(b), true)
+			t.eq(VfxBudget.take(b), true)
+			t.eq(VfxBudget.take(b), false, "frame cap for decoration")
+			t.eq(VfxBudget.takeInfo(b), true, "information ignores the frame cap")
+			VfxBudget.newFrame(b)
+			t.eq(VfxBudget.take(b), true)
+			t.eq(VfxBudget.take(b), true)
+			VfxBudget.newFrame(b)
+			t.eq(b.live, 5)
+			t.eq(VfxBudget.take(b), true, "6th live part: decoration stops at maxLive - reserve")
+			t.eq(VfxBudget.take(b), false)
+			t.eq(VfxBudget.allow(b, 5), 0, "allow() respects the reserve")
+			for _ = 1, 4 do
+				t.eq(VfxBudget.takeInfo(b), true, "the reserve is there for information")
+			end
+			t.eq(VfxBudget.takeInfo(b), false, "never past maxLive")
+			t.eq(b.live, 10)
+			local plain = VfxBudget.new(3, 3)
+			t.eq(plain.reserve, 0, "no reserve unless asked")
+		end)
+
 		t.it("allow() shrinks a multi-part effect to what fits", function()
 			local b = VfxBudget.new(10, 5)
 			t.eq(VfxBudget.allow(b, 6), 5, "frame cap")
@@ -370,6 +393,8 @@ return function(t)
 			-- Worst case at once: every ring slot, a whole telegraph (+ its landing ring), a reveal and a summon.
 			local worst = S.aura.max + S.shield.max + S.telegraph.maxDashes + 1 + 1 + 1
 			t.truthy(worst <= Vfx.MAX_LIVE / 2, "story parts leave half the pool for hits and deaths")
+			local info = S.aura.max + S.shield.max + S.telegraph.maxDashes + 1
+			t.truthy(Vfx.INFO_RESERVE >= info - 1 and Vfx.INFO_RESERVE <= Vfx.MAX_LIVE / 2, "the reserve covers rings and a telegraph, and leaves decoration most of the pool")
 			t.truthy(S.telegraph.maxDashes + 1 <= Vfx.MAX_PER_FRAME + 1, "a telegraph is drawn in about one frame")
 			t.truthy(S.aura.transparency >= 0.6 and S.shield.transparency >= 0.6, "rings stay subtle")
 			t.truthy(S.reveal.life <= 1.5 and S.summon.life <= 1.5, "flashes are short")

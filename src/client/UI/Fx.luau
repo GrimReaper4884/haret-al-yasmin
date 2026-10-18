@@ -48,7 +48,7 @@ local folder: Folder? = nil
 local free: { BasePart } = {}
 -- Caps (Config/Vfx): MAX_LIVE parts out at once, MAX_PER_FRAME handed out per frame. An effect that
 -- misses the budget is skipped, never queued, so a busy wave degrades instead of stalling.
-local budget = VfxBudget.new(Vfx.MAX_LIVE, Vfx.MAX_PER_FRAME)
+local budget = VfxBudget.new(Vfx.MAX_LIVE, Vfx.MAX_PER_FRAME, Vfx.INFO_RESERVE)
 RunService.Heartbeat:Connect(function()
 	VfxBudget.newFrame(budget)
 end)
@@ -76,8 +76,8 @@ local function fxFolder(): Folder
 end
 
 -- A pooled effect part (Block, Ball or Cylinder), or nil when the budget is spent.
-function Fx.part(shape: Enum.PartType?): BasePart?
-	if not VfxBudget.take(budget) then
+function Fx.part(shape: Enum.PartType?, info: boolean?): BasePart?
+	if not (if info then VfxBudget.takeInfo(budget) else VfxBudget.take(budget)) then
 		return nil
 	end
 	local p: BasePart? = nil
