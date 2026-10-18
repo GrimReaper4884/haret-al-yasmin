@@ -66,9 +66,21 @@ Use built-in Roblox materials only, so there are no texture uploads and no extra
 - Rarity colours: rare blue `#3A8FD6`, epic purple `#9B4FD1`, legendary gold `#E8B23A`,
   mythic red `#E0433A`, secret black. Legendary and above get a sweeping shine.
 - Accents in `copper` (currency) and `tile` (quests).
-- Minimum touch target of 48×48 px. Layouts are authored in offsets for a phone in landscape (~844×390),
-  and a single `UIScale` on the root ScreenGui adapts them (clamped to 0.8–1.5). Panels use Scale widths
-  with `UISizeConstraint` maxima. Respect `ScreenGui.ScreenInsets = CoreUISafeInsets`.
+- Touch HUD numbers (MOBILE_HUD_PLAN, final 2026-10-18; all in `src/shared/Config/Hud.luau`): every
+  button is at least **48×48** screen px on touch (`Theme.button` adds the floor), primary actions **56**
+  (Place, Upgrade, Create party, the rail), text ≥ 14 px and numbers ≥ 18 px. One `UIScale` on HaretHud,
+  set by `UI/Device` from `Logic/HudLayout`: safe-area height / 390, never below **1.0** on touch (0.9 on
+  desktop), at most 1.5, times the player's UI size (Small 0.85 · Normal 1 · Large 1.15 · Huge 1.3), then
+  clamped so seven hotbar slots still fit the width. Roblox's thumbstick (bottom-left 160×160) and jump
+  (measured button + 8 px) are reserved corners: nothing tappable goes there while they show, and they hide
+  under sheets, while aiming and in the watchtower view. Respect `ScreenGui.ScreenInsets = CoreUISafeInsets`.
+- Touch layout: phones get a lobby bottom bar (Play · Units · Summon · Diary · More, 64 px) and every
+  screen as a **sheet** (safe area minus 8 px, 48 px header, swipe down to close, content scrolls); tablets
+  and desktop keep the grid and centred panels. In a match: hotbar slots 72×88 on touch (68×84 desktop),
+  a thumb rail of View · Speed · Skip (56 px) above the jump button, the menu button top-right, the
+  defender panel as a bottom sheet on touch (side panel on desktop, `panelSide` overrides), Place / Cancel
+  in the reserved corners while aiming. Haptics (UIClick on presses, UINotification on a gate hit) follow
+  the Sound effects setting; a pressed button flips its shading on touch.
 - HUD placement: Roblox owns the top-left (menu, chat window) and top-right (player list). Coins and the
   language toggle sit top-centre, toasts below them, the errand tracker on the right edge at 45% height,
   dialogue bottom-centre, the shop centred.

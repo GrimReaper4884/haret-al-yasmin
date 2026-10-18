@@ -110,6 +110,8 @@ sections = [
     ("codes", "15. Codes, daily reward and reward labels", ["codes.", "daily.", "reward."]),
     ("lobby", "16. Lobby NPCs (tower-defense square)", ["npc.barber", "npc.qahwaji", "npc.natour", "dlg.barber", "dlg.qahwaji", "dlg.natour"]),
     ("signs", "17. World signs (3D text in the lane)", ["sign."]),
+    # Everything newer than the sections above (AFK room, settings, Play, story, events, touch HUD, ...).
+    ("other", "18. Other screens (AFK room, settings, Play, story, events, touch HUD)", [""]),
 ]
 # Most specific prefix wins, so "notify.lira_added" goes to Store, not Notifications.
 def section_of(key):

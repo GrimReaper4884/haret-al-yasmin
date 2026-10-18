@@ -825,3 +825,69 @@ What the captures show, beyond the probe:
   `KeyboardAndMouse`: harness keys flip the device signal, so touch-profile tests need a Studio-only override.
 - Bugs seen in passing (pre-existing, not in MH scope): an open dialogue stays on screen into the match;
   Al-Adashari's ultimate button reads the raw key `ult.adashari`.
+
+## MH after: the Part D matrix on the finished touch HUD (2026-10-18, MH-18)
+
+*Studio Play on the TEST place at b357075 (MH-00 … MH-17), Device Simulator in ActualResolution, landscape,
+`Workspace.DebugHudProfile` pinning the profile (the harness keys flip `PreferredInput`). Captures in
+`docs/captures/mh/after_*.jpg` beside the `before_*` ones; the probe is `tools/studio/hud_audit.luau`'s check
+(visible GuiButtons under 48 px, and buttons inside the bottom-left 160×160 or the measured jump button padded
+8 px, counted only while Roblox's touch controls show). The Studio log overlay was hidden. Episode 1 matches
+were started with the harness and ended by stopping Play or by leaving at wave 0 (nothing paid; the ledger
+tail shows no entry from these runs); result screens are client-only `MatchEnd` fires. The owner's settings
+were changed for single checks and put back (uiScale huge → default, language ar → en).*
+
+| Profile · preset (safe area · UIScale) | Screen | Probe (buttons · undersized · corner) | Capture |
+|---|---|---|---|
+| touch-phone · iPhone 17 Pro (750×324 · 1.000) | Lobby (bottom bar) | 7 · 0 · 0 | `after_iphone17pro_lobby` |
+| | Play list / Episode 3 detail | 14 · 0 · 0 / 13 · 0 · 0 | `_play_list`, `_play_detail` |
+| | Units | 26 · 0 · 0 | `_units` |
+| | Lane Diary | 22 · 0 · 0 | `_pass` |
+| | More sheet / Settings | — / 19 · 0 · 0 | `_more`, `_settings` |
+| | Codes with the keyboard up (box 74–122, keyboard top 143) | header kept | `_codes_keyboard` (reported keyboard drawn as an overlay) |
+| | Match walk view (hotbar, rail) | 9 · 0 · 0 | `_match_walk` |
+| | Aiming: Place / Cancel in the corners, controls hidden | 11 · 0 · 0 | `_aim_place_pair` |
+| | Watchtower view with the rail column | 9 · 0 · 0 | `_overhead_rail` |
+| | Defender sheet (640 px max width) | 9 · 0 · 0 | `_defender_sheet` |
+| | Result | 7 · 0 · 0 | `_result` |
+| | Arabic: lobby, Settings, defender sheet | read right to left | `_ar_lobby`, `_ar_settings`, `_ar_defender_sheet` |
+| touch-phone · 640×360 entry (640×282 · 1.000) | Lobby, Play list and detail, queue, walk view, defender sheet (MH-14 run on the same layout) | 7 · 0 · 0 lobby, 9 · 0 · 0 walk, 7 · 0 · 0 sheet | `mh14_640_*` |
+| | Settings | 17 · 0 · 0 | `after_640_settings` |
+| | Aiming | 11 · 0 · 0 | `after_640_aim_place_pair` |
+| | `uiScale = huge` match (the width clamp keeps 1.000; hotbar x 171–489 of 640, inside both corners) | 10 · 0 · 0 | `after_640_huge_match_hotbar` |
+| | `uiScale = huge` Settings scrolled to its last row (v1.0.0) | scrolls | `after_640_huge_settings_scrolled_to_end` |
+| | Codes with the keyboard up (header drops, box 18–66, keyboard top 120) | — | `mh15_640_codes_above_keyboard` |
+| touch-tablet · iPad 10th gen (1180×762 · 1.500) | Lobby (grid stays) | 13 · 0 · 0 | `after_ipad_lobby` |
+| | Play (three columns) | 25 · 0 · 0 | `after_ipad_play` |
+| | Defender sheet between the corners / watchtower view with hotbar | 9 · 0 · 0 / 9 · 0 · 0 | `after_ipad_defender_sheet`, `after_ipad_overhead_hotbar` |
+| desktop · Studio window (1636×584 · 1.497) | Lobby, Play | 25 · 0 (lobby) | `after_desktop_lobby`, `after_desktop_play` |
+| | Match: key 1 aims (hint, cancel X), Q clears, V toggles the watchtower | unchanged | `after_desktop_aim_key1`, `after_desktop_overhead_keyV` |
+
+Before → after on the phones: iPhone lobby 4 undersized · 9 corner → 0 · 0; iPhone match 12 · 6 → 0 · 0;
+640 lobby 13 · 9 → 0 · 0; 640 match 12 · 9 → 0 · 0.
+
+D3 behaviour checks (phone preset):
+
+1. Aim without quick place: a tap only moves the ghost; one Place tap committed once (cash 5600 → 4700, one
+   defender, slot 1/1); Cancel cleared (MH-07/08 runs covered slot re-tap and long press).
+2. Quick place on: covered in the MH-08 run (`mh08_*`); not repeated here.
+3. Selection: tapping a defender in the watchtower view opens the sheet; its close clears it; no tap-through
+   to the rail button under the close (the camera stayed overhead).
+4. Rail: Skip shows only before the wave (the owner's Auto-skip setting votes at once, which is why Skip often
+   reads "voted"), View toggles; the rail hides while a tall sheet leaves no room for a 56 px button.
+5. Lobby bar: Play, Units, Diary, More open their sheets; the bar hides under the queue panel and returns on
+   Leave (`mh14_640_queue_*`).
+6. Device switch mid-Play (phone → desktop with the simulator stopped): the layout re-flowed without errors;
+   the Codes panel became a centred panel (the fix in D-083 removed a 1 px scroll bar found there).
+7. `uiScale = huge` at 640×360: see the table.
+8. Console: `[HaretAlYasmin] server ready` in every run; no errors or warnings from our code (Roblox's own
+   UIBlox warnings and the old `rbxassetid://203785492` asset-type line are not ours).
+
+Simulator limits found in this run (moved to the owner's device run):
+
+- **Top-row taps.** On the iPhone 17 Pro preset a synthetic tap in the top ~64 px of the safe area reaches
+  `UserInputService` but no GuiButton (the sheet close X at y 18–66, probably also the lobby "+" and the match
+  menu button). Taps lower down work, the same buttons work on the 640 and iPad presets with path-based taps,
+  and the Galaxy S23 run used the top row, so this looks like the simulator's notch handling. The device run
+  must confirm the sheet X, "+" and the match menu on a real iPhone.
+- The keyboard is reported, never drawn; pinch, haptics and a real keyboard need the device.

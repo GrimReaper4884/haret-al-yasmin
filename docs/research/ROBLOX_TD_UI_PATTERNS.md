@@ -71,6 +71,25 @@ before copying exact positions.*
   short fades, never for the HUD.
 - Closed menus: `ScreenGui.Enabled = false` / `Visible = false`; update HUD text on change, not per frame.
 
+## What Haret Al-Yasmin shipped (MOBILE_HUD_PLAN, 2026-10-18)
+
+The numbers above were the starting point; the finished touch HUD settled on these (all in
+`Config/Hud.luau`, evidence in `docs/TEST_REPORT_SLICE.md`, "MH after"):
+
+- Touch targets **48** px minimum (not 44: the hotbar, rail and sheets have room), primary **56**, lobby
+  bar **64**; text 14 / numbers 18.
+- `UIScale` = safe height / 390 with a **1.0 floor on touch** (an 0.84 scale made 53 px cells 45 px on a
+  640×360 phone), 0.9 on desktop, 1.5 cap, player presets 0.85–1.3, clamped so 7 hotbar slots fit.
+- `TouchControlsEnabled` is not switched off for the whole match: the lobby and walk view keep the
+  thumbstick and jump, which are treated as reserved corners (160×160 left, measured jump + 8 px right);
+  they hide only under sheets, while aiming, and in the watchtower view.
+- Placement on touch is aim-then-confirm (drag with a 70 px finger offset, Place / Cancel in the corners);
+  tap-to-place is a setting. Telemetry (`place_outcome_*` by device) measures misplacements.
+- Phones show every menu as a sheet and the defender panel as a bottom sheet; the Play panel splits into a
+  list step and a detail step.
+- The Device Simulator reports the on-screen keyboard but does not draw it, cannot pinch, and on the
+  iPhone 17 Pro preset drops synthetic taps in the top ~64 px of the safe area: check those on a device.
+
 ## Sources
 
 create.roblox.com/docs: ui/on-screen-containers, tutorials/use-case-tutorials/ui/create-hud-meters,

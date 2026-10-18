@@ -620,7 +620,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
   - **Accept:** no errors on desktop (HapticEffect is inert there); the setting toggles them; one line
     in DECISIONS.
 
-- [x] **MH-17 Device and placement telemetry** · deps: MH-07
+- [x] b357075 **MH-17 Device and placement telemetry** · deps: MH-07
   - **Goal:** B8 numbers.
   - **Change:** `Net.Events.ClientProfile` (C→S, `RemoteGuard.wrap`: enum of `desktop | touch-phone |
     touch-tablet`, first call per session accepted, later calls dropped and logged), server stores it on
@@ -633,7 +633,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
     run reports 0 state changes; the owner is told which Creator Hub charts to read (STOP-list item, no
     click needed now).
 
-- [ ] **MH-18 Verification matrix, docs, owner device run** · deps: MH-04 … MH-17 · STOP
+- [~] **MH-18 Verification matrix, docs, owner device run** · deps: MH-04 … MH-17 · STOP
   - **Goal:** The whole Part D matrix green, the docs true, the owner's real phone run.
   - **Do:** run Part D in full; `after_*` captures next to the `before_*` ones in
     `docs/TEST_REPORT_SLICE.md`; `ART_BIBLE.md` §6 and `research/ROBLOX_TD_UI_PATTERNS.md` updated with
