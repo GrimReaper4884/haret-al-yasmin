@@ -22,8 +22,8 @@ Icons.images = {
 	ui_codes = { id = 129498450392895 },
 	ui_afk = { id = 73616718849628 },
 	ui_settings = { id = 126392875254573 },
-	ui_music = { id = 0 },
-	ui_music_off = { id = 0 },
+	ui_music = { id = 116428282368219 },
+	ui_music_off = { id = 118573460190934 },
 	ui_shop = { id = 91398480705014 },
 
 	-- Match actions and defender roles (PV-C04)
@@ -53,23 +53,74 @@ Icons.images = {
 	ticket = { id = 113199979121197 },
 	lira_stack = { id = 93445954754265 },
 	qirsh_pouch = { id = 82947809330849 },
-	coins = { id = 0 },
+	coins = { id = 119537322287101 },
+
+	-- Difficulty ribbons (PV-C06), by TD.DIFFICULTY_ORDER key
+	diff_normal = { id = 84262010666406 },
+	diff_hard = { id = 126028072998521 },
+	diff_nightmare = { id = 119398560683518 },
 
 	-- Enemy health-bar markers (PV-A04)
-	shield = { id = 0 },
-	eye = { id = 0 },
+	shield = { id = 80380706316361 },
+	eye = { id = 114096895353976 },
 
-	-- Wardrobe items (Items[].icon; tinted by Items[].iconColor while primitive)
-	basket = { id = 0 },
-	tarboosh = { id = 0 },
-	cap = { id = 0 },
-	hatta = { id = 0 },
-	vest = { id = 0 },
-	robe = { id = 0 },
-	trousers = { id = 0 },
-	sash = { id = 0 },
-	cloak = { id = 0 },
+	-- Wardrobe items (Items[].icon): pale painted pieces recoloured by Items[].iconColor
+	basket = { id = 132706876306427 },
+	tarboosh = { id = 82053544513629, recolor = true },
+	cap = { id = 127837332858213, recolor = true },
+	hatta = { id = 138327566793330, recolor = true },
+	vest = { id = 112033811845338, recolor = true },
+	robe = { id = 139723744408376, recolor = true },
+	trousers = { id = 133519985927952, recolor = true },
+	sash = { id = 134035941908098, recolor = true },
+	cloak = { id = 70826930774461, recolor = true },
 } :: { [string]: Icon }
+
+-- Mode banners (PV-C06): Config/Modes key → 512×288 painted banner (Play panel cards, result screen).
+Icons.modes = {
+	ep1 = { id = 98610965293669 },
+	ep2 = { id = 70959689012811 },
+	ep3 = { id = 93089947848285 },
+	ev_olive = { id = 119222103493381 },
+	infinite = { id = 108697701587533 },
+} :: { [string]: Icon }
+
+-- Character portraits (PV-C05): unit or enemy id → 128² head-and-shoulders image, rendered from the
+-- figure by tools/icons/portrait_render.luau + portraits.py. `model` is the CharacterLooks model it was
+-- rendered from ("" = the primitive figure); UnitCard shows it only while that still matches, so a newly
+-- imported model falls back to its live viewport until the portrait is re-rendered.
+export type Portrait = { id: number, model: string }
+Icons.portraits = {
+	-- Defenders
+	walad = { id = 137506377504428, model = "LaneBoy" },
+	natour = { id = 93314435304199, model = "AbuFares" },
+	farran = { id = 136063904564645, model = "AbuBashir" },
+	saqqa = { id = 97661723924568, model = "Fawzia" },
+	hallaq = { id = 78904073713642, model = "Issam" },
+	khayyat = { id = 93177367730945, model = "AbuGhalib" },
+	qahwaji = { id = 133770563324554, model = "AbuHatem" },
+	qabaday = { id = 138798466079086, model = "Motaz" },
+	haddad = { id = 80513823020473, model = "AbuKhater" },
+	mukhtar = { id = 71493269450072, model = "AbuBadr" },
+	zaim = { id = 70842411073565, model = "AbuSaleh" },
+	pahlawan = { id = 139062433898050, model = "Strongman" },
+	umm_hara = { id = 95850884167044, model = "AbuIssam" },
+	arada = { id = 112960454245872, model = "Arada" },
+	zaim_akbar = { id = 139294337065178, model = "AbuShehab" },
+	qitt = { id = 110431322219183, model = "Cat" },
+	-- Attackers
+	gendarme = { id = 115451910060448, model = "Gendarme" },
+	thief = { id = 102539531902290, model = "Thief" },
+	bandit = { id = 110754698230332, model = "" },
+	thug = { id = 100673785539358, model = "" },
+	rider = { id = 113278610530097, model = "" },
+	sapper = { id = 126394558384791, model = "" },
+	spy = { id = 117876863565509, model = "Nims" },
+	sergeant = { id = 72473338937682, model = "" },
+	chief_thief = { id = 131496373841818, model = "Idaashari" },
+	rival_zaim = { id = 93232597039986, model = "AbuNar" },
+	colonel = { id = 92643285514202, model = "" },
+} :: { [string]: Portrait }
 
 -- Reward table key (SeasonPass, Daily, Events, Codes rewards) → icon name. `item` uses the item's
 -- own icon and `unit` the unit portrait (PV-C05); `matchCash` is match cash.

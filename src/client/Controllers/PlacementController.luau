@@ -414,11 +414,11 @@ local function renderTowerPanel()
 		for _, c in towerPortrait:GetChildren() do
 			c:Destroy()
 		end
-		local vp = UnitCard.preview(rec.unitId, { Size = UDim2.fromScale(1, 1), ZIndex = 5 }, false)
-		vp.BackgroundColor3 = rarityColor
-		vp.BackgroundTransparency = 0.2
-		Theme.border(vp, 2.5)
-		vp.Parent = towerPortrait
+		local face = UnitCard.portrait(rec.unitId, { Size = UDim2.fromScale(1, 1), ZIndex = 5 })
+		face.BackgroundColor3 = rarityColor
+		face.BackgroundTransparency = 0.2
+		Theme.border(face, 2.5)
+		face.Parent = towerPortrait
 	end
 	towerTitle.Text = t(def.nameKey)
 	towerTitle.TextColor3 = rarityColor:Lerp(Color3.new(1, 1, 1), 0.35)
@@ -642,9 +642,9 @@ local function slotFor(i: number, unitId: string): Slot
 	local frame = Create("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = color, BorderSizePixel = 0, ZIndex = 3, Parent = holder }, { Create("UICorner", { CornerRadius = UDim.new(0, 12) }) })
 	Create("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.new(0.45, 0.45, 0.45)), Parent = frame })
 	local stroke = Theme.border(frame, 2.5)
-	local vp = UnitCard.preview(unitId, { Position = UDim2.fromOffset(3, 3), Size = UDim2.new(1, -6, 1, -24), ZIndex = 4 }, false)
-	vp.BackgroundTransparency = 1
-	vp.Parent = frame
+	local face = UnitCard.portrait(unitId, { Position = UDim2.fromOffset(3, 3), Size = UDim2.new(1, -6, 1, -24), ZIndex = 4 })
+	face.BackgroundTransparency = 1
+	face.Parent = frame
 	local dim = Create("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.5, BorderSizePixel = 0, Visible = false, ZIndex = 6, Parent = frame }, { Create("UICorner", { CornerRadius = UDim.new(0, 12) }) })
 	-- Cost: the cash icon and the number, centred along the card's bottom edge.
 	local costRow = Create("Frame", { Name = "Cost", BackgroundTransparency = 1, AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -2), Size = UDim2.new(1, 0, 0, 20), ZIndex = 7, Parent = frame })
@@ -664,9 +664,9 @@ local function slotFor(i: number, unitId: string): Slot
 		Juice.shine(frame, 3)
 	end
 	if def.ability then
-		-- Gold badge: this defender has an ultimate.
-		local badge = Create("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(1, -9, 0, 9), Size = UDim2.fromOffset(18, 18), Rotation = 45, BackgroundColor3 = Theme.lira, BorderSizePixel = 0, ZIndex = 7, Parent = frame }, { Create("UICorner", { CornerRadius = UDim.new(0, 4) }) })
-		Theme.border(badge, 2)
+		-- Gold gem (PV-C04): this defender has an ultimate.
+		local badge = Create("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(1, -9, 0, 9), Size = UDim2.fromOffset(24, 24), BackgroundTransparency = 1, ZIndex = 7, Parent = frame })
+		Icons.draw("gem", badge, "#" .. Theme.lira:ToHex())
 	end
 	if UserInputService.KeyboardEnabled and i <= 9 then
 		-- Number key that picks this slot (bottom-left; the count is top-left, the ultimate badge top-right)

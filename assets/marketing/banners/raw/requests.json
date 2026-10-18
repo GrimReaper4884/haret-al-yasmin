@@ -1,0 +1,98 @@
+[
+ {
+  "index": 0,
+  "name": "ep1",
+  "aspect_ratio": "16:9",
+  "prompt": "a narrow walled old Levantine city lane at night with a barred wooden lane gate, hanging lanterns and jasmine vines; small thief silhouettes with sacks creep along the rooftops under a big moon. Hand-painted cartoon game key art in a cosy chibi toy style, warm limestone walls with black-and-white striped ablaq stone arches, warm lantern light against a deep indigo night sky, soft painterly shading, cinematic wide shot, figures are small dark silhouettes only, no text, no letters, no logos, no watermark"
+ },
+ {
+  "index": 1,
+  "name": "ep1",
+  "aspect_ratio": "16:9",
+  "prompt": "a narrow walled old Levantine city lane at night with a barred wooden lane gate, hanging lanterns and jasmine vines; small thief silhouettes with sacks creep along the rooftops under a big moon. Hand-painted cartoon game key art in a cosy chibi toy style, warm limestone walls with black-and-white striped ablaq stone arches, warm lantern light against a deep indigo night sky, soft painterly shading, cinematic wide shot, figures are small dark silhouettes only, no text, no letters, no logos, no watermark"
+ },
+ {
+  "index": 2,
+  "name": "ep2",
+  "aspect_ratio": "16:9",
+  "prompt": "two old Levantine lanes facing each other across a stone archway at night; the far lane glows with red torchlight and a row of burly thug silhouettes with sticks stands under the arch, the near lane has warm lanterns and a barred gate. Hand-painted cartoon game key art in a cosy chibi toy style, warm limestone walls with black-and-white striped ablaq stone arches, warm lantern light against a deep indigo night sky, soft painterly shading, cinematic wide shot, figures are small dark silhouettes only, no text, no letters, no logos, no watermark"
+ },
+ {
+  "index": 3,
+  "name": "ep2",
+  "aspect_ratio": "16:9",
+  "prompt": "two old Levantine lanes facing each other across a stone archway at night; the far lane glows with red torchlight and a row of burly thug silhouettes with sticks stands under the arch, the near lane has warm lanterns and a barred gate. Hand-painted cartoon game key art in a cosy chibi toy style, warm limestone walls with black-and-white striped ablaq stone arches, warm lantern light against a deep indigo night sky, soft painterly shading, cinematic wide shot, figures are small dark silhouettes only, no text, no letters, no logos, no watermark"
+ },
+ {
+  "index": 4,
+  "name": "ep3",
+  "aspect_ratio": "16:9",
+  "prompt": "the gate of an old Levantine walled quarter at night seen from the inside, beyond the wall a long column of marching soldier silhouettes with lanterns and plain banners approaches, smoke drifting, sandbags and barrels stacked at the gate. Hand-painted cartoon game key art in a cosy chibi toy style, warm limestone walls with black-and-white striped ablaq stone arches, warm lantern light against a deep indigo night sky, soft painterly shading, cinematic wide shot, figures are small dark silhouettes only, no text, no letters, no logos, no watermark"
+ },
+ {
+  "index": 5,
+  "name": "ep3",
+  "aspect_ratio": "16:9",
+  "prompt": "the gate of an old Levantine walled quarter at night seen from the inside, beyond the wall a long column of marching soldier silhouettes with lanterns and plain banners approaches, smoke drifting, sandbags and barrels stacked at the gate. Hand-painted cartoon game key art in a cosy chibi toy style, warm limestone walls with black-and-white striped ablaq stone arches, warm lantern light against a deep indigo night sky, soft painterly shading, cinematic wide shot, figures are small dark silhouettes only, no text, no letters, no logos, no watermark"
+ },
+ {
+  "index": 6,
+  "name": "ev_olive",
+  "aspect_ratio": "16:9",
+  "prompt": "an olive orchard just outside old Levantine city walls at dusk, wicker baskets full of olives under the trees, silhouettes of mounted riders coming over the hill with torches. Hand-painted cartoon game key art in a cosy chibi toy style, warm limestone walls with black-and-white striped ablaq stone arches, warm lantern light against a deep indigo night sky, soft painterly shading, cinematic wide shot, figures are small dark silhouettes only, no text, no letters, no logos, no watermark"
+ },
+ {
+  "index": 7,
+  "name": "ev_olive",
+  "aspect_ratio": "16:9",
+  "prompt": "an olive orchard just outside old Levantine city walls at dusk, wicker baskets full of olives under the trees, silhouettes of mounted riders coming over the hill with torches. Hand-painted cartoon game key art in a cosy chibi toy style, warm limestone walls with black-and-white striped ablaq stone arches, warm lantern light against a deep indigo night sky, soft painterly shading, cinematic wide shot, figures are small dark silhouettes only, no text, no letters, no logos, no watermark"
+ },
+ {
+  "index": 8,
+  "name": "infinite",
+  "aspect_ratio": "16:9",
+  "prompt": "an old Levantine lane gate under a huge glowing moon, an endless winding line of shadowy silhouettes climbing the road toward the gate, lanterns flickering on the walls, stars. Hand-painted cartoon game key art in a cosy chibi toy style, warm limestone walls with black-and-white striped ablaq stone arches, warm lantern light against a deep indigo night sky, soft painterly shading, cinematic wide shot, figures are small dark silhouettes only, no text, no letters, no logos, no watermark"
+ },
+ {
+  "index": 9,
+  "name": "infinite",
+  "aspect_ratio": "16:9",
+  "prompt": "an old Levantine lane gate under a huge glowing moon, an endless winding line of shadowy silhouettes climbing the road toward the gate, lanterns flickering on the walls, stars. Hand-painted cartoon game key art in a cosy chibi toy style, warm limestone walls with black-and-white striped ablaq stone arches, warm lantern light against a deep indigo night sky, soft painterly shading, cinematic wide shot, figures are small dark silhouettes only, no text, no letters, no logos, no watermark"
+ },
+ {
+  "index": 10,
+  "name": "diff_normal",
+  "aspect_ratio": "1:1",
+  "prompt": "a small green cloth ribbon pennant with a single white jasmine flower. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 11,
+  "name": "diff_normal",
+  "aspect_ratio": "1:1",
+  "prompt": "a small green cloth ribbon pennant with a single white jasmine flower. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 12,
+  "name": "diff_hard",
+  "aspect_ratio": "1:1",
+  "prompt": "a small copper-red cloth ribbon pennant with a little brass lantern. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 13,
+  "name": "diff_hard",
+  "aspect_ratio": "1:1",
+  "prompt": "a small copper-red cloth ribbon pennant with a little brass lantern. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 14,
+  "name": "diff_nightmare",
+  "aspect_ratio": "1:1",
+  "prompt": "a small deep indigo cloth ribbon pennant with a blood-red full moon. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ },
+ {
+  "index": 15,
+  "name": "diff_nightmare",
+  "aspect_ratio": "1:1",
+  "prompt": "a small deep indigo cloth ribbon pennant with a blood-red full moon. flat hand-painted cartoon game icon, thick dark outline, soft shading, warm Levantine palette, centered, isolated on plain white background, no text, no watermark"
+ }
+]

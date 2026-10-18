@@ -12,6 +12,11 @@ return function(t)
 	local Codes = t.config("Codes")
 	local Events = t.config("Events")
 	local Products = t.config("Products")
+	local Units = t.config("Units")
+	local Enemies = t.config("Enemies")
+	local Modes = t.config("Modes")
+	local TD = t.config("TD")
+	local Looks = t.config("CharacterLooks")
 
 	-- Drawer names in the client module (`\tname = function(`), read as text: it needs Roblox globals.
 	local drawers = {}
@@ -110,6 +115,34 @@ return function(t)
 				else
 					known(icon, "Products." .. key)
 				end
+			end
+		end)
+
+		t.it("every mode has a banner and every difficulty a ribbon", function()
+			for id in Modes do
+				local def = Icons.modes[id]
+				t.truthy(def and def.id > 0, "Modes." .. id .. " has no banner in Icons.modes")
+			end
+			for _, d in TD.DIFFICULTY_ORDER do
+				known("diff_" .. d, "difficulty")
+			end
+		end)
+
+		t.it("every defender and attacker has a portrait of its current model", function()
+			local function check(id)
+				local p = Icons.portraits[id]
+				t.truthy(p and p.id > 0, id .. " has no portrait in Icons.portraits")
+				local look = Looks[id]
+				local model = if look and look.model then look.model else ""
+				-- A stale portrait would only fall back to the live viewport, but say so: re-render it
+				-- (tools/icons/portrait_render.luau + portraits.py) or set its id to 0.
+				t.eq(p.model, model, id .. " portrait was rendered from '" .. p.model .. "', the model is now '" .. model .. "'")
+			end
+			for id in Units do
+				check(id)
+			end
+			for id in Enemies do
+				check(id)
 			end
 		end)
 	end)
