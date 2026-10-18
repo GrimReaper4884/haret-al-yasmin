@@ -447,7 +447,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
     clear of Roblox's controls; pressing Leave in the sheet needs the confirm; `LeaveMatch` fires once;
     keyboard V still toggles the view; DECISIONS row B9-4.
 
-- [x] **MH-05 Hotbar, cash pill and toast band** · deps: MH-04
+- [x] 62812f9 **MH-05 Hotbar, cash pill and toast band** · deps: MH-04
   - **Goal:** The hotbar sized by `HudLayout.hotbar`, never under a corner.
   - **Change:** `PlacementController.build`/`slotFor`: slot size from the layout; bar width = slots;
     bar position from the layout (centred in the free band); slot prices still through `myCost`
@@ -460,7 +460,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
 
 ### Milestone 2: placement
 
-- [ ] **MH-06 Shared validity and the placement state machine** · deps: MH-05
+- [x] **MH-06 Shared validity and the placement state machine** · deps: MH-05
   - **Goal:** One client-side validity source and a tested state machine before any input work.
   - **Change:** `PlacementController.valid` calls `TdTowers.canPlace(state, owner, unitId, def, x, z,
     rules, trait)` (`Logic/TdTowers.luau:46`) with a client-side view of the match instead of its own

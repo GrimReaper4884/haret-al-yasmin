@@ -146,6 +146,7 @@ local specs = {
 	require("./version.spec"),
 	require("./upgradeview.spec"),
 	require("./hud.spec"),
+	require("./placeflow.spec"),
 }
 for _, spec in specs do
 	spec(t)

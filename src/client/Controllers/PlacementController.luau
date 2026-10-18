@@ -22,6 +22,8 @@ local Traits = require(Shared.Config.Traits)
 local Path = require(Shared.Logic.Path)
 local UnitLogic = require(Shared.Logic.UnitLogic)
 local UpgradeView = require(Shared.Logic.UpgradeView)
+local TdTowers = require(Shared.Logic.TdTowers)
+local PlaceFlow = require(Shared.Logic.PlaceFlow)
 local RigBuilder = require(Shared.Util.RigBuilder)
 local BoneAnim = require(Shared.Anim.BoneAnim)
 local UI = script.Parent.Parent.UI
@@ -77,6 +79,7 @@ local ghostLight: Highlight? = nil
 
 local pickSlot: (unitId: string, price: number, frame: Frame) -> ()
 local placing: string? = nil
+local flow: PlaceFlow.Flow = PlaceFlow.new() -- idle → aiming → committing (Logic/PlaceFlow, B3)
 local ghost: Model? = nil
 local ring: Part? = nil
 local selected: number? = nil
@@ -319,24 +322,33 @@ local function groundHit(screen: Vector2): (Vector3?, Instance?)
 	return nil, nil
 end
 
+-- Is (x, z) in arena space a legal spot for the unit being placed? The shared TdTowers.canPlace on
+-- a client-shaped view of the match (my cash, the phase, every road, the placed defenders) with the
+-- rules MatchService uses, so the preview gives the server's own reasons (MH-06). A preview only:
+-- the server re-checks everything.
 local function valid(x: number, z: number): (boolean, string?)
 	local info = MatchController.info()
-	if not info or not arenaPath then
+	local unitId = placing
+	if not info or not arenaPath or not unitId then
 		return false, nil
 	end
-	local b = Arenas[info.arenaId].bounds
-	if x < b[1] or x > b[3] or z < b[2] or z > b[4] then
-		return false, "out_of_bounds"
+	local s = MatchController.state()
+	local me = Players.LocalPlayer.Name
+	local list = {}
+	for _, rec in towers do
+		table.insert(list, { owner = rec.owner, unitId = rec.unitId, x = rec.x, z = rec.z })
 	end
-	if Path.distanceToAll(arenaPaths, x, z) < TD.PATH_HALF_WIDTH then
-		return false, "on_path"
-	end
-	for _, t in towers do
-		if (t.x - x) ^ 2 + (t.z - z) ^ 2 < TD.TOWER_SPACING * TD.TOWER_SPACING then
-			return false, "too_close"
-		end
-	end
-	return true, nil
+	local view = { players = { [me] = { cash = if s then s.cash else 0 } }, phase = if s then s.phase else "prep", paths = arenaPaths, towers = list }
+	local rules: TdTowers.Rules = {
+		bounds = Arenas[info.arenaId].bounds,
+		pathHalfWidth = TD.PATH_HALF_WIDTH,
+		spacing = TD.TOWER_SPACING,
+		towerCap = TD.TOWER_CAP,
+		sellRefund = TD.SELL_REFUND,
+		starBonus = TD.STAR_BONUS,
+		traitCaps = Traits.caps,
+	}
+	return TdTowers.canPlace(view, me, unitId, (Units :: any)[unitId], x, z, rules, myTrait(unitId))
 end
 
 -- The defender drawn under a screen point: distance from the point to each defender's on-screen
@@ -377,7 +389,11 @@ local function updateGhost()
 		return
 	end
 	local l = origin:PointToObjectSpace(hit)
-	local ok = valid(l.X, l.Z)
+	local ok, why = valid(l.X, l.Z)
+	if flow.mode == "aiming" then
+		-- What the Place button would commit (B3): the spot under the ghost and why it is not legal.
+		flow = { mode = "aiming", unitId = flow.unitId, check = { valid = ok, reason = why, x = hit.X, z = hit.Z } }
+	end
 	local pos = Vector3.new(hit.X, 0, hit.Z)
 	ghost:PivotTo(CFrame.new(pos))
 	if ring then
@@ -605,59 +621,97 @@ local function selectTower(id: number)
 	renderTowerPanel()
 end
 
-local function tap(screen: Vector2)
+-- What a tap or click at `screen` lands on: the ground spot and whether the unit being placed may
+-- stand there, and the defender under the point (while idle also the one whose model was hit, or the
+-- nearest within 3.5 studs of the ground point: fingers are fat, models are thin).
+local function checkAt(screen: Vector2): PlaceFlow.Check
+	local hit, inst = groundHit(screen)
+	local c: PlaceFlow.Check = { valid = false, tower = towerAtScreen(screen) }
+	if hit and origin then
+		local l = origin:PointToObjectSpace(hit)
+		c.x, c.z = hit.X, hit.Z
+		if placing then
+			c.valid, c.reason = valid(l.X, l.Z)
+		end
+		if not placing and not c.tower then
+			local model = inst and inst:FindFirstAncestorOfClass("Model")
+			local direct = model and model:GetAttribute("TowerId")
+			if type(direct) == "number" and towers[direct] then
+				c.tower = direct
+			else
+				local bestD = 3.5 * 3.5
+				for tid, rec in towers do
+					local d = (rec.x - l.X) ^ 2 + (rec.z - l.Z) ^ 2
+					if d < bestD then
+						c.tower, bestD = tid, d
+					end
+				end
+			end
+		end
+	end
+	return c
+end
+
+-- PlaceTower, then tells the flow how it went (one call at a time, as `call`).
+local function placeCall(unitId: string, x: number, z: number, done: (boolean, string?) -> ())
+	if busy then
+		done(false, nil)
+		return
+	end
+	busy = true
+	task.spawn(function()
+		local ok, r = pcall(function()
+			return Net.func(Net.Functions.PlaceTower):InvokeServer(unitId, x, z)
+		end)
+		busy = false
+		if ok and type(r) == "table" then
+			done(r.ok == true, if r.ok then nil else r.err)
+		else
+			done(false, nil)
+		end
+	end)
+end
+
+-- Advances Logic/PlaceFlow by one event and performs its actions.
+local function run(event: PlaceFlow.Event, flags: PlaceFlow.Flags)
+	if flow.mode == "aiming" and placing == nil then
+		flow = PlaceFlow.new() -- the ghost was cleared elsewhere (match end, Q, a panel)
+	end
+	local nextFlow, actions = PlaceFlow.step(flow, event, flags)
+	flow = nextFlow
+	for _, a in actions do
+		if a.kind == "showGhost" and a.unitId then
+			PlacementController.begin(a.unitId)
+		elseif a.kind == "moveGhost" and typeof(a.screen) == "Vector2" then
+			lastScreen = a.screen
+			updateGhost()
+		elseif a.kind == "commit" and a.unitId and a.x and a.z then
+			placeCall(a.unitId, a.x, a.z, function(ok: boolean, reason: string?)
+				run({ type = "done", ok = ok, reason = if reason and ERR_KEYS[reason] then reason else nil }, flags)
+			end)
+		elseif a.kind == "clear" then
+			clearGhost()
+		elseif a.kind == "select" then
+			if a.id and towers[a.id] then
+				selectTower(a.id)
+			else
+				clearSelection()
+			end
+		elseif a.kind == "toast" and a.reason and ERR_KEYS[a.reason] then
+			ToastController.show(ERR_KEYS[a.reason])
+		end
+	end
+end
+
+-- Mouse clicks commit at once; touch keeps tap-to-place until MH-07 brings the Place button.
+local MOUSE_FLAGS: PlaceFlow.Flags = { touch = false, quickPlace = false }
+local TOUCH_FLAGS: PlaceFlow.Flags = { touch = true, quickPlace = true }
+
+local function tap(screen: Vector2, touch: boolean?)
 	if not origin then
 		return
 	end
-	local onTower = towerAtScreen(screen)
-	if placing then
-		local hit = groundHit(screen)
-		local ok, why = false, nil
-		if hit then
-			local l = origin:PointToObjectSpace(hit)
-			ok, why = valid(l.X, l.Z)
-			if ok then
-				call(Net.Functions.PlaceTower, placing, hit.X, hit.Z)
-				clearGhost()
-				return
-			end
-		end
-		if onTower then
-			-- Clicking one of the defenders while placing: stop placing and open its panel.
-			clearGhost()
-			selectTower(onTower)
-		elseif why and ERR_KEYS[why] then
-			ToastController.show(ERR_KEYS[why])
-		end
-		return
-	end
-	if onTower then
-		selectTower(onTower)
-		return
-	end
-	-- Pick the defender nearest the tapped ground point (fingers are fat; models are thin).
-	local hit, inst = groundHit(screen)
-	local model = inst and inst:FindFirstAncestorOfClass("Model")
-	local direct = model and model:GetAttribute("TowerId")
-	if type(direct) == "number" and towers[direct] then
-		selectTower(direct)
-		return
-	end
-	local best, bestD = nil, 3.5 * 3.5
-	if hit then
-		local l = origin:PointToObjectSpace(hit)
-		for tid, rec in towers do
-			local d = (rec.x - l.X) ^ 2 + (rec.z - l.Z) ^ 2
-			if d < bestD then
-				best, bestD = tid, d
-			end
-		end
-	end
-	if best then
-		selectTower(best)
-	else
-		clearSelection()
-	end
+	run({ type = "tap", screen = screen, check = checkAt(screen) }, if touch then TOUCH_FLAGS else MOUSE_FLAGS)
 end
 
 -- Re-tints slots for the current cash and how many of each unit I have placed.
@@ -684,17 +738,14 @@ end
 -- A hotbar slot was clicked or its number key pressed: start (or stop) placing that unit.
 pickSlot = function(unitId: string, price: number, frame: Frame)
 	local state = MatchController.state()
-	if state and state.cash < price then
+	local affordable = not (state and state.cash < price)
+	if not affordable and placing ~= unitId then
 		Juice.shake(frame)
-		ToastController.show("match.err.cannot_afford")
-		return
 	end
-	if placing == unitId then
-		clearGhost()
-	else
+	if affordable and placing ~= unitId then
 		clearSelection()
-		PlacementController.begin(unitId)
 	end
+	run({ type = "pick", unitId = unitId, affordable = affordable }, MOUSE_FLAGS)
 end
 
 -- 1-9 (and the keypad) pick hotbar slots; Q cancels placing / closes the defender panel.
@@ -1097,7 +1148,7 @@ function PlacementController.start()
 		end
 		lastScreen = positions[1]
 		updateGhost()
-		tap(positions[1])
+		tap(positions[1], true)
 	end)
 	RunService.RenderStepped:Connect(function()
 		if ghost then
