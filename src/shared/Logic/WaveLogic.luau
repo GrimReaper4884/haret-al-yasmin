@@ -6,7 +6,7 @@
 export type Spawn = { at: number, enemy: string, hpMul: number, speedMul: number, boss: boolean?, swarm: boolean?, path: number? }
 export type Wave = { spawns: { Spawn }, boss: string?, count: number }
 
-type PoolEntry = { enemy: string, from: number, to: number?, base: number, perWave: number, gap: number, delay: number? }
+type PoolEntry = { enemy: string, from: number, to: number?, base: number, perWave: number, gap: number, delay: number?, path: number?, hp: number? }
 
 local WaveLogic = {}
 
@@ -31,7 +31,7 @@ local function groupSpawns(out: { Spawn }, entry: PoolEntry, wave: number, hpMul
 	local count = math.clamp(math.floor(entry.base + entry.perWave * (wave - entry.from) + 0.5), 1, if swarm then SWARM_PER_GROUP else MAX_PER_GROUP)
 	local delay = entry.delay or 0
 	for k = 0, count - 1 do
-		table.insert(out, { at = delay + k * entry.gap, enemy = entry.enemy, hpMul = hpMul, speedMul = speedMul, swarm = if swarm then true else nil })
+		table.insert(out, { at = delay + k * entry.gap, enemy = entry.enemy, hpMul = hpMul * (entry.hp or 1), speedMul = speedMul, swarm = if swarm then true else nil, path = entry.path })
 	end
 end
 
@@ -71,7 +71,7 @@ local function finish(spawns: { Spawn }, boss: string?, bossHpMul: number, speed
 	return { spawns = spawns, boss = boss, count = #spawns }
 end
 
-export type Difficulty = { hp: number, speed: number, growth: number?, endless: number?, boss: number? }
+export type Difficulty = { hp: number, speed: number, growth: number?, endless: number?, boss: number?, order: number? }
 
 -- Party-size scaling: hp = HP multiplier of every regular enemy, boss = the boss's (it meets
 -- every defender on the road, so it scales less), cash = share of the start cash and wave bonus
@@ -108,7 +108,13 @@ function WaveLogic.story(episode: any, wave: number, difficulty: Difficulty, par
 	for _, entry in episode.pool do
 		groupSpawns(spawns, entry, wave, hpMul, speedMul, enemies)
 	end
-	return finish(spawns, episode.bosses[wave], base * (difficulty.boss or 1) * (if party then party.boss else 1), speedMul, episode.bossRoad)
+	-- An episode may grow one boss wave's HP (Waves bossHp: a factor, or one per difficulty in TD order).
+	local f = episode.bossHp and episode.bossHp[wave] or 1
+	if type(f) == "table" then
+		f = f[difficulty.order or 1] or 1
+	end
+	local bossMul = base * f * (difficulty.boss or 1) * (if party then party.boss else 1)
+	return finish(spawns, episode.bosses[wave], bossMul, speedMul, episode.bossRoad)
 end
 
 -- Endless wave. The curve is already quadratic, so difficulty uses its own (milder) growth

@@ -205,6 +205,34 @@ boss ~6× further from Normal than the step between two loadouts, so no single b
 myth12up+beads the Nightmare answer without also handing Normal to Rare/Epic teams. Lateef's window is narrow
 (4,750–4,925 HP keeps all three Episode 6 targets): retune him with the harness, never by feel.
 
+### Episodes 7–9 (2026-10-18, S1-S09, D-066)
+
+Same loadouts and bot. Episode 7 is the police-post road (one road); Episodes 8 and 9 the twin gates, where
+spawns alternate between both roads (`Modes.twinRoads`) and the one-armed guard stands as an ally (Episode 8
+from wave 41, after he comes as the thief on wave 40; Episode 9 from wave 1, taking the first 20 gate damage).
+Every cell meets the STORY_PLAN §5.3 target and no lower tier wins it (asserted in `tests/td.spec.luau`).
+
+| Mode | Diff. | re6 | re4up | re6up | re10up | leg6 | leg10up | leg10up+sig | myth12up | myth12up+beads | whale | whale2 |
+|------|-------|------|------|------|------|------|------|------|------|------|------|------|
+| ep7 | normal | lost w10 | lost w12 | lost w31 | lost w35 | lost w12 | lost w50 | lost w50 | WIN 80/100 | WIN 83/100 | WIN 100/100 | WIN 100/100 |
+| ep7 | hard | lost w8 | lost w10 | lost w9 | lost w10 | lost w10 | lost w10 | lost w10 | lost w8 | WIN 10/60 | WIN 56/60 | WIN 58/60 |
+| ep7 | nightmare | lost w7 | lost w8 | lost w7 | lost w7 | lost w7 | lost w7 | lost w7 | lost w7 | lost w7 | lost w50 | WIN 35/35 |
+| ep8 | normal | lost w12 | lost w15 | lost w15 | lost w15 | lost w13 | lost w55 | lost w55 | lost w55 | WIN 84/100 | WIN 100/100 | WIN 100/100 |
+| ep8 | hard | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w55 | lost w55 | WIN 56/60 |
+| ep8 | nightmare | lost w5 | lost w5 | lost w5 | lost w5 | lost w5 | lost w5 | lost w5 | lost w6 | lost w7 | lost w55 | WIN 31/35 |
+| ep9 | normal | lost w13 | lost w14 | lost w15 | lost w15 | lost w14 | lost w30 | lost w30 | lost w30 | WIN 100/100 | WIN 100/100 | WIN 100/100 |
+| ep9 | hard | lost w10 | lost w10 | lost w12 | lost w12 | lost w11 | lost w13 | lost w13 | lost w13 | lost w15 | lost w15 | WIN 60/60 |
+| ep9 | nightmare | lost w9 | lost w8 | lost w9 | lost w9 | lost w9 | lost w10 | lost w10 | lost w10 | lost w11 | lost w15 | WIN 35/35 |
+
+Reading it: in this harness a maxed bot kills every regular enemy late, so the ladder is set by bosses
+(`Waves.bossHp`, a factor per boss wave, optionally one per difficulty): Episode 7's commandant is the
+finale's damage check (×2.5 Normal, ×1.8 Hard, ×1.6 Nightmare); Episode 8 softens Fakhr at wave 15 (×0.5)
+and tunes the enraged 'akeed so that only beads beat him on Normal (×1.25, a narrow window) and whale2 just
+holds on Nightmare (×0.44 wins 31/35, ×0.45 loses: the plan's coin flip); Episode 9 pins its bosses to the
+long road (`bossRoad = 2`), sends Fakhr and the commandant down the other one as escorts at 0.3 HP
+(`Waves` pool `path`, `hp`), and makes Lateef at wave 30 the Normal wall (×1). The ally does not decide
+Episode 9 Nightmare in the harness (whale2 wins without him too).
+
 ### Party scaling (2026-10-16)
 
 Every player in a party gets the full start cash and wave bonus and builds their own defence (≤ 20 towers

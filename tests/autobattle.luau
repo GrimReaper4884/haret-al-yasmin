@@ -506,6 +506,10 @@ function AutoBattle.play(modeId: string, difficulty: string, policyId: any, opts
 			if e.type == "waveStart" then
 				cur = { wave = e.wave, count = e.count, boss = e.boss, leaked = 0, gateLost = 0, bossLeaked = false, leakedBy = {} }
 				guard = 0
+				-- Scripted beats (the ally of Episodes 8 and 9), as MatchService runs them.
+				if episode and episode.script then
+					TdTowers.runScript(state, episode.script, e.wave, Units, rules, arena.allySpot)
+				end
 			elseif e.type == "spawn" then
 				kinds[e.id] = e.enemyId
 			end

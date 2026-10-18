@@ -85,6 +85,41 @@ local Modes: { [string]: ModeDef } = {
 		portal = { -19, 12 },
 		portalYaw = -90,
 	},
+	ep7 = {
+		kind = "story",
+		episode = "ep7",
+		arena = "post_road",
+		nameKey = "mode.ep7.name",
+		descKey = "mode.ep7.desc",
+		order = 8,
+		requires = "ep6",
+		portal = { -19, 16 },
+		portalYaw = -90,
+	},
+	ep8 = {
+		kind = "story",
+		episode = "ep8",
+		arena = "twin_gates",
+		twinRoads = true, -- both gates spawn (S1-M05)
+		nameKey = "mode.ep8.name",
+		descKey = "mode.ep8.desc",
+		order = 9,
+		requires = "ep7",
+		portal = { -19, 20 },
+		portalYaw = -90,
+	},
+	ep9 = {
+		kind = "story",
+		episode = "ep9",
+		arena = "twin_gates",
+		twinRoads = true,
+		nameKey = "mode.ep9.name",
+		descKey = "mode.ep9.desc",
+		order = 10,
+		requires = "ep8",
+		portal = { -19, 24 },
+		portalYaw = -90,
+	},
 	-- Event: the olive harvest raid (Config/Events.olive_harvest). Normal only.
 	ev_olive = {
 		kind = "event",
@@ -92,7 +127,7 @@ local Modes: { [string]: ModeDef } = {
 		arena = "olive_press", -- the Blender-kit map (S1-M03, D-055); was the generic orchard
 		nameKey = "mode.ev_olive.name",
 		descKey = "mode.ev_olive.desc",
-		order = 10,
+		order = 12,
 		waves = 15,
 		rewards = { lira = 60, qirsh = 120, xp = 100 },
 		rewardKey = "event.olive_harvest.rewards",
@@ -104,7 +139,7 @@ local Modes: { [string]: ModeDef } = {
 		arena = "siege",
 		nameKey = "mode.infinite.name",
 		descKey = "mode.infinite.desc",
-		order = 9, -- after the story episodes
+		order = 11, -- after the story episodes
 		requires = "ep1",
 		portal = { 19, -8 },
 		portalYaw = 90,

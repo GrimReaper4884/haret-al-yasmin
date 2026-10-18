@@ -286,6 +286,8 @@ with level-7 signatures), **myth12up+beads** (beads at 2 of 3 slots), **whale2**
 
 Achieved (S1-S04, D-057): ep4 leg10up / leg10up / whale; ep5 leg10up / leg10up / whale (Fawza helps, isn't required: D-058);
 ep6 leg10up+sig with two lanterns / myth12up (coin flip) → myth12up+beads / whale2. Table in `TOWER_DEFENSE.md` §5.
+Achieved (S1-S09, D-066): ep7 myth12up / myth12up+beads / whale2; ep8 myth12up+beads / whale2 / whale2 (31/35, knife edge);
+ep9 myth12up+beads / whale2 / whale2 (the ally is not decisive in the harness). Every §5.3 cell for Episodes 7–9 is met.
 
 Rules for tuning: every cell one tier harder than the one above it; **no episode is won by the tier below
 its Normal target on Normal** (asserted); bosses stay gate-breakers (gate damage 40/60/80/100/120 for the new
@@ -827,9 +829,9 @@ are used by S1-C01 (fallback drawers if absent, as always).
 ## 13. Checklist (tick with the commit hash)
 
 - [x] S1-N01 1eb2504 · [x] S1-N02 f86d874
-- [x] S1-S01 4472de1 · [x] S1-S02 663db30 (+ 4eddbf7) · [x] S1-S03 2f1bc1e · [x] S1-S04 5703dfa (+ fb5f6fe) · [x] S1-S05 74b5873 · [x] S1-S06 1352b05 · [x] S1-S07 712104f · [x] S1-S08 da22b7d · [ ] S1-S09 · [x] S1-S10 83fd17a · [x] S1-S11 112114e · [~] S1-S12 3a76001 (S1-S12a done; S1-S12b Cat migration held for the owner) · [ ] S1-S13
+- [x] S1-S01 4472de1 · [x] S1-S02 663db30 (+ 4eddbf7) · [x] S1-S03 2f1bc1e · [x] S1-S04 5703dfa (+ fb5f6fe) · [x] S1-S05 74b5873 · [x] S1-S06 1352b05 · [x] S1-S07 712104f · [x] S1-S08 da22b7d · [x] S1-S09 de71afb · [x] S1-S10 83fd17a · [x] S1-S11 112114e · [~] S1-S12 3a76001 (S1-S12a done; S1-S12b Cat migration held for the owner) · [ ] S1-S13
 - [~] S1-A01 0707cdc (concepts done; owner reviews the sheet) · [~] S1-A02 13f7847 (imported and live; owner approves the sheet and register rows C-242..C-251) · [x] S1-A03 ba4abe8 · [~] S1-A04 eada757 (batch-2 concepts; owner reviews the sheet before meshing) · [~] S1-A05 ebdefbe (concept; owner approves before meshing) · [ ] S1-A06 · [ ] S1-A07 · [ ] S1-A08
-- [x] S1-M01 d267b4e · [x] S1-M02 1747ba5 · [x] S1-M03 288362e (+ 02f622a) · [x] S1-M04 9c3ae11 (+ fb5f6fe) · [ ] S1-M05 · [ ] S1-M06
+- [x] S1-M01 d267b4e · [x] S1-M02 1747ba5 · [x] S1-M03 288362e (+ 02f622a) · [x] S1-M04 9c3ae11 (+ fb5f6fe) · [x] S1-M05 1e18094 (Studio captures in de71afb) · [ ] S1-M06
 - [x] S1-C01 954ae60 (+ 901602e) · [x] S1-C02 61b2b80 (+ 6b1ba69) · [x] S1-C03 a938afb (+ 0c63e49) · [ ] S1-C04 · [ ] S1-C05 · [ ] S1-C06
 
 Definition of done for the whole update: a tester opens Play → Story and sees nine episodes with the Hakawati's

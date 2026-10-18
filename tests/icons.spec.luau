@@ -120,7 +120,7 @@ return function(t)
 
 		t.it("every mode has a banner and every difficulty a ribbon", function()
 			-- Episodes 4–6 (S1-S04) show the fallback card until their PV-C06 banners are painted.
-			local AWAITING_BANNER = { ep4 = true, ep5 = true, ep6 = true }
+			local AWAITING_BANNER = { ep4 = true, ep5 = true, ep6 = true, ep7 = true, ep8 = true, ep9 = true }
 			for id in Modes do
 				local def = Icons.modes[id]
 				if not AWAITING_BANNER[id] then
