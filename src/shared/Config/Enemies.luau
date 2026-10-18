@@ -21,6 +21,8 @@ export type EnemyDef = {
 	shield: { radius: number, reduce: number }?, -- enemies within radius (itself too) take (1 - reduce) damage; not stacking
 	burn: number?, -- burn stacks laid on the gate when it reaches it (TD.BURN_*)
 	disguised: boolean?, -- untargetable and splash-immune until a lantern lights it or a lit defender's single hit lands
+	summon: { enemy: string, count: number, every: number }?, -- boss: calls `count` escorts every `every` s until it dies
+	teleport: { atHp: number, fraction: number, telegraph: number }?, -- boss: once, at `atHp` of its HP, jumps `fraction` of the road after a `telegraph` s warning
 	visual: {
 		robe: string,
 		accent: string,
@@ -143,6 +145,15 @@ local Enemies: { [string]: EnemyDef } = {
 		disguised = true, -- walks as a neighbour until a lantern or a lit hit unmasks him
 		visual = { robe = "#D9C9A8", accent = "#8C8079", skin = "#D2A07A", hat = "tarboosh", hatColor = "#A4302A", weapon = "dagger" },
 	},
+	-- Abu Jawdan's escort (S1-S05): a gendarme in the corporal's colours, on the gendarme's mesh.
+	corporal_minion = {
+		nameKey = "enemy.corporal_minion.name",
+		hp = 40,
+		speed = 5.5,
+		reward = 14,
+		gateDamage = 1,
+		visual = { robe = "#2F3E6B", accent = "#C9A13B", skin = "#E0B894", hat = "kepi", hatColor = "#2F3E6B", weapon = "rifle" },
+	},
 	beggar = {
 		nameKey = "enemy.beggar.name",
 		hp = 90,
@@ -196,7 +207,7 @@ local Enemies: { [string]: EnemyDef } = {
 		visual = { robe = "#1F1B18", accent = "#C9A13B", skin = "#E0B894", hat = "kepi", hatColor = "#1F1B18", weapon = "sword", scale = 1.8 },
 	},
 
-	-- Season Story 1 bosses, batch 1 (STORY_PLAN §6.2, S1-S03). Summon and teleport come with S1-S05.
+	-- Season Story 1 bosses, batch 1 (STORY_PLAN §6.2, S1-S03; summon and teleport S1-S05).
 	corporal = {
 		nameKey = "enemy.corporal.name",
 		hp = 900,
@@ -215,6 +226,7 @@ local Enemies: { [string]: EnemyDef } = {
 		gateDamage = 80,
 		armor = 0.3,
 		boss = true,
+		summon = { enemy = "corporal_minion", count = 2, every = 15 }, -- his corporals, two at a time
 		visual = { robe = "#2F3E6B", accent = "#C9A13B", skin = "#E0B894", hat = "kepi", hatColor = "#A4302A", weapon = "stick", scale = 1.65 },
 	},
 	abu_shatour = {
@@ -236,6 +248,7 @@ local Enemies: { [string]: EnemyDef } = {
 		gateDamage = 90,
 		boss = true,
 		disguised = true, -- the "blind" beggar: only a lantern or a lit hit unmasks him
+		teleport = { atHp = 0.5, fraction = 0.2, telegraph = 2 }, -- at half HP he jumps a fifth of the road
 		visual = { robe = "#6E6A64", accent = "#2A211B", skin = "#B97F5A", hat = "scarf", hatColor = "#2A211B", weapon = "dagger", scale = 1.6 },
 	},
 }

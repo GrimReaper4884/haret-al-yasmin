@@ -34,6 +34,12 @@ export type Enemy = {
 	aura: { speed: number, radius: number }?, -- speeds up other enemies nearby (drummer)
 	shield: { radius: number, reduce: number }?, -- enemies nearby (itself too) take less damage (porter)
 	burn: number?, -- burn stacks it lays on the gate when it reaches it (torchbearer)
+	hpMul: number, -- the wave's HP multiplier it spawned with (summons inherit it)
+	summon: { enemy: string, count: number, every: number }?, -- calls escorts on a timer (Abu Jawdan)
+	summonAt: number, -- time of the next summon
+	teleport: { atHp: number, fraction: number, telegraph: number }?, -- one jump forward (Lateef)
+	teleportAt: number?, -- set when the jump is telegraphed; it lands at this time …
+	teleportTo: number?, -- … at this path distance
 	reward: number,
 	gateDamage: number,
 	boss: boolean,
@@ -155,42 +161,92 @@ function TdSim.skipCountdown(state: State)
 	end
 end
 
+-- Adds one live enemy at path distance `dist` (0 = the spawn) and emits its spawn event.
+-- `by`: the summoner's id for escorts (the client places them at the summoner).
+local function addEnemy(state: State, enemyId: string, hpMul: number, speedMul: number, dist: number, events: { Event }, by: number?): Enemy?
+	local def = state.cfg.enemies[enemyId]
+	if not def then
+		return nil
+	end
+	local id = state.nextId
+	state.nextId += 1
+	local hp = def.hp * hpMul
+	local e: Enemy = {
+		id = id,
+		enemyId = enemyId,
+		hp = hp,
+		maxHp = hp,
+		dist = dist,
+		speed = def.speed * speedMul,
+		slowMul = 1,
+		slowUntil = 0,
+		stunUntil = 0,
+		stunSince = 0,
+		stunImmuneUntil = 0,
+		armor = def.armor or 0,
+		stealth = def.stealth == true,
+		disguised = def.disguised == true,
+		baseSpeed = def.speed,
+		aura = def.aura,
+		shield = def.shield,
+		burn = def.burn,
+		hpMul = hpMul,
+		summon = def.summon,
+		summonAt = if def.summon then state.time + def.summon.every else 0,
+		teleport = def.teleport,
+		reward = def.reward,
+		gateDamage = def.gateDamage,
+		boss = def.boss == true,
+		alive = true,
+	}
+	table.insert(state.enemies, e)
+	table.insert(events, { type = "spawn", id = id, enemyId = enemyId, boss = def.boss == true, hp = hp, dist = if dist > 0 then dist else nil, by = by })
+	return e
+end
+
 local function spawnDue(state: State, events: { Event })
 	local q = state.queue
 	local offset = state.waveStartedAt
 	while state.queueIndex <= #q and q[state.queueIndex].at + offset <= state.time do
 		local s = q[state.queueIndex]
 		state.queueIndex += 1
-		local def = state.cfg.enemies[s.enemy]
-		if def then
-			local id = state.nextId
-			state.nextId += 1
-			local hp = def.hp * s.hpMul
-			table.insert(state.enemies, {
-				id = id,
-				enemyId = s.enemy,
-				hp = hp,
-				maxHp = hp,
-				dist = 0,
-				speed = def.speed * s.speedMul,
-				slowMul = 1,
-				slowUntil = 0,
-				stunUntil = 0,
-				stunSince = 0,
-				stunImmuneUntil = 0,
-				armor = def.armor or 0,
-				stealth = def.stealth == true,
-				disguised = def.disguised == true,
-				baseSpeed = def.speed,
-				aura = def.aura,
-				shield = def.shield,
-				burn = def.burn,
-				reward = def.reward,
-				gateDamage = def.gateDamage,
-				boss = def.boss == true,
-				alive = true,
-			})
-			table.insert(events, { type = "spawn", id = id, enemyId = s.enemy, boss = def.boss == true, hp = hp })
+		addEnemy(state, s.enemy, s.hpMul, s.speedMul, 0, events)
+	end
+end
+
+-- Boss behaviours (STORY_PLAN §10.1, S1-S05). Summoners call `count` escorts every `every` seconds
+-- at their own spot on the road (same wave HP and speed), until they die; the escorts belong to
+-- the wave, so it only ends once they are dealt with too. A teleporter, the first time its HP drops
+-- to `atHp`, telegraphs a jump of `fraction` of the road (event `telegraph`) and lands `telegraph`
+-- seconds later (event `teleport`), never past the last stud before the gate. Once per enemy.
+local function bossActs(state: State, events: { Event })
+	local length = state.path.length
+	for i = 1, #state.enemies do
+		local e = state.enemies[i]
+		if e.alive then
+			local sm = e.summon
+			if sm and state.time >= e.summonAt then
+				e.summonAt += sm.every
+				local speedMul = e.speed / e.baseSpeed
+				for k = 1, sm.count do
+					-- Escorts step out just behind him, spread a little so they don't stack.
+					addEnemy(state, sm.enemy, e.hpMul, speedMul, math.max(0, e.dist - k * 0.8), events, e.id)
+				end
+				table.insert(events, { type = "summon", id = e.id, enemy = sm.enemy, count = sm.count })
+			end
+			local tp = e.teleport
+			if tp then
+				if e.teleportAt == nil and e.hp <= tp.atHp * e.maxHp then
+					e.teleportAt = state.time + tp.telegraph
+					e.teleportTo = math.min(e.dist + tp.fraction * length, length - 1)
+					table.insert(events, { type = "telegraph", id = e.id, from = e.dist, to = e.teleportTo, at = e.teleportAt })
+				elseif e.teleportAt and e.teleportTo and state.time >= e.teleportAt then
+					-- He kept walking during the telegraph: never jump backwards.
+					e.dist = math.max(e.dist, e.teleportTo)
+					e.teleportTo = nil
+					table.insert(events, { type = "teleport", id = e.id, dist = e.dist })
+				end
+			end
 		end
 	end
 end
@@ -614,6 +670,7 @@ function TdSim.step(state: State, dt: number): { Event }
 	revealInLight(state, events)
 	gatherShields(state)
 	towersAct(state, events)
+	bossActs(state, events)
 	compact(state)
 	if state.gateHp <= 0 then
 		state.phase = "lost"

@@ -28,6 +28,7 @@ export type Look = {
 	model: string?, -- imported model name, if one has been approved
 	modelYaw: number?, -- degrees to turn an imported model that does not already face -Z (GLB imports do)
 	anims: { idle: number?, attack: number?, walk: number? }?, -- published animation asset ids
+	clips: string?, -- baked clip set (Anim/Clips/<id>) when it is not this id's own: a re-skin on another figure's mesh
 }
 
 local DARK = "#1F1B18"
@@ -257,6 +258,17 @@ local Looks: { [string]: Look } = {
 	abu_jawdan = { build = "stout", outfit = "uniform", beard = "none", moustache = "handlebar", hair = DARK },
 	abu_shatour = { build = "broad", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK },
 	lateef = { build = "slim", outfit = "abaya", beard = "stubble", moustache = "thin", hair = DARK, cloak = "#6E6A64" },
+	-- Abu Jawdan's escort (S1-S05): the gendarme's mesh and clips (no new mesh, STORY_PLAN §6.2).
+	corporal_minion = {
+		build = "slim",
+		outfit = "uniform",
+		beard = "none",
+		moustache = "thin",
+		hair = DARK,
+		model = "Gendarme",
+		clips = "gendarme",
+		anims = { walk = 127807283756558 },
+	},
 }
 
 return Looks

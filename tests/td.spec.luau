@@ -499,6 +499,116 @@ return function(t)
 		end)
 	end)
 
+	-- Boss behaviours, batch 1 (STORY_PLAN §10.1, S1-S05) on the real Config/Enemies: Abu Jawdan's
+	-- summons, Lateef's telegraphed teleport, Abu Shatour's burning torch.
+	t.describe("Boss behaviours (S1-S05)", function()
+		local straight = { { 0, 0 }, { 400, 0 } }
+		local function bossSim(list)
+			return TdSim.new(straight, { "p1" }, 100000, 1000, 2, 1, {
+				between = 2,
+				waveBonusBase = TD.WAVE_BONUS_BASE,
+				waveBonusPerWave = TD.WAVE_BONUS_PER_WAVE,
+				rewardMul = 1,
+				enemies = Enemies,
+				maxSpeedMul = WaveLogic.MAX_SPEED_MUL,
+				burnMax = TD.BURN_MAX_STACKS,
+				burnTick = TD.BURN_TICK,
+				burnDamage = TD.BURN_DAMAGE,
+				burnFor = TD.BURN_SECONDS,
+			}, function()
+				local spawns = {}
+				for _, id in list do
+					table.insert(spawns, { at = 0, enemy = id, hpMul = 2, speedMul = 1 })
+				end
+				return { spawns = spawns, count = #spawns }
+			end)
+		end
+		local function byId(state, enemyId)
+			local out = {}
+			for _, e in state.enemies do
+				if e.enemyId == enemyId and e.alive then
+					table.insert(out, e)
+				end
+			end
+			return out
+		end
+
+		t.it("Abu Jawdan calls two corporals every 15 s at his spot, with the wave's HP, until he falls", function()
+			local sm = Enemies.abu_jawdan.summon
+			t.eq(sm.enemy, "corporal_minion")
+			local s = bossSim({ "abu_jawdan" })
+			run(s, 1.05)
+			t.eq(#byId(s, "corporal_minion"), 0)
+			local ev = run(s, sm.every)
+			t.eq(count(ev, "summon"), 1)
+			local escorts = byId(s, "corporal_minion")
+			t.eq(#escorts, sm.count)
+			local boss = byId(s, "abu_jawdan")[1]
+			for _, c in escorts do
+				t.truthy(c.dist <= boss.dist and c.dist >= boss.dist - sm.count, "steps out right behind him")
+				t.eq(c.maxHp, Enemies.corporal_minion.hp * 2, "inherits the wave HP multiplier")
+			end
+			run(s, sm.every)
+			t.eq(#byId(s, "corporal_minion"), 2 * sm.count, "again 15 s later")
+			-- He falls: no more corporals, and the wave waits for the escorts still walking.
+			boss.hp = 0
+			boss.alive = false
+			ev = run(s, sm.every * 2)
+			t.eq(count(ev, "summon"), 0)
+			t.eq(s.phase, "wave", "escorts count toward the wave")
+		end)
+
+		t.it("Lateef telegraphs once at half HP, jumps a fifth of the road 2 s later, never past the gate", function()
+			local tp = Enemies.lateef.teleport
+			local s = bossSim({ "lateef" })
+			run(s, 1.05)
+			local l = byId(s, "lateef")[1]
+			local ev = run(s, 1)
+			t.eq(count(ev, "telegraph"), 0, "not before half HP")
+			l.hp = l.maxHp * tp.atHp * 0.98
+			ev = run(s, TD.TICK)
+			t.eq(count(ev, "telegraph"), 1)
+			local tg
+			for _, e in ev do
+				if e.type == "telegraph" then
+					tg = e
+				end
+			end
+			t.truthy(math.abs(tg.to - (tg.from + tp.fraction * s.path.length)) < 1e-9, "a fifth of the road")
+			local before = l.dist
+			ev = run(s, tp.telegraph - TD.TICK * 2)
+			t.eq(count(ev, "teleport"), 0, "the warning lasts the telegraph")
+			ev = run(s, TD.TICK * 5) -- run() floors seconds/TICK, so cover the landing tick generously
+			t.eq(count(ev, "teleport"), 1)
+			t.truthy(l.dist >= tg.to and l.dist > before + 30, "landed ahead")
+			l.hp = l.maxHp * 0.1
+			ev = run(s, tp.telegraph * 2)
+			t.eq(count(ev, "telegraph") + count(ev, "teleport"), 0, "only once")
+			-- Close to the gate the jump stops a stud short of it.
+			local g = bossSim({ "lateef" })
+			run(g, 1.05)
+			local lg = byId(g, "lateef")[1]
+			lg.dist = g.path.length - 10
+			lg.hp = lg.maxHp * 0.3
+			ev = run(g, TD.TICK)
+			for _, e in ev do
+				if e.type == "telegraph" then
+					t.eq(e.to, g.path.length - 1, "never past the gate")
+				end
+			end
+		end)
+
+		t.it("Abu Shatour's torch lays three burn stacks on the gate", function()
+			t.eq(Enemies.abu_shatour.burn, 3)
+			local s = bossSim({ "abu_shatour", "abu_shatour" }) -- the second keeps the wave going
+			run(s, 1.05)
+			local b = byId(s, "abu_shatour")[1]
+			b.dist = s.path.length - 0.1
+			run(s, TD.TICK * 2)
+			t.eq(s.gateBurn.stacks, 3)
+		end)
+	end)
+
 	-- Traits v2 (docs/STORY_PLAN.md §7.2, S1-S02): 12 traits, a second slot at TD.TRAIT2_STARS
 	-- stars, the better trait per stat, and the D-041 caps.
 	t.describe("Traits v2 (S1-S02)", function()

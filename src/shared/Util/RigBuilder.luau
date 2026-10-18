@@ -407,7 +407,7 @@ function RigBuilder.build(parent: Instance?, name: string, v: Visual, id: string
 	local template = importedTemplate(look)
 	if template then
 		local m = buildImported(template, name, s, look)
-		m:SetAttribute("LookId", id)
+		m:SetAttribute("LookId", look.clips or id) -- a re-skin plays the clips of the figure it borrows
 		m.Parent = parent
 		return m
 	end

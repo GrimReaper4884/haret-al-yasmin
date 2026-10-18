@@ -30,8 +30,12 @@ end
 
 return function(t)
 	local Enemies = t.config("Enemies")
+	local Looks = t.config("CharacterLooks")
 
+	-- A re-skin (CharacterLooks[id].clips) plays the clips of the figure whose mesh it borrows.
 	local function clipsOf(id)
+		local look = Looks[id]
+		id = if look and look.clips then look.clips else id
 		local path = "src/shared/Anim/Clips/" .. id .. ".luau"
 		if not fs.isFile(path) then
 			return nil

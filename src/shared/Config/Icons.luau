@@ -110,6 +110,7 @@ Icons.portraits = {
 	qitt = { id = 110431322219183, model = "Cat" },
 	-- Attackers
 	gendarme = { id = 115451910060448, model = "Gendarme" },
+	corporal_minion = { id = 115451910060448, model = "Gendarme" }, -- same mesh as the gendarme (S1-S05)
 	thief = { id = 102539531902290, model = "Thief" },
 	bandit = { id = 120949810630957, model = "Bandit" },
 	thug = { id = 135478284152010, model = "Thug" },

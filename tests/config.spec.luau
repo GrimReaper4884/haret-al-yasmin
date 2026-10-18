@@ -240,6 +240,7 @@ return function(t)
 		local KNOWN = {
 			nameKey = true, hp = true, speed = true, reward = true, gateDamage = true, armor = true, stealth = true,
 			boss = true, swarm = true, aura = true, shield = true, burn = true, disguised = true, visual = true,
+			summon = true, teleport = true,
 		}
 		t.it("names resolve, numbers are sane, every flag is known and typed, every attacker has a look", function()
 			for id, def in Enemies do
@@ -266,6 +267,23 @@ return function(t)
 					t.truthy(num(def.burn, 1, TD.BURN_MAX_STACKS) and def.burn % 1 == 0, id .. " burn stacks")
 				end
 				t.truthy(not (def.swarm and def.boss), id .. " a boss is never a swarm")
+				if def.summon then
+					local child = Enemies[def.summon.enemy]
+					t.truthy(def.boss, id .. " only bosses summon")
+					t.truthy(child and not child.boss and not child.summon, id .. " summons a plain attacker")
+					t.truthy(num(def.summon.count, 1, 8) and def.summon.count % 1 == 0, id .. " summon count")
+					t.truthy(num(def.summon.every, 5, 120), id .. " summon interval")
+				end
+				if def.teleport then
+					t.truthy(def.boss, id .. " only bosses teleport")
+					t.truthy(num(def.teleport.atHp, 0.05, 0.95), id .. " teleport atHp")
+					t.truthy(num(def.teleport.fraction, 0.01, 0.5), id .. " teleport fraction")
+					t.truthy(num(def.teleport.telegraph, 0.5, 10), id .. " teleport telegraph")
+				end
+				local look = Looks[id]
+				if look and look.clips then
+					t.truthy(Enemies[look.clips] or Looks[look.clips], id .. " borrows the clips of a real figure")
+				end
 				t.truthy(Looks[id] ~= nil, id .. " has a CharacterLooks entry (the primitive fallback)")
 			end
 		end)
