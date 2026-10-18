@@ -108,8 +108,9 @@ function ArenaService.buildTower(slot: Slot, tower: any, ownerName: string): Mod
 	return model
 end
 
--- A gold "▲ +15%" badge over a defender a support is buffing (mul ≤ 1 removes it).
-function ArenaService.setBuff(model: Model, mul: number)
+-- A gold "▲ +15%" badge over a defender a support is buffing (mul ≤ 1 removes it); "▲ +45% ·2"
+-- when `count` supports add up (LP-A02).
+function ArenaService.setBuff(model: Model, mul: number, count: number?)
 	local badge = model:FindFirstChild("BuffBadge")
 	if mul <= 1 then
 		if badge then
@@ -145,7 +146,8 @@ function ArenaService.setBuff(model: Model, mul: number)
 		label.Parent = gui
 		gui.Parent = model
 	end
-	label.Text = string.format("▲ +%d%%", math.floor((mul - 1) * 100 + 0.5))
+	local pct = math.floor((mul - 1) * 100 + 0.5)
+	label.Text = if count and count > 1 then string.format("▲ +%d%% ·%d", pct, count) else string.format("▲ +%d%%", pct)
 end
 
 function ArenaService.findTower(slot: Slot, towerId: number): Model?

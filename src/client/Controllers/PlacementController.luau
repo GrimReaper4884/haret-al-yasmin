@@ -101,7 +101,7 @@ local ghost: Model? = nil
 local ring: Part? = nil
 local selected: number? = nil
 local selectedRing: Part? = nil
-local towers: { [number]: { unitId: string, level: number, owner: string, x: number, z: number, range: number, targeting: string, readyAt: number, buff: number?, revealedBy: string?, revealedByTower: number?, sabotaged: boolean?, path: string? } } = {}
+local towers: { [number]: { unitId: string, level: number, owner: string, x: number, z: number, range: number, targeting: string, readyAt: number, buff: number?, buffCount: number?, revealedBy: string?, revealedByTower: number?, sabotaged: boolean?, path: string? } } = {}
 local arenaPath: Path.Path? = nil
 local arenaPaths: { Path.Path } = {} -- every road: the ghost keeps clear of all of them (S1-S07)
 local origin: CFrame? = nil
@@ -181,6 +181,62 @@ local function clearGhost()
 	end
 end
 
+-- A selected support outlines the defenders inside its range in green (LP-A02): the ones its buff
+-- reaches. At most Vfx.TOWER.coverMax outlines (Roblox caps Highlights at 31; the hit flashes use some).
+local coverLights: { Highlight } = {}
+
+local function clearCover()
+	for _, hl in coverLights do
+		hl:Destroy()
+	end
+	table.clear(coverLights)
+end
+
+local function towerModel(towerId: number): Model?
+	local arenas = Workspace:FindFirstChild("Arenas")
+	if not arenas then
+		return nil
+	end
+	for _, arena in arenas:GetChildren() do
+		local folder = arena:FindFirstChild("Towers")
+		local m = folder and folder:FindFirstChild("Tower_" .. towerId)
+		if m and m:IsA("Model") then
+			return m
+		end
+	end
+	return nil
+end
+
+local function showCover(id: number, range: number)
+	local rec = towers[id]
+	if not rec then
+		return
+	end
+	local cfg = Vfx.TOWER
+	for otherId, other in towers do
+		if #coverLights >= cfg.coverMax then
+			break
+		end
+		local def = (Units :: any)[other.unitId]
+		local lv = def and def.levels[math.min(other.level, #def.levels)]
+		local dx, dz = other.x - rec.x, other.z - rec.z
+		if otherId ~= id and lv and lv.damage > 0 and dx * dx + dz * dz <= range * range then
+			local model = towerModel(otherId)
+			if model then
+				local hl = Instance.new("Highlight")
+				hl.Name = "BuffCover"
+				hl.FillTransparency = 1
+				hl.OutlineColor = Color3.fromHex(cfg.coverColor)
+				hl.OutlineTransparency = 0
+				hl.DepthMode = Enum.HighlightDepthMode.Occluded
+				hl.Adornee = model
+				hl.Parent = model
+				table.insert(coverLights, hl)
+			end
+		end
+	end
+end
+
 local function clearSelection()
 	selected = nil
 	sigPick = nil
@@ -190,6 +246,7 @@ local function clearSelection()
 		selectedRing:Destroy()
 		selectedRing = nil
 	end
+	clearCover()
 	syncSheet()
 end
 
@@ -554,7 +611,9 @@ local function renderTowerPanel()
 	if st.damage > 0 then
 		add(statLine(t("match.stat_damage", { n = "" }), round(st.damage * buff, 0), nx and round(nx.damage * buff, 0)), true)
 		if buff > 1 then
-			add('<font color="' .. GAIN .. '">' .. t("match.buffed", { n = round((buff - 1) * 100, 0) }) .. "</font>")
+			local n = round((buff - 1) * 100, 0)
+			local line = if rec.buffCount then t("match.buffed_many", { n = n, k = rec.buffCount }) else t("match.buffed", { n = n })
+			add('<font color="' .. GAIN .. '">' .. line .. "</font>")
 		end
 		add(statLine(t("match.stat_range", { n = "" }), round(st.range, 1), nx and round(nx.range, 1)), true)
 		add(statLine(t("match.stat_speed_label"), round(st.cooldown, 2), nx and round(nx.cooldown, 2), "s"), true)
@@ -686,6 +745,9 @@ local function selectTower(id: number)
 	local r = makeRing(st.range, Theme.colors.accent)
 	r.CFrame = origin * CFrame.new(rec.x, 0.1, rec.z) * CFrame.Angles(0, 0, math.rad(90))
 	selectedRing = r
+	if st.buff then
+		showCover(id, st.range)
+	end
 	renderTowerPanel()
 end
 
@@ -1124,6 +1186,7 @@ local function onEvents(events: { any })
 			end
 		elseif e.type == "towerBuff" and towers[e.id] then
 			towers[e.id].buff = if type(e.buff) == "number" and e.buff > 1 then e.buff else nil
+			towers[e.id].buffCount = if type(e.count) == "number" and e.count > 1 then e.count else nil
 			if selected == e.id then
 				renderTowerPanel()
 			end

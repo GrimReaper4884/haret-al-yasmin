@@ -519,14 +519,14 @@ DECISIONS; every name goes through §4.2's STOP first.
 
 ### Workstream A: fixes players feel today (do first)
 
-- [x] **LP-A01 Hide the health bar on death** · deps: none
+- [x] ff75c8d **LP-A01 Hide the health bar on death** · deps: none
   - Goal: §3.1.
   - Change: `EnemyRenderController.remove` disables the BillboardGui and the ring before `poof`; the position
     stream ignores ids with a pending death; `bossMeter` drains then hides.
   - Accept: a Studio capture of a dying thief (and a boss) with no bar; `execute_luau` (Client) finds no
     enabled `BillboardGui` under any model whose `deathClip` is playing; no console errors over 10 waves.
 
-- [ ] **LP-A02 Buffs stack with a cap, haste too, sabotage counts, visible counts** · deps: none
+- [x] **LP-A02 Buffs stack with a cap, haste too, sabotage counts, visible counts** · deps: none
   - Goal: §3.2.
   - Create: `TD.BUFF_CAP`, `TD.HASTE_FLOOR`; `TdSim.buffInfo`; the per-tower cache; specs listed in §3.2;
     TOWER_DEFENSE.md §buffs paragraph; DECISIONS TUNE row (D-008 cap row).
@@ -535,6 +535,8 @@ DECISIONS; every name goes through §4.2's STOP first.
   - Accept: specs green incl. "two Abu Bader stack to 2.3×, three cap at 2.4×, Abu Hissam + Abu Bader stack";
     `lune run tests/balance` ladder still passes (or a logged TUNE); Studio capture with two supports
     overlapping one fighter showing "+130 % · 2" and the highlight.
+  - Shipped (D-092): one player's copies of a unit count once and `BUFF_CAP` is 1.8, the highest value that
+    keeps the ladder; Abu Hissam + Abu Bader and two players' supports stack.
 
 - [ ] **LP-A03 Speed ladder 1–5 with the premium tier** · deps: none · STOP (Fast Mode keep/retire; strings)
   - Goal: §3.3.
@@ -640,7 +642,7 @@ Meshy budget: ≈ 330 credits (240 for four NPC looks + 90 for the merchant and 
 
 ## 9. Checklist (tick with the commit hash)
 
-- [x] LP-A01 · [ ] LP-A02 · [ ] LP-A03
+- [x] ff75c8d LP-A01 · [x] LP-A02 · [ ] LP-A03
 - [ ] LP-B01 · [ ] LP-B02 · [ ] LP-B03 · [ ] LP-B04 · [ ] LP-B05
 - [ ] LP-C00 · [ ] LP-C01 · [ ] LP-C02 · [ ] LP-C03 · [ ] LP-C04 · [ ] LP-C05 · [ ] LP-C06 · [ ] LP-C07
 - [ ] LP-D00 · [ ] LP-D01 · [ ] LP-D02 · [ ] LP-D03 · [ ] LP-D04 · [ ] LP-D05 · [ ] LP-D06 · [ ] LP-D07 · [ ] LP-D08 · [ ] LP-D09 · [ ] LP-D10 · [ ] LP-D11

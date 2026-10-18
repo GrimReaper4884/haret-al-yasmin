@@ -72,6 +72,10 @@ export type Tower = {
 	disabledUntil: number?, -- a saboteur's shot: no attacks until then
 	ally: boolean?, -- a story ally (TdTowers.addAlly): no owner, cannot be sold, upgraded or retargeted
 	path: string?, -- "a" | "b": its level-7 signature
+	-- What the supports around it give (LP-A02), cached by towersAct while `state.buffsDirty` is false:
+	buffMul: number?, -- damage multiplier, capped at cfg.buffCap
+	buffCount: number?, -- how many supports count
+	hasteMul: number?, -- attack cooldown multiplier, floored at cfg.hasteFloor
 }
 
 -- autoAbility: ultimates fire as soon as they are ready (nil counts as on).
@@ -123,8 +127,14 @@ export type State = {
 		burnTick: number?, -- seconds between burn damage ticks
 		burnDamage: number?, -- gate HP per stack per tick
 		burnFor: number?, -- seconds the stacks last after the newest one
+		buffCap: number?, -- stacked support buffs never multiply damage past this (nil = no cap; TD.BUFF_CAP)
+		hasteFloor: number?, -- stacked hastes never cut a cooldown below this factor (nil = no floor; TD.HASTE_FLOOR)
 	},
 	buildWave: (number) -> any, -- wave number → WaveLogic.Wave
+	-- The towers' buff cache (LP-A02) is stale: set by TdTowers (place, upgrade, sell, ally) and by
+	-- sabotage and wave end here; nil counts as stale.
+	buffsDirty: boolean?,
+	buffsUntil: number?, -- a sabotaged support wakes up then: the cache is stale from that time
 }
 
 local TdSim = {}
@@ -492,6 +502,7 @@ local function saboteursAct(state: State, events: { Event })
 			end
 			if best then
 				best.disabledUntil = state.time + sb.duration
+				state.buffsDirty = true
 				e.holdUntil = state.time + sb.duration
 				e.sabotageAt = state.time + sb.cooldown
 				table.insert(events, { type = "towerDisabled", tower = best.id, by = e.id, untilT = best.disabledUntil })
@@ -515,33 +526,85 @@ local function releaseSplits(state: State, events: { Event })
 	state.pendingSplits = {}
 end
 
--- Best haste (signature "Rally") from another defender whose haste radius covers the tower: its
--- attack cooldown is multiplied by this (1 = none). Not stacking.
+-- A sabotaged defender (a rifleman's shot) neither attacks nor helps others until it is back.
+local function active(state: State, s: Tower): boolean
+	return not (s.disabledUntil ~= nil and state.time < s.disabledUntil)
+end
+
+-- Haste (signature "Rally") from every other active defender whose haste radius covers the tower:
+-- its attack cooldown is multiplied by the product, floored at cfg.hasteFloor (1 = none; LP-A02).
 local function hasteFor(state: State, t: Tower): number
-	local best = 1
+	local mul = 1
 	for _, s in state.towers do
 		local h = s.stats.haste
-		if h and s ~= t and h.mul < best and dist2(s.x, s.z, t.x, t.z) <= h.radius * h.radius then
-			best = h.mul
+		if h and s ~= t and active(state, s) and dist2(s.x, s.z, t.x, t.z) <= h.radius * h.radius then
+			mul *= h.mul
 		end
 	end
-	return best
+	local floor = state.cfg.hasteFloor
+	return if floor then math.max(mul, floor) else mul
 end
 TdSim.hasteFor = hasteFor
 
--- Best buff multiplier from support/healer towers whose range covers the tower.
-local function buffFor(state: State, t: Tower): number
-	local best = 1
+export type BuffInfo = { mul: number, count: number, sources: { number } }
+
+-- Support buffs on a tower (LP-A02): every other active support/healer whose range covers it adds
+-- (buff − 1) and the total 1 + Σ is capped at cfg.buffCap. One player's copies of the same unit
+-- count once (the strongest): Abu Hissam with Abu Bader stack, two players' Abu Hissam stack, one
+-- player's two Abu Bader do not (D-092). `sources` are the counted towers' ids.
+function TdSim.buffInfo(state: State, t: Tower): BuffInfo
+	local top: { [string]: Tower } = {}
+	local order: { string } = {}
 	for _, s in state.towers do
 		local b = s.stats.buff
-		if b and s ~= t and dist2(s.x, s.z, t.x, t.z) <= s.stats.range * s.stats.range and b > best then
-			best = b
+		if b and b > 1 and s ~= t and active(state, s) and dist2(s.x, s.z, t.x, t.z) <= s.stats.range * s.stats.range then
+			local key = s.owner .. "/" .. s.unitId
+			local held = top[key]
+			if not held then
+				table.insert(order, key)
+				top[key] = s
+			elseif b > held.stats.buff then
+				top[key] = s
+			end
 		end
 	end
-	return best
+	local sum, sources = 0, {}
+	for _, key in order do
+		local s = top[key]
+		sum += s.stats.buff - 1
+		table.insert(sources, s.id)
+	end
+	local cap = state.cfg.buffCap
+	local mul = 1 + sum
+	return { mul = if cap then math.min(mul, cap) else mul, count = #sources, sources = sources }
 end
--- Exposed so the server can show each defender's live buff (players couldn't tell buffs applied).
+
+-- The capped damage multiplier alone. Exposed so the server can show each defender's live buff.
+local function buffFor(state: State, t: Tower): number
+	return TdSim.buffInfo(state, t).mul
+end
 TdSim.buffFor = buffFor
+
+-- Recomputes every tower's buff and haste once after a change instead of rescanning the supports on
+-- every attack (LP-A02 rule 5): same numbers as buffFor/hasteFor, O(towers²) per change.
+local function refreshBuffCache(state: State)
+	if state.buffsDirty == false and not (state.buffsUntil and state.time >= state.buffsUntil) then
+		return
+	end
+	local wake: number? = nil
+	for _, t in state.towers do
+		local info = TdSim.buffInfo(state, t)
+		t.buffMul = info.mul
+		t.buffCount = info.count
+		t.hasteMul = hasteFor(state, t)
+		local untilT = t.disabledUntil
+		if untilT and untilT > state.time and (t.stats.buff or t.stats.haste) then
+			wake = if wake then math.min(wake, untilT) else untilT
+		end
+	end
+	state.buffsDirty = false
+	state.buffsUntil = wake
+end
 
 -- The nearest other revealer (Natour's lantern, `revealsStealth`) whose range covers the tower, or
 -- nil. A covered defender can target stealth enemies even without hitsStealth of its own.
@@ -726,6 +789,7 @@ local function splashHits(state: State, t: Tower, cx: number, cz: number, radius
 end
 
 local function towersAct(state: State, events: { Event })
+	refreshBuffCache(state)
 	for _, t in state.towers do
 		local st = t.stats
 		local disabled = t.disabledUntil ~= nil and state.time < t.disabledUntil
@@ -733,8 +797,8 @@ local function towersAct(state: State, events: { Event })
 			local sees = seesStealth(state, t)
 			local target, tx, tz = pickTarget(state, t, sees)
 			if target then
-				t.nextAt = state.time + st.cooldown * hasteFor(state, t)
-				local damage = st.damage * buffFor(state, t)
+				t.nextAt = state.time + st.cooldown * (t.hasteMul or 1)
+				local damage = st.damage * (t.buffMul or 1)
 				local ability = false
 				local ab = st.ability
 				local owner = state.players[t.owner]
@@ -817,6 +881,7 @@ local function endWave(state: State, events: { Event })
 	for _, t in state.towers do
 		t.disabledUntil = nil -- a sabotaged defender is back for the next wave
 	end
+	state.buffsDirty = true
 	local bonus = math.floor(state.cfg.waveBonusBase + state.cfg.waveBonusPerWave * state.wave + 0.5)
 	for _, p in state.players do
 		p.cash += bonus

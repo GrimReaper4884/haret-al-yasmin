@@ -921,3 +921,18 @@ behind it). The one Episode 1 match was ended by stopping Play at wave 1 (nothin
 | Boss (`sergeant` via `HaretDebug spawn`): top meter fill / visible after its `death` at 0.05 · 0.20 · 0.30 · 0.45 · 0.60 s | 0.37 · 0.02 · 0.00 · 0.00 · 0.00 / shown, shown, shown, **hidden**, hidden; model present, 0 enabled billboards throughout | — |
 | Boss `chief_thief` falling | no bar over the figure, top meter gone, thieves behind still barred | `a01_death_boss.jpg` |
 | Console, waves 1–11 | no errors or warnings from our code (only the engine's `203785492` and UIBlox lines, LP-C00) | — |
+
+### LP-A02 stacked support buffs
+
+*Play Solo, Episode 1 Normal, loadout set with `HaretDebug grant` for the test and restored to the owner's
+(`adashari,arada,zaim_akbar,umm_hara,zaim,khayyat`) before Play stopped at wave 2/20 (nothing paid). Towers
+placed with `HaretDebug place`: Za'im Abu Faleh (18, 0), Abu Hissam (18, 10), Abu Bader (22, 6) and a second
+Abu Bader (18, −6), all level 1.*
+
+| Check | Result | Capture |
+|---|---|---|
+| Server badge on the za'im | `▲ +25% ·2` (1 + 0.10 + 0.15; the second Abu Bader of the same player counts once); supports have no badge | `docs/captures/lp/a02_support_selected_cover.jpg` |
+| Select Abu Bader (click on the figure) | 12-stud range ring (Size.Y 24); `BuffCover` Highlight on the za'im only (Abu Hissam and the other Abu Bader do no damage) | `a02_support_selected_cover.jpg` (green outline around the za'im) |
+| Select the za'im | panel line "Boosted +25% by 2 supports nearby"; damage 74 → 107 shown with the buff | `a02_fighter_panel_two_supports.jpg` |
+| `lune run tests/balance` | identical to the pre-change table; Episodes 1–3 frozen rows unchanged | — |
+| Console | no errors or warnings from our code | — |

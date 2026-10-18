@@ -468,6 +468,8 @@ function AutoBattle.play(modeId: string, difficulty: string, policyId: any, opts
 		rewardMul = diff.reward,
 		enemies = Enemies,
 		stunChainMax = TD.STUN_CHAIN_MAX,
+		buffCap = TD.BUFF_CAP,
+		hasteFloor = TD.HASTE_FLOOR,
 		stunImmunity = TD.STUN_IMMUNITY,
 		maxSpeedMul = WaveLogic.MAX_SPEED_MUL,
 		burnMax = TD.BURN_MAX_STACKS,

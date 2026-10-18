@@ -108,6 +108,7 @@ function TdTowers.place(state: any, owner: string, unitId: string, def: any, x: 
 	}
 	state.nextId += 1
 	table.insert(state.towers, tower)
+	state.buffsDirty = true -- supports around it change (TdSim buff cache, LP-A02)
 	return true, nil, tower
 end
 
@@ -174,6 +175,7 @@ function TdTowers.upgrade(state: any, owner: string, towerId: any, def: any, rul
 		t.level = nextLevel
 		t.path = path
 		t.stats = UnitLogic.stats(def, nextLevel, t.stars, t.trait, rules.starBonus, rules.traitCaps, path, t.bead)
+		state.buffsDirty = true
 		return true, nil, t
 	end
 	if path ~= nil then
@@ -188,6 +190,7 @@ function TdTowers.upgrade(state: any, owner: string, towerId: any, def: any, rul
 	t.invested += cost
 	t.level = nextLevel
 	t.stats = UnitLogic.stats(def, nextLevel, t.stars, t.trait, rules.starBonus, rules.traitCaps, nil, t.bead)
+	state.buffsDirty = true
 	return true, nil, t
 end
 
@@ -199,6 +202,7 @@ function TdTowers.sell(state: any, owner: string, towerId: any, rules: Rules): (
 	local refund = math.floor(t.invested * rules.sellRefund)
 	state.players[owner].cash += refund
 	table.remove(state.towers, i)
+	state.buffsDirty = true
 	return true, nil, refund
 end
 
@@ -229,6 +233,7 @@ function TdTowers.addAlly(state: any, unitId: string, def: any, level: number, x
 	}
 	state.nextId += 1
 	table.insert(state.towers, tower)
+	state.buffsDirty = true -- supports around it change (TdSim buff cache, LP-A02)
 	state.allyShield = (state.allyShield or 0) + (shield or 0)
 	return tower
 end

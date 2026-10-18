@@ -52,7 +52,7 @@ clearing N on Normal; Hard after Normal, Nightmare after Hard, per episode.
 | Armor | fraction of damage ignored (bandit 15 %, rider 20 %, sapper 35 %, bosses 20–40 %) |
 | Parties | up to 4; regular enemy HP ×1 / 1.65 / 2.3 / 3.0 and boss HP ×1 / 1.35 / 1.65 / 2.1 for 1–4 players (§5) |
 | Stuns | chain, but after 6 s of a chain an enemy ignores stuns for 3 s (it walks at least a third of the time) |
-| Support | Abu Badr and Abu Issam multiply the damage of defenders inside their range (best buff wins) |
+| Support | Abu Bader and Abu Hissam multiply the damage of defenders inside their range. **Buffs stack (LP-A02, D-092):** the multiplier is 1 + Σ(buff − 1) over every other support covering the defender, counting one player's copies of the same unit once (the strongest), capped at `TD.BUFF_CAP` = 1.8 (+80 %, never below one support's own buff). A sabotaged support gives nothing until it is back. Hastes (the 'akeed's Rally) multiply the cooldown, floored at `TD.HASTE_FLOOR` = 0.7. The sim caches each defender's total and recomputes it on place / upgrade / sell / ally / sabotage / wave end. The badge and the panel show the total and the count ("▲ +25% ·2"); selecting a support outlines the defenders it reaches |
 | Farm / repair | the coffee-house keeper pays cash per cleared wave; Abu Issam repairs the gate per wave |
 | Abilities | **shabriyeh** ('akeed ×6 / za'im ×10 / great za'im ×15 damage on one hit, every 12 / 9 / 7 s); **sweep** (strongman, 'arada: damage to everything in a radius) |
 | Speed | 1× / 2× free; 3× with the Fast Mode pass (host controls) |

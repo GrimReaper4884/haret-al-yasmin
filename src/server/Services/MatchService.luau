@@ -64,6 +64,7 @@ export type Match = {
 	outcome: any?,
 	eventBuffer: { any },
 	buffShown: { [number]: number }, -- tower id → the support buff on its badge (absent = none)
+	buffCount: { [number]: number }, -- tower id → how many supports that buff adds up (LP-A02)
 	revealShown: { [number]: number }, -- tower id → the lantern tower letting it see stealth (absent = none)
 	sabotaged: { [number]: number }, -- tower id → game time its sabotage ends (towerDisabled; D-038)
 	script: any?, -- the episode's scripted beats (Config/Waves episodes[id].script): the ally's turn
@@ -418,6 +419,8 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 		rewardMul = diff.reward,
 		enemies = Enemies :: any,
 		stunChainMax = TD.STUN_CHAIN_MAX,
+		buffCap = TD.BUFF_CAP,
+		hasteFloor = TD.HASTE_FLOOR,
 		stunImmunity = TD.STUN_IMMUNITY,
 		maxSpeedMul = WaveLogic.MAX_SPEED_MUL,
 		burnMax = TD.BURN_MAX_STACKS,
@@ -451,6 +454,7 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 		script = if episode then (episode :: any).script else nil,
 		eventBuffer = {},
 		buffShown = {},
+		buffCount = {},
 		revealShown = {},
 		placeCounts = {},
 		sabotaged = {},
@@ -584,22 +588,27 @@ local function towerContext(player: Player): (Match?, any?, string?)
 	return match, profile, nil
 end
 
--- Support buffs change whenever a tower is placed, upgraded or sold: badge every defender whose
--- damage a support multiplies (TdSim.buffFor, the same rule the simulation uses) and tell clients.
+-- Support buffs change whenever a tower is placed, upgraded, sold, sabotaged or back: badge every
+-- defender whose damage supports multiply (TdSim.buffInfo, the same rule the simulation uses: the
+-- stacked, capped total and how many supports count) and tell clients.
 local function refreshBuffs(match: Match)
 	for _, t in match.state.towers do
-		local b = if t.stats.damage > 0 then TdSim.buffFor(match.state, t) else 1
-		if b ~= (match.buffShown[t.id] or 1) then
+		local info = if t.stats.damage > 0 then TdSim.buffInfo(match.state, t) else nil
+		local b = if info then info.mul else 1
+		local n = if info and b > 1 then info.count else 0
+		if b ~= (match.buffShown[t.id] or 1) or n ~= (match.buffCount[t.id] or 0) then
 			if b > 1 then
 				match.buffShown[t.id] = b
+				match.buffCount[t.id] = n
 			else
 				match.buffShown[t.id] = nil
+				match.buffCount[t.id] = nil
 			end
 			local model = ArenaService.findTower(match.slot, t.id)
 			if model then
-				ArenaService.setBuff(model, b)
+				ArenaService.setBuff(model, b, n)
 			end
-			queueEvent(match, { type = "towerBuff", id = t.id, buff = b })
+			queueEvent(match, { type = "towerBuff", id = t.id, buff = b, count = n })
 		end
 		-- Natour's lantern (TdSim.revealerFor): a defender that can't see stealth on its own is told
 		-- which lantern lets it, so its panel can say "sees hidden thieves thanks to …".
@@ -708,6 +717,7 @@ local function sellTower(player: Player, towerId: any): { [string]: any }
 	end
 	queueEvent(match, { type = "towerSold", id = towerId })
 	match.buffShown[towerId] = nil
+	match.buffCount[towerId] = nil
 	match.revealShown[towerId] = nil
 	refreshBuffs(match)
 	flushEvents(match)

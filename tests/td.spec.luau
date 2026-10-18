@@ -36,6 +36,8 @@ return function(t)
 			waveBonusPerWave = TD.WAVE_BONUS_PER_WAVE,
 			rewardMul = 1,
 			enemies = Enemies,
+			buffCap = TD.BUFF_CAP,
+			hasteFloor = TD.HASTE_FLOOR,
 		}, waveFn)
 	end
 
@@ -473,6 +475,173 @@ return function(t)
 			local buffed = dealt(true, 6)
 			t.truthy(math.abs(buffed / base - Units.mukhtar.levels[1].buff) < 1e-6, "Mukhtar's buff in range: " .. buffed / base)
 			t.eq(dealt(true, 2 + Units.mukhtar.levels[1].range + 3), base, "no buff out of range")
+		end)
+
+		-- LP-A02: supports stack additively up to TD.BUFF_CAP, hastes multiply down to TD.HASTE_FLOOR,
+		-- a sabotaged support stops helping, and the per-tower cache follows every change.
+		local function wall()
+			return { spawns = { { at = 0, enemy = "colonel", hpMul = 1000, speedMul = 0.01 } }, count = 1 }
+		end
+		local function maxedAt(s, owner, id, x, z, path)
+			local ok, err, tw = TdTowers.place(s, owner, id, Units[id], x, z, 0, nil, rules())
+			t.truthy(ok, err)
+			for _ = 2, #Units[id].levels do
+				t.truthy(TdTowers.upgrade(s, owner, tw.id, Units[id], rules()))
+			end
+			if path then
+				t.truthy(TdTowers.upgrade(s, owner, tw.id, Units[id], rules(), path))
+			end
+			return tw
+		end
+		local function near(a, b)
+			return math.abs(a - b) < 1e-9
+		end
+
+		local function party(n)
+			local keys = {}
+			for i = 1, n do
+				table.insert(keys, "p" .. i)
+			end
+			return TdSim.new(straight, keys, 1e7, 100, 1, 1, {
+				between = 2,
+				waveBonusBase = TD.WAVE_BONUS_BASE,
+				waveBonusPerWave = TD.WAVE_BONUS_PER_WAVE,
+				rewardMul = 1,
+				enemies = Enemies,
+				buffCap = TD.BUFF_CAP,
+				hasteFloor = TD.HASTE_FLOOR,
+			}, wall)
+		end
+
+		t.it("in the sim, two players' Abu Bader both count (capped); one player's two count once", function()
+			local top = Units.mukhtar.levels[#Units.mukhtar.levels].buff
+			local function dealt(owners)
+				local s = party(2)
+				t.truthy(TdTowers.place(s, "p1", "qabaday", Units.qabaday, 2, 4, 0, nil, rules()))
+				local spots = { { 6, 6 }, { 2, 8 } }
+				for i, owner in owners do
+					maxedAt(s, owner, "mukhtar", spots[i][1], spots[i][2])
+				end
+				run(s, 10)
+				return s.enemies[1].maxHp - s.enemies[1].hp
+			end
+			local base = dealt({})
+			t.truthy(base > 0)
+			t.truthy(near(dealt({ "p1" }) / base, top), "one: " .. dealt({ "p1" }) / base)
+			t.truthy(near(dealt({ "p1", "p1" }) / base, top), "one player's second copy adds nothing")
+			local want = math.min(1 + 2 * (top - 1), TD.BUFF_CAP)
+			t.truthy(want > top, "the cap still leaves room to stack")
+			t.truthy(near(dealt({ "p1", "p2" }) / base, want), "two players stack to " .. want .. ": " .. dealt({ "p1", "p2" }) / base)
+		end)
+
+		t.it("buffInfo adds different supports, caps the total and excludes the tower itself", function()
+			local s = party(2)
+			local fighter = select(3, TdTowers.place(s, "p1", "qabaday", Units.qabaday, 10, 5, 0, nil, rules()))
+			-- Level 1 everywhere: the sums stay under the cap, so the addition shows exactly.
+			local bader = select(3, TdTowers.place(s, "p1", "mukhtar", Units.mukhtar, 7, 5, 0, nil, rules()))
+			local b1 = Units.mukhtar.levels[1].buff
+			local h1 = Units.umm_hara.levels[1].buff
+			local info = TdSim.buffInfo(s, fighter)
+			t.eq(info.count, 1)
+			t.truthy(near(info.mul, b1))
+			t.eq(info.sources[1], bader.id)
+			TdTowers.place(s, "p1", "umm_hara", Units.umm_hara, 10, 8, 0, nil, rules())
+			info = TdSim.buffInfo(s, fighter)
+			t.eq(info.count, 2, "Abu Hissam with Abu Bader")
+			t.truthy(near(info.mul, 1 + (b1 - 1) + (h1 - 1)), "additive: " .. info.mul)
+			-- The owner's case (2026-10-19): two Abu Hissam near a unit both count (one per player).
+			TdTowers.place(s, "p2", "umm_hara", Units.umm_hara, 13, 5, 0, nil, rules())
+			info = TdSim.buffInfo(s, fighter)
+			t.eq(info.count, 3, "a second player's Abu Hissam counts too")
+			t.truthy(near(info.mul, 1 + (b1 - 1) + 2 * (h1 - 1)))
+			-- The same player's second Abu Bader counts once (the stronger copy).
+			local second = select(3, TdTowers.place(s, "p1", "mukhtar", Units.mukhtar, 13, 8, 0, nil, rules()))
+			TdTowers.upgrade(s, "p1", second.id, Units.mukhtar, rules())
+			info = TdSim.buffInfo(s, fighter)
+			t.eq(info.count, 3, "one player's copies of a unit count once")
+			t.truthy(table.find(info.sources, second.id) ~= nil and table.find(info.sources, bader.id) == nil, "the stronger copy is the one counted")
+			t.eq(TdSim.buffInfo(s, bader).count, 3, "a support is buffed by the others (its twin included), never by itself")
+			-- Maxed, the stack hits the cap; one support alone is never cut by it.
+			for _ = 3, #Units.mukhtar.levels do
+				TdTowers.upgrade(s, "p1", second.id, Units.mukhtar, rules())
+			end
+			t.eq(TdSim.buffFor(s, fighter), TD.BUFF_CAP, "buffFor returns the capped total")
+			t.truthy(TD.BUFF_CAP >= Units.mukhtar.signature.a.set.buff, "the cap never cuts Loud on its own")
+			t.truthy(TD.BUFF_CAP >= Units.umm_hara.signature.b.set.buff, "nor Elder")
+		end)
+
+		t.it("Abu Hissam's buff applies on its own", function()
+			local s = sim(straight, wall, 1, 1e7)
+			local fighter = select(3, TdTowers.place(s, "p1", "qabaday", Units.qabaday, 10, 5, 0, nil, rules()))
+			maxedAt(s, "p1", "umm_hara", 10, 8)
+			t.truthy(near(TdSim.buffFor(s, fighter), Units.umm_hara.levels[#Units.umm_hara.levels].buff))
+		end)
+
+		t.it("a support out of range does not count", function()
+			local s = sim(straight, wall, 1, 1e7)
+			local fighter = select(3, TdTowers.place(s, "p1", "qabaday", Units.qabaday, 10, 5, 0, nil, rules()))
+			local far = 10 + Units.mukhtar.levels[1].range + 1
+			TdTowers.place(s, "p1", "mukhtar", Units.mukhtar, far, 5, 0, nil, rules())
+			local info = TdSim.buffInfo(s, fighter)
+			t.eq(info.count, 0)
+			t.eq(info.mul, 1)
+		end)
+
+		t.it("a sabotaged support stops buffing and resumes when it is back", function()
+			local s = sim(straight, wall, 1, 1e7)
+			local fighter = select(3, TdTowers.place(s, "p1", "qabaday", Units.qabaday, 10, 5, 0, nil, rules()))
+			local sup = maxedAt(s, "p1", "mukhtar", 7, 5)
+			run(s, 1.5) -- past prep: the wave runs and towersAct fills the cache
+			t.truthy(near(fighter.buffMul, 1.65), "cached buff")
+			t.eq(fighter.buffCount, 1)
+			-- What saboteursAct does on a hit
+			sup.disabledUntil = s.time + 2
+			s.buffsDirty = true
+			t.eq(TdSim.buffInfo(s, fighter).count, 0, "silent while sabotaged")
+			run(s, TD.TICK)
+			t.eq(fighter.buffMul, 1, "the cache drops it at once")
+			run(s, 2.1)
+			t.truthy(near(fighter.buffMul, 1.65), "back mid-wave once the sabotage wears off")
+		end)
+
+		t.it("the buff cache follows place, upgrade and sell on the next step", function()
+			local s = sim(straight, wall, 1, 1e7)
+			local fighter = select(3, TdTowers.place(s, "p1", "qabaday", Units.qabaday, 10, 5, 0, nil, rules()))
+			local ok, _, sup = TdTowers.place(s, "p1", "mukhtar", Units.mukhtar, 7, 5, 0, nil, rules())
+			t.truthy(ok)
+			run(s, 1.5)
+			t.truthy(near(fighter.buffMul, Units.mukhtar.levels[1].buff))
+			TdTowers.upgrade(s, "p1", sup.id, Units.mukhtar, rules())
+			run(s, TD.TICK)
+			t.truthy(near(fighter.buffMul, Units.mukhtar.levels[2].buff), "upgrade")
+			local _, _, sup2 = TdTowers.place(s, "p1", "umm_hara", Units.umm_hara, 13, 5, 0, nil, rules())
+			run(s, TD.TICK)
+			t.eq(fighter.buffCount, 2, "place")
+			TdTowers.sell(s, "p1", sup2.id, rules())
+			run(s, TD.TICK)
+			t.eq(fighter.buffCount, 1, "sell")
+			t.truthy(near(fighter.buffMul, TdSim.buffFor(s, fighter)), "cache = fresh scan")
+		end)
+
+		t.it("hastes multiply and stop at the floor", function()
+			local s = TdSim.new(straight, { "p1", "p2", "p3", "p4" }, 1e7, 100, 1, 1, {
+				between = 2,
+				waveBonusBase = TD.WAVE_BONUS_BASE,
+				waveBonusPerWave = TD.WAVE_BONUS_PER_WAVE,
+				rewardMul = 1,
+				enemies = Enemies,
+				buffCap = TD.BUFF_CAP,
+				hasteFloor = TD.HASTE_FLOOR,
+			}, wall)
+			local w = select(3, TdTowers.place(s, "p1", "walad", Units.walad, 20, 8, 0, nil, rules()))
+			local spots = { { 17, 8 }, { 23, 8 }, { 20, 11 }, { 20, 5 } }
+			local mul = Units.zaim_akbar.signature.b.haste.mul
+			for i, owner in { "p1", "p2", "p3", "p4" } do
+				maxedAt(s, owner, "zaim_akbar", spots[i][1], spots[i][2], "b")
+				local want = math.max(mul ^ i, TD.HASTE_FLOOR)
+				t.truthy(near(TdSim.hasteFor(s, w), want), i .. " rallies: " .. TdSim.hasteFor(s, w))
+			end
+			t.eq(TdSim.hasteFor(s, w), TD.HASTE_FLOOR, "four rallies hit the floor")
 		end)
 
 		t.it("a fractional cash share still pays whole wave bonuses", function()

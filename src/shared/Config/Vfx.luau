@@ -97,6 +97,7 @@ return {
 		punch = 1.12, punchLife = 0.3,
 		glowLevel = 3, glowLife = 0.4, glowColor = "#F2C14E",
 		coins = 6, coinGap = 0.05,
+		coverColor = "#7BD88F", coverMax = 12, -- a selected support outlines the defenders it reaches (LP-A02)
 		dashes = 24, dashDark = "#3D3A38", dashLight = "#F1E9DA",
 	},
 

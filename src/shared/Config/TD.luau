@@ -43,6 +43,13 @@ return {
 	TOWER_SPACING = 2.6, -- studs between towers
 	PATH_HALF_WIDTH = 3.2, -- towers must stay this far from the path centreline
 	SELL_REFUND = 0.6, -- fraction of cash invested returned on sell
+	-- Supports stack (LP-A02): a defender's damage is 1 + Σ(buff − 1) over every other support covering
+	-- it (one player's copies of the same unit count once), capped here at +80 %: the highest cap that
+	-- keeps the balance ladder (1.9 lets a party of 4 Legendaries win Episode 1 Nightmare), and never
+	-- below one support's own best (Loud 1.8). Hastes multiply the attack cooldown and are floored
+	-- here. TOWER_DEFENSE.md §4.4, DECISIONS D-092.
+	BUFF_CAP = 1.8,
+	HASTE_FLOOR = 0.7,
 
 	-- Difficulty: enemy HP multiplier; growth = multiplier on the per-wave HP growth of story
 	-- episodes (the opening waves stay playable with starter cash, the late waves bite); endless =
