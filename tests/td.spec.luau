@@ -293,6 +293,69 @@ return function(t)
 			t.truthy(ta)
 		end)
 
+		t.it("a defender's own auto switch overrides its owner's setting; nil follows it (LP-B01)", function()
+			local function abilities(events, towerId)
+				local n = 0
+				for _, e in events do
+					if e.type == "attack" and e.ability and e.tower == towerId then
+						n += 1
+					end
+				end
+				return n
+			end
+			local function crowd()
+				local spawns = {}
+				for k = 0, 39 do
+					table.insert(spawns, { at = k * 0.5, enemy = "colonel", hpMul = 50, speedMul = 0.2 })
+				end
+				return { spawns = spawns, count = #spawns }
+			end
+			local function case(playerAuto, towerAuto)
+				local s = sim(straight, crowd, 1)
+				s.players.p1.autoAbility = playerAuto
+				local _, _, tw = TdTowers.place(s, "p1", "zaim", Units.zaim, 10, 4, 0, nil, rules())
+				if towerAuto ~= nil then
+					t.truthy(TdTowers.setAutoAbility(s, "p1", tw.id, towerAuto))
+					t.eq(tw.autoAbility, towerAuto)
+				end
+				return abilities(run(s, 25), tw.id)
+			end
+			t.truthy(case(false, true) >= 1, "on overrides a player who turned auto off")
+			t.eq(case(true, false), 0, "off overrides a player whose auto is on")
+			t.eq(case(false, nil), 0, "nil follows the player's off")
+			t.truthy(case(nil, nil) >= 1, "nil follows the player's default on")
+			-- Off still lets a tap through.
+			local s = sim(straight, crowd, 1)
+			local _, _, tw = TdTowers.place(s, "p1", "zaim", Units.zaim, 10, 4, 0, nil, rules())
+			TdTowers.setAutoAbility(s, "p1", tw.id, false)
+			run(s, 3)
+			t.truthy(TdTowers.useAbility(s, "p1", tw.id))
+			t.eq(abilities(run(s, 2), tw.id), 1, "a tap still fires when its auto is off")
+		end)
+
+		t.it("setAutoAbility refuses foreign, ally, ability-less towers, non-booleans and a finished match", function()
+			local s = sim(straight, oneThief, 1)
+			local _, _, tw = TdTowers.place(s, "p1", "zaim", Units.zaim, 10, 4, 0, nil, rules())
+			local _, _, plain = TdTowers.place(s, "p1", "walad", Units.walad, 30, 4, 0, nil, rules())
+			local function err(owner, id, on)
+				local ok, e = TdTowers.setAutoAbility(s, owner, id, on)
+				t.eq(ok, false)
+				return e
+			end
+			t.eq(err("p2", tw.id, true), "not_yours")
+			t.eq(err("p1", 9999, true), "not_yours")
+			t.eq(err("p1", "1", true), "not_yours")
+			t.eq(err("p1", tw.id, "yes"), "bad_request")
+			t.eq(err("p1", tw.id, 1), "bad_request")
+			t.eq(err("p1", tw.id, nil), "bad_request")
+			t.eq(err("p1", plain.id, true), "no_ability")
+			local ally = TdTowers.addAlly(s, "zaim", Units.zaim, 1, 50, 4, rules())
+			t.eq(err("p1", ally.id, true), "not_yours", "a story ally takes no orders")
+			t.eq(tw.autoAbility, nil, "nothing changed")
+			s.phase = "won"
+			t.eq(err("p1", tw.id, true), "match_over")
+		end)
+
 		t.it("non-detecting towers ignore stealth enemies", function()
 			local s = sim(straight, oneThief, 1)
 			t.truthy(TdTowers.place(s, "p1", "khayyat", Units.khayyat, 50, 4, 0, nil, rules()))

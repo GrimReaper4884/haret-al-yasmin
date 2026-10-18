@@ -101,7 +101,7 @@ local ghost: Model? = nil
 local ring: Part? = nil
 local selected: number? = nil
 local selectedRing: Part? = nil
-local towers: { [number]: { unitId: string, level: number, owner: string, x: number, z: number, range: number, targeting: string, readyAt: number, buff: number?, buffCount: number?, revealedBy: string?, revealedByTower: number?, sabotaged: boolean?, path: string? } } = {}
+local towers: { [number]: { unitId: string, level: number, owner: string, x: number, z: number, range: number, targeting: string, readyAt: number, buff: number?, buffCount: number?, autoAbility: boolean?, revealedBy: string?, revealedByTower: number?, sabotaged: boolean?, path: string? } } = {}
 local arenaPath: Path.Path? = nil
 local arenaPaths: { Path.Path } = {} -- every road: the ghost keeps clear of all of them (S1-S07)
 local origin: CFrame? = nil
@@ -1184,6 +1184,9 @@ local function onEvents(events: { any })
 			if def and def.ability then
 				rec.readyAt = os.clock() + def.ability.cooldown / speed
 			end
+		elseif e.type == "towerAuto" and towers[e.id] then
+			-- This defender's own auto ultimate (LP-B01; nil = the player's setting)
+			towers[e.id].autoAbility = if type(e.on) == "boolean" then e.on else nil
 		elseif e.type == "towerBuff" and towers[e.id] then
 			towers[e.id].buff = if type(e.buff) == "number" and e.buff > 1 then e.buff else nil
 			towers[e.id].buffCount = if type(e.count) == "number" and e.count > 1 then e.count else nil

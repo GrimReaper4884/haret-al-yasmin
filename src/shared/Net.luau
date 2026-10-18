@@ -36,10 +36,11 @@ Net.Events = {
 	MatchHome = "MatchHome", -- S→C matchId: the player is back in the lane (drop the match HUD now)
 	EnemyPositions = "EnemyPositions", -- S→C (unreliable) { seq, then id, dist, hpFrac triples }, ≤ 24 enemies per packet
 	VoteSkip = "VoteSkip", -- C→S
-	SetSpeed = "SetSpeed", -- C→S 1 | 2 | 3 (host)
+	SetSpeed = "SetSpeed", -- C→S one of TD.SPEEDS (host; LP-A03)
 	LeaveMatch = "LeaveMatch", -- C→S
 	SetTargeting = "SetTargeting", -- C→S towerId, mode
 	UseAbility = "UseAbility", -- C→S towerId (the defender's ultimate)
+	SetAutoAbility = "SetAutoAbility", -- C→S towerId, on: that defender's own auto ultimate (LP-B01)
 	-- AFK chamber (the Hakawati's room)
 	AfkState = "AfkState", -- S→C { inside, carry, mult, session = { seconds, lira, qirsh, xp, traitStones } } | { inside = false, summary }
 	AfkPayout = "AfkPayout", -- S→C { kind, granted, capped, tale }

@@ -256,6 +256,26 @@ end
 
 local TARGETING = { first = true, last = true, strong = true, close = true }
 
+-- The owner switches one defender's auto ultimate on or off (LP-B01); it overrides the owner's
+-- setting for that defender. Returns ok, err ("not_yours" | "bad_request" | "no_ability" | "match_over").
+function TdTowers.setAutoAbility(state: any, owner: string, towerId: any, on: any): (boolean, string?)
+	local t = find(state, towerId)
+	if not t or t.ally or t.owner ~= owner then
+		return false, "not_yours"
+	end
+	if type(on) ~= "boolean" then
+		return false, "bad_request"
+	end
+	if state.phase == "won" or state.phase == "lost" then
+		return false, "match_over"
+	end
+	if not t.stats.ability then
+		return false, "no_ability"
+	end
+	t.autoAbility = on
+	return true, nil
+end
+
 function TdTowers.setTargeting(state: any, owner: string, towerId: any, mode: any): (boolean, string?)
 	local t = find(state, towerId)
 	if not t or t.ally or t.owner ~= owner then

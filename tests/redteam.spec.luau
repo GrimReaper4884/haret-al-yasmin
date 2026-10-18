@@ -1158,4 +1158,20 @@ return function(t)
 			t.eq(passed, 0)
 		end)
 	end)
+
+	t.describe("Red team: SetAutoAbility (LP-B01)", function()
+		t.it("the token bucket lets a burst of 10 through and then 10 a second, never 1,000", function()
+			local lim = TD.AUTO_ABILITY_LIMIT
+			t.eq(lim.capacity, 10)
+			t.eq(lim.perSecond, 10)
+			local l = RateLimiter.new(lim.capacity, lim.perSecond)
+			local allowed = 0
+			for i = 1, 1000 do
+				if RateLimiter.allow(l, "attacker", i / 1000) then -- 1,000 calls in one second
+					allowed += 1
+				end
+			end
+			t.truthy(allowed <= lim.capacity + lim.perSecond + 1, "allowed " .. allowed)
+		end)
+	end)
 end

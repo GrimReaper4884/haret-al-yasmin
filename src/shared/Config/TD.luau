@@ -44,6 +44,9 @@ return {
 	-- Placement
 	LOADOUT_SLOTS = 6, -- +1 with the Extra Slot pass
 	TOWER_CAP = 20, -- per player
+	-- SetAutoAbility token bucket (LP-B01): the Defenders panel's "all on / all off" sends one per
+	-- tower, spaced by the client; 10 a second, 10 in a burst.
+	AUTO_ABILITY_LIMIT = { capacity = 10, perSecond = 10 },
 	TOWER_SPACING = 2.6, -- studs between towers
 	PATH_HALF_WIDTH = 3.2, -- towers must stay this far from the path centreline
 	SELL_REFUND = 0.6, -- fraction of cash invested returned on sell

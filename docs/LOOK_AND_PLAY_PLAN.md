@@ -538,7 +538,7 @@ DECISIONS; every name goes through §4.2's STOP first.
   - Shipped (D-092): one player's copies of a unit count once and `BUFF_CAP` is 1.8, the highest value that
     keeps the ladder; Abu Hissam + Abu Bader and two players' supports stack.
 
-- [x] **LP-A03 Speed ladder 1–5 with the premium tier** · deps: none · STOP (Fast Mode keep/retire; strings)
+- [x] fb9bdaa **LP-A03 Speed ladder 1–5 with the premium tier** · deps: none · STOP (Fast Mode keep/retire; strings)
   - Goal: §3.3.
   - Create: `TD.SPEEDS`, `TD.PREMIUM_SPEED`; `MonetizationService.maxSpeed(player)` (VIP | premium diary |
     fast); the speed sheet; the non-host chip; strings; `RemoteGuard` enum check; specs for the perk resolution
@@ -554,7 +554,7 @@ DECISIONS; every name goes through §4.2's STOP first.
 
 ### Workstream B: the Defenders panel and unit types
 
-- [ ] **LP-B01 `SetAutoAbility` remote and per-tower auto in the sim** · deps: none
+- [x] **LP-B01 `SetAutoAbility` remote and per-tower auto in the sim** · deps: none
   - Accept: specs in §6.2 green; red-team spec rejects a foreign tower id and a burst.
 - [ ] **LP-B02 Defenders panel: list, rows, focus** · deps: LP-B01, LP-A02
   - Accept: desktop column and phone sheet captures (Device Emulator 844×390 and 1636×584) with 8 towers; a
@@ -644,8 +644,8 @@ Meshy budget: ≈ 330 credits (240 for four NPC looks + 90 for the merchant and 
 
 ## 9. Checklist (tick with the commit hash)
 
-- [x] ff75c8d LP-A01 · [x] 19425ee LP-A02 · [x] LP-A03
-- [ ] LP-B01 · [ ] LP-B02 · [ ] LP-B03 · [ ] LP-B04 · [ ] LP-B05
+- [x] ff75c8d LP-A01 · [x] 19425ee LP-A02 · [x] fb9bdaa LP-A03
+- [x] LP-B01 · [ ] LP-B02 · [ ] LP-B03 · [ ] LP-B04 · [ ] LP-B05
 - [ ] LP-C00 · [ ] LP-C01 · [ ] LP-C02 · [ ] LP-C03 · [ ] LP-C04 · [ ] LP-C05 · [ ] LP-C06 · [ ] LP-C07
 - [ ] LP-D00 · [ ] LP-D01 · [ ] LP-D02 · [ ] LP-D03 · [ ] LP-D04 · [ ] LP-D05 · [ ] LP-D06 · [ ] LP-D07 · [ ] LP-D08 · [ ] LP-D09 · [ ] LP-D10 · [ ] LP-D11
 - [ ] LP-E01 · [ ] LP-E02 · [ ] LP-E03 · [ ] LP-E04

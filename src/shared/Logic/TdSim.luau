@@ -66,6 +66,7 @@ export type Tower = {
 	nextAt: number,
 	abilityAt: number,
 	abilityQueued: boolean?, -- the owner tapped the ultimate; fires on the next attack once ready
+	autoAbility: boolean?, -- this defender's own auto ultimate (LP-B01); nil follows the owner's setting
 	targeting: string, -- "first" | "last" | "strong" | "close"
 	invested: number,
 	kills: number,
@@ -802,7 +803,9 @@ local function towersAct(state: State, events: { Event })
 				local ability = false
 				local ab = st.ability
 				local owner = state.players[t.owner]
-				local wants = t.abilityQueued == true or owner == nil or owner.autoAbility ~= false
+				-- Tapped, or auto: the defender's own switch, else its owner's setting (allies: on).
+				local auto = if t.autoAbility ~= nil then t.autoAbility else (owner == nil or owner.autoAbility ~= false)
+				local wants = t.abilityQueued == true or auto
 				if ab and wants and state.time >= t.abilityAt then
 					t.abilityQueued = false
 					if ab.kind == "shabriyeh" then

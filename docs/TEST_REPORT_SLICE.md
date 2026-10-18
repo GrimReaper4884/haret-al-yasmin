@@ -953,3 +953,15 @@ Abu Bader (18, −6), all level 1.*
 | D-014 synthetic at 5× | `TdSim.step` 1.81 avg / 2.12 p95 / 2.75 max ms (271 attackers, 60 towers) → ≈ 4.2 ms per frame | — |
 | Non-host chip | not testable in Play Solo; needs Test → Clients and Servers (owner) | — |
 | Console | no errors or warnings from our code | — |
+
+### LP-B01 SetAutoAbility
+
+*Play Solo, Episode 1 Normal (stopped at wave 1, nothing paid); za'im and Abu Ghadeb placed with
+`HaretDebug place`; the remote fired from the Client VM, applied changes counted from `towerAuto` events.*
+
+| Fired | Applied |
+|---|---|
+| za'im id, `false` | 1 |
+| id as a string, a non-boolean, Abu Ghadeb (no ultimate), id 999, NaN id | 0 each |
+| 1,000 × (za'im id, `true`) at once | 10 (the `AUTO_ABILITY_LIMIT` burst) |
+| Console | nothing from our code |

@@ -876,6 +876,18 @@ function MatchService.start()
 		end
 	end)
 
+	-- One defender's own auto ultimate (LP-B01, the Defenders panel): overrides the player's setting
+	-- for that defender (TdTowers.setAutoAbility checks owner, boolean, ability and phase).
+	RemoteGuard.event(Net.Events.SetAutoAbility, TD.AUTO_ABILITY_LIMIT, function(player: Player, towerId: any, on: any)
+		local match = byPlayer[player]
+		if not match or match.ended or not Validate.isPositiveInteger(towerId) or type(on) ~= "boolean" then
+			return
+		end
+		if TdTowers.setAutoAbility(match.state, match.players[player], towerId, on) then
+			queueEvent(match, { type = "towerAuto", id = towerId, on = on })
+		end
+	end)
+
 	-- Auto ultimate follows the player's setting, live (the HUD toggle writes the setting).
 	DataService.ProfileChanged:Connect(function(player: Player)
 		local match = byPlayer[player]
