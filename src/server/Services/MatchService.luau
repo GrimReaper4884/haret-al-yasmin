@@ -588,7 +588,11 @@ function MatchService.debugPlace(player: Player, unitId: string, lx: number, lz:
 	return r.ok == true, r.err
 end
 
-local function upgradeTower(player: Player, towerId: any): { [string]: any }
+-- path: nil, or "a" | "b" for the level-7 signature (TdTowers refuses it anywhere else).
+local function upgradeTower(player: Player, towerId: any, path: any): { [string]: any }
+	if path ~= nil and path ~= "a" and path ~= "b" then
+		return { ok = false, err = "bad_request" }
+	end
 	local match, _, err = towerContext(player)
 	if not match then
 		return { ok = false, err = err }
@@ -603,7 +607,7 @@ local function upgradeTower(player: Player, towerId: any): { [string]: any }
 	if not tower then
 		return { ok = false, err = "not_yours" }
 	end
-	local ok, uerr = TdTowers.upgrade(match.state, key, towerId, (Units :: any)[tower.unitId], rulesFor(match))
+	local ok, uerr = TdTowers.upgrade(match.state, key, towerId, (Units :: any)[tower.unitId], rulesFor(match), path)
 	if not ok then
 		return { ok = false, err = uerr }
 	end
@@ -612,7 +616,7 @@ local function upgradeTower(player: Player, towerId: any): { [string]: any }
 		model:SetAttribute("Level", tower.level)
 		model:SetAttribute("Range", tower.stats.range)
 	end
-	queueEvent(match, { type = "towerUpgraded", id = towerId, level = tower.level, range = tower.stats.range })
+	queueEvent(match, { type = "towerUpgraded", id = towerId, level = tower.level, range = tower.stats.range, path = tower.path })
 	refreshBuffs(match)
 	flushEvents(match)
 	pushState(match)

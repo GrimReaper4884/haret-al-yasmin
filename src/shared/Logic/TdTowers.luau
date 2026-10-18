@@ -142,7 +142,9 @@ function TdTowers.useAbility(state: any, owner: string, towerId: any): (boolean,
 	return true, nil
 end
 
-function TdTowers.upgrade(state: any, owner: string, towerId: any, def: any, rules: Rules): (boolean, string?, any?)
+-- path: only for the level-7 signature (the last level → 7): "a" or "b", required there and
+-- refused anywhere else ("bad_path"). A signature is bought once ("max_level" after).
+function TdTowers.upgrade(state: any, owner: string, towerId: any, def: any, rules: Rules, path: any?): (boolean, string?, any?)
 	local t = find(state, towerId)
 	if not t or t.owner ~= owner then
 		return false, "not_yours", nil
@@ -152,10 +154,30 @@ function TdTowers.upgrade(state: any, owner: string, towerId: any, def: any, rul
 	end
 	local nextLevel = t.level + 1
 	local lv = def.levels[nextLevel]
-	if not lv then
-		return false, "max_level", nil
-	end
 	local p = state.players[owner]
+	if not lv then
+		local sig = def.signature
+		if not sig or t.level ~= #def.levels then
+			return false, "max_level", nil
+		end
+		if path ~= "a" and path ~= "b" then
+			return false, "bad_path", nil
+		end
+		local cost = UnitLogic.costFor(sig[path].cost, t.trait)
+		if p.cash < cost then
+			return false, "cannot_afford", nil
+		end
+		p.cash -= cost
+		p.spent += cost
+		t.invested += cost
+		t.level = nextLevel
+		t.path = path
+		t.stats = UnitLogic.stats(def, nextLevel, t.stars, t.trait, rules.starBonus, rules.traitCaps, path)
+		return true, nil, t
+	end
+	if path ~= nil then
+		return false, "bad_path", nil
+	end
 	local cost = UnitLogic.costFor(lv.cost, t.trait)
 	if p.cash < cost then
 		return false, "cannot_afford", nil

@@ -69,6 +69,7 @@ export type Tower = {
 	invested: number,
 	kills: number,
 	disabledUntil: number?, -- a saboteur's shot: no attacks until then
+	path: string?, -- "a" | "b": its level-7 signature
 }
 
 -- autoAbility: ultimates fire as soon as they are ready (nil counts as on).
@@ -487,6 +488,20 @@ local function releaseSplits(state: State, events: { Event })
 	state.pendingSplits = {}
 end
 
+-- Best haste (signature "Rally") from another defender whose haste radius covers the tower: its
+-- attack cooldown is multiplied by this (1 = none). Not stacking.
+local function hasteFor(state: State, t: Tower): number
+	local best = 1
+	for _, s in state.towers do
+		local h = s.stats.haste
+		if h and s ~= t and h.mul < best and dist2(s.x, s.z, t.x, t.z) <= h.radius * h.radius then
+			best = h.mul
+		end
+	end
+	return best
+end
+TdSim.hasteFor = hasteFor
+
 -- Best buff multiplier from support/healer towers whose range covers the tower.
 local function buffFor(state: State, t: Tower): number
 	local best = 1
@@ -601,7 +616,8 @@ local function pickTarget(state: State, t: Tower, sees: boolean): (Enemy?, numbe
 end
 
 -- single: a single-target hit (not splash). Only those reveal a disguised enemy; splash skips it.
-local function hit(state: State, t: Tower, e: Enemy, damage: number, events: { Event }, single: boolean?)
+-- extra: an ability's own stun / slow on top of the tower's (signatures).
+local function hit(state: State, t: Tower, e: Enemy, damage: number, events: { Event }, single: boolean?, extra: any?)
 	if not e.alive then
 		return
 	end
@@ -617,15 +633,23 @@ local function hit(state: State, t: Tower, e: Enemy, damage: number, events: { E
 		e.slowMul = math.min(e.slowMul, t.stats.slow)
 		e.slowUntil = math.max(e.slowUntil, state.time + t.stats.slowFor)
 	end
+	if extra and extra.slow and extra.slowFor then
+		e.slowMul = math.min(e.slowMul, extra.slow)
+		e.slowUntil = math.max(e.slowUntil, state.time + extra.slowFor)
+	end
+	local stun = t.stats.stun
+	if extra and extra.stun then
+		stun = math.max(stun or 0, extra.stun)
+	end
 	-- Stuns chain, but a chain is capped (then the enemy shrugs stuns off for a moment), so a stack
 	-- of stunners (a party of Blacksmiths and Strongmen) cannot pin a wave at the spawn forever. A
 	-- chain only resets once the enemy has been free for the immunity time (re-stuns landing on the
 	-- tick a stun ends would otherwise start a fresh chain every time).
-	if t.stats.stun and state.time >= e.stunImmuneUntil then
+	if stun and state.time >= e.stunImmuneUntil then
 		if state.time >= e.stunUntil + (state.cfg.stunImmunity or 0) then
 			e.stunSince = state.time
 		end
-		e.stunUntil = math.max(e.stunUntil, state.time + t.stats.stun)
+		e.stunUntil = math.max(e.stunUntil, state.time + stun)
 		local cap = state.cfg.stunChainMax
 		if cap and e.stunUntil - e.stunSince >= cap then
 			e.stunUntil = e.stunSince + cap
@@ -649,13 +673,13 @@ local function hit(state: State, t: Tower, e: Enemy, damage: number, events: { E
 	end
 end
 
-local function splashHits(state: State, t: Tower, cx: number, cz: number, radius: number, damage: number, sees: boolean, events: { Event })
+local function splashHits(state: State, t: Tower, cx: number, cz: number, radius: number, damage: number, sees: boolean, events: { Event }, extra: any?)
 	local r2 = radius * radius
 	for _, e in state.enemies do
 		if e.alive and not e.disguised and (sees or not e.stealth) then
 			local ex, ez = Path.position(state.path, e.dist)
 			if dist2(ex, ez, cx, cz) <= r2 then
-				hit(state, t, e, damage, events)
+				hit(state, t, e, damage, events, nil, extra)
 			end
 		end
 	end
@@ -669,7 +693,7 @@ local function towersAct(state: State, events: { Event })
 			local sees = seesStealth(state, t)
 			local target, tx, tz = pickTarget(state, t, sees)
 			if target then
-				t.nextAt = state.time + st.cooldown
+				t.nextAt = state.time + st.cooldown * hasteFor(state, t)
 				local damage = st.damage * buffFor(state, t)
 				local ability = false
 				local ab = st.ability
@@ -684,7 +708,7 @@ local function towersAct(state: State, events: { Event })
 					elseif ab.kind == "sweep" then
 						ability = true
 						t.abilityAt = state.time + ab.cooldown
-						splashHits(state, t, t.x, t.z, ab.radius or st.range, damage * ab.multiplier, sees, events)
+						splashHits(state, t, t.x, t.z, ab.radius or st.range, damage * ab.multiplier, sees, events, ab)
 					elseif ab.kind == "mark" then
 						-- The Oath: the strongest enemy it can see in range takes ×multiplier from every
 						-- defender for `duration` s. Marks never stack: the stronger one holds.
@@ -708,7 +732,7 @@ local function towersAct(state: State, events: { Event })
 					if st.splash then
 						splashHits(state, t, tx, tz, st.splash, damage, sees, events)
 					else
-						hit(state, t, target, damage, events, true)
+						hit(state, t, target, damage, events, true, if ability and ab and ab.kind == "shabriyeh" then ab else nil)
 					end
 				end
 				local shownMark = if state.time < target.markedUntil then target.markMul else 1

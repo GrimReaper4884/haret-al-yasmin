@@ -22,6 +22,8 @@ export type Stats = {
 	douse: number?, -- burn stacks taken off the gate per attack
 	ability: any?,
 	maxLevel: number,
+	haste: { radius: number, mul: number }?, -- other defenders in the radius attack with cooldown × mul
+	signature: string?, -- "a" | "b": the level-7 path this tower took
 }
 
 local UnitLogic = {}
@@ -87,8 +89,28 @@ function UnitLogic.costFor(cost: number, trait: any?): number
 end
 
 -- caps (Config/Traits.caps): clamps the trait multipliers (damage ≤, range ≤, cooldown ≥); nil = no clamp.
-function UnitLogic.stats(def: any, level: number, stars: number, trait: any?, starBonus: number, caps: any?): Stats
+-- path ("a" | "b"): the level-7 signature (level above the last one); ignored otherwise.
+function UnitLogic.stats(def: any, level: number, stars: number, trait: any?, starBonus: number, caps: any?, path: string?): Stats
 	local lv = def.levels[math.clamp(level, 1, #def.levels)]
+	local sig = if level > #def.levels and path and def.signature then def.signature[path] else nil
+	local ability = def.ability
+	if sig then
+		local merged = table.clone(lv)
+		for k, v in sig.set or {} do
+			merged[k] = v
+		end
+		if sig.cooldownMul then
+			merged.cooldown *= sig.cooldownMul
+		end
+		lv = merged
+		if sig.ability and ability then
+			local ab = table.clone(ability)
+			for k, v in sig.ability do
+				ab[k] = v
+			end
+			ability = ab
+		end
+	end
 	local tDmg = if trait and trait.damage then trait.damage else 1
 	local rangeMul = if trait and trait.range then trait.range else 1
 	local cdMul = if trait and trait.cooldown then trait.cooldown else 1
@@ -115,10 +137,12 @@ function UnitLogic.stats(def: any, level: number, stars: number, trait: any?, st
 		heal = lv.heal,
 		cash = if trait and trait.cash then trait.cash else 1,
 		hitsStealth = def.hitsStealth == true or (trait ~= nil and trait.hitsStealth == true),
-		revealsStealth = def.revealsStealth == true,
+		revealsStealth = def.revealsStealth == true or (sig ~= nil and sig.revealsStealth == true),
 		douse = douse,
-		ability = def.ability,
+		ability = ability,
 		maxLevel = #def.levels,
+		haste = if sig then sig.haste else nil,
+		signature = if sig then path else nil,
 	}
 end
 

@@ -37,6 +37,9 @@ export type Level = {
 
 export type Ability = {
 	kind: "shabriyeh" | "sweep" | "mark",
+	stun: number?, -- sweep: also stuns everything it hits (signature)
+	slow: number?, -- shabriyeh: also slows the target to this speed multiplier … (signature)
+	slowFor: number?, -- … for this many seconds
 	cooldown: number, -- seconds
 	multiplier: number, -- damage multiplier on the target (shabriyeh), on everything in radius (sweep), or that the marked enemy takes from every defender (mark; cap 1.4, D-045)
 	radius: number?,
@@ -53,6 +56,21 @@ export type Visual = {
 	scale: number?,
 }
 
+-- Level 7 "signature" (STORY_PLAN §7.1): bought once at the last level, for `cost`, choosing path a or b.
+-- It starts from the last level and changes it: `set` overrides Level fields, `cooldownMul` scales
+-- the attack cooldown, `ability` overrides ability fields, `revealsStealth` lights a lantern,
+-- `haste` speeds up other defenders in a radius (cooldown × mul). Cap (D-047): a path adds at most
+-- +35 % damage per second or exactly one effect, never both (tests/td.spec "Signatures").
+export type Signature = {
+	key: string, -- name: unit.<id>.sig.<key>.name / .desc
+	cost: number,
+	set: { [string]: number }?,
+	cooldownMul: number?,
+	ability: { [string]: number }?,
+	revealsStealth: boolean?,
+	haste: { radius: number, mul: number }?,
+}
+
 export type UnitDef = {
 	nameKey: string,
 	descKey: string,
@@ -66,6 +84,7 @@ export type UnitDef = {
 	ability: Ability?,
 	visual: Visual,
 	noBanner: boolean?, -- secret / event units never come from a banner
+	signature: { a: Signature, b: Signature }?, -- level 7 (Epic and above): one of two paths, bought once at max level
 }
 
 local function L(cost: number, damage: number, range: number, cooldown: number, extra: { [string]: any }?): Level
@@ -212,6 +231,10 @@ local Units: { [string]: UnitDef } = {
 			L(1800, 160, 10.5, 0.5),
 		},
 		ability = { kind = "shabriyeh", cooldown = 12, multiplier = 6 },
+		signature = {
+			a = { key = "rage", cost = 2700, ability = { cooldown = 8 } },
+			b = { key = "guard", cost = 2700, set = { stun = 0.3 } },
+		},
 		visual = { robe = "#1F1B18", accent = "#A4302A", skin = "#C68E64", hat = "tarboosh", hatColor = "#A4302A", weapon = "dagger", scale = 1.08 },
 	},
 	haddad = {
@@ -228,6 +251,10 @@ local Units: { [string]: UnitDef } = {
 			L(1350, 105, 12, 1.7, { splash = 6.5, stun = 0.8 }),
 			L(2000, 155, 12.5, 1.6, { splash = 7, stun = 1.0 }),
 		},
+		signature = {
+			a = { key = "anvil", cost = 3000, set = { stun = 1.4 } },
+			b = { key = "forge", cost = 3000, set = { splash = 9 } },
+		},
 		visual = { robe = "#6E5E50", accent = "#3D3A38", skin = "#B97F5A", hat = "none", hatColor = "#000000", weapon = "hammer", scale = 1.12 },
 	},
 	mukhtar = {
@@ -243,6 +270,10 @@ local Units: { [string]: UnitDef } = {
 			L(950, 0, 15, 1, { buff = 1.4 }),
 			L(1500, 0, 16, 1, { buff = 1.52 }),
 			L(2200, 0, 17, 1, { buff = 1.65 }),
+		},
+		signature = {
+			a = { key = "loud", cost = 3300, set = { buff = 1.8 } },
+			b = { key = "brave", cost = 3300, set = { damage = 6, cooldown = 1.2 } },
 		},
 		visual = { robe = "#EADFC8", accent = "#C9A13B", skin = "#C08A62", hat = "tarboosh", hatColor = "#A4302A", weapon = "none" },
 	},
@@ -264,6 +295,10 @@ local Units: { [string]: UnitDef } = {
 			L(2800, 300, 12, 0.45),
 		},
 		ability = { kind = "shabriyeh", cooldown = 9, multiplier = 10 },
+		signature = {
+			a = { key = "judgment", cost = 4200, ability = { multiplier = 14 } },
+			b = { key = "mercy", cost = 4200, ability = { slow = 0.5, slowFor = 3 } },
+		},
 		visual = { robe = "#1F1B18", accent = "#C9A13B", skin = "#C68E64", hat = "tarboosh", hatColor = "#A4302A", weapon = "dagger", scale = 1.12 },
 	},
 	pahlawan = {
@@ -281,6 +316,10 @@ local Units: { [string]: UnitDef } = {
 			L(2900, 290, 12, 1.0, { splash = 8, stun = 1.2 }),
 		},
 		ability = { kind = "sweep", cooldown = 14, multiplier = 4, radius = 9 },
+		signature = {
+			a = { key = "iron", cost = 4350, ability = { radius = 12 } },
+			b = { key = "pin", cost = 4350, ability = { stun = 1.5 } },
+		},
 		visual = { robe = "#A4302A", accent = "#1F1B18", skin = "#B97F5A", hat = "none", hatColor = "#000000", weapon = "none", scale = 1.25 },
 	},
 	umm_hara = {
@@ -296,6 +335,10 @@ local Units: { [string]: UnitDef } = {
 			L(1200, 0, 17, 1, { heal = 18, buff = 1.28 }),
 			L(1800, 0, 18, 1, { heal = 24, buff = 1.36 }),
 			L(2600, 0, 19, 1, { heal = 32, buff = 1.45 }),
+		},
+		signature = {
+			a = { key = "hakim", cost = 3900, set = { heal = 44 } },
+			b = { key = "elder", cost = 3900, set = { buff = 1.6 } },
 		},
 		visual = { robe = "#EADFC8", accent = "#1F1B18", skin = "#D2A07A", hat = "tarboosh", hatColor = "#A4302A", weapon = "razor" },
 	},
@@ -317,6 +360,10 @@ local Units: { [string]: UnitDef } = {
 			L(4000, 540, 14, 0.7, { splash = 10 }),
 		},
 		ability = { kind = "sweep", cooldown = 10, multiplier = 5, radius = 12 },
+		signature = {
+			a = { key = "drums", cost = 6000, cooldownMul = 0.8 },
+			b = { key = "swords", cost = 6000, revealsStealth = true },
+		},
 		visual = { robe = "#FBF8F1", accent = "#A4302A", skin = "#C68E64", hat = "tarboosh", hatColor = "#A4302A", weapon = "sword", scale = 1.1 },
 	},
 	zaim_akbar = {
@@ -335,6 +382,10 @@ local Units: { [string]: UnitDef } = {
 			L(4500, 800, 13, 0.38),
 		},
 		ability = { kind = "shabriyeh", cooldown = 7, multiplier = 15 },
+		signature = {
+			a = { key = "akeed", cost = 6750, ability = { multiplier = 20 } },
+			b = { key = "rally", cost = 6750, haste = { radius = 10, mul = 0.9 } },
+		},
 		visual = { robe = "#1F1B18", accent = "#C9A13B", skin = "#C68E64", hat = "tarboosh", hatColor = "#A4302A", weapon = "dagger", scale = 1.18 },
 	},
 

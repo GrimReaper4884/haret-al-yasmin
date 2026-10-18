@@ -784,6 +784,243 @@ return function(t)
 		end)
 	end)
 
+	-- Level-7 signatures (STORY_PLAN §7.1, S1-S10): data, the D-047 cap, the upgrade rules and the
+	-- new effects in the sim.
+	t.describe("Signatures (S1-S10)", function()
+		local Strings = t.config("Strings")
+		local straight = { { 0, 0 }, { 200, 0 } }
+		local function hasKey(key)
+			for _, lang in Strings.languages do
+				if Strings[lang][key] == nil then
+					return false
+				end
+			end
+			return true
+		end
+		-- Own damage per second (single target): attacks plus the ability's extra.
+		local function dps(st)
+			if st.damage <= 0 then
+				return 0
+			end
+			local v = st.damage / st.cooldown
+			local ab = st.ability
+			if ab and ab.kind == "shabriyeh" then
+				v += (ab.multiplier - 1) * st.damage / ab.cooldown
+			elseif ab and ab.kind == "sweep" then
+				v += ab.multiplier * st.damage / ab.cooldown
+			end
+			return v
+		end
+		-- Effects a path can change, grouped (a slow is its strength and length together).
+		local EFFECTS = {
+			stun = function(st)
+				return st.stun
+			end,
+			slow = function(st)
+				return tostring(st.slow) .. "/" .. tostring(st.slowFor)
+			end,
+			splash = function(st)
+				return st.splash
+			end,
+			buff = function(st)
+				return st.buff
+			end,
+			heal = function(st)
+				return st.heal
+			end,
+			range = function(st)
+				return st.range
+			end,
+			reveal = function(st)
+				return st.revealsStealth
+			end,
+			haste = function(st)
+				return st.haste and st.haste.mul
+			end,
+			abRadius = function(st)
+				return st.ability and st.ability.radius
+			end,
+			abStun = function(st)
+				return st.ability and st.ability.stun
+			end,
+			abSlow = function(st)
+				return st.ability and (tostring(st.ability.slow) .. "/" .. tostring(st.ability.slowFor))
+			end,
+		}
+
+		t.it("every Epic+ banner unit has paths a and b, priced ≈ 1.5 × its last level, with EN/AR names", function()
+			local n = 0
+			for id, u in Units do
+				local epicPlus = u.rarity ~= "rare" and not u.noBanner
+				if epicPlus then
+					t.truthy(u.signature and u.signature.a and u.signature.b, id .. " has a signature")
+				end
+				if u.signature then
+					n += 1
+					local last = u.levels[#u.levels].cost
+					for _, path in { "a", "b" } do
+						local sig = u.signature[path]
+						t.truthy(sig.cost >= last * 1.4 and sig.cost <= last * 1.6, id .. "." .. path .. " cost ≈ 1.5 × level " .. #u.levels)
+						t.truthy(hasKey("unit." .. id .. ".sig." .. sig.key .. ".name") and hasKey("unit." .. id .. ".sig." .. sig.key .. ".desc"), id .. "." .. path .. " strings")
+					end
+					t.truthy(u.signature.a.key ~= u.signature.b.key, id .. " two different paths")
+				end
+			end
+			t.eq(n, 8)
+		end)
+
+		t.it("cap (D-047): a path adds ≤ +35 % damage per second or exactly one effect, never both", function()
+			for id, u in Units do
+				if u.signature then
+					local top = #u.levels
+					local s6 = UnitLogic.stats(u, top, 0, nil, 0)
+					for _, path in { "a", "b" } do
+						local s7 = UnitLogic.stats(u, top + 1, 0, nil, 0, nil, path)
+						t.eq(s7.signature, path)
+						local d6, d7 = dps(s6), dps(s7)
+						local changed = 0
+						for _, f in EFFECTS do
+							if f(s6) ~= f(s7) then
+								changed += 1
+							end
+						end
+						local where = id .. "." .. path
+						if d6 == 0 then
+							-- A defender who never struck starts to: that is its one new effect.
+							t.truthy(changed + (if d7 > 0 then 1 else 0) == 1, where .. " one effect")
+						else
+							t.truthy(d7 / d6 <= 1.35 + 1e-9, string.format("%s dps ×%.3f > 1.35", where, d7 / d6))
+							t.truthy(changed <= 1, where .. " at most one effect, changed " .. changed)
+							t.truthy(not (d7 > d6 + 1e-9 and changed > 0), where .. " damage and an effect together")
+							t.truthy(d7 > d6 + 1e-9 or changed == 1, where .. " does something")
+						end
+					end
+				end
+			end
+		end)
+
+		t.it("upgrade rules: level 7 only from the last level, with a path, once; prices and miser apply", function()
+			local s = sim(straight, function()
+				return { spawns = {}, count = 0 }
+			end, 1, 1e6)
+			local _, _, q = TdTowers.place(s, "p1", "qabaday", Units.qabaday, 50, 4, 0, nil, rules())
+			local ok, err = TdTowers.upgrade(s, "p1", q.id, Units.qabaday, rules(), "a")
+			t.eq(err, "bad_path", "no path below the last level")
+			for _ = 2, #Units.qabaday.levels do
+				t.truthy(TdTowers.upgrade(s, "p1", q.id, Units.qabaday, rules()))
+			end
+			ok, err = TdTowers.upgrade(s, "p1", q.id, Units.qabaday, rules())
+			t.eq(err, "bad_path", "the signature needs a path")
+			ok, err = TdTowers.upgrade(s, "p1", q.id, Units.qabaday, rules(), "c")
+			t.eq(err, "bad_path")
+			local cash = s.players.p1.cash
+			ok = TdTowers.upgrade(s, "p1", q.id, Units.qabaday, rules(), "a")
+			t.truthy(ok)
+			t.eq(cash - s.players.p1.cash, Units.qabaday.signature.a.cost)
+			t.eq(q.level, 7)
+			t.eq(q.path, "a")
+			t.eq(q.stats.ability.cooldown, 8, "Rage")
+			t.eq(Units.qabaday.ability.cooldown, 12, "the config itself is untouched")
+			ok, err = TdTowers.upgrade(s, "p1", q.id, Units.qabaday, rules(), "b")
+			t.eq(err, "max_level", "a second choice is refused")
+			-- A Rare has no level 7.
+			local _, _, w = TdTowers.place(s, "p1", "walad", Units.walad, 70, 4, 0, nil, rules())
+			for _ = 2, #Units.walad.levels do
+				TdTowers.upgrade(s, "p1", w.id, Units.walad, rules())
+			end
+			ok, err = TdTowers.upgrade(s, "p1", w.id, Units.walad, rules(), "a")
+			t.eq(err, "max_level")
+			-- Miser pays 10 % less for a signature too.
+			local _, _, z = TdTowers.place(s, "p1", "zaim", Units.zaim, 90, 4, 0, Traits.traits.miser, rules())
+			for _ = 2, #Units.zaim.levels do
+				TdTowers.upgrade(s, "p1", z.id, Units.zaim, rules())
+			end
+			cash = s.players.p1.cash
+			t.truthy(TdTowers.upgrade(s, "p1", z.id, Units.zaim, rules(), "b"))
+			t.eq(cash - s.players.p1.cash, UnitLogic.costFor(Units.zaim.signature.b.cost, Traits.traits.miser))
+		end)
+
+		t.it("both paths of every signature unit change exactly what their config says", function()
+			for id, u in Units do
+				if u.signature then
+					local top = #u.levels
+					local s6 = UnitLogic.stats(u, top, 0, nil, 0)
+					for _, path in { "a", "b" } do
+						local sig = u.signature[path]
+						local s7 = UnitLogic.stats(u, top + 1, 0, nil, 0, nil, path)
+						for k, v in sig.set or {} do
+							t.eq(s7[k], v, id .. "." .. path .. " sets " .. k)
+						end
+						for k, v in sig.ability or {} do
+							t.eq(s7.ability[k], v, id .. "." .. path .. " ability " .. k)
+						end
+						if sig.cooldownMul then
+							t.truthy(math.abs(s7.cooldown - s6.cooldown * sig.cooldownMul) < 1e-9, id .. "." .. path .. " cooldown")
+						end
+						if sig.revealsStealth then
+							t.eq(s7.revealsStealth, true)
+						end
+						if sig.haste then
+							t.eq(s7.haste, sig.haste)
+						end
+						t.eq(s7.range, s6.range, id .. "." .. path .. " keeps its range")
+					end
+				end
+			end
+		end)
+
+		t.it("in the sim: Mercy slows with the shabriyeh, Pin stuns with the sweep, Rally hastes, Brave strikes", function()
+			local function oneWall()
+				return function()
+					return { spawns = { { at = 0, enemy = "colonel", hpMul = 100, speedMul = 1 } }, count = 1 }
+				end
+			end
+			local function maxed(s, id, x, z, path)
+				local _, _, tw = TdTowers.place(s, "p1", id, Units[id], x, z, 0, nil, rules())
+				for _ = 2, #Units[id].levels do
+					TdTowers.upgrade(s, "p1", tw.id, Units[id], rules())
+				end
+				if path then
+					TdTowers.upgrade(s, "p1", tw.id, Units[id], rules(), path)
+				end
+				return tw
+			end
+			-- Mercy: the first attack is the shabriyeh (ready at once) and it slows to 0.5.
+			local s = sim(straight, oneWall(), 1)
+			run(s, 1.05)
+			local boss = s.enemies[1]
+			maxed(s, "zaim", 3, 4, "b")
+			run(s, TD.TICK * 2)
+			t.eq(boss.slowMul, 0.5)
+			t.truthy(boss.slowUntil > s.time + 2.5)
+			-- Pin: the sweep stuns.
+			local s2 = sim(straight, oneWall(), 1)
+			run(s2, 1.05)
+			local b2 = s2.enemies[1]
+			maxed(s2, "pahlawan", 3, 4, "b")
+			run(s2, TD.TICK * 2)
+			t.truthy(b2.stunUntil >= s2.time + 1.4, "stunned ~1.5 s by the sweep")
+			-- Rally: a defender near the 'akeed attacks 10 % faster.
+			local s3 = sim(straight, oneWall(), 1)
+			local w = maxed(s3, "walad", 20, 4)
+			local akeed = maxed(s3, "zaim_akbar", 24, 4, "b")
+			t.eq(TdSim.hasteFor(s3, w), 0.9)
+			t.eq(TdSim.hasteFor(s3, akeed), 1, "not itself")
+			-- Brave: the mukhtar finally attacks.
+			local s4 = sim(straight, oneWall(), 1)
+			run(s4, 1.05)
+			local m = maxed(s4, "mukhtar", 3, 4, "b")
+			local ev = run(s4, 3)
+			local n = 0
+			for _, e in ev do
+				if e.type == "attack" and e.tower == m.id then
+					n += 1
+				end
+			end
+			t.truthy(n >= 2, "Brave attacks")
+		end)
+	end)
+
 	-- Traits v2 (docs/STORY_PLAN.md §7.2, S1-S02): 12 traits, a second slot at TD.TRAIT2_STARS
 	-- stars, the better trait per stat, and the D-041 caps.
 	t.describe("Traits v2 (S1-S02)", function()

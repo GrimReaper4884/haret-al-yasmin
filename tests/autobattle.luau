@@ -67,6 +67,12 @@ AutoBattle.POLICIES = {
 		plan = { "walad", "hallaq", "hallaq", "zaim", "qabaday", "pahlawan", "mukhtar", "zaim", "pahlawan", "mukhtar" },
 		upgrades = true,
 	},
+	["leg10up+sig"] = {
+		label = "10 with Legendaries + upgrades + level-7 signatures (path a)",
+		plan = { "walad", "hallaq", "hallaq", "zaim", "qabaday", "pahlawan", "mukhtar", "zaim", "pahlawan", "mukhtar" },
+		upgrades = true,
+		signature = "a",
+	},
 	myth12up = {
 		label = "12 Mythic/Legendary + upgrades",
 		plan = { "hallaq", "hallaq", "hallaq", "zaim", "zaim_akbar", "arada", "mukhtar", "pahlawan", "zaim", "pahlawan", "mukhtar", "hallaq" },
@@ -84,7 +90,7 @@ AutoBattle.POLICIES = {
 		slots = 7, -- Extra Slot pass
 	},
 }
-AutoBattle.POLICY_ORDER = { "re6", "re4up", "re6up", "re10up", "leg6", "leg10up", "myth12up", "whale" }
+AutoBattle.POLICY_ORDER = { "re6", "re4up", "re6up", "re10up", "leg6", "leg10up", "leg10up+sig", "myth12up", "whale" }
 
 local SAMPLE_STEP = 1 -- studs between road samples for coverage
 local MAX_SPOT_DIST = 9 -- spots farther than this from the road are never considered
@@ -193,7 +199,7 @@ end
 -- splash counts double, shabriyeh/sweep add their average, supports are worth their buff on the
 -- damage towers they cover.
 local function dps(def, level: number): number
-	local lv = def.levels[level]
+	local lv = def.levels[math.min(level, #def.levels)] -- a level-7 signature counts as its last level here
 	if lv.damage <= 0 then
 		return 0
 	end
@@ -209,7 +215,7 @@ local function dps(def, level: number): number
 end
 
 levelValue = function(state, t, def, level: number): number
-	local lv = def.levels[level]
+	local lv = def.levels[math.min(level, #def.levels)]
 	if lv.buff then
 		local covered = 0
 		for _, o in state.towers do
@@ -246,29 +252,47 @@ local function think(bot, state, spots, rules)
 	end
 	-- 2) The upgrade with the most damage per cash: saves for it while the gate holds, settles for
 	-- the best affordable one after a wave that leaked.
+	-- A level-7 signature (policy.signature = its path) is one more candidate, valued as a 15 % gain
+	-- on the last level (its paths add up to +35 % damage or one effect, D-047).
+	local function nextStep(t, def): (number?, number, string?)
+		local nextLv = def.levels[t.level + 1]
+		if nextLv and (policy.maxLevel == nil or t.level < policy.maxLevel) then
+			return nextLv.cost, (levelValue(state, t, def, t.level + 1) - levelValue(state, t, def, t.level)) / nextLv.cost, nil
+		end
+		local sig = policy.signature and def.signature
+		if sig and t.level == #def.levels then
+			local cost = sig[policy.signature].cost
+			return cost, 0.15 * levelValue(state, t, def, t.level) / cost, policy.signature
+		end
+		return nil, 0, nil
+	end
 	while true do
-		local best, bestValue = nil, -1
-		local afford, affordValue = nil, -1
+		local best, bestValue, bestCost, bestPath = nil, -1, 0, nil
+		local afford, affordValue, affordPath = nil, -1, nil
 		for _, t in state.towers do
 			if t.owner == bot.key then
 				local def = Units[t.unitId]
-				local nextLv = def.levels[t.level + 1]
-				if nextLv and (policy.maxLevel == nil or t.level < policy.maxLevel) then
-					local value = (levelValue(state, t, def, t.level + 1) - levelValue(state, t, def, t.level)) / nextLv.cost
+				local cost, value, path = nextStep(t, def)
+				if cost then
 					if value > bestValue then
-						best, bestValue = t, value
+						best, bestValue, bestCost, bestPath = t, value, cost, path
 					end
-					if nextLv.cost <= p.cash and value > affordValue then
-						afford, affordValue = t, value
+					if cost <= p.cash and value > affordValue then
+						afford, affordValue, affordPath = t, value, path
 					end
 				end
 			end
 		end
-		local pick = if best and Units[best.unitId].levels[best.level + 1].cost <= p.cash then best elseif bot.leaking then afford else nil
+		local pick, path = nil, nil
+		if best and bestCost <= p.cash then
+			pick, path = best, bestPath
+		elseif bot.leaking then
+			pick, path = afford, affordPath
+		end
 		if not pick then
 			return
 		end
-		TdTowers.upgrade(state, bot.key, pick.id, Units[pick.unitId], rules)
+		TdTowers.upgrade(state, bot.key, pick.id, Units[pick.unitId], rules, path)
 	end
 end
 
