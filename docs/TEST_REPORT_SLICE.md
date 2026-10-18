@@ -736,3 +736,15 @@ Verdict: external (Studio or a plugin), ignored (D-020).
 | Tuning during the run | Rival Lane road #8E8D86 → #625D55 (it barely read against the paving); haze transparency 0.86 → 0.76, size 7 → 8, rate 0.12 → 0.16 per stud (invisible at first) |
 | Console | no errors from our code |
 | Restore | Effects full, language en, loadout unchanged, no lira spent |
+
+### PV-E04 Meshy props: hanging lantern, market bundle, jasmine pot (2026-10-18, D-035)
+
+| Check | Result |
+|---|---|
+| Meshes | hanging_lantern 1,354 tris, market_bundle 1,961, jasmine_pot 1,893 (all ≤ 2k); one 1024² base-colour map each after `tools/meshy/shrink_textures.py`; re-imported headless in Blender 5.2 (1 object, 1024×1024 each) |
+| Import | Studio 3D importer (File → Import, Studio Default preset, Creator Me), one MeshPart per model; saved to `assets/production/PropModels/*.rbxm`; Rojo synced them into `ReplicatedStorage.PropModels` |
+| Lobby swap | 16 hanging lanterns, 4 market bundles, 9 jasmine pots; no tagged primitive left; 16 lights now on the lantern meshes; `[World] built` 1,499 → 1,423 parts |
+| Arena swap (orchard) | 8 market bundles (kerb and garden crates), 2 jasmine pots, 4 hanging lanterns (gate wall and two wires); 393 → 333 parts; lights 4 |
+| `tools/check.ps1` | green, 267 specs (new: swap config names the three props with prop-sized heights) |
+| Captures | `pve04_lane_bundle_lanterns_*` (bundle on the kerb, brass lanterns on their brackets), `pve04_lane_jasmine_pots_*`, `pve04_arena_kerb_bundles_*` |
+| Console | no errors from our code |
