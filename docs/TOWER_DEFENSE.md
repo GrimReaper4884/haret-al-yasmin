@@ -60,25 +60,25 @@ clearing N on Normal; Hard after Normal, Nightmare after Hard, per episode.
 
 The simulation is pure (`TdSim.step(state, dt)` returns events) and covered by `tests/td.spec.luau`.
 
-## 4. Defenders (`Config/Units`)
+## 4. Defenders (`Config/Units`; names one letter off since 2026-10-18, STORY_PLAN §3, C-241)
 
 | Id | Name (EN) | Rarity | Role | Signature |
 |----|-----------|--------|------|-----------|
 | walad | Lane Boy | Rare | ranged | starter unit, cheap, 8 max |
-| natour | Abu Fares the Watchman | Rare | ranged | sees stealth, lantern slows and reveals stealth to defenders in his range |
-| farran | Abu Bashir the Baker | Rare | splash | hot loaves |
-| saqqa | Fawzia | Rare | splash | broom sweep, slows |
-| hallaq | Issam, the Barber's Son | Rare | melee | fast razor, sees stealth |
-| khayyat | Abu Ghalib the Chickpea Seller | Rare | ranged | longest range |
-| qahwaji | Abu Hatem of the Coffee House | Rare | farm | cash per wave |
-| qabaday | Mo'taz | Epic | melee | shabriyeh ×6 |
-| haddad | Abu Khater the Blacksmith | Epic | splash | stuns |
-| mukhtar | Abu Badr | Epic | support | +15–65 % damage aura |
-| zaim | Za'im Abu Saleh | Legendary | melee | shabriyeh ×10 |
+| natour | Abu Hares the Watchman | Rare | ranged | sees stealth, lantern slows and reveals stealth to defenders in his range |
+| farran | Abu Baseer the Baker | Rare | splash | hot loaves |
+| saqqa | Fawza | Rare | splash | broom sweep, slows |
+| hallaq | Hissam, the Barber's Son | Rare | melee | fast razor, sees stealth |
+| khayyat | Abu Ghadeb the Chickpea Seller | Rare | ranged | longest range |
+| qahwaji | Abu Hazem of the Coffee House | Rare | farm | cash per wave |
+| qabaday | Mo'ez | Epic | melee | shabriyeh ×6 |
+| haddad | Abu Shater the Blacksmith | Epic | splash | stuns |
+| mukhtar | Abu Bader | Epic | support | +15–65 % damage aura |
+| zaim | Za'im Abu Faleh | Legendary | melee | shabriyeh ×10 |
 | pahlawan | The Strongman | Legendary | splash | sweep, stun |
-| umm_hara | Abu Issam, the Barber-Hakim | Legendary | healer | repairs the gate, small aura |
+| umm_hara | Abu Hissam, the Barber-Hakim | Legendary | healer | repairs the gate, small aura |
 | arada | The 'Arada Troupe | Mythic | splash | wide sweep |
-| zaim_akbar | Al-'Akeed Abu Shehab | Mythic | melee | shabriyeh ×15; season-1 pass level 50 |
+| zaim_akbar | Al-'Akeed Abu Shehan | Mythic | melee | shabriyeh ×15; season-1 pass level 50 |
 | qitt | Cat of the Lane | Secret | melee | code `QITT`, never from a banner |
 
 Copies → stars (+5 % damage each; 1/2/4/7/11 extra copies). Each owned unit has one **trait**, and a second

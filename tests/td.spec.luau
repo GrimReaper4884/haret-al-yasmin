@@ -942,7 +942,7 @@ return function(t)
 			local _, _, w = TdTowers.place(s, "p1", "walad", Units.walad, 20, 4, 0, nil, rules())
 			t.eq(attacksBy(run(s, 12), w.id), 0)
 			t.eq(find(s, "neighbour").disguised, true)
-			-- Abu Fares's lantern covers the road: revealed, and then everyone can hit it.
+			-- Abu Hares's lantern covers the road: revealed, and then everyone can hit it.
 			local s2 = one()
 			local _, _, w2 = TdTowers.place(s2, "p1", "walad", Units.walad, 20, 4, 0, nil, rules())
 			local _, _, n2 = TdTowers.place(s2, "p1", "natour", Units.natour, 40, -6, 0, nil, rules()) -- too far to light the boy

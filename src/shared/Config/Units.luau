@@ -3,9 +3,10 @@
 -- (unit.<id>.name / .desc); visuals describe a primitive rig (Util/RigBuilder).
 --
 -- Since 2026-10-16 (owner's decision, docs/COPYRIGHT_REGISTER.md C-201) most defenders carry the
--- names and roles of the lane's main characters in the classic Damascus-lane drama (Abu Issam the
--- barber-hakim, Abu Shehab, Mo'taz…). Ids and balance were kept, only identities moved: e.g. the
--- legendary healer slot `umm_hara` is Abu Issam. Faces are stylized cartoons, never actor
+-- roles of the lane's main characters in the classic Damascus-lane drama; since 2026-10-18 their
+-- names are one letter off (STORY_PLAN §3, C-241: Abu Hissam the barber-hakim, Abu Shehan,
+-- Mo'ez…). Ids and balance were kept, only identities moved: e.g. the
+-- legendary healer slot `umm_hara` is Abu Hissam. Faces are stylized cartoons, never actor
 -- likenesses. Display names are plain strings and can be changed in Strings without touching
 -- balance.
 --

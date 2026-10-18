@@ -53,7 +53,7 @@ local Looks: { [string]: Look } = {
 		cloak = "#4A2E18",
 		model = "AbuFares",
 		anims = { idle = 90495332802964, attack = 98400283326592 },
-	}, -- Abu Fares the watchman
+	}, -- Abu Hares the watchman
 	farran = {
 		build = "stout",
 		outfit = "apron",
@@ -63,7 +63,7 @@ local Looks: { [string]: Look } = {
 		apron = "#FBF8F1",
 		model = "AbuBashir",
 		anims = { idle = 104394597256841, attack = 84495088331540 },
-	}, -- Abu Bashir the baker
+	}, -- Abu Baseer the baker
 	saqqa = {
 		build = "normal",
 		outfit = "abaya",
@@ -73,8 +73,8 @@ local Looks: { [string]: Look } = {
 		model = "Fawzia",
 		-- v2 model (no fused broom; the broom is an Anim/HandProps prop): the published clips were
 		-- made for the v1 rig, so only the baked clips (Anim/Clips/saqqa) apply.
-	}, -- Fawzia
-	-- Issam, Abu Issam's son and apprentice
+	}, -- Fawza
+	-- Hissam, Abu Hissam's son and apprentice
 	hallaq = {
 		build = "slim",
 		outfit = "apron",
@@ -93,7 +93,7 @@ local Looks: { [string]: Look } = {
 		hair = GREY,
 		model = "AbuGhalib",
 		anims = { idle = 103539550283275, attack = 124855699529232 },
-	}, -- Abu Ghalib
+	}, -- Abu Ghadeb
 	qahwaji = {
 		build = "stout",
 		outfit = "apron",
@@ -103,7 +103,7 @@ local Looks: { [string]: Look } = {
 		apron = "#C9A13B",
 		model = "AbuHatem",
 		anims = { idle = 99420630175988, attack = 137357629317314 },
-	}, -- Abu Hatem
+	}, -- Abu Hazem
 	qabaday = {
 		build = "broad",
 		outfit = "vest",
@@ -112,7 +112,7 @@ local Looks: { [string]: Look } = {
 		hair = DARK,
 		model = "Motaz",
 		anims = { idle = 100329174869234, attack = 72491953659647 },
-	}, -- Mo'taz
+	}, -- Mo'ez
 	haddad = {
 		build = "broad",
 		outfit = "apron",
@@ -122,7 +122,7 @@ local Looks: { [string]: Look } = {
 		apron = "#3D3A38",
 		model = "AbuKhater",
 		anims = { idle = 79270488835196, attack = 108770696471593 },
-	}, -- Abu Khater
+	}, -- Abu Shater
 	mukhtar = {
 		build = "slim",
 		outfit = "qumbaz",
@@ -131,7 +131,7 @@ local Looks: { [string]: Look } = {
 		hair = DARK,
 		model = "AbuBadr",
 		anims = { idle = 118604731409520, attack = 87931164204170 },
-	}, -- Abu Badr
+	}, -- Abu Bader
 	zaim = {
 		build = "broad",
 		outfit = "bisht",
@@ -141,7 +141,7 @@ local Looks: { [string]: Look } = {
 		cloak = DARK,
 		model = "AbuSaleh",
 		anims = { idle = 130775978082816, attack = 111473861813662 },
-	}, -- Za'im Abu Saleh
+	}, -- Za'im Abu Faleh
 	pahlawan = {
 		build = "giant",
 		outfit = "sherwal",
@@ -151,7 +151,7 @@ local Looks: { [string]: Look } = {
 		model = "Strongman",
 		anims = { idle = 76414942150002, attack = 80908186732109 },
 	},
-	-- Abu Issam, the barber and hakim of the lane: Meshy character (COPYRIGHT_REGISTER C-200)
+	-- Abu Hissam, the barber and hakim of the lane: Meshy character (COPYRIGHT_REGISTER C-200)
 	umm_hara = {
 		build = "slim",
 		outfit = "apron",
@@ -179,7 +179,7 @@ local Looks: { [string]: Look } = {
 		hair = DARK,
 		model = "AbuShehab",
 		anims = { idle = 106622979715660, attack = 134238214440993 },
-	}, -- Al-'Akeed Abu Shehab
+	}, -- Al-'Akeed Abu Shehan
 	qitt = { model = "Cat" },
 
 	------------------------------------------------------------------ attackers
