@@ -65,9 +65,9 @@ local function build()
 	ratesPanel = Theme.panel({ Name = "TraitRates", Size = UDim2.fromScale(1, 1), ZIndex = 14, Visible = false, Parent = body })
 	Create("UIPadding", { PaddingTop = UDim.new(0, 8), PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12), PaddingBottom = UDim.new(0, 8), Parent = ratesPanel })
 	ratesTitle = Theme.label({ TextSize = 16, FontFace = Theme.fontBold, Size = UDim2.new(1, -48, 0, 22), ZIndex = 15, Parent = ratesPanel })
-	ratesText = Theme.label({ TextSize = 14, Position = UDim2.fromOffset(0, 26), Size = UDim2.new(0.5, -6, 0, 112), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 15, Parent = ratesPanel })
-	ratesText2 = Theme.label({ TextSize = 14, Position = UDim2.new(0.5, 6, 0, 26), Size = UDim2.new(0.5, -6, 0, 112), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 15, Parent = ratesPanel })
-	ratesSwitch = Theme.button({ TextSize = 13, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -48, 0, 0), Size = UDim2.fromOffset(120, 32), BackgroundColor3 = Theme.colors.quest, ZIndex = 15, Visible = false, Parent = ratesPanel })
+	ratesText = Theme.label({ TextSize = 14, Position = UDim2.fromOffset(0, 44), Size = UDim2.new(0.5, -6, 0, 116), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 15, Parent = ratesPanel })
+	ratesText2 = Theme.label({ TextSize = 14, Position = UDim2.new(0.5, 6, 0, 44), Size = UDim2.new(0.5, -6, 0, 116), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 15, Parent = ratesPanel })
+	ratesSwitch = Theme.button({ TextSize = 13, Position = UDim2.fromOffset(0, 164), Size = UDim2.fromOffset(120, 32), BackgroundColor3 = Theme.colors.quest, ZIndex = 15, Visible = false, Parent = ratesPanel })
 	ratesNote = Theme.label({ TextSize = 12, TextColor3 = Theme.colors.textMuted, AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(1, 0, 0, 44), TextYAlignment = Enum.TextYAlignment.Bottom, ZIndex = 15, Parent = ratesPanel })
 	local close = Theme.button({ Text = "X", TextSize = 16, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromOffset(40, 40), BackgroundColor3 = Theme.colors.danger, ZIndex = 15, Parent = ratesPanel })
 	close.Activated:Connect(function()
@@ -122,6 +122,10 @@ function renderRates(snapshot: any)
 	ratesNote.Text = t("units.rates_note")
 	ratesSwitch.Text = t("units.rates_switch")
 	ratesSwitch.Visible = open
+	-- Columns start below the close button; in Arabic the first column sits on the right, and so does the switch.
+	ratesText.Position = if rtl then UDim2.new(0.5, 6, 0, 44) else UDim2.fromOffset(0, 44)
+	ratesText2.Position = if rtl then UDim2.fromOffset(0, 44) else UDim2.new(0.5, 6, 0, 44)
+	ratesSwitch.Position = if rtl then UDim2.new(1, -120, 0, 164) else UDim2.fromOffset(0, 164)
 	for _, l in { ratesTitle, ratesText, ratesText2, ratesNote } do
 		Theme.align(l, rtl)
 	end
