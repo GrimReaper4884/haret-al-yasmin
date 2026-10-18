@@ -207,9 +207,9 @@ models, red-teaming, onboarding measurement, and live ops.
 - [ ] **P3-07 Analytics review** · deps: P2-16
   - **Goal:** Economy source/sink events per currency, progression, mode starts and clears; verify method names with `http_get` docs.
   - **Accept:** events visible in Studio output; the owner confirms the dashboard after a live test (STOP).
-- [ ] **P3-08 Mobile UI pass** · deps: P2-17
-  - **Goal:** Touch targets ≥ 44 px, safe areas, portrait-proof modals, touch placement.
-  - **Accept:** screenshots at phone and tablet via `rbx-device-simulator-lua`; a real-device run (owner, STOP) for touch placement.
+- [ ] **P3-08 Mobile UI pass** · deps: P2-17 · expanded 2026-10-18 into [`MOBILE_HUD_PLAN.md`](MOBILE_HUD_PLAN.md) (tasks MH-00 … MH-18; work from that file, tick this line when MH-18 is done)
+  - **Goal:** Lobby and match HUD playable with two thumbs: touch targets ≥ 48 px, safe areas and the Roblox corners respected, a Place-button placement flow on touch, bottom-sheet defender panel, lobby bottom bar, sheet modals, UI scale setting. Landscape only (portrait dropped, see the plan's B9).
+  - **Accept:** the plan's Part D matrix (Device Simulator phone ×2 and tablet captures, audit probe at 0 undersized buttons) and a real-device run (owner, STOP).
 - [x] **P3-09 Red-team pass** · deps: P2-15 · 33e81d3 (pure specs + 4 fixes, then the Studio fuzz run and the session-lock test: `docs/review/REDTEAM_P3-09.md`)
   - **Create:** `src/server/Services/RemoteFuzz.luau` (Studio only): every remote, 1,000 fuzzed calls each from a Client context (random types, NaN/inf, huge strings, other players' ids, replayed receipts and codes).
   - **Accept:** 0 state changes from invalid calls (profile checksum unchanged), rate limits trip; a two-session lock test refuses the second session; findings in `docs/security/redteam-P3.md`.
