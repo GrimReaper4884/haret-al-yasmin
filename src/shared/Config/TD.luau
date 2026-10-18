@@ -82,6 +82,15 @@ return {
 		ep1 = { lira = 80, qirsh = 120, xp = 120 },
 		ep2 = { lira = 140, qirsh = 180, xp = 180 },
 		ep3 = { lira = 240, qirsh = 260, xp = 260 },
+		-- Season Story 1 (STORY_PLAN §5.4)
+		ep4 = { lira = 300, qirsh = 300, xp = 320 },
+		ep5 = { lira = 360, qirsh = 340, xp = 380 },
+		ep6 = { lira = 420, qirsh = 380, xp = 440 },
+	},
+	-- One-off gifts for the first clear of an episode at (or above) a difficulty, on top of the reward
+	-- (beads are in Config/Beads.firstClear; the Episode 6 Umm Baki gift arrives with her, S1-A03).
+	STORY_FIRST_CLEAR = {
+		ep4 = { normal = { traitStones = 1 } },
 	},
 	LOSS_SHARE = 0.25, -- a lost match still pays this share (scaled by waves reached)
 	-- Infinite: lira per 10-wave tier (100, 230, 390, +30 per tier to wave 50, then +5)

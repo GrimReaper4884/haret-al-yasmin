@@ -62,6 +62,58 @@ local Waves = {
 		},
 		bosses = { [10] = "sergeant", [20] = "chief_thief", [30] = "rival_zaim", [40] = "colonel" },
 	} :: Episode,
+	-- Season Story 1 (STORY_PLAN §5, S1-S04). Each episode adds its mechanic through its attackers.
+	-- Episode 4 "The Lost Shoe" (saha, two roads): pickpocket swarms with a drummer every few waves,
+	-- the gendarmes searching houses.
+	ep4 = {
+		waves = 40,
+		hpPerWave = 0.085,
+		pool = {
+			{ enemy = "gendarme", from = 1, base = 4, perWave = 0.9, gap = 1.0 },
+			{ enemy = "pickpocket", from = 3, base = 6, perWave = 0.5, gap = 0.35, delay = 4 },
+			{ enemy = "thug", from = 5, base = 2, perWave = 0.7, gap = 1.1, delay = 5 },
+			{ enemy = "drummer", from = 6, base = 1, perWave = 0.08, gap = 4, delay = 4 },
+			{ enemy = "rider", from = 8, base = 1, perWave = 0.4, gap = 3, delay = 8 },
+			{ enemy = "bandit", from = 11, base = 1, perWave = 0.5, gap = 2.2, delay = 10 },
+			{ enemy = "corporal_minion", from = 12, base = 2, perWave = 0.4, gap = 1.4, delay = 10 },
+			{ enemy = "thief", from = 18, base = 4, perWave = 0.8, gap = 0.8, delay = 2 },
+		},
+		bosses = { [10] = "sergeant", [20] = "abu_jawdan", [30] = "corporal", [40] = "abu_jawdan" },
+	} :: Episode,
+	-- Episode 5 "Fire at the Warehouse" (warehouse yard): torchbearers set the door burning, porters
+	-- shield the crowd behind them.
+	ep5 = {
+		waves = 45,
+		hpPerWave = 0.085,
+		pool = {
+			{ enemy = "gendarme", from = 1, base = 3, perWave = 0.8, gap = 1.2 },
+			{ enemy = "torchbearer", from = 4, base = 1, perWave = 0.4, gap = 1.6, delay = 3 },
+			{ enemy = "thug", from = 6, base = 2, perWave = 0.6, gap = 1.1, delay = 5 },
+			{ enemy = "porter", from = 8, base = 1, perWave = 0.18, gap = 4, delay = 6 },
+			{ enemy = "bandit", from = 11, base = 1, perWave = 0.45, gap = 2.4, delay = 9 },
+			{ enemy = "thief", from = 14, base = 3, perWave = 0.6, gap = 0.9, delay = 2 },
+			{ enemy = "rider", from = 20, base = 1, perWave = 0.4, gap = 3, delay = 13 },
+			{ enemy = "abu_shatour", from = 45, base = 1, perWave = 0, gap = 1, delay = 20 },
+		},
+		bosses = { [15] = "sergeant", [30] = "abu_shatour", [45] = "rival_zaim" },
+	} :: Episode,
+	-- Episode 6 "The Blind Beggar" (saha at night): disguised neighbours and false beggars walk among
+	-- the crowd; only lanterns, or defenders in their light, unmask them.
+	ep6 = {
+		waves = 50,
+		hpPerWave = 0.09,
+		pool = {
+			{ enemy = "gendarme", from = 1, base = 3, perWave = 0.8, gap = 1.2 },
+			{ enemy = "disguised", from = 3, base = 1, perWave = 0.3, gap = 2.2, delay = 3 },
+			{ enemy = "thief", from = 5, base = 2, perWave = 0.6, gap = 1.0, delay = 5 },
+			{ enemy = "beggar", from = 7, base = 1, perWave = 0.25, gap = 2.6, delay = 7 },
+			{ enemy = "thug", from = 9, base = 2, perWave = 0.6, gap = 1.2, delay = 9 },
+			{ enemy = "spy", from = 12, base = 1, perWave = 0.35, gap = 2.6, delay = 11 },
+			{ enemy = "porter", from = 18, base = 1, perWave = 0.15, gap = 4, delay = 13 },
+			{ enemy = "drummer", from = 24, base = 1, perWave = 0.08, gap = 4, delay = 15 },
+		},
+		bosses = { [10] = "corporal", [25] = "abu_jawdan", [40] = "sergeant", [50] = "lateef" },
+	} :: Episode,
 }
 
 -- Endless: the same pool as ep3 but open-ended, with quadratic HP growth (compounding after wave

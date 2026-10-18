@@ -21,7 +21,7 @@ end
 local AutoBattle = require("./autobattle")
 local TD = require("../src/shared/Config/TD")
 
-local MODES = { "ep1", "ep2", "ep3", "infinite" }
+local MODES = { "ep1", "ep2", "ep3", "ep4", "ep5", "ep6", "infinite" }
 
 local VALUE_FLAGS = { party = true } -- flags that take a value: --party 4 or --party=4
 local positional, flags = {}, {}

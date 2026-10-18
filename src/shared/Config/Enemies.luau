@@ -277,7 +277,7 @@ local Enemies: { [string]: EnemyDef } = {
 	},
 	abu_jawdan = {
 		nameKey = "enemy.abu_jawdan.name",
-		hp = 2400,
+		hp = 4600,
 		speed = 3.8,
 		reward = 520,
 		gateDamage = 80,
@@ -288,7 +288,7 @@ local Enemies: { [string]: EnemyDef } = {
 	},
 	abu_shatour = {
 		nameKey = "enemy.abu_shatour.name",
-		hp = 3000,
+		hp = 5000,
 		speed = 4.6,
 		reward = 600,
 		gateDamage = 80,
@@ -299,7 +299,7 @@ local Enemies: { [string]: EnemyDef } = {
 	},
 	lateef = {
 		nameKey = "enemy.lateef.name",
-		hp = 3600,
+		hp = 4850,
 		speed = 4.4,
 		reward = 700,
 		gateDamage = 90,

@@ -284,6 +284,9 @@ with level-7 signatures), **myth12up+beads** (beads at 2 of 3 slots), **whale2**
 | **ep8** | 55 | 0.10 | myth12up+beads | whale2 | whale2 at ≤ 10/35 gate (a coin flip by design) |
 | **ep9** | 60 | 0.10 (+ ally) | myth12up+beads | whale2 | whale2 + the ally (the only cell where the ally decides it) |
 
+Achieved (S1-S04, D-057): ep4 leg10up / leg10up / whale; ep5 leg10up with Fawza / leg10up (needs her) / whale;
+ep6 leg10up+sig with two lanterns / myth12up (coin flip) → myth12up+beads / whale2. Table in `TOWER_DEFENSE.md` §5.
+
 Rules for tuning: every cell one tier harder than the one above it; **no episode is won by the tier below
 its Normal target on Normal** (asserted); bosses stay gate-breakers (gate damage 40/60/80/100/120 for the new
 tier); the opening waves of every difficulty are playable with 600 cash (Nightmare keeps `hp = 1.0`). Record the
@@ -333,9 +336,9 @@ hit/death clips (D-023 pattern).
 | Id | Name (EN / AR) | HP | Speed | Armor | Reward | Gate | Flags | Prompt (height) |
 |---|---|---|---|---|---|---|---|---|
 | `corporal` | Corporal Houri / العريف حوري | 900 | 4.4 | 0.2 | 240 | 40 | `boss` | Jumpy young colonial-gendarmerie corporal of the 1930s, thin moustache, kepi askew, dark blue uniform one size too big, holding a rifle he clearly cannot handle, wide anxious eyes, comic (1.8) |
-| `abu_jawdan` | Sergeant Abu Jawdan / الرقيب أبو جودان | 2,400 | 3.8 | 0.3 | 520 | 80 | `boss`, `summon = { enemy = "corporal_minion", count = 2, every = 15 }` | Corrupt 1930s police sergeant over four lanes, portly man with a big curled moustache and heavy brows, red-banded kepi, dark blue jacket straining at brass buttons, baton tucked under the arm, smug half-smile (1.95) |
-| `abu_shatour` | Abu Shatour / أبو شاطور | 3,000 | 4.6 | 0.2 | 600 | 80 | `boss`, `burn = 3` | Rival-lane thug boss of 1930s Damascus, broad man with a cleaver (a wide butcher's blade) in the right hand and a torch in the left, black laffeh wrapped tight, dark striped vest, chest hair, scar across the nose, snarling (2.0) |
-| `lateef` | Lateef the "Blind" / لطيف "الأعمى" | 3,600 | 4.4 | – | 700 | 90 | `boss`, `disguised`, `teleport = { atHp = 0.5, fraction = 0.2, telegraph = 2 }` | 1930s false blind beggar revealed as a spy, gaunt man ripping a dark blindfold off with one hand, dagger in the other, patched grey cloak flying, bare feet, cruel grin (1.85) |
+| `abu_jawdan` | Sergeant Abu Jawdan / الرقيب أبو جودان | 4,600 | 3.8 | 0.3 | 520 | 80 | `boss`, `summon = { enemy = "corporal_minion", count = 2, every = 15 }` | Corrupt 1930s police sergeant over four lanes, portly man with a big curled moustache and heavy brows, red-banded kepi, dark blue jacket straining at brass buttons, baton tucked under the arm, smug half-smile (1.95) |
+| `abu_shatour` | Abu Shatour / أبو شاطور | 5,000 | 4.6 | 0.2 | 600 | 80 | `boss`, `burn = 3` | Rival-lane thug boss of 1930s Damascus, broad man with a cleaver (a wide butcher's blade) in the right hand and a torch in the left, black laffeh wrapped tight, dark striped vest, chest hair, scar across the nose, snarling (2.0) |
+| `lateef` | Lateef the "Blind" / لطيف "الأعمى" | 4,850 | 4.4 | – | 700 | 90 | `boss`, `disguised`, `teleport = { atHp = 0.5, fraction = 0.2, telegraph = 2 }` | 1930s false blind beggar revealed as a spy, gaunt man ripping a dark blindfold off with one hand, dagger in the other, patched grey cloak flying, bare feet, cruel grin (1.85) |
 | `fakhr` | Fakhr Abu al-Hokm / فخر أبو الحكم | 4,200 | 4.8 | 0.25 | 800 | 90 | `boss`, `enrage` | One-handed rival-lane bruiser of 1930s Damascus, massive shoulders, a bandaged stump for the left hand, a spiked club in the right, dark hatta, open black vest, red sash, roaring (2.05) |
 | `abu_zira` | Abu Zira' / أبو زراع | 5,000 | 5.2 | 0.2 | 950 | 100 | `boss`, `enrage = { belowHp = 0.6, speed = 1.7 }` | Drunken rival-lane fighter of 1930s Damascus, lanky man with a long drooping moustache, tarboosh fallen backwards, unbuttoned striped shirt, a broken bottle in one hand and a shabriyeh in the other, reeling stance (1.95) |
 | `rival_zaim_enraged` | Al-'Akeed Abu al-Nahr, enraged / العكيد أبو النهر | 9,000 | 5.0 | 0.3 | 1,600 | 120 | `boss`, `shield = { radius = 8, reduce = 0.3 }`, `enrage` | Re-use the `AbuNar` model with a red `Highlight`, a torn sleeve and a 1.75 scale (no new mesh) |
@@ -824,7 +827,7 @@ are used by S1-C01 (fallback drawers if absent, as always).
 ## 13. Checklist (tick with the commit hash)
 
 - [x] S1-N01 1eb2504 · [x] S1-N02 f86d874
-- [x] S1-S01 4472de1 · [x] S1-S02 663db30 (+ 4eddbf7) · [x] S1-S03 2f1bc1e · [ ] S1-S04 · [x] S1-S05 74b5873 · [x] S1-S06 1352b05 · [x] S1-S07 712104f · [x] S1-S08 da22b7d · [ ] S1-S09 · [x] S1-S10 83fd17a · [x] S1-S11 112114e · [~] S1-S12 3a76001 (S1-S12a done; S1-S12b Cat migration held for the owner) · [ ] S1-S13
+- [x] S1-S01 4472de1 · [x] S1-S02 663db30 (+ 4eddbf7) · [x] S1-S03 2f1bc1e · [x] S1-S04 · [x] S1-S05 74b5873 · [x] S1-S06 1352b05 · [x] S1-S07 712104f · [x] S1-S08 da22b7d · [ ] S1-S09 · [x] S1-S10 83fd17a · [x] S1-S11 112114e · [~] S1-S12 3a76001 (S1-S12a done; S1-S12b Cat migration held for the owner) · [ ] S1-S13
 - [~] S1-A01 0707cdc (concepts done; owner reviews the sheet) · [ ] S1-A02 · [ ] S1-A03 · [ ] S1-A04 · [ ] S1-A05 · [ ] S1-A06 · [ ] S1-A07 · [ ] S1-A08
 - [x] S1-M01 d267b4e · [ ] S1-M02 · [ ] S1-M03 · [ ] S1-M04 · [ ] S1-M05 · [ ] S1-M06
 - [ ] S1-C01 · [ ] S1-C02 · [ ] S1-C03 · [ ] S1-C04 · [ ] S1-C05 · [ ] S1-C06

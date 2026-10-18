@@ -45,7 +45,7 @@ local episodes: { [string]: Episode } = {
 	ep3 = episode("ep3", { "sergeant", "chief_thief", "rival_zaim", "colonel" }),
 	ep4 = episode("ep4", { "corporal", "sergeant", "abu_jawdan" }),
 	ep5 = episode("ep5", { "sergeant", "abu_shatour", "rival_zaim" }),
-	ep6 = episode("ep6", { "spy", "abu_jawdan", "lateef" }),
+	ep6 = episode("ep6", { "corporal", "abu_jawdan", "sergeant", "lateef", "spy" }),
 	ep7 = episode("ep7", { "corporal", "sergeant", "abu_jawdan", "colonel" }),
 	ep8 = episode(
 		"ep8",

@@ -175,6 +175,35 @@ spend (whale endless was w93 / w82 on Normal / Hard before stun chains were capp
 limits: the bot never sells, and its placement is greedy, so margins of a few gate HP (ep2 Nightmare myth12up
 3/35) should be treated as coin flips.
 
+### Season Story 1 ladder (2026-10-18, S1-S04, D-057)
+
+Episodes 4–6 continue the solo ladder (STORY_PLAN §5.3) with the Season 1 loadouts: **leg10up+sig** leg10up
+buying level-7 signatures (path a) · **myth12up+beads** myth12up with beads in 2 of 3 slots (cooldown, range)
+· **whale2** the whale with two traits (za'im's blood + hawk), beads and signatures, 7 slots. The bot brings
+what an episode asks for and pays a loadout slot for it (`AutoBattle.adapt`): two Watchmen against disguised
+attackers (Episode 6), Fawza against burning ones (Episode 5), in place of the plan's least-used unit type.
+Episodes 1–3 and Infinite are unchanged (frozen in `tests/td.spec.luau`).
+
+| Mode | Diff. | re6 | re4up | re6up | re10up | leg6 | leg10up | leg10up+sig | myth12up | myth12up+beads | whale | whale2 |
+|------|-------|------|------|------|------|------|------|------|------|------|------|------|
+| ep4 | normal | lost w11 | lost w18 | lost w20 | lost w20 | lost w14 | WIN 96/100 | WIN 96/100 | WIN 99/100 | WIN 100/100 | WIN 100/100 | WIN 100/100 |
+| ep4 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | WIN 31/60 | WIN 31/60 | WIN 35/60 | WIN 40/60 | WIN 60/60 | WIN 60/60 |
+| ep4 | nightmare | lost w8 | lost w9 | lost w8 | lost w8 | lost w6 | lost w10 | lost w10 | lost w8 | lost w20 | WIN 30/35 | WIN 35/35 |
+| ep5 | normal | lost w12 | lost w17 | lost w30 | lost w30 | lost w13 | WIN 98/100 | WIN 98/100 | WIN 78/100 | WIN 87/100 | WIN 98/100 | WIN 99/100 |
+| ep5 | hard | lost w9 | lost w9 | lost w12 | lost w12 | lost w10 | WIN 27/60 | WIN 27/60 | lost w9 | WIN 6/60 | WIN 58/60 | WIN 60/60 |
+| ep5 | nightmare | lost w7 | lost w6 | lost w7 | lost w7 | lost w7 | lost w6 | lost w6 | lost w7 | lost w8 | WIN 29/35 | WIN 34/35 |
+| ep6 | normal | lost w11 | lost w13 | lost w25 | lost w50 | lost w13 | lost w50 | WIN 80/100 | WIN 78/100 | WIN 83/100 | WIN 96/100 | WIN 100/100 |
+| ep6 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | WIN 9/60 | WIN 19/60 | WIN 51/60 | WIN 58/60 |
+| ep6 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w8 | lost w7 | lost w8 | lost w50 | WIN 35/35 |
+
+Reading it: Episode 4 (the saha, two roads) is the Legendary wall at Abu Jawdan's first visit on wave 20;
+Episode 5 needs Fawza (Hard leg10up without her loses to Abu Shatour's torch on wave 45); Episode 6 needs two
+lanterns and, on Normal, the level-7 signatures to get Lateef down before his jump. Nightmare stays
+whale territory (whale2 only in Episode 6): the frozen Nightmare multipliers (boss ×1.8, growth ×4.5) put a
+boss ~6× further from Normal than the step between two loadouts, so no single boss HP could make
+myth12up+beads the Nightmare answer without also handing Normal to Rare/Epic teams. Lateef's window is narrow
+(4,750–4,925 HP keeps all three Episode 6 targets): retune him with the harness, never by feel.
+
 ### Party scaling (2026-10-16)
 
 Every player in a party gets the full start cash and wave bonus and builds their own defence (≤ 20 towers

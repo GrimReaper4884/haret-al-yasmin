@@ -69,6 +69,8 @@ AutoBattle.POLICIES = {
 		plan = { "walad", "hallaq", "hallaq", "zaim", "qabaday", "pahlawan", "mukhtar", "zaim", "pahlawan", "mukhtar" },
 		upgrades = true,
 	},
+	-- Season Story 1 power steps (STORY_PLAN §5.3); AutoBattle.adapt brings lanterns or water when an
+	-- episode asks for them.
 	["leg10up+sig"] = {
 		label = "10 with Legendaries + upgrades + level-7 signatures (path a)",
 		plan = { "walad", "hallaq", "hallaq", "zaim", "qabaday", "pahlawan", "mukhtar", "zaim", "pahlawan", "mukhtar" },
@@ -98,7 +100,22 @@ AutoBattle.POLICIES = {
 		slots = 7, -- Extra Slot pass
 	},
 }
-AutoBattle.POLICY_ORDER = { "re6", "re4up", "re6up", "re10up", "leg6", "leg10up", "leg10up+sig", "myth12up", "myth12up+beads", "whale" }
+-- whale2: the whale with traits v2 (za'im's blood + hawk), beads and signatures.
+AutoBattle.POLICIES.whale2 = {
+	label = "16 Mythic/Legendary, 5 stars, two traits, beads, signatures + upgrades (7 slots)",
+	plan = {
+		"hallaq", "hallaq", "hallaq", "zaim", "zaim_akbar", "arada", "mukhtar", "pahlawan", "zaim", "pahlawan",
+		"mukhtar", "qabaday", "qabaday", "qabaday", "qabaday", "hallaq",
+	},
+	upgrades = true,
+	stars = 5,
+	trait = "zaim",
+	trait2 = "hawk",
+	beads = { "cooldown", "range" },
+	signature = "a",
+	slots = 7,
+}
+AutoBattle.POLICY_ORDER = { "re6", "re4up", "re6up", "re10up", "leg6", "leg10up", "leg10up+sig", "myth12up", "myth12up+beads", "whale", "whale2" }
 
 local SAMPLE_STEP = 1 -- studs between road samples for coverage
 local MAX_SPOT_DIST = 9 -- spots farther than this from the road are never considered
@@ -112,19 +129,23 @@ local function spotsFor(arenaId: string, rules)
 		return spotCache[arenaId]
 	end
 	local arena = Arenas[arenaId]
-	local path = Path.build(arena.path)
+	-- Twin-gate arenas: sample every road (a shared stretch counts twice, as both halves of the
+	-- wave walk it), so the bot defends the side road too.
+	local roads = Path.buildAll(arena)
 	local samples = {}
-	local d = 0
-	while d <= path.length do
-		local x, z = Path.position(path, d)
-		table.insert(samples, { x, z })
-		d += SAMPLE_STEP
+	for _, road in roads do
+		local d = 0
+		while d <= road.length do
+			local x, z = Path.position(road, d)
+			table.insert(samples, { x, z })
+			d += SAMPLE_STEP
+		end
 	end
 	local cands = {}
 	local b = arena.bounds
 	for x = b[1], b[3] do
 		for z = b[2], b[4] do
-			local dp = Path.distanceTo(path, x, z)
+			local dp = Path.distanceToAll(roads, x, z)
 			if dp >= rules.pathHalfWidth + 0.2 and dp <= MAX_SPOT_DIST then
 				table.insert(cands, { x = x, z = z, dp = dp, cov = {} })
 			end
@@ -258,7 +279,11 @@ local function think(bot, state, spots, rules)
 				end
 				bead = UnitLogic.beadBonus(slots, Beads)
 			end
-			local ok, err = TdTowers.place(state, bot.key, unitId, def, spot.x, spot.z, policy.stars or 0, policy.trait and Traits.traits[policy.trait], rules, bead)
+			local trait = policy.trait and Traits.traits[policy.trait]
+			if policy.trait2 then
+				trait = UnitLogic.combineTraits(trait, Traits.traits[policy.trait2])
+			end
+			local ok, err = TdTowers.place(state, bot.key, unitId, def, spot.x, spot.z, policy.stars or 0, trait, rules, bead)
 			if not ok and err == "cannot_afford" then
 				return
 			end
@@ -319,6 +344,71 @@ function AutoBattle.partyScale(party: number)
 	return WaveLogic.partyScale(TD, party)
 end
 
+-- A sensible player brings what an episode asks for (STORY_PLAN §5.3: "needs 2 revealers", "needs a
+-- douser") and pays for it with a loadout slot: the unit type the plan uses least (after the opener;
+-- ties go to the later one) gives its towers to the newcomer, whose first `copies` go down right after
+-- the opener. Disguised attackers bring two watchmen, burning ones Fawza. Stock episodes 1–3 are
+-- never touched.
+local function swapIn(plan, unitId: string, copies: number)
+	local count = {}
+	for i, id in plan do
+		if i > 1 then
+			count[id] = (count[id] or 0) + 1
+		end
+	end
+	local drop, least = nil, math.huge
+	for i, id in plan do
+		if i > 1 and id ~= unitId and count[id] <= least then
+			drop, least = id, count[id]
+		end
+	end
+	local out = {}
+	for _, id in plan do
+		if id ~= drop then
+			table.insert(out, id)
+		end
+	end
+	for c = 1, math.max(copies, least) do
+		table.insert(out, if c <= copies then 1 + c else #out + 1, unitId)
+	end
+	return out
+end
+
+function AutoBattle.adapt(policy, episode)
+	if not episode then
+		return policy
+	end
+	local disguised, burning = false, false
+	for _, entry in episode.pool do
+		local def = Enemies[entry.enemy]
+		disguised = disguised or (def and def.disguised == true)
+		burning = burning or (def and def.burn ~= nil)
+	end
+	for _, boss in episode.bosses do
+		local def = Enemies[boss]
+		disguised = disguised or (def and def.disguised == true)
+		burning = burning or (def and def.burn ~= nil)
+	end
+	local lit, wet = false, false
+	for _, id in policy.plan do
+		lit = lit or Units[id].revealsStealth == true
+		wet = wet or Units[id].douse ~= nil
+	end
+	if (not disguised or lit) and (not burning or wet) then
+		return policy
+	end
+	local plan = policy.plan
+	if disguised and not lit then
+		plan = swapIn(plan, "natour", 2)
+	end
+	if burning and not wet then
+		plan = swapIn(plan, "saqqa", 1)
+	end
+	local adapted = table.clone(policy)
+	adapted.plan = plan
+	return adapted
+end
+
 local function resolvePolicy(policyId)
 	local policy = if type(policyId) == "table" then policyId else AutoBattle.POLICIES[policyId]
 	assert(policy, "bad policy " .. tostring(policyId))
@@ -359,6 +449,11 @@ function AutoBattle.play(modeId: string, difficulty: string, policyId: any, opts
 	-- Story episodes and events play their wave script (as MatchService does); opts.arena tries the
 	-- mode on another map (e.g. an event on its new arena before the switch).
 	local episode = if mode.kind == "story" then Waves.episodes[mode.episode] elseif mode.kind == "event" then Waves.events[mode.event] else nil
+	if not opts.raw then -- opts.raw: the loadout exactly as written (to show what the episode asks for)
+		for _, bot in bots do
+			bot.policy = AutoBattle.adapt(bot.policy, episode)
+		end
+	end
 	local total = if episode then episode.waves else nil
 	local arenaId = opts.arena or mode.arena
 	local arena = Arenas[arenaId]
@@ -464,6 +559,15 @@ function AutoBattle.play(modeId: string, difficulty: string, policyId: any, opts
 		wavesCleared = state.wavesCleared,
 		gateHp = state.gateHp,
 		gateMax = state.gateMax,
+		signatures = (function()
+			local n = 0
+			for _, t in state.towers do
+				if t.path then
+					n += 1
+				end
+			end
+			return n
+		end)(),
 		waves = rows,
 		totalWaves = total,
 		party = party,
