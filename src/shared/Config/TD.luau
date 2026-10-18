@@ -74,7 +74,8 @@ return {
 	STAR_BONUS = 0.05, -- +5% damage per star
 	MAX_LIRA = 10000000,
 	MAX_TRAIT_STONES = 100000,
-	TRAIT_REROLL_COST = 1, -- trait stones
+	TRAIT_REROLL_COST = 1, -- trait stones (either slot)
+	TRAIT2_STARS = 3, -- stars a unit needs before its second trait slot opens (traits v2)
 
 	-- Rewards (base; × difficulty.reward; × 2 on first clear of a story episode)
 	STORY_REWARDS = {

@@ -185,6 +185,7 @@ local function rulesFor(arenaId: string)
 		towerCap = TD.TOWER_CAP,
 		sellRefund = TD.SELL_REFUND,
 		starBonus = TD.STAR_BONUS,
+		traitCaps = Traits.caps,
 	}
 end
 

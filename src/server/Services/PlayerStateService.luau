@@ -39,7 +39,7 @@ local function snapshot(player: Player, profile: any): { [string]: any }
 	end
 	local units = {}
 	for id, rec in profile.units do
-		units[id] = { copies = rec.copies, trait = rec.trait, at = rec.at }
+		units[id] = { copies = rec.copies, trait = rec.trait, trait2 = rec.trait2, at = rec.at }
 	end
 	local s = {
 		qirsh = profile.qirsh,

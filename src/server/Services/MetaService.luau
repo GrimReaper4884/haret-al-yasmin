@@ -152,20 +152,25 @@ local function setLoadout(player: Player, list: any): { [string]: any }
 	return { ok = true }
 end
 
-local function rerollTrait(player: Player, unitId: any): { [string]: any }
+-- slot: nil or 1 = the first trait, 2 = the second (opens at TD.TRAIT2_STARS stars).
+local function rerollTrait(player: Player, unitId: any, slot: any): { [string]: any }
 	if not Validate.isIdentifier(unitId) or not (Units :: any)[unitId] then
 		return { ok = false, err = "bad_request" }
 	end
+	if slot ~= nil and slot ~= 1 and slot ~= 2 then
+		return { ok = false, err = "bad_request" }
+	end
+	local which: number = slot or 1
 	local seed, rng = seededRng()
 	local ok, err, trait = DataService.mutate(player, function(p)
-		return UnitLogic.rerollTrait(p, unitId, TD.TRAIT_REROLL_COST, Traits.traits, Traits.order, rng)
-	end, { src = "reroll:" .. unitId, seed = seed })
+		return UnitLogic.rerollTrait(p, unitId, TD.TRAIT_REROLL_COST, Traits.traits, Traits.order, rng, which, { starCopies = TD.STAR_COPIES, stars = TD.TRAIT2_STARS })
+	end, { src = "reroll:" .. unitId .. (if which == 2 then ":2" else ""), seed = seed })
 	if not ok then
 		return { ok = false, err = err }
 	end
 	Analytics.custom(player, "TraitReroll")
 	PlayerStateService.notify(player, "notify.trait_rolled", { traitKey = Traits.traits[trait :: string].nameKey })
-	return { ok = true, trait = trait }
+	return { ok = true, trait = trait, slot = which }
 end
 
 local function claimPass(player: Player, tier: any, track: any): { [string]: any }

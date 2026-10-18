@@ -32,7 +32,11 @@ local detail: Frame
 local ratesPanel: Frame
 local ratesTitle: TextLabel
 local ratesText: TextLabel
+local ratesText2: TextLabel -- second column (12 traits do not fit one column on a phone)
 local ratesNote: TextLabel
+local ratesSwitch: TextButton -- 1st / 2nd trait slot, shown once the second slot is open
+local ratesSlot = 1
+local renderRates: (snapshot: any) -> () -- defined below build(), which wires the slot switch to it
 local selected: string? = nil
 local busy = false
 
@@ -61,11 +65,20 @@ local function build()
 	ratesPanel = Theme.panel({ Name = "TraitRates", Size = UDim2.fromScale(1, 1), ZIndex = 14, Visible = false, Parent = body })
 	Create("UIPadding", { PaddingTop = UDim.new(0, 8), PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12), PaddingBottom = UDim.new(0, 8), Parent = ratesPanel })
 	ratesTitle = Theme.label({ TextSize = 16, FontFace = Theme.fontBold, Size = UDim2.new(1, -48, 0, 22), ZIndex = 15, Parent = ratesPanel })
-	ratesText = Theme.label({ TextSize = 14, Position = UDim2.fromOffset(0, 26), Size = UDim2.new(1, 0, 0, 148), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 15, Parent = ratesPanel })
+	ratesText = Theme.label({ TextSize = 14, Position = UDim2.fromOffset(0, 26), Size = UDim2.new(0.5, -6, 0, 112), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 15, Parent = ratesPanel })
+	ratesText2 = Theme.label({ TextSize = 14, Position = UDim2.new(0.5, 6, 0, 26), Size = UDim2.new(0.5, -6, 0, 112), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 15, Parent = ratesPanel })
+	ratesSwitch = Theme.button({ TextSize = 13, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -48, 0, 0), Size = UDim2.fromOffset(120, 32), BackgroundColor3 = Theme.colors.quest, ZIndex = 15, Visible = false, Parent = ratesPanel })
 	ratesNote = Theme.label({ TextSize = 12, TextColor3 = Theme.colors.textMuted, AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(1, 0, 0, 44), TextYAlignment = Enum.TextYAlignment.Bottom, ZIndex = 15, Parent = ratesPanel })
 	local close = Theme.button({ Text = "X", TextSize = 16, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromOffset(40, 40), BackgroundColor3 = Theme.colors.danger, ZIndex = 15, Parent = ratesPanel })
 	close.Activated:Connect(function()
 		ratesPanel.Visible = false
+	end)
+	ratesSwitch.Activated:Connect(function()
+		ratesSlot = 3 - ratesSlot
+		local snapshot = StateController.get()
+		if snapshot then
+			renderRates(snapshot)
+		end
 	end)
 end
 
@@ -75,9 +88,13 @@ local function fmtPercent(p: number): string
 	return string.format("%." .. decimals .. "f%%", p)
 end
 
--- Fills the rates panel for the selected unit (odds depend on its current trait: see
--- UnitLogic.rerollOdds). Same weights the server rolls with.
-local function renderRates(snapshot: any)
+local function slot2Open(owned: any): boolean
+	return UnitLogic.stars(owned.copies, TD.STAR_COPIES) >= TD.TRAIT2_STARS
+end
+
+-- Fills the rates panel for the selected unit and trait slot (odds depend on that slot's current
+-- trait: see UnitLogic.rerollOdds). Same weights the server rolls with, read from Config/Traits.
+function renderRates(snapshot: any)
 	local t = LocaleController.t
 	local rtl = LocaleController.isRtl()
 	local owned = selected and snapshot.units[selected]
@@ -85,26 +102,35 @@ local function renderRates(snapshot: any)
 		ratesPanel.Visible = false
 		return
 	end
+	local open = slot2Open(owned)
+	if not open then
+		ratesSlot = 1
+	end
+	local current = if ratesSlot == 2 then owned.trait2 else owned.trait
 	local lines = {}
-	for _, o in UnitLogic.rerollOdds(Traits.traits, Traits.order, owned.trait) do
+	for _, o in UnitLogic.rerollOdds(Traits.traits, Traits.order, current) do
 		local name = t(Traits.traits[o.trait].nameKey)
-		if o.trait == owned.trait then
+		if o.trait == current then
 			name ..= " " .. t("units.rates_current")
 		end
 		table.insert(lines, name .. ": " .. fmtPercent(o.percent))
 	end
-	ratesTitle.Text = t("units.rates_title")
-	ratesText.Text = table.concat(lines, "\n")
+	local half = math.ceil(#lines / 2)
+	ratesTitle.Text = t(if ratesSlot == 2 then "units.rates_title2" else "units.rates_title")
+	ratesText.Text = table.concat(lines, "\n", 1, half)
+	ratesText2.Text = table.concat(lines, "\n", half + 1, #lines)
 	ratesNote.Text = t("units.rates_note")
-	for _, l in { ratesTitle, ratesText, ratesNote } do
+	ratesSwitch.Text = t("units.rates_switch")
+	ratesSwitch.Visible = open
+	for _, l in { ratesTitle, ratesText, ratesText2, ratesNote } do
 		Theme.align(l, rtl)
 	end
 end
 
 local function statLine(t: any, def: any, owned: any): string
 	local stars = UnitLogic.stars(owned.copies, TD.STAR_COPIES)
-	local trait = Traits.traits[owned.trait]
-	local st = UnitLogic.stats(def, 1, stars, trait, TD.STAR_BONUS)
+	local trait = UnitLogic.ownedTrait(owned, Traits.traits, TD.STAR_COPIES, TD.TRAIT2_STARS)
+	local st = UnitLogic.stats(def, 1, stars, trait, TD.STAR_BONUS, Traits.caps)
 	local lines = {}
 	if st.damage > 0 then
 		table.insert(lines, t("match.stat_damage", { n = math.floor(st.damage + 0.5) }))
@@ -167,11 +193,16 @@ local function renderDetail(snapshot: any)
 		end
 	end
 	local traitDef = Traits.traits[owned.trait]
+	local open = slot2Open(owned)
+	local second = if not open
+		then t("units.trait2_locked", { n = TD.TRAIT2_STARS })
+		elseif owned.trait2 and Traits.traits[owned.trait2] then t("units.trait2", { trait = t(Traits.traits[owned.trait2].nameKey) })
+		else t("units.trait2_empty")
 	local traitLine = Theme.label({
-		Text = t("units.trait", { trait = t(traitDef.nameKey) }) .. (if next > 0 then "\n" .. t("units.copies", { n = next }) else ""),
-		TextSize = 13,
+		Text = t("units.trait", { trait = t(traitDef.nameKey) }) .. "\n" .. second .. (if next > 0 then "\n" .. t("units.copies", { n = next }) else ""),
+		TextSize = 12,
 		Position = UDim2.new(0.5, if rtl then -160 else 0, 0, 86),
-		Size = UDim2.new(0.5, 0, 0, 40),
+		Size = UDim2.new(0.5, 0, 0, 44),
 		TextYAlignment = Enum.TextYAlignment.Top,
 		ZIndex = 13,
 		Parent = detail,
@@ -224,23 +255,35 @@ local function renderDetail(snapshot: any)
 		end
 		setLoadout(list)
 	end)
-	local reroll = Theme.button({
-		Text = t("units.reroll") .. " (" .. t("units.stones", { n = snapshot.traitStones }) .. ")",
-		TextSize = 13,
-		AnchorPoint = Vector2.new(0, 1),
-		Position = UDim2.new(0, x + 180, 1, 0),
-		Size = UDim2.fromOffset(230, Theme.TOUCH - 6),
-		BackgroundColor3 = if snapshot.traitStones > 0 then Theme.rarity.epic else Theme.colors.buttonDisabled,
-		ZIndex = 13,
-		Parent = detail,
-	})
-	reroll.Activated:Connect(function()
-		if snapshot.traitStones > 0 then
-			request(function()
-				return Net.func(Net.Functions.RerollTrait):InvokeServer(unitId)
-			end)
-		end
-	end)
+	-- One reroll button per open slot (the second slot opens at TD.TRAIT2_STARS stars); with two the
+	-- stone count moves up to the second trait line.
+	local stones = " (" .. t("units.stones", { n = snapshot.traitStones }) .. ")"
+	if open then
+		traitLine.Text = t("units.trait", { trait = t(traitDef.nameKey) }) .. "\n" .. second .. stones .. (if next > 0 then "\n" .. t("units.copies", { n = next }) else "")
+	end
+	local slotsOpen = if open then 2 else 1
+	local width = if open then 112 else 230
+	for slot = 1, slotsOpen do
+		local label = if not open then t("units.reroll") .. stones else t(if slot == 1 then "units.reroll1" else "units.reroll2")
+		local reroll = Theme.button({
+			Text = label,
+			TextSize = if open then 11 else 13,
+			TextWrapped = true,
+			AnchorPoint = Vector2.new(0, 1),
+			Position = UDim2.new(0, x + 180 + (slot - 1) * (width + 6), 1, 0),
+			Size = UDim2.fromOffset(width, Theme.TOUCH - 6),
+			BackgroundColor3 = if snapshot.traitStones > 0 then Theme.rarity.epic else Theme.colors.buttonDisabled,
+			ZIndex = 13,
+			Parent = detail,
+		})
+		reroll.Activated:Connect(function()
+			if snapshot.traitStones > 0 then
+				request(function()
+					return Net.func(Net.Functions.RerollTrait):InvokeServer(unitId, slot)
+				end)
+			end
+		end)
+	end
 	local back = Theme.button({ Text = "<", TextSize = 16, AnchorPoint = Vector2.new(1, 1), Position = UDim2.fromScale(1, 1), Size = UDim2.fromOffset(44, Theme.TOUCH - 6), BackgroundColor3 = Theme.colors.quest, ZIndex = 13, Parent = detail })
 	back.Activated:Connect(function()
 		selected = nil

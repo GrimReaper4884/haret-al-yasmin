@@ -290,13 +290,13 @@ return function(t)
 			ok, err = UnitLogic.rerollTrait(p, "walad", 1, Traits.traits, Traits.order, seq({ 0.0, 0.999 }))
 			t.truthy(ok, err)
 			t.eq(p.traitStones, 1)
-			t.eq(p.units.walad.trait, "legend", "second roll after a repeat")
+			t.eq(p.units.walad.trait, Traits.order[#Traits.order], "second roll after a repeat (the last trait in the order)")
 			t.eq(UnitLogic.rerollTrait(p, "nope", 1, Traits.traits, Traits.order, seq({ 0 })), false)
 		end)
 		t.it("displayed reroll odds list every trait, sum to 100 and match the real roll exactly", function()
-			-- Every trait weight is a multiple of 0.5 out of 100, so a 200-step grid of rng midpoints
+			-- Every trait weight is a multiple of 0.5 out of 120, so a 240-step grid of rng midpoints
 			-- for both draws enumerates the roll exactly.
-			local N = 200
+			local N = 240
 			for _, current in { "steady", "legend", "keen" } do
 				local odds = UnitLogic.rerollOdds(Traits.traits, Traits.order, current)
 				t.eq(#odds, #Traits.order, "every trait listed")
@@ -323,7 +323,7 @@ return function(t)
 			end
 			local fresh = UnitLogic.rerollOdds(Traits.traits, Traits.order, nil)
 			t.eq(fresh[1].trait, "steady")
-			t.truthy(math.abs(fresh[1].percent - 30) < 1e-9, "no current trait = plain weights")
+			t.truthy(math.abs(fresh[1].percent - 100 * 30 / 120) < 1e-9, "no current trait = plain weights (30 of 120)")
 		end)
 	end)
 

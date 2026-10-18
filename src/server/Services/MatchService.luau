@@ -87,6 +87,7 @@ local function rulesFor(match: Match): TdTowers.Rules
 		towerCap = TD.TOWER_CAP,
 		sellRefund = TD.SELL_REFUND,
 		starBonus = TD.STAR_BONUS,
+		traitCaps = Traits.caps,
 	}
 end
 
@@ -541,7 +542,7 @@ local function placeTower(player: Player, unitId: any, x: any, z: any): { [strin
 	local lx, lz = ArenaService.toLocal(match.slot, Vector3.new(x, 0, z))
 	local owned = profile.units[unitId]
 	local stars = UnitLogic.stars(owned.copies, TD.STAR_COPIES)
-	local trait = Traits.traits[owned.trait]
+	local trait = UnitLogic.ownedTrait(owned, Traits.traits, TD.STAR_COPIES, TD.TRAIT2_STARS)
 	local key = match.players[player]
 	local ok, perr, tower = TdTowers.place(match.state, key, unitId, def, lx, lz, stars, trait, rulesFor(match))
 	if not ok then

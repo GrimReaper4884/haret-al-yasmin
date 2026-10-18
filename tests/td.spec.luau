@@ -499,6 +499,158 @@ return function(t)
 		end)
 	end)
 
+	-- Traits v2 (docs/STORY_PLAN.md §7.2, S1-S02): 12 traits, a second slot at TD.TRAIT2_STARS
+	-- stars, the better trait per stat, and the D-041 caps.
+	t.describe("Traits v2 (S1-S02)", function()
+		local straight = { { 0, 0 }, { 100, 0 } }
+		local caps = Traits.caps
+		local function capped()
+			local r = rules()
+			r.traitCaps = caps
+			return r
+		end
+		local function fresh()
+			return sim(straight, function()
+				return { spawns = {}, count = 0 }
+			end, 1, 100000)
+		end
+
+		t.it("12 traits; the first eight keep their weights; legend stays ≈ 0.4 %; odds sum to 100", function()
+			t.eq(#Traits.order, 12)
+			local total, seen = 0, {}
+			for _, id in Traits.order do
+				t.truthy(Traits.traits[id], id .. " in the table")
+				t.truthy(not seen[id], id .. " listed once")
+				seen[id] = true
+				total += Traits.traits[id].weight
+			end
+			for id in Traits.traits do
+				t.truthy(seen[id], id .. " is in the order (the Rates panel lists the order)")
+			end
+			t.eq(total, 120)
+			local old = { steady = 30, swift = 22, keen = 18, sharp = 14, golden = 8, hawk = 5, zaim = 2.5, legend = 0.5 }
+			for id, w in old do
+				t.eq(Traits.traits[id].weight, w, id .. " weight unchanged")
+			end
+			local sum, legend = 0, 0
+			for _, row in UnitLogic.rerollOdds(Traits.traits, Traits.order, nil) do
+				sum += row.percent
+				if row.trait == "legend" then
+					legend = row.percent
+				end
+			end
+			t.truthy(math.abs(sum - 100) < 1e-9, "fresh odds sum " .. sum)
+			t.truthy(math.abs(legend - 0.5 / 1.2) < 1e-9, "legend " .. legend .. " %")
+		end)
+
+		t.it("UnitLogic.stats clamps trait damage ≤ 1.5×, range ≤ 1.25×, cooldown ≥ 0.85×", function()
+			local def = Units.qabaday
+			local base = UnitLogic.stats(def, 1, 0, nil, 0, caps)
+			local wild = { damage = 3, range = 2, cooldown = 0.4 }
+			local st = UnitLogic.stats(def, 1, 0, wild, 0, caps)
+			t.eq(st.damage, base.damage * caps.damage)
+			t.eq(st.range, base.range * caps.range)
+			t.eq(st.cooldown, base.cooldown * caps.cooldown)
+			local raw = UnitLogic.stats(def, 1, 0, wild, 0)
+			t.eq(raw.damage, base.damage * 3, "no caps = no clamp (old callers)")
+			-- Every pair of real traits, merged and clamped, stays inside the caps; stars stay on top.
+			for _, a in Traits.order do
+				for _, b in Traits.order do
+					local m = UnitLogic.combineTraits(Traits.traits[a], Traits.traits[b])
+					local s = UnitLogic.stats(def, 1, 0, m, 0, caps)
+					t.truthy(s.damage <= base.damage * caps.damage + 1e-9, a .. "+" .. b .. " damage")
+					t.truthy(s.range <= base.range * caps.range + 1e-9, a .. "+" .. b .. " range")
+					t.truthy(s.cooldown >= base.cooldown * caps.cooldown - 1e-9, a .. "+" .. b .. " cooldown")
+				end
+			end
+			local five = UnitLogic.stats(def, 1, 5, Traits.traits.legend, TD.STAR_BONUS, caps)
+			t.truthy(math.abs(five.damage - base.damage * 1.5 * (1 + 5 * TD.STAR_BONUS)) < 1e-9, "stars are not a trait")
+		end)
+
+		t.it("two traits never stack a stat: the better one wins", function()
+			local m = UnitLogic.combineTraits(Traits.traits.legend, Traits.traits.zaim)
+			t.eq(m.damage, 1.5, "not 1.5 × 1.3")
+			t.eq(m.range, 1.2)
+			t.eq(m.cooldown, 0.85)
+			local s = UnitLogic.combineTraits(Traits.traits.steady, Traits.traits.sharp)
+			t.eq(s.damage, 1.15)
+			local mix = UnitLogic.combineTraits(Traits.traits.swift, Traits.traits.lantern)
+			t.eq(mix.cooldown, 0.92)
+			t.eq(mix.hitsStealth, true)
+			t.eq(UnitLogic.combineTraits(nil, Traits.traits.swift), Traits.traits.swift)
+			t.eq(UnitLogic.combineTraits(nil, nil), nil)
+		end)
+
+		t.it("the second slot opens at 3 stars; rerolling it spends a stone and leaves slot 1 alone", function()
+			local rule = { starCopies = TD.STAR_COPIES, stars = TD.TRAIT2_STARS }
+			local copies3 = TD.STAR_COPIES[TD.TRAIT2_STARS]
+			local function prof(copies)
+				return { units = { u = { copies = copies, trait = "steady", at = 0 } }, traitStones = 5 }
+			end
+			local i = 0
+			local function rng()
+				i += 1
+				return (i * 0.37) % 1
+			end
+			local p = prof(copies3 - 1)
+			local ok, err = UnitLogic.rerollTrait(p, "u", 1, Traits.traits, Traits.order, rng, 2, rule)
+			t.eq(ok, false)
+			t.eq(err, "slot_locked")
+			t.eq(p.traitStones, 5, "no stone spent")
+			t.eq(p.units.u.trait2, nil)
+			ok, err = UnitLogic.rerollTrait(prof(copies3), "u", 1, Traits.traits, Traits.order, rng, 2, nil)
+			t.eq(err, "slot_locked", "no unlock rule, no second slot")
+			ok, err = UnitLogic.rerollTrait(prof(copies3), "u", 1, Traits.traits, Traits.order, rng, 3, rule)
+			t.eq(err, "bad_request")
+			local q = prof(copies3)
+			local got
+			ok, err, got = UnitLogic.rerollTrait(q, "u", 1, Traits.traits, Traits.order, rng, 2, rule)
+			t.truthy(ok, err)
+			t.eq(q.units.u.trait2, got)
+			t.eq(q.units.u.trait, "steady", "slot 1 untouched")
+			t.eq(q.traitStones, 4)
+			ok = UnitLogic.rerollTrait(q, "u", 1, Traits.traits, Traits.order, rng)
+			t.truthy(ok)
+			t.eq(q.units.u.trait2, got, "slot 1 reroll leaves slot 2 alone")
+			-- ownedTrait merges slot 2 only from the threshold on.
+			local owned = { copies = copies3 - 1, trait = "steady", trait2 = "legend", at = 0 }
+			t.eq(UnitLogic.ownedTrait(owned, Traits.traits, TD.STAR_COPIES, TD.TRAIT2_STARS), Traits.traits.steady)
+			owned.copies = copies3
+			t.eq(UnitLogic.ownedTrait(owned, Traits.traits, TD.STAR_COPIES, TD.TRAIT2_STARS).damage, 1.5)
+		end)
+
+		t.it("lantern sees stealth, miser pays 10 % less, twin places one more, fireproof douses", function()
+			local s = fresh()
+			local tr = Traits.traits
+			local _, _, lw = TdTowers.place(s, "p1", "khayyat", Units.khayyat, 10, 4, 0, tr.lantern, capped())
+			t.eq(lw.stats.hitsStealth, true)
+			local before = s.players.p1.cash
+			local _, _, mz = TdTowers.place(s, "p1", "qabaday", Units.qabaday, 20, 4, 0, tr.miser, capped())
+			t.eq(before - s.players.p1.cash, UnitLogic.costFor(Units.qabaday.levels[1].cost, tr.miser))
+			t.eq(UnitLogic.costFor(Units.qabaday.levels[1].cost, tr.miser), math.floor(Units.qabaday.levels[1].cost * 0.9 + 0.5))
+			before = s.players.p1.cash
+			t.truthy(TdTowers.upgrade(s, "p1", mz.id, Units.qabaday, capped()))
+			t.eq(before - s.players.p1.cash, math.floor(Units.qabaday.levels[2].cost * 0.9 + 0.5), "upgrades too")
+			t.eq(mz.invested, UnitLogic.costFor(Units.qabaday.levels[1].cost, tr.miser) + UnitLogic.costFor(Units.qabaday.levels[2].cost, tr.miser), "sell refunds what was paid")
+			-- twin: maxPlaced + 1
+			local cap = Units.zaim.maxPlaced
+			local x = 30
+			for _ = 1, cap do
+				t.truthy(TdTowers.place(s, "p1", "zaim", Units.zaim, x, 4, 0, nil, capped()))
+				x += 4
+			end
+			local ok, err = TdTowers.place(s, "p1", "zaim", Units.zaim, x, 4, 0, nil, capped())
+			t.eq(err, "unit_cap")
+			ok = TdTowers.place(s, "p1", "zaim", Units.zaim, x, 4, 0, tr.twin, capped())
+			t.truthy(ok, "the twin trait allows one more")
+			x += 4
+			_, err = TdTowers.place(s, "p1", "zaim", Units.zaim, x, 4, 0, tr.twin, capped())
+			t.eq(err, "unit_cap", "but only one more")
+			local _, _, fp = TdTowers.place(s, "p1", "walad", Units.walad, 80, 4, 0, tr.fireproof, capped())
+			t.eq(fp.stats.douse, 1)
+		end)
+	end)
+
 	t.describe("Config integrity (TD)", function()
 		t.it("units have rising costs, valid levels and banner pools per rarity", function()
 			local perRarity = {}

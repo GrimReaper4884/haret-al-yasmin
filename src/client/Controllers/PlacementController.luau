@@ -196,13 +196,24 @@ local function makeRing(radius: number, color: Color3): Part
 	return p
 end
 
+-- My merged trait for a unit (both slots once the second is open), as the server places it.
+local function myTrait(unitId: string): any?
+	local snapshot = StateController.get()
+	local owned = snapshot and snapshot.units[unitId]
+	return UnitLogic.ownedTrait(owned, Traits.traits, TD.STAR_COPIES, TD.TRAIT2_STARS)
+end
+
+-- A price as the server charges it (the miser trait pays less).
+local function myCost(unitId: string, cost: number): number
+	return UnitLogic.costFor(cost, myTrait(unitId))
+end
+
 local function myStats(unitId: string, level: number)
 	local snapshot = StateController.get()
 	local def = (Units :: any)[unitId]
 	local owned = snapshot and snapshot.units[unitId]
 	local stars = if owned then UnitLogic.stars(owned.copies, TD.STAR_COPIES) else 0
-	local trait = if owned then Traits.traits[owned.trait] else nil
-	return UnitLogic.stats(def, level, stars, trait, TD.STAR_BONUS)
+	return UnitLogic.stats(def, level, stars, myTrait(unitId), TD.STAR_BONUS, Traits.caps)
 end
 
 function PlacementController.begin(unitId: string)
@@ -477,16 +488,17 @@ local function renderTowerPanel()
 
 	local state = MatchController.state()
 	local cash = if state then state.cash else 0
-	local afford = nextLevel ~= nil and cash >= nextLevel.cost
-	upgradeButton.Text = if nextLevel then t("match.upgrade", { n = nextLevel.cost }) else t("match.max_level")
+	local nextCost = if nextLevel then myCost(rec.unitId, nextLevel.cost) else 0
+	local afford = nextLevel ~= nil and cash >= nextCost
+	upgradeButton.Text = if nextLevel then t("match.upgrade", { n = nextCost }) else t("match.max_level")
 	upgradeButton.Visible = mine
 	upgradeButton.BackgroundColor3 = if afford then Theme.colors.confirm else Theme.colors.buttonDisabled
 	upgradeButton.TextColor3 = if nextLevel and not afford then Color3.fromHex("#FFD0C8") else Color3.new(1, 1, 1)
 	targetButton.Text = t("match.target", { mode = t("target." .. rec.targeting) })
 	targetButton.Visible = mine and st.damage > 0
-	local invested = def.levels[1].cost
+	local invested = myCost(rec.unitId, def.levels[1].cost)
 	for i = 2, rec.level do
-		invested += def.levels[i].cost
+		invested += myCost(rec.unitId, def.levels[i].cost)
 	end
 	sellButton.Text = t("match.sell", { n = math.floor(invested * TD.SELL_REFUND) })
 	sellButton.Visible = mine
@@ -637,7 +649,7 @@ local NUMBER_KEYS: { [Enum.KeyCode]: number } = {
 local function slotFor(i: number, unitId: string): Slot
 	local def = (Units :: any)[unitId]
 	local color = Theme.rarityColor(def.rarity)
-	local price = def.levels[1].cost
+	local price = myCost(unitId, def.levels[1].cost)
 	local holder = Create("Frame", { LayoutOrder = i, Size = UDim2.fromOffset(68, 84), BackgroundTransparency = 1, ZIndex = 3 })
 	local frame = Create("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = color, BorderSizePixel = 0, ZIndex = 3, Parent = holder }, { Create("UICorner", { CornerRadius = UDim.new(0, 12) }) })
 	Create("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.new(0.45, 0.45, 0.45)), Parent = frame })

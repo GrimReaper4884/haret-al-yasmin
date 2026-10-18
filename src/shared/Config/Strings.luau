@@ -329,6 +329,10 @@ local en: { [string]: string } = {
 	["trait.hawk.name"] = "Hawk",
 	["trait.zaim.name"] = "Za'im's blood",
 	["trait.legend.name"] = "Legend",
+	["trait.lantern.name"] = "Lantern",
+	["trait.fireproof.name"] = "Fireproof",
+	["trait.miser.name"] = "Miser",
+	["trait.twin.name"] = "Twins",
 
 	-- Units screen
 	["units.title"] = "Your defenders",
@@ -346,6 +350,13 @@ local en: { [string]: string } = {
 	["units.rates_title"] = "Trait reroll rates (this defender)",
 	["units.rates_current"] = "(current)",
 	["units.rates_note"] = "If a reroll lands on the current trait it is rolled once more; these rates already include that. Shown rounded; they add up to 100%.",
+	["units.trait2"] = "2nd trait: {trait}",
+	["units.trait2_empty"] = "2nd trait: not rolled yet",
+	["units.trait2_locked"] = "2nd trait opens at {n}★",
+	["units.reroll1"] = "Reroll 1st · 1 stone",
+	["units.reroll2"] = "Reroll 2nd · 1 stone",
+	["units.rates_title2"] = "Second trait reroll rates (this defender)",
+	["units.rates_switch"] = "1st / 2nd",
 
 	-- Summon screen
 	["summon.title"] = "Summon",
@@ -928,6 +939,10 @@ local ar: { [string]: string } = {
 	["trait.hawk.name"] = "صقر",
 	["trait.zaim.name"] = "دم الزعيم",
 	["trait.legend.name"] = "أسطورة",
+	["trait.lantern.name"] = "فانوس",
+	["trait.fireproof.name"] = "ما بيحرق",
+	["trait.miser.name"] = "بخيل",
+	["trait.twin.name"] = "توأم",
 
 	-- Units screen
 	["units.title"] = "رجالك",
@@ -945,6 +960,13 @@ local ar: { [string]: string } = {
 	["units.rates_title"] = "نسب تغيير الصفة (لهالرجل)",
 	["units.rates_current"] = "(الحالية)",
 	["units.rates_note"] = "إذا طلعت نفس الصفة الحالية، بتنسحب مرة تانية؛ هالنسب محسوبة على هالأساس. النسب مقرّبة للعرض ومجموعها 100%.",
+	["units.trait2"] = "الصفة التانية: {trait}",
+	["units.trait2_empty"] = "الصفة التانية: لسّا ما انسحبت",
+	["units.trait2_locked"] = "الصفة التانية بتنفتح عند {n}★",
+	["units.reroll1"] = "غيّر الأولى · حجر",
+	["units.reroll2"] = "غيّر التانية · حجر",
+	["units.rates_title2"] = "نسب تغيير الصفة التانية (لهالرجل)",
+	["units.rates_switch"] = "الأولى / التانية",
 
 	-- Summon screen
 	["summon.title"] = "استدعاء",

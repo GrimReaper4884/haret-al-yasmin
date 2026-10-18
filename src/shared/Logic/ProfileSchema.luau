@@ -206,6 +206,9 @@ function ProfileSchema.sanitize(p: any, ctx: Context, now: number): any
 			if type(rec.trait) ~= "string" or ctx.traits[rec.trait] == nil then
 				rec.trait = "steady"
 			end
+			if rec.trait2 ~= nil and (type(rec.trait2) ~= "string" or ctx.traits[rec.trait2] == nil) then
+				rec.trait2 = nil -- the second slot (traits v2) is optional
+			end
 			rec.at = if isFinite(rec.at) then rec.at else now
 		end
 	end

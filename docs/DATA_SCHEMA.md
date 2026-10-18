@@ -109,7 +109,7 @@ published **test** experience.
 | `lira` | integer 0..10,000,000 | summon currency |
 | `welcomeLira` | `true` once paid | the one-time `TD.STARTER_LIRA` gift (500) was added to `lira`; sanitize pays it to any profile without the flag |
 | `traitStones` | integer 0..100,000 | trait rerolls |
-| `units` | `{ [unitId]: { copies, trait, at } }` | unknown ids and traits are dropped; the starter unit (`TD.STARTER_UNIT`) is always present |
+| `units` | `{ [unitId]: { copies, trait, trait2?, at } }` | unknown ids and traits are dropped (an unknown `trait2` becomes nil); `trait2` is the second trait slot, rolled with a stone once the unit has `TD.TRAIT2_STARS` stars (traits v2, DECISIONS D-041); the starter unit (`TD.STARTER_UNIT`) is always present |
 | `loadout` | `{ unitId }` | owned, unique, de-duplicated; defaults to the starter |
 | `summons` | `{ total, sinceLegendary, sinceMythic }` | pity counters |
 | `pass` | `{ season, xp, premium, claimedFree{tier->true}, claimedPremium }` | reset when `season ~= SeasonPass.season` |

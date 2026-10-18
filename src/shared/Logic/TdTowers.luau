@@ -23,6 +23,7 @@ export type Rules = {
 	towerCap: number,
 	sellRefund: number,
 	starBonus: number,
+	traitCaps: any?, -- Config/Traits.caps: UnitLogic.stats clamps trait multipliers to these
 }
 
 local TdTowers = {}
@@ -41,7 +42,8 @@ function TdTowers.countOwned(state: any, owner: string, unitId: string?): number
 	return n
 end
 
-function TdTowers.canPlace(state: any, owner: string, unitId: string, def: any, x: any, z: any, rules: Rules): (boolean, string?)
+-- trait: the owner's (merged) trait for this unit: twin raises the unit cap, miser lowers the price.
+function TdTowers.canPlace(state: any, owner: string, unitId: string, def: any, x: any, z: any, rules: Rules, trait: any?): (boolean, string?)
 	local p = state.players[owner]
 	if not p then
 		return false, "not_in_match"
@@ -67,10 +69,10 @@ function TdTowers.canPlace(state: any, owner: string, unitId: string, def: any, 
 	if TdTowers.countOwned(state, owner) >= rules.towerCap then
 		return false, "tower_cap"
 	end
-	if TdTowers.countOwned(state, owner, unitId) >= def.maxPlaced then
+	if TdTowers.countOwned(state, owner, unitId) >= def.maxPlaced + (if trait and trait.maxPlaced then trait.maxPlaced else 0) then
 		return false, "unit_cap"
 	end
-	local cost = def.levels[1].cost
+	local cost = UnitLogic.costFor(def.levels[1].cost, trait)
 	if p.cash < cost then
 		return false, "cannot_afford"
 	end
@@ -79,11 +81,11 @@ end
 
 -- Places a tower. stars/trait come from the owner's collection (validated by the caller).
 function TdTowers.place(state: any, owner: string, unitId: string, def: any, x: number, z: number, stars: number, trait: any?, rules: Rules): (boolean, string?, any?)
-	local ok, err = TdTowers.canPlace(state, owner, unitId, def, x, z, rules)
+	local ok, err = TdTowers.canPlace(state, owner, unitId, def, x, z, rules, trait)
 	if not ok then
 		return false, err, nil
 	end
-	local cost = def.levels[1].cost
+	local cost = UnitLogic.costFor(def.levels[1].cost, trait)
 	local p = state.players[owner]
 	p.cash -= cost
 	p.spent += cost
@@ -94,7 +96,7 @@ function TdTowers.place(state: any, owner: string, unitId: string, def: any, x: 
 		level = 1,
 		x = x,
 		z = z,
-		stats = UnitLogic.stats(def, 1, stars, trait, rules.starBonus),
+		stats = UnitLogic.stats(def, 1, stars, trait, rules.starBonus, rules.traitCaps),
 		nextAt = 0,
 		abilityAt = 0,
 		targeting = "first",
@@ -154,14 +156,15 @@ function TdTowers.upgrade(state: any, owner: string, towerId: any, def: any, rul
 		return false, "max_level", nil
 	end
 	local p = state.players[owner]
-	if p.cash < lv.cost then
+	local cost = UnitLogic.costFor(lv.cost, t.trait)
+	if p.cash < cost then
 		return false, "cannot_afford", nil
 	end
-	p.cash -= lv.cost
-	p.spent += lv.cost
-	t.invested += lv.cost
+	p.cash -= cost
+	p.spent += cost
+	t.invested += cost
 	t.level = nextLevel
-	t.stats = UnitLogic.stats(def, nextLevel, t.stars, t.trait, rules.starBonus)
+	t.stats = UnitLogic.stats(def, nextLevel, t.stars, t.trait, rules.starBonus, rules.traitCaps)
 	return true, nil, t
 end
 
