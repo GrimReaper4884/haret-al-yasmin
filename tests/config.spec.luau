@@ -334,6 +334,18 @@ return function(t)
 		-- World/Arena.gate builds the lane gate's wall just past the road's end: 0–4 studs further on,
 		-- 6–40 studs to either side of the opening. No road may run under it (player report 2026-10-18:
 		-- "there is a wall in the middle of the road" on the warehouse yard).
+		t.it("twin_gates: two roads from gates 40 studs apart that merge and end at one gate (S1-M05)", function()
+			local def = Arenas.twin_gates
+			t.eq(#def.paths, 2)
+			local a, b = def.paths[1], def.paths[2]
+			t.eq(math.abs(a[1][2] - b[1][2]), 40, "spawn gates 40 studs apart")
+			t.eq(a[#a][1], b[#b][1])
+			t.eq(a[#a][2], b[#b][2])
+			t.truthy(def.allySpot, "an ally spot for Episodes 8 and 9")
+			local pa, pb = Path.build(a), Path.build(b)
+			t.truthy(Path.distanceToAll({ pa, pb }, def.allySpot[1], def.allySpot[2]) >= TD.PATH_HALF_WIDTH, "the ally stands off the road")
+			t.truthy(Arenas.post_road and Arenas.post_road.kit == "post_road", "the police-post road is a kit arena")
+		end)
 		t.it("the gate wall stands clear of every road", function()
 			local bad = {}
 			for id, def in Arenas do

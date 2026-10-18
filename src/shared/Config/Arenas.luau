@@ -119,6 +119,35 @@ local Arenas: { [string]: ArenaDef } = {
 		kit = "warehouse", -- server/World/KitLayout places Config/ArenaLayouts/warehouse
 	},
 	-- END GENERATED warehouse
+	-- BEGIN GENERATED post_road (tools/blender/export_layout.py from assets/blender/arenas/post_road.blend)
+	post_road = {
+		nameKey = "arena.post_road.name",
+		path = { { -70, -24 }, { 30, -24 }, { 30, 4 }, { -30, 4 }, { -30, 26 }, { 66, 26 } },
+		bounds = { -80, -36, 76, 36 },
+		gateYaw = 90,
+		spawnYaw = 90,
+		playerSpawn = { 52, -20 },
+		seed = "post_road",
+		theme = "orchard",
+		allySpot = { 44, 12 },
+		kit = "post_road", -- server/World/KitLayout places Config/ArenaLayouts/post_road
+	},
+	-- END GENERATED post_road
+	-- BEGIN GENERATED twin_gates (tools/blender/export_layout.py from assets/blender/arenas/twin_gates.blend)
+	twin_gates = {
+		nameKey = "arena.twin_gates.name",
+		path = { { -74, 20 }, { -30, 20 }, { -30, 0 }, { 0, 0 }, { 30, 0 }, { 30, 24 }, { 64, 24 }, { 64, -30 } },
+		paths = { { { -74, 20 }, { -30, 20 }, { -30, 0 }, { 0, 0 }, { 30, 0 }, { 30, 24 }, { 64, 24 }, { 64, -30 } }, { { -74, -20 }, { -40, -20 }, { -40, -32 }, { 0, -32 }, { 0, 0 }, { 30, 0 }, { 30, 24 }, { 64, 24 }, { 64, -30 } } },
+		bounds = { -80, -40, 72, 36 },
+		gateYaw = 180,
+		spawnYaw = 90,
+		playerSpawn = { 46, -12 },
+		seed = "twin_gates",
+		theme = "rival",
+		allySpot = { 14, 10 },
+		kit = "twin_gates", -- server/World/KitLayout places Config/ArenaLayouts/twin_gates
+	},
+	-- END GENERATED twin_gates
 }
 
 return Arenas

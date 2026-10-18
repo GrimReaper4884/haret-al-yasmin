@@ -1057,6 +1057,17 @@ return function(t)
 	-- Twin gates and the ally (STORY_PLAN §10.1, S1-S07): two roads that merge before the gate, and a
 	-- story defender that belongs to nobody.
 	t.describe("Two roads and the ally (S1-S07)", function()
+		t.it("an episode may send every boss down one road (Waves bossRoad, S1-M05)", function()
+			local ep = { waves = 10, hpPerWave = 0.1, pool = { { enemy = "gendarme", from = 1, base = 2, perWave = 0, gap = 1 } }, bosses = { [5] = "sergeant" }, bossRoad = 2 }
+			local w = WaveLogic.story(ep, 5, TD.DIFFICULTIES.normal)
+			local last = w.spawns[#w.spawns]
+			t.eq(last.boss, true)
+			t.eq(last.path, 2)
+			t.eq(w.spawns[1].path, nil, "regular spawns still alternate")
+			ep.bossRoad = nil
+			local w2 = WaveLogic.story(ep, 5, TD.DIFFICULTIES.normal)
+			t.eq(w2.spawns[#w2.spawns].path, nil)
+		end)
 		local A = { { 0, 40 }, { 50, 0 }, { 120, 0 } }
 		local B = { { 0, -40 }, { 50, 0 }, { 120, 0 } }
 		local function twin(list, totalWaves)

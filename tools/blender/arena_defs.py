@@ -74,4 +74,50 @@ ARENAS = {
         + [("orchard_wall_low", -40 + i * 8.2, -35, 0) for i in range(6)],
         "scatter": [("olive_tree", 16, 55, (0.6, 0.75), 6.5), ("sack_pile", 3, 56, (1.0, 1.0), 2.5)],
     },
+    # The police-post road (Episode 7, §8.5): three long straights past the gendarmerie post, the road
+    # narrowed by sandbag chicanes (sack piles at the bends; dressing only, PATH_HALF_WIDTH unchanged).
+    "post_road": {
+        "name_key": "arena.post_road.name",
+        "theme": "orchard",
+        "roads": [[(-70, -24), (30, -24), (30, 4), (-30, 4), (-30, 26), (66, 26)]],
+        "bounds": (-80, -36, 76, 36),
+        "party": (52, -20),
+        "ally": (44, 12),
+        "modules": [
+            ("gate_rival", -74, -24, -90), ("gate_lane", 70, 26, 90), ("police_post", -58, 10, 90),
+            ("lantern_wall", -46, 4, 90), ("lantern_wall", 40, -14, -90),
+            ("lantern_wire_span", 30, -24, 45), ("lantern_wire_span", -30, 4, -45), ("lantern_wire_span", 30, 26, 0),
+            ("sack_pile", 22, -31, 0), ("sack_pile", 37, -16, 90), ("sack_pile", 22, 11, 180),
+            ("sack_pile", -22, -3, 0), ("sack_pile", -37, 12, 90), ("sack_pile", -22, 33, 180),
+            ("sack_pile", 0, -31, 0), ("sack_pile", 6, 33, 180), ("wall_corner", -64, 30, 90),
+            ("skyline_minaret", 20, 60, 0),
+        ]
+        + [("orchard_wall_low", -76 + i * 8.2, -35, 0) for i in range(6)],
+        "scatter": [("olive_tree", 10, 71, (0.6, 0.72), 6.5), ("rubble", 4, 72, (0.8, 1.0), 4.0)],
+    },
+    # Twin gates (Episodes 8 and 9, §8.5): two rival gates 40 studs apart at the west wall; the roads
+    # merge at a small square and run on together to the lane gate. Both roads end at the same gate.
+    "twin_gates": {
+        "name_key": "arena.twin_gates.name",
+        "theme": "rival",
+        "roads": [
+            [(-74, 20), (-30, 20), (-30, 0), (0, 0), (30, 0), (30, 24), (64, 24), (64, -30)],
+            [(-74, -20), (-40, -20), (-40, -32), (0, -32), (0, 0), (30, 0), (30, 24), (64, 24), (64, -30)],
+        ],
+        "bounds": (-80, -40, 72, 36),
+        "party": (46, -12),
+        "ally": (14, 10),
+        "modules": [
+            ("gate_rival", -78, 20, -90), ("gate_rival", -78, -20, -90), ("gate_lane", 64, -36, 180),
+            ("well", 14, -14, 0), ("bench_dikkeh", 8, -20, 90), ("bench_dikkeh", 20, -20, -90),
+            ("lantern_wire_span", -30, 0, 45), ("lantern_wire_span", 0, -32, -45), ("lantern_wire_span", 30, 24, -45),
+            ("lantern_wall", -12, 7, 180),
+            ("wall_4m", -40, 37, 180), ("wall_window_grille", -24, 37, 180), ("mashrabiya_bay", -24, 36, 180),
+            ("wall_4m", -8, 37, 180), ("wall_arch", 8, 37, 180), ("wall_4m", 24, 37, 180),
+            ("wall_4m", -24, -41, 0), ("wall_window_grille", -8, -41, 0), ("wall_corner", 8, -41, 0),
+            ("skyline_dome", 26, 62, 0), ("skyline_minaret", -46, 64, 0), ("skyline_minaret", 60, 58, 0),
+        ]
+        + [("cobble_tile_4m", x, z, 0) for x in (6, 22) for z in (-14,)],
+        "scatter": [("rubble", 3, 81, (0.8, 1.0), 4.0), ("sack_pile", 4, 82, (1.0, 1.0), 2.5)],
+    },
 }
