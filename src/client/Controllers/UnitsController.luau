@@ -1,6 +1,8 @@
 --!strict
 -- Collection and loadout: the owned defenders as cards, a detail view with stats, trait reroll
--- and add/remove from the loadout. The loadout is saved on the server (SetLoadout).
+-- and add/remove from the loadout. The loadout is saved on the server (SetLoadout). The detail also
+-- shows the unit's three shabriyeh bead slots (S1-C04): tap a slot, pick one of the unit's kinds,
+-- and the server threads it (SetBead, one bead each; it re-checks ownership, slot, kind and cost).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -9,16 +11,21 @@ local Net = require(Shared.Net)
 local TD = require(Shared.Config.TD)
 local Units = require(Shared.Config.Units)
 local Traits = require(Shared.Config.Traits)
+local Beads = require(Shared.Config.Beads)
+local IconIds = require(Shared.Config.Icons)
 local UnitLogic = require(Shared.Logic.UnitLogic)
+local UpgradeView = require(Shared.Logic.UpgradeView)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
 local Juice = require(UI.Juice)
 local Modal = require(UI.Modal)
 local UnitCard = require(UI.UnitCard)
+local Icons = require(UI.Icons)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
+local ToastController = require(script.Parent.ToastController)
 
 local UnitsController = {}
 
@@ -38,6 +45,11 @@ local ratesSwitch: TextButton -- 1st / 2nd trait slot, shown once the second slo
 local ratesSlot = 1
 local renderRates: (snapshot: any) -> () -- defined below build(), which wires the slot switch to it
 local selected: string? = nil
+local beadPanel: Frame -- the bead picker for one slot, over the detail view (S1-C04)
+local beadTitle: TextLabel
+local beadList: Frame
+-- Server answers of SetBead → the toast it shows.
+local BEAD_ERRORS = { no_beads = "units.err.no_beads", same_bead = "units.err.same_bead" }
 local busy = false
 
 local function request(fn: () -> any)
@@ -72,6 +84,16 @@ local function build()
 	local close = Theme.button({ Text = "X", TextSize = 16, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromOffset(40, 40), BackgroundColor3 = Theme.colors.danger, ZIndex = 15, Parent = ratesPanel })
 	close.Activated:Connect(function()
 		ratesPanel.Visible = false
+	end)
+	-- Bead picker: the unit's kinds for one slot.
+	beadPanel = Theme.panel({ Name = "BeadPicker", Size = UDim2.fromScale(1, 1), ZIndex = 14, Visible = false, Parent = body })
+	Create("UIPadding", { PaddingTop = UDim.new(0, 8), PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12), PaddingBottom = UDim.new(0, 8), Parent = beadPanel })
+	beadTitle = Theme.label({ TextSize = 16, FontFace = Theme.fontBold, Size = UDim2.new(1, -48, 0, 40), ZIndex = 15, Parent = beadPanel })
+	beadList = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, 48), Size = UDim2.new(1, 0, 1, -48), ZIndex = 15, Parent = beadPanel })
+	Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = beadList })
+	local closeBeads = Theme.button({ Text = "X", TextSize = 16, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromOffset(40, 40), BackgroundColor3 = Theme.colors.danger, ZIndex = 15, Parent = beadPanel })
+	closeBeads.Activated:Connect(function()
+		beadPanel.Visible = false
 	end)
 	ratesSwitch.Activated:Connect(function()
 		ratesSlot = 3 - ratesSlot
@@ -162,6 +184,66 @@ local function setLoadout(list: { string })
 	end)
 end
 
+-- Threads `kind` on `slot` (SetBead). A refusal shows its toast; success re-renders from the state.
+local function setBead(unitId: string, slot: number, kind: string)
+	if busy then
+		return
+	end
+	busy = true
+	task.spawn(function()
+		local ok, res = pcall(function()
+			return Net.func(Net.Functions.SetBead):InvokeServer(unitId, slot, kind)
+		end)
+		busy = false
+		if ok and type(res) == "table" and res.ok then
+			beadPanel.Visible = false
+		else
+			local err = if ok and type(res) == "table" then res.err else nil
+			ToastController.show(BEAD_ERRORS[err] or "notify.error")
+		end
+	end)
+end
+
+local function openBeadPicker(snapshot: any, unitId: string, slot: number)
+	local t = LocaleController.t
+	local rtl = LocaleController.isRtl()
+	local def = (Units :: any)[unitId]
+	local owned = snapshot.units[unitId]
+	local current = UpgradeView.beadSlots(owned, Beads.slots, Beads.kinds)[slot].kind
+	beadTitle.Text = t("units.bead_pick", { n = slot }) .. "\n" .. t("units.beads", { n = snapshot.beads or 0 })
+	Theme.align(beadTitle, rtl)
+	for _, c in beadList:GetChildren() do
+		if c:IsA("GuiObject") then
+			c:Destroy()
+		end
+	end
+	for i, choice in UpgradeView.beadChoices(UnitLogic.beadKinds(def, Beads), current) do
+		local row = Theme.button({
+			Name = choice.kind,
+			LayoutOrder = i,
+			Text = t((Beads.kinds :: any)[choice.kind].nameKey) .. (if choice.current then "  ✓" else ""),
+			TextSize = 14,
+			Size = UDim2.new(1, 0, 0, Theme.TOUCH - 4),
+			BackgroundColor3 = if choice.current then Theme.colors.buttonDisabled else Theme.colors.button,
+			ZIndex = 15,
+			Parent = beadList,
+		})
+		local pad = row:FindFirstChildOfClass("UIPadding")
+		if pad then
+			pad.PaddingLeft = UDim.new(0, if rtl then 12 else 48)
+			pad.PaddingRight = UDim.new(0, if rtl then 48 else 12)
+		end
+		row.TextXAlignment = if rtl then Enum.TextXAlignment.Right else Enum.TextXAlignment.Left
+		local icon = Create("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(if rtl then 0 else 1, 0.5), Position = UDim2.new(if rtl then 1 else 0, if rtl then 8 else -8, 0.5, 0), Size = UDim2.fromOffset(32, 32), ZIndex = 16, Parent = row })
+		Icons.draw(IconIds.beads[choice.kind] or "bead", icon)
+		row.Activated:Connect(function()
+			setBead(unitId, slot, choice.kind)
+		end)
+	end
+	beadPanel.Visible = true
+	Juice.pop(beadPanel, 0.9)
+end
+
 local function renderDetail(snapshot: any)
 	local t = LocaleController.t
 	local rtl = LocaleController.isRtl()
@@ -214,6 +296,41 @@ local function renderDetail(snapshot: any)
 	for _, l in { name, rarity, desc, stats, traitLine } do
 		Theme.align(l, rtl)
 	end
+	-- Shabriyeh beads: three slots under the stats; a tap opens the picker for that slot.
+	local beadRow = Create("Frame", { Name = "Beads", BackgroundTransparency = 1, Position = UDim2.fromOffset(x, 160), Size = UDim2.new(0.5, -80, 0, 42), ZIndex = 13, Parent = detail })
+	Create("UIListLayout", {
+		FillDirection = Enum.FillDirection.Horizontal,
+		HorizontalAlignment = if rtl then Enum.HorizontalAlignment.Right else Enum.HorizontalAlignment.Left,
+		VerticalAlignment = Enum.VerticalAlignment.Center,
+		Padding = UDim.new(0, 4),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		Parent = beadRow,
+	})
+	local beadLabel = Theme.label({ LayoutOrder = 0, Text = t("units.beads_title") .. " (" .. tostring(snapshot.beads or 0) .. ")", TextSize = 12, FontFace = Theme.fontBold, Size = UDim2.fromOffset(78, 40), ZIndex = 13, Parent = beadRow })
+	Theme.align(beadLabel, rtl)
+	for _, bs in UpgradeView.beadSlots(owned, Beads.slots, Beads.kinds) do
+		local slotButton = Theme.button({
+			Name = "BeadSlot" .. bs.slot,
+			LayoutOrder = if rtl then -bs.slot else bs.slot,
+			Text = if bs.kind then "" else "+",
+			TextSize = 18,
+			Size = UDim2.fromOffset(40, 40),
+			BackgroundColor3 = if bs.kind then Theme.colors.panelStroke else Theme.colors.buttonDisabled,
+			ZIndex = 13,
+			Parent = beadRow,
+		})
+		if bs.kind then
+			local holder = Create("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(30, 30), ZIndex = 14, Parent = slotButton })
+			Icons.draw(IconIds.beads[bs.kind] or "bead", holder)
+		end
+		slotButton.Activated:Connect(function()
+			openBeadPicker(snapshot, unitId, bs.slot)
+		end)
+	end
+	if beadPanel.Visible then
+		beadPanel.Visible = false -- the state changed under it (a bead was threaded): close it
+	end
+
 	-- Rates first: the reroll is a paid random item.
 	local rates = Theme.button({
 		Text = t("units.rates"),
@@ -313,6 +430,7 @@ function UnitsController.render()
 	selected = nil
 	detail.Visible = false
 	ratesPanel.Visible = false
+	beadPanel.Visible = false
 	grid.Visible = true
 	loadoutRow.Visible = true
 	loadoutLabel.Visible = true

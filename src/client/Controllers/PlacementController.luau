@@ -21,6 +21,7 @@ local Vfx = require(Shared.Config.Vfx)
 local Traits = require(Shared.Config.Traits)
 local Path = require(Shared.Logic.Path)
 local UnitLogic = require(Shared.Logic.UnitLogic)
+local UpgradeView = require(Shared.Logic.UpgradeView)
 local RigBuilder = require(Shared.Util.RigBuilder)
 local BoneAnim = require(Shared.Anim.BoneAnim)
 local UI = script.Parent.Parent.UI
@@ -52,6 +53,9 @@ local towerLevel: TextLabel
 local towerOwner: TextLabel
 local towerStats: TextLabel
 local upgradeButton: TextButton
+local sigRow: Frame -- the level-7 chooser: two path cards over the Upgrade button (S1-C04)
+local sigCards: { [string]: TextButton } = {}
+local sigPick: string? = nil -- the path card tapped on the selected defender, confirmed by Upgrade
 local sellButton: TextButton
 local targetButton: TextButton
 local closeButton: TextButton
@@ -73,7 +77,7 @@ local ghost: Model? = nil
 local ring: Part? = nil
 local selected: number? = nil
 local selectedRing: Part? = nil
-local towers: { [number]: { unitId: string, level: number, owner: string, x: number, z: number, range: number, targeting: string, readyAt: number, buff: number?, revealedBy: string?, revealedByTower: number?, sabotaged: boolean? } } = {}
+local towers: { [number]: { unitId: string, level: number, owner: string, x: number, z: number, range: number, targeting: string, readyAt: number, buff: number?, revealedBy: string?, revealedByTower: number?, sabotaged: boolean?, path: string? } } = {}
 local arenaPath: Path.Path? = nil
 local arenaPaths: { Path.Path } = {} -- every road: the ghost keeps clear of all of them (S1-S07)
 local origin: CFrame? = nil
@@ -104,13 +108,32 @@ local function build()
 	end
 	towerOwner = Theme.label({ LayoutOrder = 2, TextSize = 12, FontFace = Theme.fontBold, TextColor3 = Theme.colors.textMuted, Size = UDim2.new(1, 0, 0, 14), Visible = false, ZIndex = 4, Parent = towerPanel })
 	towerStats = Theme.label({ LayoutOrder = 3, TextSize = 14, FontFace = Theme.fontBold, RichText = true, Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, LineHeight = 1.15, ZIndex = 4, Parent = towerPanel })
-	upgradeButton = Theme.button({ LayoutOrder = 4, TextSize = 17, Size = UDim2.new(1, 0, 0, 46), BackgroundColor3 = Theme.colors.confirm, ZIndex = 4, Parent = towerPanel })
-	local row = Create("Frame", { LayoutOrder = 5, Size = UDim2.new(1, 0, 0, 40), BackgroundTransparency = 1, ZIndex = 4, Parent = towerPanel })
+	-- Level 7 (STORY_PLAN §7.1): at the last level a unit with a signature offers two path cards; one
+	-- tap picks, Upgrade confirms (UpgradeTower with the path; the server re-checks everything).
+	sigRow = Create("Frame", { Name = "Signature", LayoutOrder = 4, Size = UDim2.new(1, 0, 0, 104), BackgroundTransparency = 1, Visible = false, ZIndex = 4, Parent = towerPanel })
+	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = sigRow })
+	for i, pathKey in { "a", "b" } do
+		local card = Theme.button({ Name = "Path_" .. pathKey, LayoutOrder = i, Text = "", Size = UDim2.new(0.5, -3, 1, 0), BackgroundColor3 = Theme.colors.button, ZIndex = 4, Parent = sigRow })
+		local pad = card:FindFirstChildOfClass("UIPadding")
+		if pad then
+			pad.PaddingLeft = UDim.new(0, 5)
+			pad.PaddingRight = UDim.new(0, 5)
+		end
+		local nameLabel = Theme.display({ Name = "PathName", TextSize = 14, Position = UDim2.fromOffset(0, 5), Size = UDim2.new(1, 0, 0, 18), ZIndex = 5, Parent = card })
+		nameLabel.TextXAlignment = Enum.TextXAlignment.Center
+		local descLabel = Theme.label({ Name = "PathDesc", TextSize = 11, TextColor3 = Color3.fromHex("#FFF1D0"), Position = UDim2.fromOffset(0, 24), Size = UDim2.new(1, 0, 1, -46), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 5, Parent = card })
+		descLabel.TextXAlignment = Enum.TextXAlignment.Center
+		local costLabel = Theme.display({ Name = "PathCost", TextSize = 13, TextColor3 = Color3.fromHex("#FFD970"), AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0, 0, 1, -4), Size = UDim2.new(1, 0, 0, 16), ZIndex = 5, Parent = card })
+		costLabel.TextXAlignment = Enum.TextXAlignment.Center
+		sigCards[pathKey] = card
+	end
+	upgradeButton = Theme.button({ LayoutOrder = 5, TextSize = 17, Size = UDim2.new(1, 0, 0, 46), BackgroundColor3 = Theme.colors.confirm, ZIndex = 4, Parent = towerPanel })
+	local row = Create("Frame", { LayoutOrder = 6, Size = UDim2.new(1, 0, 0, 40), BackgroundTransparency = 1, ZIndex = 4, Parent = towerPanel })
 	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6), Parent = row })
 	targetButton = Theme.button({ TextSize = 13, Size = UDim2.new(0.5, -3, 1, 0), BackgroundColor3 = Theme.colors.quest, ZIndex = 4, Parent = row })
 	sellButton = Theme.button({ TextSize = 13, Size = UDim2.new(0.5, -3, 1, 0), BackgroundColor3 = Theme.colors.danger, ZIndex = 4, Parent = row })
 	-- Ultimate: the button fills back up as the cooldown recovers; Auto fires it when ready.
-	ultRow = Create("Frame", { LayoutOrder = 6, Size = UDim2.new(1, 0, 0, 44), BackgroundTransparency = 1, ZIndex = 4, Parent = towerPanel })
+	ultRow = Create("Frame", { LayoutOrder = 7, Size = UDim2.new(1, 0, 0, 44), BackgroundTransparency = 1, ZIndex = 4, Parent = towerPanel })
 	ultButton = Theme.button({ TextSize = 14, Size = UDim2.new(1, -62, 1, 0), BackgroundColor3 = Theme.lira, ClipsDescendants = true, ZIndex = 4, Parent = ultRow })
 	ultFill = Create("Frame", { Name = "Cooldown", AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromScale(0, 1), BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.45, BorderSizePixel = 0, ZIndex = 4, Parent = ultButton })
 	autoButton = Theme.button({ TextSize = 12, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(0, 56, 1, 0), ZIndex = 4, Parent = ultRow })
@@ -146,6 +169,7 @@ end
 
 local function clearSelection()
 	selected = nil
+	sigPick = nil
 	EnemyRenderController.setSelectedTower(nil)
 	towerPanel.Visible = false
 	if selectedRing then
@@ -209,12 +233,12 @@ local function myCost(unitId: string, cost: number): number
 	return UnitLogic.costFor(cost, myTrait(unitId))
 end
 
-local function myStats(unitId: string, level: number)
+local function myStats(unitId: string, level: number, path: string?)
 	local snapshot = StateController.get()
 	local def = (Units :: any)[unitId]
 	local owned = snapshot and snapshot.units[unitId]
 	local stars = if owned then UnitLogic.stars(owned.copies, TD.STAR_COPIES) else 0
-	return UnitLogic.stats(def, level, stars, myTrait(unitId), TD.STAR_BONUS, Traits.caps)
+	return UnitLogic.stats(def, level, stars, myTrait(unitId), TD.STAR_BONUS, Traits.caps, path)
 end
 
 function PlacementController.begin(unitId: string)
@@ -371,6 +395,7 @@ local ERR_KEYS = {
 	not_in_loadout = "match.err.not_in_loadout",
 	max_level = "match.err.max_level",
 	match_over = "match.err.match_over",
+	bad_path = "match.err.bad_path",
 }
 
 local function call(fnName: string, ...: any)
@@ -435,11 +460,14 @@ local function renderTowerPanel()
 	towerTitle.Text = t(def.nameKey)
 	towerTitle.TextColor3 = rarityColor:Lerp(Color3.new(1, 1, 1), 0.35)
 	local maxLevel = #def.levels
-	towerLevel.Text = t("match.level", { n = rec.level }) .. " / " .. maxLevel .. "  " .. string.rep("●", rec.level) .. string.rep("○", maxLevel - rec.level)
+	local shown = math.min(rec.level, maxLevel)
+	local sig = if rec.path and def.signature then def.signature[rec.path] else nil
+	towerLevel.Text = t("match.level", { n = shown }) .. " / " .. maxLevel .. "  " .. string.rep("●", shown) .. string.rep("○", maxLevel - shown)
+		.. (if sig then "  ★ " .. t("unit." .. rec.unitId .. ".sig." .. sig.key .. ".name") else "")
 	towerOwner.Visible = not mine
 	towerOwner.Text = rec.owner
 
-	local st = myStats(rec.unitId, rec.level)
+	local st = myStats(rec.unitId, rec.level, rec.path)
 	local nextLevel = def.levels[rec.level + 1]
 	local nx = if nextLevel then myStats(rec.unitId, rec.level + 1) else nil
 	local lines = {}
@@ -494,18 +522,44 @@ local function renderTowerPanel()
 
 	local state = MatchController.state()
 	local cash = if state then state.cash else 0
-	local nextCost = if nextLevel then myCost(rec.unitId, nextLevel.cost) else 0
-	local afford = nextLevel ~= nil and cash >= nextCost
-	upgradeButton.Text = if nextLevel then t("match.upgrade", { n = nextCost }) else t("match.max_level")
+	local step = UpgradeView.step(def, rec.level, rec.path)
+	sigRow.Visible = mine and step == "choose"
+	if step == "choose" then
+		-- The two path cards; the tapped one glows gold, Upgrade confirms it at its price.
+		local trait = myTrait(rec.unitId)
+		for pathKey, card in sigCards do
+			local p = def.signature[pathKey]
+			local cost = UpgradeView.signatureCost(def, pathKey, trait, UnitLogic.costFor) or 0
+			local base = "unit." .. rec.unitId .. ".sig." .. p.key
+			local nameLabel = card:FindFirstChild("PathName") :: TextLabel
+			local descLabel = card:FindFirstChild("PathDesc") :: TextLabel
+			local costLabel = card:FindFirstChild("PathCost") :: TextLabel
+			nameLabel.Text = t(base .. ".name")
+			descLabel.Text = t(base .. ".desc")
+			costLabel.Text = t("match.sig_cost", { n = cost })
+			card.BackgroundColor3 = if sigPick == pathKey then rarityColor:Lerp(Color3.new(0, 0, 0), 0.25) else Theme.colors.button
+			local border = card:FindFirstChild("Border") :: UIStroke?
+			if border then
+				border.Color = if sigPick == pathKey then Theme.colors.gold else Theme.colors.panelStroke
+				border.Thickness = if sigPick == pathKey then 3.5 else 2
+			end
+		end
+		local pickCost = if sigPick then UpgradeView.signatureCost(def, sigPick, trait, UnitLogic.costFor) or 0 else 0
+		local afford = sigPick ~= nil and cash >= pickCost
+		upgradeButton.Text = if sigPick then t("match.sig_confirm", { n = pickCost }) else t("match.sig_pick")
+		upgradeButton.BackgroundColor3 = if afford then Theme.colors.confirm else Theme.colors.buttonDisabled
+		upgradeButton.TextColor3 = if sigPick and not afford then Color3.fromHex("#FFD0C8") else Color3.new(1, 1, 1)
+	else
+		local nextCost = if nextLevel then myCost(rec.unitId, nextLevel.cost) else 0
+		local afford = nextLevel ~= nil and cash >= nextCost
+		upgradeButton.Text = if nextLevel then t("match.upgrade", { n = nextCost }) else t("match.max_level")
+		upgradeButton.BackgroundColor3 = if afford then Theme.colors.confirm else Theme.colors.buttonDisabled
+		upgradeButton.TextColor3 = if nextLevel and not afford then Color3.fromHex("#FFD0C8") else Color3.new(1, 1, 1)
+	end
 	upgradeButton.Visible = mine
-	upgradeButton.BackgroundColor3 = if afford then Theme.colors.confirm else Theme.colors.buttonDisabled
-	upgradeButton.TextColor3 = if nextLevel and not afford then Color3.fromHex("#FFD0C8") else Color3.new(1, 1, 1)
 	targetButton.Text = t("match.target", { mode = t("target." .. rec.targeting) })
 	targetButton.Visible = mine and st.damage > 0
-	local invested = myCost(rec.unitId, def.levels[1].cost)
-	for i = 2, rec.level do
-		invested += myCost(rec.unitId, def.levels[i].cost)
-	end
+	local invested = UpgradeView.invested(def, rec.level, rec.path, myTrait(rec.unitId), UnitLogic.costFor)
 	sellButton.Text = t("match.sell", { n = math.floor(invested * TD.SELL_REFUND) })
 	sellButton.Visible = mine
 	local ab = def.ability
@@ -529,9 +583,12 @@ local function selectTower(id: number)
 	if not rec or not origin then
 		return
 	end
+	if selected ~= id then
+		sigPick = nil -- a path card picked on another defender doesn't carry over
+	end
 	selected = id
 	EnemyRenderController.setSelectedTower(id)
-	local st = myStats(rec.unitId, rec.level)
+	local st = myStats(rec.unitId, rec.level, rec.path)
 	local r = makeRing(st.range, Theme.colors.accent)
 	r.CFrame = origin * CFrame.new(rec.x, 0.1, rec.z) * CFrame.Angles(0, 0, math.rad(90))
 	selectedRing = r
@@ -743,6 +800,7 @@ local function onEvents(events: { any })
 		elseif e.type == "towerUpgraded" and towers[e.id] then
 			towers[e.id].level = e.level
 			towers[e.id].range = e.range
+			towers[e.id].path = if e.path == "a" or e.path == "b" then e.path else towers[e.id].path
 			if selected == e.id then
 				selectTower(e.id)
 			end
@@ -798,10 +856,28 @@ end
 function PlacementController.start()
 	build()
 	upgradeButton.Activated:Connect(function()
-		if selected then
-			call(Net.Functions.UpgradeTower, selected)
+		local rec = selected and towers[selected]
+		if not rec then
+			return
 		end
+		local def = (Units :: any)[rec.unitId]
+		if UpgradeView.step(def, rec.level, rec.path) == "choose" then
+			if sigPick then
+				call(Net.Functions.UpgradeTower, selected, sigPick)
+			else
+				Juice.shake(sigRow)
+			end
+			return
+		end
+		call(Net.Functions.UpgradeTower, selected)
 	end)
+	for pathKey, card in sigCards do
+		card.Activated:Connect(function()
+			sigPick = pathKey
+			Juice.punch(card, 0.08)
+			renderTowerPanel()
+		end)
+	end
 	sellButton.Activated:Connect(function()
 		if selected then
 			call(Net.Functions.SellTower, selected)
@@ -837,6 +913,10 @@ function PlacementController.start()
 		local token = holding
 		task.delay(0.45, function()
 			while holding == token and selected and towerPanel.Visible do
+				local rec = towers[selected]
+				if not rec or UpgradeView.step((Units :: any)[rec.unitId], rec.level, rec.path) ~= "level" then
+					break -- holding never buys a signature: that is a choice
+				end
 				call(Net.Functions.UpgradeTower, selected)
 				task.wait(0.3)
 			end
