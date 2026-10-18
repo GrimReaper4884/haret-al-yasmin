@@ -42,6 +42,22 @@ MatchController.Started = Signal.new() -- (payload)
 MatchController.Updated = Signal.new() -- (state)
 MatchController.Events = Signal.new() -- (events list)
 MatchController.Ended = Signal.new() -- (payload)
+MatchController.AimingChanged = Signal.new() -- (aiming): a defender is being aimed on touch (B3)
+
+local aimingOnTouch = false
+
+-- PlacementController says when it aims on touch; MatchCameraController hides the thumbstick and
+-- jump meanwhile so the camera cannot orbit and the corners hold Place / Cancel.
+function MatchController.setAiming(on: boolean)
+	if aimingOnTouch ~= on then
+		aimingOnTouch = on
+		MatchController.AimingChanged:Fire(on)
+	end
+end
+
+function MatchController.aiming(): boolean
+	return aimingOnTouch
+end
 
 export type Info = { matchId: number, modeId: string, arenaId: string, origin: Vector3, difficulty: string, players: { string }, totalWaves: number?, host: string }
 

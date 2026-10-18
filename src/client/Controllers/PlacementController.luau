@@ -1,8 +1,10 @@
 --!strict
--- Placing and managing defenders during a match: the loadout bar, a ghost that follows the
--- cursor/finger over the arena ground (green/red for valid/invalid, with its range ring), tap to
--- place, tap a placed defender to open its panel (upgrade, sell, targeting). Validity shown here
--- is a preview: the server re-checks every rule.
+-- Placing and managing defenders during a match: the loadout bar, a ghost over the arena ground
+-- (green/red for valid/invalid, with its range ring), tap a placed defender to open its panel
+-- (upgrade, sell, targeting). A mouse click places at once. On touch (MOBILE_HUD_PLAN B3) a full-
+-- screen catcher takes every touch while aiming, the ghost follows the finger 70 px above it, a tap
+-- moves it, and the Place button commits (Settings quickPlace brings back tap-to-place). Validity
+-- shown here is a preview: the server re-checks every rule.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -52,6 +54,15 @@ local bar: Frame
 local barLayout: UIListLayout
 local placeHint: TextLabel
 local cancelButton: TextButton
+local catcher: Frame -- full-screen touch catcher while aiming on touch (B3)
+local placeButton: TextButton
+local placeCost: TextLabel
+local touchCancel: TextButton
+local reasonLabel: TextLabel
+local lastGroundTap: Vector2? = nil -- the ghost starts where the finger last touched the ground
+local groundHit: (screen: Vector2) -> (Vector3?, Instance?)
+local lastScreen: Vector2? = nil -- where the ghost is aimed (mouse position, or the finger minus its offset)
+local ERR_KEYS: { [string]: string }
 local towerPanel: Frame
 local towerPortrait: Frame
 local towerTitle: TextLabel
@@ -98,6 +109,19 @@ local function build()
 	placeHint = Theme.display({ Name = "PlaceHint", TextSize = 16, AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -150), Size = UDim2.new(0.8, 0, 0, 22), Visible = false, ZIndex = 3, Parent = root })
 	placeHint.TextXAlignment = Enum.TextXAlignment.Center
 	cancelButton = Theme.button({ Name = "CancelPlace", Text = "X", TextSize = 22, AnchorPoint = Vector2.new(1, 1), Size = UDim2.fromOffset(52, 52), BackgroundColor3 = Theme.colors.danger, Visible = false, ZIndex = 4, Parent = root })
+	-- Touch aiming (B3): the catcher sits under every HUD element, so buttons still work and a touch
+	-- on the world never reaches the camera; Place and Cancel take Roblox's bottom corners.
+	catcher = Create("Frame", { Name = "PlacementCatcher", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Active = true, Visible = false, ZIndex = 1, Parent = root })
+	placeButton = Theme.button({ Name = "PlaceConfirm", Text = "", Size = UDim2.fromOffset(Hud.PLACE.PAIR.maxW, Hud.PRIMARY), BackgroundColor3 = Theme.colors.confirm, Visible = false, ZIndex = 4, Parent = root })
+	local placeName = Theme.display({ Name = "Label", TextSize = 18, AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 6), Size = UDim2.new(1, 0, 0, 22), ZIndex = 5, Parent = placeButton })
+	placeName.TextXAlignment = Enum.TextXAlignment.Center
+	placeName.TextWrapped = false
+	placeCost = Theme.display({ Name = "Cost", TextSize = 15, TextColor3 = Color3.fromHex("#FFE9A8"), AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -5), Size = UDim2.new(1, 0, 0, 18), ZIndex = 5, Parent = placeButton })
+	placeCost.TextXAlignment = Enum.TextXAlignment.Center
+	placeCost.TextWrapped = false
+	touchCancel = Theme.button({ Name = "PlaceCancel", TextSize = 18, Size = UDim2.fromOffset(Hud.PLACE.PAIR.maxW, Hud.PRIMARY), BackgroundColor3 = Theme.colors.danger, Visible = false, ZIndex = 4, Parent = root })
+	reasonLabel = Theme.display({ Name = "PlaceReason", TextSize = 15, TextColor3 = Color3.fromHex("#FF8A7A"), AnchorPoint = Vector2.new(0.5, 0), Size = UDim2.fromOffset(260, 20), Visible = false, ZIndex = 3, Parent = root })
+	reasonLabel.TextXAlignment = Enum.TextXAlignment.Center
 
 	-- Tower panel: left edge, away from the bar (docs/research/ROBLOX_TD_UI_PATTERNS.md §1).
 	towerPanel = Theme.panel({ Name = "TowerPanel", AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 12, 0.5, 0), Size = UDim2.fromOffset(232, 0), AutomaticSize = Enum.AutomaticSize.Y, Active = true, Visible = false, ZIndex = 4, Parent = root })
@@ -168,6 +192,12 @@ local function clearGhost()
 	placing = nil
 	placeHint.Visible = false
 	cancelButton.Visible = false
+	catcher.Visible = false
+	placeButton.Visible = false
+	touchCancel.Visible = false
+	reasonLabel.Visible = false
+	MatchController.setAiming(false)
+	Device.setAimHold(false)
 	for _, slot in slots do
 		slot.stroke.Color = Theme.colors.outline
 		slot.stroke.Thickness = 2.5
@@ -280,7 +310,37 @@ function PlacementController.begin(unitId: string)
 			t:Play(0)
 		end)
 	end
-	cancelButton.Visible = true
+	local touch = Device.isTouch()
+	cancelButton.Visible = not touch
+	if touch then
+		-- Hold the corners first so the hotbar keeps its place when the thumbstick and jump hide.
+		Device.setAimHold(true)
+		MatchController.setAiming(true)
+		catcher.Visible = true
+		placeButton.Visible = true
+		touchCancel.Visible = true
+		local label = placeButton:FindFirstChild("Label")
+		if label and label:IsA("TextLabel") then
+			label.Text = LocaleController.t("match.place_confirm")
+		end
+		placeCost.Text = LocaleController.t("match.place_cost", { n = myCost(unitId, def.levels[1].cost) })
+		touchCancel.Text = LocaleController.t("match.cancel")
+		-- B3-1: the ghost starts at the last ground tap, else the screen centre's ground, else just in
+		-- front of the character.
+		local camera = Workspace.CurrentCamera
+		if camera then
+			local inset = GuiService:GetGuiInset()
+			local centre = Vector2.new(camera.ViewportSize.X / 2, (camera.ViewportSize.Y - inset.Y) / 2)
+			local start = lastGroundTap or centre
+			local character = Players.LocalPlayer.Character
+			local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+			if not groundHit(start) and root then
+				local p = camera:WorldToScreenPoint(root.Position + root.CFrame.LookVector * 4 - Vector3.new(0, 2, 0))
+				start = Vector2.new(p.X, p.Y)
+			end
+			lastScreen = start
+		end
+	end
 	for _, slot in slots do
 		local on = slot.unitId == unitId
 		slot.stroke.Color = if on then Theme.colors.gold else Theme.colors.outline
@@ -290,11 +350,11 @@ function PlacementController.begin(unitId: string)
 	local st = myStats(unitId, 1)
 	ring = makeRing(st.range, Theme.colors.quest)
 	placeHint.Visible = true
-	placeHint.Text = LocaleController.t("match.place", { unit = LocaleController.t(def.nameKey) })
+	placeHint.Text = LocaleController.t(if touch then "match.place_touch" else "match.place", { unit = LocaleController.t(def.nameKey) })
 end
 
 -- Raycast from the screen position onto the arena ground. Returns the world hit, or nil.
-local function groundHit(screen: Vector2): (Vector3?, Instance?)
+groundHit = function(screen: Vector2): (Vector3?, Instance?)
 	local camera = Workspace.CurrentCamera
 	if not camera then
 		return nil, nil
@@ -378,7 +438,6 @@ local function towerAtScreen(screen: Vector2): number?
 	return best
 end
 
-local lastScreen: Vector2? = nil
 
 local function updateGhost()
 	if not ghost or not origin or not lastScreen then
@@ -396,6 +455,19 @@ local function updateGhost()
 	end
 	local pos = Vector3.new(hit.X, 0, hit.Z)
 	ghost:PivotTo(CFrame.new(pos))
+	if placeButton.Visible then
+		-- Place greys out with the reason under the ghost while the spot is not legal (B3-2).
+		placeButton.BackgroundColor3 = if ok then Theme.colors.confirm else Theme.colors.buttonDisabled
+		local camera = Workspace.CurrentCamera
+		local key = if why then ERR_KEYS[why] else nil
+		reasonLabel.Visible = not ok and key ~= nil and camera ~= nil
+		if reasonLabel.Visible and camera and key then
+			reasonLabel.Text = LocaleController.t(key)
+			local sp = camera:WorldToScreenPoint(pos)
+			local d = (Vector2.new(sp.X, sp.Y) - Root.get().AbsolutePosition) / Device.scale()
+			reasonLabel.Position = UDim2.fromOffset(d.X, d.Y + Hud.PLACE.REASON_DY)
+		end
+	end
 	if ring then
 		ring.CFrame = CFrame.new(pos + Vector3.new(0, 0.1, 0)) * CFrame.Angles(0, 0, math.rad(90))
 		ring.Color = if ok then Theme.colors.quest else Theme.colors.danger
@@ -406,7 +478,7 @@ local function updateGhost()
 	end
 end
 
-local ERR_KEYS = {
+ERR_KEYS = {
 	on_path = "match.err.on_path",
 	too_close = "match.err.too_close",
 	cannot_afford = "match.err.cannot_afford",
@@ -686,6 +758,9 @@ local function run(event: PlaceFlow.Event, flags: PlaceFlow.Flags)
 			lastScreen = a.screen
 			updateGhost()
 		elseif a.kind == "commit" and a.unitId and a.x and a.z then
+			pcall(function()
+				Theme.clickHaptic():Play()
+			end)
 			placeCall(a.unitId, a.x, a.z, function(ok: boolean, reason: string?)
 				run({ type = "done", ok = ok, reason = if reason and ERR_KEYS[reason] then reason else nil }, flags)
 			end)
@@ -703,15 +778,71 @@ local function run(event: PlaceFlow.Event, flags: PlaceFlow.Flags)
 	end
 end
 
--- Mouse clicks commit at once; touch keeps tap-to-place until MH-07 brings the Place button.
+-- A mouse click commits at once; on touch a tap aims and Place commits unless Settings quickPlace.
 local MOUSE_FLAGS: PlaceFlow.Flags = { touch = false, quickPlace = false }
-local TOUCH_FLAGS: PlaceFlow.Flags = { touch = true, quickPlace = true }
+local function touchFlags(): PlaceFlow.Flags
+	return { touch = true, quickPlace = SettingsController.get("quickPlace") == true }
+end
 
 local function tap(screen: Vector2, touch: boolean?)
 	if not origin then
 		return
 	end
-	run({ type = "tap", screen = screen, check = checkAt(screen) }, if touch then TOUCH_FLAGS else MOUSE_FLAGS)
+	local c = checkAt(screen)
+	if touch and c.x then
+		lastGroundTap = screen
+	end
+	run({ type = "tap", screen = screen, check = c }, if touch then touchFlags() else MOUSE_FLAGS)
+end
+
+-- One finger on the catcher while aiming: a drag moves the ghost FINGER_OFFSET_PX above the finger,
+-- a tap moves it under the finger, a long press without moving cancels (B3-2, B3-3).
+local function watchCatcher()
+	local P = Hud.PLACE
+	local finger: InputObject? = nil
+	local start = Vector2.zero
+	local startedAt = 0
+	local dragging = false
+	catcher.InputBegan:Connect(function(input: InputObject)
+		if input.UserInputType ~= Enum.UserInputType.Touch or finger then
+			return
+		end
+		finger = input
+		start = Vector2.new(input.Position.X, input.Position.Y)
+		startedAt = os.clock()
+		dragging = false
+		task.delay(P.LONG_PRESS_S, function()
+			local held = Vector2.new(input.Position.X, input.Position.Y) - start
+			if finger == input and not dragging and held.Magnitude <= P.LONG_PRESS_SLOP_PX and catcher.Visible then
+				finger = nil
+				run({ type = "longPress" }, touchFlags())
+			end
+		end)
+	end)
+	UserInputService.InputChanged:Connect(function(input: InputObject)
+		if input ~= finger then
+			return
+		end
+		local p = Vector2.new(input.Position.X, input.Position.Y)
+		if not dragging and (p - start).Magnitude > P.TAP_SLOP_PX then
+			dragging = true
+		end
+		if dragging then
+			local s = p - Vector2.new(0, P.FINGER_OFFSET_PX)
+			run({ type = "move", screen = s, check = checkAt(s) }, touchFlags())
+		end
+	end)
+	UserInputService.InputEnded:Connect(function(input: InputObject)
+		if input ~= finger then
+			return
+		end
+		finger = nil
+		local p = Vector2.new(input.Position.X, input.Position.Y)
+		local d = p - start
+		if not dragging and HudLayout.isTap(Hud, d.X, d.Y, os.clock() - startedAt) then
+			tap(p, true)
+		end
+	end)
 end
 
 -- Re-tints slots for the current cash and how many of each unit I have placed.
@@ -833,6 +964,12 @@ local function layoutBar()
 		s.costIcon.Visible = hb.slotW >= Hud.HOTBAR.costIconMin
 	end
 	local above = hb.y - lift - 2
+	-- Touch Place / Cancel in the corners beside the bar (HudLayout.placePair).
+	local pair = HudLayout.placePair(Hud, Device.scale(), Device.safeSize(), { x0 = hb.x, y0 = hb.y - lift, x1 = hb.x + hb.width, y1 = hb.y + hb.slotH }, SettingsController.get("railSide") or "right")
+	placeButton.Position = UDim2.fromOffset(pair.place.x, pair.place.y)
+	placeButton.Size = UDim2.fromOffset(pair.place.w, pair.place.h)
+	touchCancel.Position = UDim2.fromOffset(pair.cancel.x, pair.cancel.y)
+	touchCancel.Size = UDim2.fromOffset(pair.cancel.w, pair.cancel.h)
 	local cash = MatchController.cashPill()
 	local cashH = 36
 	if cash then
@@ -1114,8 +1251,36 @@ function PlacementController.start()
 	end)
 
 	UserInputService.InputChanged:Connect(function(input: InputObject)
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		-- The mouse moves the ghost directly; on touch the catcher does (with the finger offset).
+		if input.UserInputType == Enum.UserInputType.MouseMovement then
 			lastScreen = Vector2.new(input.Position.X, input.Position.Y)
+		end
+	end)
+	watchCatcher()
+	placeButton.Activated:Connect(function()
+		run({ type = "place" }, touchFlags())
+	end)
+	touchCancel.Activated:Connect(function()
+		run({ type = "cancel" }, touchFlags())
+	end)
+	-- Touch taps on the world while not aiming (select a defender); TouchTap is unreliable on some
+	-- Android devices (DevForum 3987745), so raw touches with Hud.PLACE tap thresholds instead.
+	local touchStarts: { [InputObject]: { at: number, pos: Vector2 } } = {}
+	UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
+		if input.UserInputType == Enum.UserInputType.Touch and not processed and MatchController.active() and not catcher.Visible then
+			touchStarts[input] = { at = os.clock(), pos = Vector2.new(input.Position.X, input.Position.Y) }
+		end
+	end)
+	UserInputService.InputEnded:Connect(function(input: InputObject)
+		local s = touchStarts[input]
+		if not s then
+			return
+		end
+		touchStarts[input] = nil
+		local p = Vector2.new(input.Position.X, input.Position.Y)
+		local d = p - s.pos
+		if not catcher.Visible and HudLayout.isTap(Hud, d.X, d.Y, os.clock() - s.at) then
+			tap(p, true)
 		end
 	end)
 	UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
@@ -1138,17 +1303,7 @@ function PlacementController.start()
 				clearGhost()
 				clearSelection()
 			end
-		elseif input.UserInputType == Enum.UserInputType.Touch then
-			lastScreen = Vector2.new(input.Position.X, input.Position.Y)
 		end
-	end)
-	UserInputService.TouchTap:Connect(function(positions: { Vector2 }, processed: boolean)
-		if processed or not MatchController.active() or #positions == 0 then
-			return
-		end
-		lastScreen = positions[1]
-		updateGhost()
-		tap(positions[1], true)
 	end)
 	RunService.RenderStepped:Connect(function()
 		if ghost then

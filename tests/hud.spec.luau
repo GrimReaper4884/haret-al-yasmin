@@ -149,6 +149,27 @@ return function(t)
 			t.eq(left.menu.x, Hud.RAIL.margin)
 		end)
 
+		t.it("puts Place on the rail side and Cancel opposite, beside the hotbar, on screen", function()
+			for _, c in CASES do
+				local profile = if c.profile == "desktop" then "touch-tablet" else c.profile
+				local reserved = HudLayout.reserved(Hud, profile, true, c.safe)
+				local s = HudLayout.scale(Hud, profile, c.safe, "default", 6)
+				local bar = HudLayout.hotbar(Hud, profile, s, c.safe, 6, reserved)
+				local br = hotbarRect(bar)
+				for _, side in { "right", "left" } do
+					local pair = HudLayout.placePair(Hud, s, c.safe, br, side)
+					for name, b in pair do
+						local r = { x0 = b.x, y0 = b.y, x1 = b.x + b.w, y1 = b.y + b.h }
+						t.truthy(b.w >= Hud.PRIMARY and b.h >= Hud.PRIMARY, name .. " under PRIMARY: " .. c.name)
+						t.truthy(r.x0 >= 0 and r.x1 <= c.safe.x / s + 1e-6 and r.y1 <= c.safe.y / s + 1e-6, name .. " off screen: " .. c.name)
+						t.truthy(not HudLayout.overlaps(r, br), name .. " on the hotbar: " .. c.name)
+					end
+					local placeRight = pair.place.x > pair.cancel.x
+					t.eq(placeRight, side == "right", "Place follows the rail side")
+				end
+			end
+		end)
+
 		t.it("recognises taps by slop and time", function()
 			local slop, tmax = Hud.PLACE.TAP_SLOP_PX, Hud.PLACE.TAP_MAX_S
 			t.truthy(HudLayout.isTap(Hud, 0, 0, 0))

@@ -49,8 +49,8 @@ local function apply()
 		return
 	end
 	-- On foot the phone keeps its thumbstick and jump button; the watchtower view hides them so
-	-- taps go to placement.
-	GuiService.TouchControlsEnabled = not overhead
+	-- taps go to placement, and so does aiming a defender on touch (MatchController.aiming).
+	GuiService.TouchControlsEnabled = not overhead and not MatchController.aiming()
 	if overhead then
 		local target = overheadCFrame()
 		if target then
@@ -146,6 +146,9 @@ function MatchCameraController.start()
 		camera.CFrame = camera.CFrame * applied
 	end)
 	button, label = MatchController.railButton("view")
+	MatchController.AimingChanged:Connect(function()
+		GuiService.TouchControlsEnabled = not overhead and not MatchController.aiming()
+	end)
 	button.Activated:Connect(MatchCameraController.toggle)
 	MatchController.Started:Connect(function(payload: MatchController.Info)
 		info = payload

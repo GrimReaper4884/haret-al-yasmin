@@ -18,6 +18,7 @@ export type Hotbar = { slotW: number, slotH: number, gap: number, width: number,
 export type Point = { x: number, y: number }
 export type Rail = { size: number, gap: number, buttons: { Point }, columns: number, menu: Point & { size: number } }
 export type Bar = { size: number, gap: number, width: number, x: number, y: number }
+export type Box = { x: number, y: number, w: number, h: number }
 
 local HudLayout = {}
 
@@ -183,6 +184,27 @@ function HudLayout.lobbyBar(cfg: any, _profile: Profile, scale: number, safeSize
 	local lo, hi = bottomSpan(cfg, scale, safeSize, reserved or {})
 	local size, width, x = row(cfg, B.button, B.gap, count, count, lo, hi, w)
 	return { size = size, gap = B.gap, width = width, x = x, y = h - B.bottom - size }
+end
+
+-- The touch Place / Cancel buttons while aiming (design px, B3): Place in the bottom corner on the
+-- rail's side, Cancel in the other one (Roblox's thumbstick and jump hide while aiming), each as wide
+-- as the corner beside the hotbar allows (PRIMARY … PAIR.maxW). A corner too narrow for a PRIMARY
+-- button puts that button just above the hotbar's end on its side instead.
+function HudLayout.placePair(cfg: any, scale: number, safeSize: Size, bar: Rect, side: string): { place: Box, cancel: Box }
+	local P = cfg.PLACE.PAIR
+	local w, h = safeSize.x / scale, safeSize.y / scale
+	local size = cfg.PRIMARY
+	local y = h - cfg.HOTBAR.bottom - size
+	local function box(right: boolean): Box
+		local free = if right then w - P.margin - (bar.x1 + P.gap) else bar.x0 - P.gap - P.margin
+		if free >= size then
+			local bw = math.min(P.maxW, free)
+			return { x = if right then w - P.margin - bw else P.margin, y = y, w = bw, h = size }
+		end
+		return { x = if right then bar.x1 - size else bar.x0, y = bar.y0 - P.gap - size, w = size, h = size }
+	end
+	local right = side ~= "left"
+	return { place = box(right), cancel = box(not right) }
 end
 
 -- A touch that moved at most TAP_SLOP_PX and lasted at most TAP_MAX_S is a tap.

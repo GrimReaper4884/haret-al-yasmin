@@ -62,8 +62,14 @@ return {
 		TAP_SLOP_PX = 12,
 		TAP_MAX_S = 0.35,
 		LONG_PRESS_S = 0.5,
+		LONG_PRESS_SLOP_PX = 6, -- a long press must hold still; a slow drag is not a cancel
 		FINGER_OFFSET_PX = 70,
 		PICK_PX = { touch = 44, mouse = 34 },
+		-- Place (rail side) and Cancel (the other side) sit in Roblox's bottom corners, which are empty
+		-- while aiming (the thumbstick and jump hide): PRIMARY tall, at most maxW wide.
+		PAIR = { maxW = 120, gap = 8, margin = 12 },
+		-- The "why not" line under the ghost: px below the ghost's screen point.
+		REASON_DY = 34,
 	},
 
 	-- Watchtower view on touch (B5): studs per dragged px (× zoom), the pinch zoom range as a factor of

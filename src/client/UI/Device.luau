@@ -40,6 +40,10 @@ local current = {
 }
 local preset = "default"
 local slotCount = TD.LOADOUT_SLOTS
+-- While a defender is aimed on touch the thumbstick and jump hide (B3); the layout keeps the corners
+-- they had so the hotbar does not jump, and Place / Cancel take those corners.
+local aimHold = false
+local lastJump: HudLayout.Rect? = nil
 local started = false
 local queued = false
 local jumpConns: { RBXScriptConnection } = {}
@@ -94,11 +98,14 @@ local function recompute()
 	if legacy then
 		scale = math.min(scale, safe.x / legacy[1], safe.y / legacy[2])
 	end
-	local touchControls = GuiService.TouchControlsEnabled
+	local touchControls = GuiService.TouchControlsEnabled or aimHold
 	local measured: HudLayout.Measured = {}
 	local jump = jumpButton()
-	if jump and jump.Visible and jump.AbsoluteSize.X > 0 then
+	if jump and jump.Visible and jump.AbsoluteSize.X > 0 and GuiService.TouchControlsEnabled then
 		measured.jump = rectOf(jump, gui.AbsolutePosition)
+		lastJump = measured.jump
+	elseif aimHold then
+		measured.jump = lastJump
 	end
 	local reserved = HudLayout.reserved(Hud, profile, touchControls, safe, measured)
 	local function r(rect: HudLayout.Rect?): string
@@ -184,6 +191,14 @@ end
 function Device.setPreset(p: string)
 	if Hud.SCALE.presets[p] and p ~= preset then
 		preset = p
+		schedule()
+	end
+end
+
+-- PlacementController holds the corners while it aims on touch (see aimHold).
+function Device.setAimHold(on: boolean)
+	if aimHold ~= on then
+		aimHold = on
 		schedule()
 	end
 end

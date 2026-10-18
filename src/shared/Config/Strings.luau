@@ -282,6 +282,10 @@ local en: { [string]: string } = {
 	["match.menu"] = "Menu",
 	["match.leave_confirm"] = "Leave the match?",
 	["match.leave_back"] = "Stay",
+	-- Touch placement (MOBILE_HUD_PLAN MH-07)
+	["match.place_confirm"] = "Place",
+	["match.place_cost"] = "${n}",
+	["match.place_touch"] = "Drag to aim {unit}, then press Place",
 	["match.err.on_path"] = "Not on the road.",
 	["match.err.too_close"] = "Too close to another defender.",
 	["match.err.cannot_afford"] = "Not enough cash.",
@@ -1128,6 +1132,10 @@ local ar: { [string]: string } = {
 	["match.menu"] = "القائمة",
 	["match.leave_confirm"] = "بدك تطلع من المعركة؟",
 	["match.leave_back"] = "خليك",
+	-- Touch placement (MOBILE_HUD_PLAN MH-07)
+	["match.place_confirm"] = "حطّ",
+	["match.place_cost"] = "${n}",
+	["match.place_touch"] = "اسحب لتختار مطرح {unit}، وبعدين كبس حطّ",
 	["match.err.on_path"] = "مش على الطريق.",
 	["match.err.too_close"] = "قريب كتير من واحد تاني.",
 	["match.err.cannot_afford"] = "ما معك مصاري كفاية.",

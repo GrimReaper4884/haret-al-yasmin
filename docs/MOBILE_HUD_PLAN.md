@@ -460,7 +460,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
 
 ### Milestone 2: placement
 
-- [x] **MH-06 Shared validity and the placement state machine** · deps: MH-05
+- [x] e1ce4af **MH-06 Shared validity and the placement state machine** · deps: MH-05
   - **Goal:** One client-side validity source and a tested state machine before any input work.
   - **Change:** `PlacementController.valid` calls `TdTowers.canPlace(state, owner, unitId, def, x, z,
     rules, trait)` (`Logic/TdTowers.luau:46`) with a client-side view of the match instead of its own
@@ -483,7 +483,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
   - **Accept:** specs green; Studio: placing with the mouse behaves exactly as before (keys 1–9, Q,
     click); `redteam.spec` untouched and green.
 
-- [ ] **MH-07 Touch aiming: catcher, finger offset, Place and Cancel** · deps: MH-06
+- [x] **MH-07 Touch aiming: catcher, finger offset, Place and Cancel** · deps: MH-06
   - **Goal:** B3 on a phone.
   - **Change:** `PlacementController`: a `PlacementCatcher` frame (full safe area, `Active = true`,
     `BackgroundTransparency = 1`, ZIndex under the HUD) shown only while aiming on touch; raw touch
