@@ -78,7 +78,7 @@
       "attack": "lslash"
     },
     "umm_hara": {
-      "idle": "idle8",
+      "idle": "idle2",
       "attack": "mage"
     },
     "mukhtar": {
@@ -351,6 +351,10 @@
         "clip": "waisthit",
         "to": 24
       }
+    },
+    "qabilah": {
+      "idle": "idle2",
+      "attack": "mage"
     }
   }
 }

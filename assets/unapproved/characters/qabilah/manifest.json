@@ -1,0 +1,24 @@
+{
+  "id": "qabilah",
+  "tasks": {
+    "concept": "01a14eea-7c2d-746d-88a6-894abb120322",
+    "mesh": "01a14eea-e076-7212-858f-226993a78f14",
+    "rig": "01a14eec-0988-72bb-a861-4c3654e50675",
+    "clip_idle8": "01a14eec-9087-71bd-9166-18811fa0bf45",
+    "clip_mage": "01a14eec-b215-7053-858a-61ae8fc53483",
+    "clip_idle2": "01a14eed-5c84-71f0-9cae-31aa45f0616d"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_idle8": 3,
+    "clip_mage": 3,
+    "clip_idle2": 3
+  },
+  "clips": {
+    "idle8": 248,
+    "mage": 129,
+    "idle2": 12
+  }
+}

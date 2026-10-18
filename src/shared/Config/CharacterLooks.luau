@@ -75,6 +75,16 @@ local Looks: { [string]: Look } = {
 		-- v2 model (no fused broom; the broom is an Anim/HandProps prop): the published clips were
 		-- made for the v1 rig, so only the baked clips (Anim/Clips/saqqa) apply.
 	}, -- Fawza
+	-- Umm Baki the midwife (S1-A03): empty-handed Meshy model; her oil lamp is an Anim/HandProps prop.
+	qabilah = {
+		build = "stout",
+		outfit = "abaya",
+		beard = "none",
+		moustache = "none",
+		cloak = "#2B3550",
+		apron = "#E9DCC8",
+		model = "UmmBaki",
+	},
 	-- Hissam, Abu Hissam's son and apprentice
 	hallaq = {
 		build = "slim",

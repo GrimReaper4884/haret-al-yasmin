@@ -245,7 +245,7 @@ local function rewardPlayer(match: Match, player: Player, outcome: any): any
 		local secret = MatchRewards.secretDrop(p, match.modeId, match.mode, match.difficulty, outcome, TD.SECRET_DROP, TD, math.random)
 		;(reward :: any).secretUnit = secret
 		MatchRewards.record(p, match.modeId, match.mode, match.difficulty, outcome, if ps then ps.kills else 0, TD)
-		Grants.apply(p, { lira = reward.lira, qirsh = reward.qirsh, xp = reward.xp, traitStones = reward.traitStones, beads = beads, unit = secret }, {
+		Grants.apply(p, { lira = reward.lira, qirsh = reward.qirsh, xp = reward.xp, traitStones = reward.traitStones, beads = beads, unit = secret or reward.unit }, {
 			maxQirsh = Economy.MAX_QIRSH,
 			maxLira = TD.MAX_LIRA,
 			maxStones = TD.MAX_TRAIT_STONES,
@@ -263,6 +263,9 @@ local function rewardPlayer(match: Match, player: Player, outcome: any): any
 	local secret = (reward :: any).secretUnit
 	if secret and (Units :: any)[secret] then
 		PlayerStateService.notify(player, "notify.secret_unit", { unitKey = (Units :: any)[secret].nameKey })
+	elseif reward.unit and (Units :: any)[reward.unit] then
+		-- A first-clear story gift (TD.STORY_FIRST_CLEAR, e.g. Umm Baki after Episode 6).
+		PlayerStateService.notify(player, "notify.gift_unit", { unitKey = (Units :: any)[reward.unit].nameKey })
 	end
 	if eventGain > 0 and eventDef then
 		(reward :: any).eventCurrency = eventGain;

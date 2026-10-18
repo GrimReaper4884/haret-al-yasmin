@@ -132,6 +132,7 @@ Icons.portraits = {
 	-- Defenders
 	walad = { id = 137506377504428, model = "LaneBoy" },
 	natour = { id = 93314435304199, model = "AbuFares" },
+	qabilah = { id = 134168283413116, model = "UmmBaki" },
 	farran = { id = 136063904564645, model = "AbuBashir" },
 	saqqa = { id = 97661723924568, model = "Fawzia" },
 	hallaq = { id = 78904073713642, model = "Issam" },

@@ -175,6 +175,21 @@ local BUILD: { [string]: Builder } = {
 		piece(m, CYL, Vector3.new(L, H * 0.03, H * 0.03), CFrame.new(0, -L * 0.3, 0) * UP, "#A88A5C", M.Wood)
 		piece(m, CYL, Vector3.new(L * 0.14, H * 0.028, H * 0.028), CFrame.new(0, L * 0.23, -L * 0.03) * CFrame.Angles(math.rad(-25), 0, 0) * UP, "#A88A5C", M.Wood)
 	end,
+	oillamp = function(m, H)
+		-- A small brass hand lamp carried by its ring handle (hang mount): handle, lidded bowl with a
+		-- spout, and the flame at the spout tip.
+		local s = H * 0.08
+		piece(m, CYL, Vector3.new(s * 0.12, s * 0.5, s * 0.5), CFrame.new(0, -s * 0.15, s * 0.15), "#B8913A", M.Metal)
+		piece(m, BALL, Vector3.new(s * 1.1, s * 0.55, s * 0.8), CFrame.new(0, -s * 0.55, 0), "#C9A13B", M.Metal)
+		piece(m, CYL, Vector3.new(s * 0.6, s * 0.16, s * 0.16), CFrame.new(0, -s * 0.5, -s * 0.6) * ALONG, "#C9A13B", M.Metal)
+		local flame = piece(m, BALL, Vector3.new(s * 0.3, s * 0.45, s * 0.3), CFrame.new(0, -s * 0.28, -s * 0.9), "#FFC861", M.Neon, 0.1)
+		local light = Instance.new("PointLight")
+		light.Color = Color3.fromHex("#FFB347")
+		light.Range = 10
+		light.Brightness = 1.4
+		light.Shadows = false
+		light.Parent = flame
+	end,
 	dagger = function(m, H)
 		local L = H * 0.24
 		piece(m, BLOCK, Vector3.new(L * 0.1, L * 0.1, L * 0.3), CFrame.new(0, 0, L * 0.02), "#2B1D14", M.Wood)
@@ -199,6 +214,7 @@ local BOOST: { [string]: number } = {
 	drumstick = 1.2,
 	cleaver = 1.3,
 	dagger = 1.3,
+	oillamp = 1.4,
 }
 
 -- What each character holds. `throws` = hidden for a moment after it leaves the hand (ThrowFx).
@@ -217,6 +233,7 @@ HandProps.HELD = {
 	khayyat = { { kind = "bowl", hand = "LeftHand", mount = "hang" } },
 	farran = { { kind = "bread", hand = "RightHand", mount = "hang", throws = "attack" } },
 	natour = { { kind = "lantern", hand = "RightHand", mount = "hang" } },
+	qabilah = { { kind = "oillamp", hand = "RightHand", mount = "hang" } }, -- Umm Baki (S1-A03)
 	haddad = { { kind = "hammer", hand = "RightHand", mount = "fist", tilt = 45 } },
 	arada = {
 		{ kind = "sword", hand = "RightHand", mount = "fist", tilt = 20 },

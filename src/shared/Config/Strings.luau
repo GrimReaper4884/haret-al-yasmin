@@ -311,6 +311,8 @@ local en: { [string]: string } = {
 	["unit.walad.desc"] = "Quick with a sling and quicker with excuses. Cheap, plentiful, everywhere at once.",
 	["unit.natour.name"] = "Abu Hares the Watchman",
 	["unit.natour.desc"] = "Bars the gate every night. His lantern reveals night thieves to every defender in its light and slows anyone it shines on.",
+	["unit.qabilah.name"] = "Umm Baki the Midwife",
+	["unit.qabilah.desc"] = "She has brought half the lane into the world and knows every face in it. Her little lamp shows who is hiding and who is only pretending to be a neighbour.",
 	["unit.farran.name"] = "Abu Baseer the Baker",
 	["unit.farran.desc"] = "Hurls loaves straight from the oven. Hits a whole group at once.",
 	["unit.saqqa.name"] = "Fawza",
@@ -812,6 +814,7 @@ local en: { [string]: string } = {
 	["unit.adashari.sig.warehouse.name"] = "Guard of the Warehouse",
 	["unit.adashari.sig.warehouse.desc"] = "Each blow puts out two burn stacks on the gate.",
 	["notify.secret_unit"] = "The night guard joins you: {unit}!",
+	["notify.gift_unit"] = "{unit} joins your defenders!",
 }
 
 local ar: { [string]: string } = {
@@ -1107,6 +1110,8 @@ local ar: { [string]: string } = {
 	["unit.walad.desc"] = "سريع بالمقلاع وأسرع بالأعذار. رخيص وكتير وبكل مكان.",
 	["unit.natour.name"] = "أبو حارس الناطور",
 	["unit.natour.desc"] = "بيسكّر الباب كل ليلة. فانوسه بيكشف الحرامية لكل مدافع بضوّه وبيبطّئ كل مين بيوقع عليه الضو.",
+	["unit.qabilah.name"] = "أم باقي الداية",
+	["unit.qabilah.desc"] = "خلّفت نص الحارة بإيديها وبتعرف كل وجه فيها. سراجها الزغير بيبيّن مين مخبّى ومين عامل حاله جار.",
 	["unit.farran.name"] = "أبو بصير الفرّان",
 	["unit.farran.desc"] = "بيرمي الأرغفة من الفرن مباشرة. بيضرب مجموعة كاملة بضربة.",
 	["unit.saqqa.name"] = "فوزة",
@@ -1608,6 +1613,7 @@ local ar: { [string]: string } = {
 	["unit.adashari.sig.warehouse.name"] = "حارس البوايكية",
 	["unit.adashari.sig.warehouse.desc"] = "كل ضربة بتطفي حرقتين عن الباب.",
 	["notify.secret_unit"] = "حارس الليل صار معك: {unit}!",
+	["notify.gift_unit"] = "صار مع المدافعين: {unit}!",
 }
 
 return {

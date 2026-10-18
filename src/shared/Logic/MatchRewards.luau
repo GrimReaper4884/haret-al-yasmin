@@ -5,7 +5,7 @@
 local MatchRewards = {}
 
 export type Outcome = { won: boolean, wavesCleared: number, totalWaves: number? }
-export type Reward = { lira: number, qirsh: number, xp: number, traitStones: number, firstClear: boolean }
+export type Reward = { lira: number, qirsh: number, xp: number, traitStones: number, firstClear: boolean, unit: string? }
 
 local function infiniteLira(waves: number, td: any): number
 	local lira = 0
@@ -59,6 +59,7 @@ function MatchRewards.compute(modeId: string, mode: any, difficulty: string, out
 	end
 	-- First-clear gifts (TD.STORY_FIRST_CLEAR): for each difficulty this clear reaches for the first time.
 	local gifts = firstClear and td.STORY_FIRST_CLEAR and td.STORY_FIRST_CLEAR[mode.episode]
+	local unit: string? = nil
 	if gifts then
 		local cleared = profile.td.cleared[modeId]
 		local clearedOrder = if cleared then td.DIFFICULTIES[cleared].order else 0
@@ -66,6 +67,7 @@ function MatchRewards.compute(modeId: string, mode: any, difficulty: string, out
 			local need = td.DIFFICULTIES[key].order
 			if clearedOrder < need and diff.order >= need then
 				stones += gift.traitStones or 0
+				unit = gift.unit or unit
 			end
 		end
 	end
@@ -75,6 +77,7 @@ function MatchRewards.compute(modeId: string, mode: any, difficulty: string, out
 		xp = math.floor(xp + 0.5),
 		traitStones = stones,
 		firstClear = firstClear,
+		unit = unit,
 	}
 end
 

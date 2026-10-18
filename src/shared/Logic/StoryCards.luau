@@ -5,7 +5,7 @@
 -- pass the configs (Story, Modes, TD, Beads) and the player's cleared difficulty.
 
 export type Card = { id: string, number: number, mode: any?, soon: boolean }
-export type Gift = { difficulty: string, traitStones: number, beads: number }
+export type Gift = { difficulty: string, traitStones: number, beads: number, unit: string? }
 export type SecretOdds = { unit: string, chance: number, pity: number }
 
 local StoryCards = {}
@@ -21,7 +21,7 @@ function StoryCards.cards(story: any, modes: { [string]: any }): { Card }
 end
 
 -- First-clear gifts of a mode still ahead of `cleared` (the best difficulty already cleared, or nil),
--- one entry per difficulty in TD.DIFFICULTY_ORDER: trait stones (TD.STORY_FIRST_CLEAR) and beads
+-- one entry per difficulty in TD.DIFFICULTY_ORDER: trait stones and units (TD.STORY_FIRST_CLEAR) and beads
 -- (Beads.firstClear). Mirrors MatchRewards.compute / MatchRewards.beads.
 function StoryCards.gifts(mode: any, td: any, beads: any, cleared: string?): { Gift }
 	local out: { Gift } = {}
@@ -33,9 +33,10 @@ function StoryCards.gifts(mode: any, td: any, beads: any, cleared: string?): { G
 	local clearedOrder = if cleared and td.DIFFICULTIES[cleared] then td.DIFFICULTIES[cleared].order else 0
 	for _, key in td.DIFFICULTY_ORDER do
 		local s = stones[key] and stones[key].traitStones or 0
+		local u = stones[key] and stones[key].unit
 		local b = beadGifts[key] or 0
-		if td.DIFFICULTIES[key].order > clearedOrder and (s > 0 or b > 0) then
-			table.insert(out, { difficulty = key, traitStones = s, beads = b })
+		if td.DIFFICULTIES[key].order > clearedOrder and (s > 0 or b > 0 or u ~= nil) then
+			table.insert(out, { difficulty = key, traitStones = s, beads = b, unit = u })
 		end
 	end
 	return out
