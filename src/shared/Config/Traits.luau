@@ -31,7 +31,14 @@ local Traits: { [string]: TraitDef } = {
 	golden = { nameKey = "trait.golden.name", weight = 8, cash = 1.25, tier = 3 },
 	hawk = { nameKey = "trait.hawk.name", weight = 5, range = 1.25, cooldown = 0.95, tier = 3 },
 	zaim = { nameKey = "trait.zaim.name", weight = 2.5, damage = 1.3, range = 1.1, tier = 4 },
-	legend = { nameKey = "trait.legend.name", weight = 0.5, damage = 1.5, range = 1.2, cooldown = 0.85, tier = 4 },
+	legend = {
+		nameKey = "trait.legend.name",
+		weight = 0.5,
+		damage = 1.5,
+		range = 1.2,
+		cooldown = 0.85,
+		tier = 4,
+	},
 	-- Traits v2 (Season Story 1): 20 of the 120 weight, so the first eight keep their relative odds.
 	lantern = { nameKey = "trait.lantern.name", weight = 6, hitsStealth = true, tier = 2 },
 	fireproof = { nameKey = "trait.fireproof.name", weight = 6, douse = 1, tier = 2 },
@@ -44,6 +51,19 @@ local CAPS: Caps = { damage = 1.5, range = 1.25, cooldown = 0.85 }
 
 return {
 	traits = Traits,
-	order = { "steady", "swift", "keen", "sharp", "golden", "hawk", "zaim", "legend", "lantern", "fireproof", "miser", "twin" },
+	order = {
+		"steady",
+		"swift",
+		"keen",
+		"sharp",
+		"golden",
+		"hawk",
+		"zaim",
+		"legend",
+		"lantern",
+		"fireproof",
+		"miser",
+		"twin",
+	},
 	caps = CAPS,
 }
