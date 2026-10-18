@@ -454,7 +454,7 @@ regenerates itself from config.
 - **Ability "The Oath" (اليمين)**, new kind `mark`: every 10 s marks the strongest enemy in range for 4 s; marked
   enemies take **+40 %** damage from every defender (not stacking). Cap: one mark per Adashari, +40 % max.
 - **How players get him (STOP: owner confirms).** Not from any banner or code. Every **Episode 9 win** rolls a
-  drop: 2 % Normal, 5 % Hard, 12 % Nightmare, with a **pity of 25 wins** (counter in `profile.td.secretPity`),
+  drop: ~~2 / 5 / 12 %, pity 25~~ **1 % Normal, 2.5 % Hard, 6 % Nightmare, with a pity of 40 wins** (owner, 2026-10-18, D-048) (counter in `profile.td.secretPity`),
   and the **first Nightmare clear guarantees** him. Copies beyond the first are the only way to star him (so a
   3-star Adashari is a real achievement). The odds are printed on the Episode 9 card. All server-side in
   `MatchRewards` with a spec (odds sum, pity bound, idempotent grant in the same `mutate` as the match reward).
@@ -839,6 +839,12 @@ complete; DECISIONS carries every cap and TUNE.
 ---
 
 ## 14. Open questions for the owner (answer once, in one message)
+
+**Answered 2026-10-18 in chat (DECISIONS D-042, D-048):** 1 the §3 table approved as written; 2 retire the
+roleplay mystery after its Episode 1 errand; 3 the drop lowered to 1 / 2.5 / 6 % with pity 40, the first
+Nightmare clear still guarantees him; 4 all Meshy phases approved (≈ 60 + 500 now, a top-up for Phase 4 later;
+concept sheets still go to the owner before meshes); 5 the event dates as proposed; 6 Cat owners get one
+Al-Adashari with the Cat's trait plus 100 lira. Also: the signature cap is measured as damage per second (D-047).
 
 1. §3 names: approve, or edit any row (especially the Arabic).
 2. §1 item 2: retire the roleplay mystery (`SEASON_1.md` Episodes 2–5)?

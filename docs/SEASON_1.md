@@ -3,6 +3,10 @@
 *Status: design draft v1 · 2026-10-15 · Original story; see COPYRIGHT_REGISTER.md. Historical texture
 comes from `docs/research/DAMASCUS_LANE_LIFE.md`.*
 
+> **Superseded 2026-10-18 (owner, DECISIONS D-048):** Season Story 1 "The Night Guard"
+> (`docs/STORY_PLAN.md`) replaces this roleplay mystery. Its Episode 1 errand (the built one) stays as the
+> lobby hook; Episodes 2–5 below will not be built.
+
 ## 1. Logline
 
 On the eve of his daughter's wedding, the spice merchant **Hajj Rashid** finds the diamond necklace
