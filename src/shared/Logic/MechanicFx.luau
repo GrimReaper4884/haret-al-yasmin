@@ -74,6 +74,23 @@ function MechanicFx.dashes(from: number, to: number, spacing: number, maxDashes:
 	return out
 end
 
+-- Health-bar size for an attacker (S1-C03): boss, small (snakes) or normal; `bars` is Vfx.STORY.bars.
+function MechanicFx.bar(def: any, bars: any): { w: number, h: number, offset: number }
+	if def.boss == true then
+		return bars.boss
+	elseif def.small == true then
+		return bars.small
+	end
+	return bars.normal
+end
+
+-- Is an attacker enraged at this health fraction (its `enrage.belowHp` reached)? Bosses and
+-- brutes charge once wounded; the client tints them from the 10 Hz health stream.
+function MechanicFx.enraged(def: any, hpFrac: number): boolean
+	local en = def.enrage
+	return en ~= nil and hpFrac > 0 and hpFrac <= en.belowHp
+end
+
 -- Flame pips under the gate bar: one per burn stack, clamped to the stack cap.
 function MechanicFx.burnPips(stacks: number?, maxStacks: number): number
 	if type(stacks) ~= "number" or stacks ~= stacks then

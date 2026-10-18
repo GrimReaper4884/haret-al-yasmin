@@ -107,8 +107,9 @@ return function(t)
 			end)
 		end,
 		two_paths = function(_ids, mode)
+			-- Both roads walked: the arena has two and the mode sends enemies down both (Modes.twinRoads, S1-M05).
 			local arena = Arenas[mode.arena]
-			return arena.paths ~= nil and #arena.paths >= 2
+			return mode.twinRoads == true and arena.paths ~= nil and #arena.paths >= 2
 		end,
 		ally = function(_ids, mode)
 			for _, beat in Waves.episodes[mode.episode].script or {} do

@@ -66,6 +66,8 @@ type Enemy = {
 	ringKind: string?,
 	wantRing: MechanicFx.Ring?, -- its ring, until it gets one (a busy frame's budget may be spent)
 	disguise: Frame?, -- the "?" marker on a disguised attacker's health bar until it is revealed
+	enraged: boolean?, -- wounded past its enrage threshold (S1-C03): red bar, and a red Highlight if a slot is free
+	glow: Highlight?,
 }
 
 local folder: Folder
@@ -78,6 +80,9 @@ local arenaPaths: { Path.Path } = {} -- every road (twin-gate arenas have two; S
 local origin: CFrame? = nil
 local selectedTower: number? = nil -- PlacementController tells us; its target gets the flash
 local ringCounts: { [string]: number } = {} -- ground rings in use per kind (Vfx.STORY caps)
+local glowCount: { [string]: number } = {} -- enraged Highlights in use (Vfx.STORY.enrage.maxHighlights)
+local pins: { [number]: BasePart } = {} -- sabotaged defenders: tower id → its grey ring (with the "Pinned!" tag)
+local fellAt: { [number]: Vector3 } = {} -- where a splitting attacker (a cart) died, for its split burst
 
 -- Gives a drummer or porter its ground ring if the kind's cap and this frame's effects budget allow;
 -- called at spawn and again each frame until it has one.
@@ -126,20 +131,29 @@ local function clear()
 	byModel = {}
 	towerPos = {}
 	towerUnit = {}
+	glowCount = {}
+	for _, ring in pins do
+		ring:Destroy()
+	end
+	pins = {}
+	fellAt = {}
 end
 
 -- A health bar over the head: a dark-red ring around it marks a hostile (PV-A04), and small
 -- markers to its left show armour (shield), stealth (eye) and a holding disguise ("?", S1-C02).
--- Returns the fill and the disguise marker (hidden when the attacker is revealed).
-local function healthBar(model: Model, boss: boolean, names: { string }): (Frame, Frame?)
+-- Returns the fill and the disguise marker (hidden when the attacker is revealed). The bar's size
+-- follows the figure (Vfx.STORY.bars: bosses large, snakes small and low; S1-C03).
+local function healthBar(model: Model, def: any, names: { string }): (Frame, Frame?)
 	local head = model:FindFirstChild("Head") or model.PrimaryPart
 	local r = Vfx.ENEMY_READ
-	local w, h = if boss then 90 else 44, if boss then 10 else 6
+	local size = MechanicFx.bar(def, Vfx.STORY.bars)
+	local boss = def.boss == true
+	local w, h = size.w, size.h
 	local markers = #names
 	local gui = Create("BillboardGui", {
 		Adornee = head,
 		Size = UDim2.fromOffset(w + markers * (r.marker + 2) + 4, math.max(h + 4, r.marker)),
-		StudsOffset = Vector3.new(0, if boss then 3.4 else 1.6, 0),
+		StudsOffset = Vector3.new(0, size.offset, 0),
 		MaxDistance = 140,
 		AlwaysOnTop = false,
 		LightInfluence = 0,
@@ -239,11 +253,11 @@ local function spawn(e: any)
 		model = model,
 		enemyId = e.enemyId,
 		road = if type(e.path) == "number" then e.path else 1,
-		dist = 0,
-		target = 0,
+		dist = if type(e.dist) == "number" then e.dist else 0, -- a cart's passengers start where it broke (S1-C03)
+		target = if type(e.dist) == "number" then e.dist else 0,
 		vel = def.speed,
 		lastAt = nil,
-		lastDist = 0,
+		lastDist = if type(e.dist) == "number" then e.dist else 0,
 		speed = def.speed,
 		hp = 1,
 		bar = nil,
@@ -254,7 +268,7 @@ local function spawn(e: any)
 		punchAt = nil,
 		walks = model:GetAttribute("Imported") == true and BoneAnim.has(e.enemyId),
 	}
-	rec.bar, rec.disguise = healthBar(model, rec.boss, MechanicFx.markers(def, false))
+	rec.bar, rec.disguise = healthBar(model, def, MechanicFx.markers(def, false))
 	-- A drummer's aura or a porter's shield: a faint ground ring at its real radius (S1-C02).
 	rec.wantRing = MechanicFx.ring(def)
 	tryRing(rec)
@@ -283,7 +297,7 @@ local function spawn(e: any)
 	end
 	enemies[e.id] = rec
 	byModel[model] = rec
-	local x, z, ux, uz = Path.position(arenaPaths[rec.road] or arenaPath :: Path.Path, 0)
+	local x, z, ux, uz = Path.position(arenaPaths[rec.road] or arenaPath :: Path.Path, rec.dist)
 	model:PivotTo(origin * CFrame.lookAt(Vector3.new(x, 0, z), Vector3.new(x + ux, 0, z + uz)))
 end
 
@@ -463,6 +477,16 @@ local function remove(id: number, died: boolean, death: any?)
 		Fx.release(disc)
 	end
 	dropRing(rec)
+	local glow = rec.glow
+	if glow then
+		rec.glow = nil
+		glow:Destroy()
+		MechanicFx.release(glowCount, "enrage")
+	end
+	local def = (Enemies :: any)[rec.enemyId]
+	if died and def and def.split then
+		fellAt[id] = rec.model:GetPivot().Position
+	end
 	if rec.boss then
 		hideBoss(id)
 	end
@@ -790,6 +814,99 @@ local function telegraph(e: any)
 	end)
 end
 
+-- A wounded brute or boss enrages (S1-C03): its bar turns red-orange and, while a slot is free, a red
+-- Highlight wraps the figure. Read from the 10 Hz health stream (the sim sends no event for it).
+local function enrage(rec: Enemy)
+	rec.enraged = true
+	local cfg = Vfx.STORY.enrage
+	if rec.bar then
+		rec.bar.BackgroundColor3 = Color3.fromHex(cfg.barColor)
+	end
+	if MechanicFx.plan(Fx.level()).rings and MechanicFx.admit(glowCount, "enrage", cfg.maxHighlights) then
+		rec.glow = Create("Highlight", {
+			FillColor = Color3.fromHex(cfg.color),
+			FillTransparency = cfg.fill,
+			OutlineColor = Color3.fromHex(cfg.color),
+			OutlineTransparency = cfg.outline,
+			DepthMode = Enum.HighlightDepthMode.Occluded,
+			Parent = rec.model,
+		})
+	end
+end
+
+-- A cart breaks (event split): sack-coloured bits burst from where it fell, and a ring.
+local function splitBurst(id: number)
+	local at = fellAt[id]
+	fellAt[id] = nil
+	if not at or not MechanicFx.plan(Fx.level()).flashes then
+		return
+	end
+	local cfg = Vfx.STORY.split
+	groundPulse(at, cfg.color, cfg.radius, cfg.life)
+	local n = Fx.allow(cfg.crumbs)
+	for k = 1, n do
+		local c = Fx.part(Enum.PartType.Block)
+		if not c then
+			break
+		end
+		local a = (k / n) * math.pi * 2
+		c.Material = Enum.Material.SmoothPlastic
+		c.Color = Color3.fromHex(cfg.color)
+		c.Size = Vector3.one * cfg.crumbSize
+		c.CFrame = CFrame.new(at + Vector3.new(0, 1, 0))
+		Fx.fade(c, cfg.life, { CFrame = CFrame.new(at + Vector3.new(math.cos(a) * 2, cfg.rise, math.sin(a) * 2)) * CFrame.Angles(a, a, 0), Transparency = 1 })
+	end
+end
+
+-- A rifleman pins a defender down (towerDisabled … towerEnabled): a grey ring at its feet and a
+-- "Pinned!" tag over it. Play information: the tag shows at every Effects level, the ring unless "off".
+local function pin(towerId: number)
+	local at = towerPos[towerId]
+	if pins[towerId] or not at then
+		return
+	end
+	local cfg = Vfx.STORY.pinned
+	local ring = Create("Part", {
+		Name = "Pinned_" .. towerId,
+		Shape = Enum.PartType.Cylinder,
+		Anchored = true,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+		CastShadow = false,
+		Material = Enum.Material.Neon,
+		Color = Color3.fromHex(cfg.color),
+		Transparency = if MechanicFx.plan(Fx.level()).rings then cfg.transparency else 1,
+		Size = Vector3.new(cfg.height, cfg.radius * 2, cfg.radius * 2),
+		CFrame = CFrame.new(at + Vector3.new(0, 0.12, 0)) * CFrame.Angles(0, 0, math.rad(90)),
+		Parent = folder,
+	})
+	-- The tag hangs on an attachment straight over the defender's head (the flat ring is a rotated
+	-- cylinder, so offsets in its own frame point sideways; a camera-relative one slid under the top
+	-- HUD). Not AlwaysOnTop, like the health bars (an always-on-top billboard skipped the Studio captures).
+	local over = Create("Attachment", { Name = "Tag", Parent = ring })
+	over.WorldCFrame = CFrame.new(at + Vector3.new(0, cfg.labelHeight, 0))
+	local gui = Create("BillboardGui", {
+		Adornee = over,
+		Size = UDim2.fromOffset(120, 24),
+		AlwaysOnTop = false,
+		LightInfluence = 0,
+		MaxDistance = 160,
+		Parent = ring,
+	})
+	local tag = Theme.display({ Text = LocaleController.t("match.pinned"), TextSize = cfg.labelSize, TextColor3 = Color3.fromHex(cfg.labelColor), Size = UDim2.fromScale(1, 1), Parent = gui })
+	tag.TextXAlignment = Enum.TextXAlignment.Center
+	pins[towerId] = ring
+end
+
+local function unpin(towerId: number)
+	local ring = pins[towerId]
+	if ring then
+		pins[towerId] = nil
+		ring:Destroy()
+	end
+end
+
 -- A boss calls escorts: a toast names them, and a ring pulses at the boss.
 local function summoned(e: any)
 	local rec = enemies[e.id]
@@ -834,10 +951,17 @@ local function onEvents(events: { any })
 			telegraph(e)
 		elseif t == "summon" then
 			summoned(e)
+		elseif t == "split" then
+			splitBurst(e.id)
+		elseif t == "towerDisabled" and type(e.tower) == "number" then
+			pin(e.tower)
+		elseif t == "towerEnabled" and type(e.id) == "number" then
+			unpin(e.id)
 		elseif t == "towerPlaced" then
 			towerPos[e.id] = (origin * CFrame.new(e.x, 0, e.z)).Position
 			towerUnit[e.id] = e.unitId
 		elseif t == "towerSold" then
+			unpin(e.id)
 			towerPos[e.id] = nil
 			towerUnit[e.id] = nil
 		elseif t == "attack" then
@@ -920,6 +1044,9 @@ local function onPositions(packed: { number })
 			roundSeen[id] = true
 			if rec.bar then
 				rec.bar.Size = UDim2.fromScale(rec.hp, 1)
+			end
+			if not rec.enraged and MechanicFx.enraged((Enemies :: any)[rec.enemyId], rec.hp) then
+				enrage(rec)
 			end
 			if id == bossId then
 				bossMeter.set(rec.hp, "")

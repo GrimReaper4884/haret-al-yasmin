@@ -648,6 +648,12 @@ Tag legend in the flag column: **MEANING** may say the wrong thing · **DIALECT*
 |---|-----|---------|------------------|-------------|------------|-----|
 | 1 | `match.summon` | {boss} calls {n} × {enemy}! | {boss} نادى {n} × {enemy}! | «نادى» = called (for); alternative «جاب معه». |  |  |
 
+## 21. Season Story 1: enemy render (S1-C03)
+
+| # | Key | English | Arabic (current) | Claude flag | Correction | OK? |
+|---|-----|---------|------------------|-------------|------------|-----|
+| 1 | `match.pinned` | Pinned! | مثبّت! | Tag over a defender a rifleman has pinned down; alternative «محاصَر!». |  |  |
+
 ## Sign-off
 
 | Reviewer | Dialect / country | Date | Sections reviewed | Notes |
