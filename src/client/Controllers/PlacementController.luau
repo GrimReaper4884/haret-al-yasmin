@@ -414,14 +414,14 @@ end
 -- The defender drawn under a screen point: distance from the point to each defender's on-screen
 -- body (feet to head), so a click on a torso or head works from the low walking camera too. Rig
 -- parts are not queryable, so a raycast alone only finds the ground behind them.
-local PICK_PX = 34
+-- Pick radius: a fingertip gets more room than a cursor (Config/Hud PLACE.PICK_PX, B3-4).
 local PICK_HEIGHT = 5
-local function towerAtScreen(screen: Vector2): number?
+local function towerAtScreen(screen: Vector2, touch: boolean?): number?
 	local camera = Workspace.CurrentCamera
 	if not camera or not origin then
 		return nil
 	end
-	local best, bestD = nil, PICK_PX
+	local best, bestD = nil, if touch then Hud.PLACE.PICK_PX.touch else Hud.PLACE.PICK_PX.mouse
 	for tid, rec in towers do
 		local feet = camera:WorldToScreenPoint((origin * CFrame.new(rec.x, 0, rec.z)).Position)
 		local head = camera:WorldToScreenPoint((origin * CFrame.new(rec.x, PICK_HEIGHT, rec.z)).Position)
@@ -696,9 +696,9 @@ end
 -- What a tap or click at `screen` lands on: the ground spot and whether the unit being placed may
 -- stand there, and the defender under the point (while idle also the one whose model was hit, or the
 -- nearest within 3.5 studs of the ground point: fingers are fat, models are thin).
-local function checkAt(screen: Vector2): PlaceFlow.Check
+local function checkAt(screen: Vector2, touch: boolean?): PlaceFlow.Check
 	local hit, inst = groundHit(screen)
-	local c: PlaceFlow.Check = { valid = false, tower = towerAtScreen(screen) }
+	local c: PlaceFlow.Check = { valid = false, tower = towerAtScreen(screen, touch) }
 	if hit and origin then
 		local l = origin:PointToObjectSpace(hit)
 		c.x, c.z = hit.X, hit.Z
@@ -788,7 +788,7 @@ local function tap(screen: Vector2, touch: boolean?)
 	if not origin then
 		return
 	end
-	local c = checkAt(screen)
+	local c = checkAt(screen, touch)
 	if touch and c.x then
 		lastGroundTap = screen
 	end
@@ -829,7 +829,7 @@ local function watchCatcher()
 		end
 		if dragging then
 			local s = p - Vector2.new(0, P.FINGER_OFFSET_PX)
-			run({ type = "move", screen = s, check = checkAt(s) }, touchFlags())
+			run({ type = "move", screen = s, check = checkAt(s, true) }, touchFlags())
 		end
 	end)
 	UserInputService.InputEnded:Connect(function(input: InputObject)

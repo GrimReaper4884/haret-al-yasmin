@@ -143,6 +143,17 @@ return function(t)
 			f, a = PlaceFlow.step(PlaceFlow.new(), { type = "tap", check = { valid = false } }, MOUSE)
 			t.eq(a[1].id, nil)
 		end)
+
+		t.it("a touch tap on empty ground keeps the selection; on a defender it switches (MH-08)", function()
+			for _, flags in { TOUCH, QUICK } do
+				local f, a = PlaceFlow.step(PlaceFlow.new(), { type = "tap", check = { valid = false, x = 1, z = 2 } }, flags)
+				t.eq(f.mode, "idle")
+				t.eq(kinds(a), "", "nothing deselects")
+				f, a = PlaceFlow.step(PlaceFlow.new(), { type = "tap", check = { valid = false, tower = 9 } }, flags)
+				t.eq(kinds(a), "select")
+				t.eq(a[1].id, 9)
+			end
+		end)
 	end)
 
 	t.describe("client-shaped canPlace", function()

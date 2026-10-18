@@ -95,7 +95,11 @@ function PlaceFlow.step(flow: Flow, event: Event, flags: Flags): (Flow, { Action
 			end
 			return tryCommit(next, actions), actions
 		end
-		table.insert(actions, { kind = "select", id = if c then c.tower else nil })
+		local tower = if c then c.tower else nil
+		if tower or not flags.touch then
+			-- A stray tap on empty ground keeps the selection on touch (B3-4); a click clears it.
+			table.insert(actions, { kind = "select", id = tower })
+		end
 		return flow, actions
 	elseif e.type == "place" then
 		if not aiming then

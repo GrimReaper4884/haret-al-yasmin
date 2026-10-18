@@ -483,7 +483,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
   - **Accept:** specs green; Studio: placing with the mouse behaves exactly as before (keys 1–9, Q,
     click); `redteam.spec` untouched and green.
 
-- [x] **MH-07 Touch aiming: catcher, finger offset, Place and Cancel** · deps: MH-06
+- [x] fa95fa3 **MH-07 Touch aiming: catcher, finger offset, Place and Cancel** · deps: MH-06
   - **Goal:** B3 on a phone.
   - **Change:** `PlacementController`: a `PlacementCatcher` frame (full safe area, `Active = true`,
     `BackgroundTransparency = 1`, ZIndex under the HUD) shown only while aiming on touch; raw touch
@@ -502,7 +502,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
     greys Place and shows the reason; phone captures of aiming (valid, invalid) and of the Place/Cancel
     pair. DECISIONS row B9-2.
 
-- [ ] **MH-08 Touch selection rules** · deps: MH-07
+- [x] **MH-08 Touch selection rules** · deps: MH-07
   - **Goal:** B3-4.
   - **Change:** `towerAtScreen` radius from `Hud.PLACE.PICK_PX[touch/mouse]`; on touch a tap on empty
     ground keeps the selection (mouse still clears); selection ring and `EnemyRenderController.setSelectedTower`
