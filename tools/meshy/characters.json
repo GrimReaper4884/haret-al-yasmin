@@ -279,6 +279,30 @@
       "prompt": "Gaunt wiry 1930s Damascus night guard with a haunted but kind expression, stubble and hollow cheeks, dark head cloth wrapped low over the brow, grey-brown striped qumbaz, wide black belt with a short sheathed dagger, left arm missing: the empty left sleeve is folded and pinned up flat against the shoulder with a white bandage showing, right arm straight out to the side with the right hand open and empty (no lantern), standing guard.",
       "texture": "Dark charcoal head cloth, grey-brown striped qumbaz, black belt, brass dagger hilt, white bandage, warm tan skin.",
       "_note": "S1-A05 (Al-Adashari, the secret unit): his lantern is a held prop (Anim/HandProps). One-armed: the auto-rig still makes left-arm bones; the bake leaves them unused (STORY_PLAN §12, S1-A05)."
+    },
+    "hammam": {
+      "height": 1.8,
+      "prompt": "Stout 1930s Damascus bathhouse owner, towel over the shoulder, white undershirt, red-striped waist wrap, wooden clogs, cheerful squint, both hands open and empty (no bowl), arms straight out to the sides.",
+      "texture": "White undershirt, red and white striped waist wrap, cream towel, brown wooden clogs, warm tan skin.",
+      "_note": "S1-A07: empty hands; the held item is an Anim/HandProps prop. Copper water bowl."
+    },
+    "hummus": {
+      "height": 1.7,
+      "prompt": "1930s Damascus street seller of hummus and fava, thin cheerful man, white skullcap, grey qumbaz with a canvas money apron, both hands open and empty (no pot, no ladle), arms straight out to the sides.",
+      "texture": "White skullcap, grey qumbaz, beige canvas apron, warm tan skin.",
+      "_note": "S1-A07: empty hands; the held item is an Anim/HandProps prop. Ladle (and a brass pot as a placed prop later)."
+    },
+    "iskafi": {
+      "height": 1.6,
+      "prompt": "Old 1930s Damascus cobbler, small and slightly bent, grey beard, round black cap, leather apron with nails in its pocket, both hands open and empty (no hammer, no shoe), arms straight out to the sides.",
+      "texture": "Black round cap, dark brown leather apron, grey shirt, warm tan skin.",
+      "_note": "S1-A07: empty hands; the held item is an Anim/HandProps prop. Cobbler's hammer."
+    },
+    "matriarch": {
+      "height": 1.8,
+      "prompt": "Formidable 1930s Damascus matriarch around fifty years old, tall and straight-backed, strong mature face with fine lines and a few grey hairs at the temples, embroidered dark indoor dress, gold-edged headscarf, heavy necklace, fierce dignified expression, both hands open and empty, arms straight out to the sides, modest clothing.",
+      "texture": "Deep plum embroidered dress, black headscarf with a gold edge, gold necklace, warm tan skin.",
+      "_note": "S1-A07: empty hands; the held item is an Anim/HandProps prop. Her pointing hand is a pose in the clips, not a prop."
     }
   },
   "prop_style": "Stylized chunky cartoon game prop for a mobile tower-defense game set in a 1930s Damascus old-city lane, toy-like proportions, clean simple shapes, bold readable silhouette, hand-painted flat colors with soft shading, warm limestone and wood palette, single object centered, three-quarter view, no characters, no text, no background.",
