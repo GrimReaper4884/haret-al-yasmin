@@ -19,15 +19,13 @@ ARENAS = {
             ("sack_pile", -16, 2, 10), ("sack_pile", 0, 16, 90), ("sack_pile", 40, -14, 180), ("sack_pile", 56, -14, 270),
             ("sack_pile", -50, 20, 45), ("sack_pile", 20, 4, 135), ("well", -48, -24, 0),
             ("lantern_wire_span", -30, -10, 45), ("lantern_wire_span", 12, -10, -45), ("lantern_wire_span", 12, 24, 45),
-            ("irrigation_channel_4m", -62, 36, 0), ("irrigation_channel_4m", -46, 36, 0), ("irrigation_channel_4m", -30, 36, 0),
-            ("irrigation_channel_4m", -38, 18, 90), ("irrigation_channel_4m", -38, 2, 90), ("irrigation_channel_4m", -38, -14, 90),
             ("harvest_net", -56, -6, 84), ("harvest_net", 30, 8, 58), ("harvest_net", -12, -28, 41),
             ("ladder", -52, -2, 20), ("ladder", 33, 12, 200),
         ]
         + [("orchard_wall_low", -72 + i * 8.2, -39, 0) for i in range(7)]
         + [("orchard_wall_low", -18 + i * 8.2, 35, 180) for i in range(7)]
         + [("terrace_step", x, -30 + i * 8.5, 90) for i in range(4) for x in (64, 72)],
-        "scatter": [("olive_tree", 22, 2026, (0.6, 0.75), 6.5)],
+        "scatter": [("olive_tree", 22, 2026, (0.75, 0.9), 5.5)],
     },
     # The fountain square (Episodes 4 and 6, §8.5): the lobby's saha rebuilt as an arena. Pickpockets
     # come down the rooftop stair (road 1) and through the side alley (road 2); the roads merge before
@@ -72,7 +70,7 @@ ARENAS = {
         ]
         + [("orchard_wall_low", -76 + i * 8.2, 31, 180) for i in range(9)]
         + [("orchard_wall_low", -40 + i * 8.2, -35, 0) for i in range(6)],
-        "scatter": [("olive_tree", 16, 55, (0.6, 0.75), 6.5), ("sack_pile", 3, 56, (1.0, 1.0), 2.5)],
+        "scatter": [("olive_tree", 16, 55, (0.75, 0.9), 5.5), ("sack_pile", 3, 56, (1.0, 1.0), 2.5)],
     },
     # The police-post road (Episode 7, §8.5): three long straights past the gendarmerie post, the road
     # narrowed by sandbag chicanes (sack piles at the bends; dressing only, PATH_HALF_WIDTH unchanged).
@@ -93,7 +91,7 @@ ARENAS = {
             ("skyline_minaret", 20, 60, 0),
         ]
         + [("orchard_wall_low", -76 + i * 8.2, -35, 0) for i in range(6)],
-        "scatter": [("olive_tree", 10, 71, (0.6, 0.72), 6.5), ("rubble", 4, 72, (0.8, 1.0), 4.0)],
+        "scatter": [("olive_tree", 10, 71, (0.75, 0.9), 5.5), ("rubble", 4, 72, (0.8, 1.0), 4.0)],
     },
     # Twin gates (Episodes 8 and 9, §8.5): two rival gates 40 studs apart at the west wall; the roads
     # merge at a small square and run on together to the lane gate. Both roads end at the same gate.

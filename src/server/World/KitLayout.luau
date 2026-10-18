@@ -62,6 +62,9 @@ function KitLayout.dress(parent: Instance, arenaId: string, origin: CFrame): num
 		local info = (KitModules :: any)[p.module]
 		if t and info then
 			local m = t:Clone()
+			-- With a PrimaryPart the bottom-centre WorldPivot below doesn't take and the piece is
+			-- placed by its mesh centre, half under the ground (owner report 2026-10-18, D-068).
+			m.PrimaryPart = nil
 			local _, size = m:GetBoundingBox()
 			local want = info.size[2] * p.scale
 			if size.Y > 0 and want > 0 then

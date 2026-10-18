@@ -37,6 +37,11 @@ def seg_dist(px, pz, a, b):
     return math.hypot(px - (ax + dx * t), pz - (az + dz * t))
 
 
+# Small dressing reads as sunk into the ground from the match camera at its true size (owner, 2026-10-18,
+# D-068): every arena places these a little larger.
+PROP_SCALE = {"sack_pile": 1.4, "oil_jar_cluster": 1.5}
+
+
 def build(aid):
     d = ARENAS[aid]
     roads = d["roads"]
@@ -54,6 +59,7 @@ def build(aid):
     placed = []
 
     def put(module, x, z, yaw=0.0, scale=1.0):
+        scale *= PROP_SCALE.get(module, 1.0)
         o = bpy.data.objects.new(f"{module}.{len(placed):03d}", kit[module].data)  # linked mesh data
         bx, by = to_b(x, z)
         o.location = (bx, by, 0)

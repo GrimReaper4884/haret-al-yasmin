@@ -467,7 +467,7 @@ def olive_tree(b, seed, height):
     rng = random.Random(seed)
     x = y = 0.0
     z = 0.0
-    seg = height * 0.45 / 3
+    seg = height * 0.5 / 3  # half the height is trunk, so the canopy stands clear of the ground (D-068)
     for i in range(3):  # the gnarled trunk leans a little each segment
         lean = (rng.uniform(-14, 14), rng.uniform(-14, 14))
         b.cyl(0.85 - i * 0.12, seg, (x, y, z), "bark", segs=7, top_radius=0.7 - i * 0.12, rot=(lean[0], lean[1], 0))
@@ -478,14 +478,14 @@ def olive_tree(b, seed, height):
     for k in range(3):  # boughs
         a = k / 3 * math.tau + rng.random()
         b.cyl(0.22, height * 0.22, tuple(top), "bark", segs=5, top_radius=0.12, rot=(math.degrees(math.sin(a)) * 0.6 + 35 * math.sin(a), 35 * math.cos(a), 0))
-    for k in range(8):  # canopy: low and wide, silver-green on top of dark green
+    for k in range(8):  # canopy: a rounded crown above the trunk, silver-green on top of dark green
         a = k / 8 * math.tau + rng.random() * 0.5
-        r = rng.uniform(1.4, 2.6)
-        c = top + Vector((math.cos(a) * r, math.sin(a) * r, rng.uniform(0.2, 1.2)))
-        b.sphere(rng.uniform(1.4, 2.0), tuple(c), "leaf" if k % 2 else "leaf_light", segs=8, rings=5, scale=(1.25, 1.25, 0.55))
+        r = rng.uniform(0.6, 1.3)
+        c = top + Vector((math.cos(a) * r, math.sin(a) * r, rng.uniform(0.6, 1.6)))
+        b.sphere(rng.uniform(1.2, 1.6), tuple(c), "leaf" if k % 2 else "leaf_light", segs=8, rings=5, scale=(1.0, 1.0, 0.85))
     for _ in range(6):
         a = rng.random() * math.tau
-        c = top + Vector((math.cos(a) * 2.4, math.sin(a) * 2.4, rng.uniform(0.6, 1.6)))
+        c = top + Vector((math.cos(a) * 1.9, math.sin(a) * 1.9, rng.uniform(0.8, 1.8)))
         b.sphere(0.18, tuple(c), "basalt", segs=5, rings=3)
     # Built at a small size, then scaled to a real olive next to 14-stud lane walls (9–12 studs).
     bmesh.ops.scale(b.bm, vec=(2.0, 2.0, 2.0), verts=list(b.bm.verts))
