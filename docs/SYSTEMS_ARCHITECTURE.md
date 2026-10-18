@@ -14,7 +14,8 @@
    and return a result. Roblox services wrap them with I/O (DataStores, remotes and instances). This keeps
    the rules unit-testable outside Studio with Lune.
 4. **Small modules.** No file over ~400 lines, and one responsibility per module.
-5. **Mobile first.** UI in Scale units, ProximityPrompts for interaction, low part counts.
+5. **Mobile first.** UI in offset px for a landscape phone's safe area under one UIScale (`UI/Device` +
+   `Logic/HudLayout`, docs/MOBILE_HUD_PLAN.md), ProximityPrompts for interaction, low part counts.
 
 ## 2. Source layout (Rojo)
 

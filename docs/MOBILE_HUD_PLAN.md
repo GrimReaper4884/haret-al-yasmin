@@ -379,7 +379,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
   - **Accept:** captures exist; the probe output (count of undersized buttons, list of corner collisions)
     is pasted into the report section. No code change.
 
-- [x] **MH-01 `Config/Hud` and `Logic/HudLayout`** · deps: MH-00
+- [x] e549d16 **MH-01 `Config/Hud` and `Logic/HudLayout`** · deps: MH-00
   - **Goal:** Every mobile number in one pure config; the profile and scale maths pure and tested.
   - **Create:** `src/shared/Config/Hud.luau` with: `TOUCH_MIN = 48`, `PRIMARY = 56`, `TEXT_MIN = 14`,
     `NUMBER_MIN = 18`; `SCALE = { base = 390, touchMin = 1.0, desktopMin = 0.9, max = 1.5, presets =
@@ -405,7 +405,7 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
   - **Accept:** `lune run tests/run` green with the new spec (list the count); selene and luau-lsp clean;
     no Roblox globals in either module (the runner bans them).
 
-- [ ] **MH-02 `UI/Device` and the new Root scale** · deps: MH-01
+- [x] **MH-02 `UI/Device` and the new Root scale** · deps: MH-01
   - **Goal:** The client knows its profile and scale and re-lays out when they change.
   - **Change:** new `src/client/UI/Device.luau`: reads `UserInputService.PreferredInput`,
     `GuiService.ViewportDisplaySize`, `GuiService.TopbarInset`, `Root.get().AbsoluteSize` and the

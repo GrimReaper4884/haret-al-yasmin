@@ -28,6 +28,11 @@
         }
       }
     },
+    "StarterGui": {
+      "$properties": {
+        "ScreenOrientation": "LandscapeSensor"
+      }
+    },
     "Lighting": {
       "$properties": {
         "ClockTime": 15.2,

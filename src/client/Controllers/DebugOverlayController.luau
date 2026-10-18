@@ -11,6 +11,7 @@ local UI = script.Parent.Parent.UI
 local Theme = require(UI.Theme)
 local Fx = require(UI.Fx)
 local Root = require(UI.Root)
+local Device = require(UI.Device)
 
 local DebugOverlayController = {}
 
@@ -40,6 +41,8 @@ function DebugOverlayController.start()
 		local lines = {}
 		local live, frame, skipped = Fx.stats()
 		table.insert(lines, string.format("[Fx] live %d · this frame %d · skipped %d", live, frame, skipped))
+		local safe = Device.safeSize()
+		table.insert(lines, string.format("[Device] %s · scale %.3f · safe %dx%d", Device.profile(), Device.scale(), safe.x, safe.y))
 		for _, l in clientLines do
 			table.insert(lines, "[C] " .. l)
 		end
@@ -58,6 +61,12 @@ function DebugOverlayController.start()
 			end
 			render()
 		end
+	end)
+	-- One console line per layout change (MOBILE_HUD_PLAN MH-02: the simulator's device switch).
+	Device.Changed:Connect(function(profileChanged: boolean)
+		local safe = Device.safeSize()
+		print(string.format("[Device] %s%s · UIScale %.3f · safe %dx%d", Device.profile(), if profileChanged then " (profile changed)" else "", Device.scale(), safe.x, safe.y))
+		render()
 	end)
 	task.spawn(function()
 		-- The effects budget line refreshes on its own (P2-17); log lines re-render on arrival.

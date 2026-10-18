@@ -27,6 +27,14 @@ Settings.defs = {
 	sfx = { kind = "bool", default = true },
 	-- Short camera moves for story moments (the boss intro push). Client-side only.
 	cutscenes = { kind = "bool", default = true },
+	-- Touch HUD (docs/MOBILE_HUD_PLAN.md B1, B3, B4, B7). Client-side only: the UI size preset
+	-- (Config/Hud SCALE.presets), where the defender panel opens (auto = bottom sheet on touch, side
+	-- panel on desktop), whether a tap on valid ground places at once on touch (a click always does),
+	-- and which edge holds the match rail and the Place / Cancel pair.
+	uiScale = { kind = "enum", values = { "small", "default", "large", "huge" }, default = "default" },
+	panelSide = { kind = "enum", values = { "auto", "side", "bottom" }, default = "auto" },
+	quickPlace = { kind = "bool", default = false },
+	railSide = { kind = "enum", values = { "right", "left" }, default = "right" },
 } :: { [string]: Def }
 
 local function valid(def: Def, value: any): boolean

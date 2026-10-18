@@ -17,6 +17,7 @@ local Theme = require(UI.Theme)
 local Modal = require(UI.Modal)
 local Fx = require(UI.Fx)
 local Icons = require(UI.Icons)
+local Device = require(UI.Device)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
@@ -40,6 +41,8 @@ local function apply(key: string, value: any)
 	values[key] = value
 	if key == "effects" then
 		Fx.set(value)
+	elseif key == "uiScale" then
+		Device.setPreset(value)
 	end
 	SettingsController.Changed:Fire(key, value)
 end

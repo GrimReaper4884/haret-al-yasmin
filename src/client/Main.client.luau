@@ -1,7 +1,11 @@
 --!strict
 -- Client bootstrap. State and locale first; UI controllers subscribe to them.
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
 local Controllers = script.Parent:WaitForChild("Controllers")
+local TD = require(ReplicatedStorage:WaitForChild("Shared").Config.TD)
+local Device = require(script.Parent:WaitForChild("UI").Device)
 
 local StateController = require(Controllers.StateController)
 local LocaleController = require(Controllers.LocaleController)
@@ -39,6 +43,10 @@ local LobbyStoryController = require(Controllers.LobbyStoryController)
 
 StateController.start()
 LocaleController.start()
+Device.start() -- profile and UIScale before any controller lays out
+StateController.Changed:Connect(function(snapshot: any)
+	Device.setSlotCount(snapshot.loadoutSlots or TD.LOADOUT_SLOTS)
+end)
 HudController.start()
 DialogueController.start()
 ShopController.start()

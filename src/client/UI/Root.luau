@@ -1,25 +1,15 @@
 --!strict
--- The single ScreenGui all controllers draw into. Layouts are authored in offsets for a phone
--- in landscape (~844×390) and a UIScale adapts them to the viewport, clamped for big screens.
+-- The single ScreenGui all controllers draw into. Layouts are authored in offsets for a landscape
+-- phone's safe area at UIScale 1; UI/Device sets the one UIScale from the layout profile, the safe-area
+-- size and the player's uiScale preset (Logic/HudLayout.scale).
 
 local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
 
 local Create = require(script.Parent.Create)
 
 local Root = {}
 
 local gui: ScreenGui? = nil
-
-local function fitScale(scale: UIScale)
-	local camera = Workspace.CurrentCamera
-	if not camera then
-		return
-	end
-	local v = camera.ViewportSize
-	-- Phone landscape height ≈ 390 → 1.0; tablets/desktop grow up to 1.5; tiny screens down to 0.8.
-	scale.Scale = math.clamp(math.min(v.Y / 390, v.X / 760), 0.8, 1.5)
-end
 
 function Root.get(): ScreenGui
 	if gui then
@@ -33,14 +23,7 @@ function Root.get(): ScreenGui
 		ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets,
 		Parent = playerGui,
 	})
-	local scale = Create("UIScale", { Parent = screen })
-	fitScale(scale)
-	local camera = Workspace.CurrentCamera
-	if camera then
-		camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-			fitScale(scale)
-		end)
-	end
+	Create("UIScale", { Parent = screen })
 	gui = screen
 	return screen
 end

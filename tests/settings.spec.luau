@@ -47,6 +47,43 @@ return function(t)
 			t.eq(Settings.resolve(nil).effects, "full")
 		end)
 
+		t.it("knows the touch HUD settings (MOBILE_HUD_PLAN MH-02)", function()
+			local r = Settings.resolve(nil)
+			t.eq(r.uiScale, "default")
+			t.eq(r.panelSide, "auto")
+			t.eq(r.quickPlace, false, "quick place is opt-in")
+			t.eq(r.railSide, "right")
+			for _, v in { "small", "default", "large", "huge" } do
+				t.truthy(Settings.accept("uiScale", v), v)
+			end
+			t.eq(Settings.accept("uiScale", "giant"), false)
+			t.eq(Settings.accept("uiScale", 1.3), false)
+			for _, v in { "auto", "side", "bottom" } do
+				t.truthy(Settings.accept("panelSide", v), v)
+			end
+			t.eq(Settings.accept("panelSide", "top"), false)
+			t.truthy(Settings.accept("quickPlace", true))
+			t.eq(Settings.accept("quickPlace", "true"), false)
+			t.truthy(Settings.accept("railSide", "left"))
+			t.eq(Settings.accept("railSide", "middle"), false)
+			local s = Settings.sanitize({ uiScale = "giant", panelSide = "bottom", quickPlace = 1, railSide = "left" })
+			t.eq(s.uiScale, nil)
+			t.eq(s.panelSide, "bottom")
+			t.eq(s.quickPlace, nil)
+			t.eq(s.railSide, "left")
+			-- Every uiScale value is a Config/Hud preset, and the other way round.
+			local Hud = t.config("Hud")
+			local n = 0
+			for _, v in Settings.defs.uiScale.values do
+				t.truthy(Hud.SCALE.presets[v], "preset " .. v)
+				n += 1
+			end
+			for _ in Hud.SCALE.presets do
+				n -= 1
+			end
+			t.eq(n, 0)
+		end)
+
 		t.it("profile sanitize drops invalid settings but keeps language", function()
 			local ctx = t.schemaCtx()
 			local p = ProfileSchema.default(1000, ctx.schemaVersion, ctx)
