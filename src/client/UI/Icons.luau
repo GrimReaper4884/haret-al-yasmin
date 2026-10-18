@@ -38,6 +38,13 @@ end
 local WHITE = Color3.fromHex("#FBF8F1")
 local GOLD = Color3.fromHex("#F2C14E")
 
+-- A glass bead on its thread, in `hex`, with a highlight (the shabriyeh beads, S1-C04).
+local function beadOf(h: Frame, hex: string)
+	rect(h, Palette.woodDark, 0.5, 0.5, 0.06, 0.9, 0.5)
+	rectO(h, Color3.fromHex(hex), 0.5, 0.5, 0.62, 0.62, 1)
+	rect(h, Color3.fromHex("#FFFFFF"), 0.4, 0.38, 0.16, 0.16, 1).BackgroundTransparency = 0.35
+end
+
 -- A speaker (box + stepped cone on a dark silhouette) with three sound arcs: rings clipped to
 -- their right half.
 local function speaker(h: Frame)
@@ -389,6 +396,22 @@ local drawers: { [string]: (Frame, Color3) -> () } = {
 		rect(h, Palette.woodDark, 0.5, 0.5, 0.06, 0.9, 0.5)
 		rectO(h, Color3.fromHex("#2F7FB8"), 0.5, 0.5, 0.62, 0.62, 1)
 		rect(h, Color3.fromHex("#BFE3F7"), 0.4, 0.38, 0.18, 0.18, 1)
+	end,
+	-- One glass colour per bead kind (Config/Icons.beads, S1-C04).
+	bead_range = function(h, _c)
+		beadOf(h, "#2F7FB8")
+	end,
+	bead_cooldown = function(h, _c)
+		beadOf(h, "#3FA05A")
+	end,
+	bead_cash = function(h, _c)
+		beadOf(h, "#E0A82E")
+	end,
+	bead_heal = function(h, _c)
+		beadOf(h, "#C0503A")
+	end,
+	bead_buff = function(h, _c)
+		beadOf(h, "#8A4FC0")
 	end,
 	mech_ally = function(h, _c)
 		local ring = rect(h, GOLD, 0.5, 0.5, 0.84, 0.84, 1)

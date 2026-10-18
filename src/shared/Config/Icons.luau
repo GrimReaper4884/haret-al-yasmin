@@ -81,6 +81,11 @@ Icons.images = {
 	mech_ally = { id = 0 },
 	-- A shabriyeh bead (Config/Beads), until a painted one exists
 	bead = { id = 0 },
+	bead_range = { id = 0 },
+	bead_cooldown = { id = 0 },
+	bead_cash = { id = 0 },
+	bead_heal = { id = 0 },
+	bead_buff = { id = 0 },
 
 	-- Wardrobe items (Items[].icon): pale painted pieces recoloured by Items[].iconColor
 	basket = { id = 132706876306427 },
@@ -102,6 +107,15 @@ Icons.modes = {
 	ev_olive = { id = 119222103493381 },
 	infinite = { id = 108697701587533 },
 } :: { [string]: Icon }
+
+-- Bead kinds (Config/Beads.kinds) → their icon on the Units screen (S1-C04).
+Icons.beads = {
+	range = "bead_range",
+	cooldown = "bead_cooldown",
+	cash = "bead_cash",
+	heal = "bead_heal",
+	buff = "bead_buff",
+} :: { [string]: string }
 
 -- Story mechanics (Config/Story.episodes[id].mechanics) → the icon drawn for each on the Play panel.
 Icons.mechanics = {
