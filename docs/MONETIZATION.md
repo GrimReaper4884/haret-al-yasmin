@@ -44,8 +44,8 @@ rules: `docs/research/ROBLOX_IP_AND_POLICY.md`.*
 
 | Key | Perk | R$ |
 |-----|------|----|
-| `vip` | −20 % summon cost, +25 % lira from matches, ×2 pay and daily cap in the Hakawati's room (AFK), embroidered shawl | 299 |
-| `fast_mode` | 3× match speed when hosting (2× is free for everyone) | 799 |
+| `vip` | −20 % summon cost, +25 % lira from matches, ×2 pay and daily cap in the Hakawati's room (AFK), 3×–5× match speed when hosting (LP-A03), embroidered shawl | 299 |
+| `fast_mode` | 3×–5× match speed when hosting (1× and 2× are free for everyone). VIP and the premium Lane Diary of the running season unlock the same 3×–5× tier (LP-A03, D-093: the owner kept this pass, reworded) | 799 |
 | `extra_slot` | 7th loadout slot | 149 |
 | `lane_patron` | gold tarboosh + embroidered shawl (cosmetic support pass) | 249 |
 

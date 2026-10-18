@@ -34,6 +34,7 @@ local MatchService = require(script.Parent.MatchService)
 local AfkService = require(script.Parent.AfkService)
 local FunnelService = require(script.Parent.FunnelService)
 local RemoteFuzz = require(script.Parent.RemoteFuzz)
+local MonetizationService = require(script.Parent.MonetizationService)
 local Wallet = require(ReplicatedStorage:WaitForChild("Shared").Logic.Wallet)
 local Economy = require(ReplicatedStorage:WaitForChild("Shared").Config.Economy)
 local TD = require(ReplicatedStorage:WaitForChild("Shared").Config.TD)
@@ -193,6 +194,13 @@ function DebugService.start()
 			return RemoteFuzz.finish()
 		elseif cmd == "foreignLock" then
 			return foreignLock(player.UserId, arg == "clear")
+		elseif cmd == "perk" then
+			-- "vip" | "fast" | "slot", or "-fast" to drop it: this session's perk flag only (LP-A03 checks)
+			local off, perk = string.match(tostring(arg), "^(%-?)([%a]+)$")
+			if not perk then
+				return "bad arg"
+			end
+			return MonetizationService.debugPerk(player, perk, off ~= "-")
 		end
 		return "unknown command"
 	end

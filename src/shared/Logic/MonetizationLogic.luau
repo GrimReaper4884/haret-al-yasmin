@@ -176,6 +176,27 @@ function MonetizationLogic.fundsRandomItems(product: DevProduct): boolean
 	return (MonetizationLogic.fallbackPayout(product)) == "lira"
 end
 
+-- The fastest match speed a host may pick (LP-A03): td.PREMIUM_SPEED with the VIP or Fast Mode pass
+-- perk or the premium Lane Diary of the running season (`premiumDiary`), else td.FREE_SPEED.
+function MonetizationLogic.maxSpeed(perks: { [string]: boolean }?, premiumDiary: boolean, td: any): number
+	if premiumDiary or (perks ~= nil and (perks.vip == true or perks.fast == true)) then
+		return td.PREMIUM_SPEED
+	end
+	return td.FREE_SPEED
+end
+
+-- Validates a SetSpeed request: "bad_speed" unless it is one of td.SPEEDS (exact membership, so
+-- NaN, 2.5, "3" and 99 are refused), "needs_pass" above `maxSpeed`.
+function MonetizationLogic.checkSpeed(speed: any, maxSpeed: number, td: any): (boolean, string?)
+	if type(speed) ~= "number" or table.find(td.SPEEDS, speed) == nil then
+		return false, "bad_speed"
+	end
+	if speed > maxSpeed then
+		return false, "needs_pass"
+	end
+	return true, nil
+end
+
 -- Whether the server may open a Robux prompt for this product for this player right now.
 -- restricted = the player's region restricts paid random items (see fundsRandomItems).
 function MonetizationLogic.canPrompt(profile: Profile, product: DevProduct?, productId: number?, restricted: boolean?): (boolean, string?)

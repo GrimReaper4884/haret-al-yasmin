@@ -465,6 +465,12 @@ local drawers: { [string]: (Frame, Color3) -> () } = {
 			rectO(h, WHITE, 0.22 + k * 0.28, 0.5, 0.2, 0.2, 1)
 		end
 	end,
+	-- A padlock: a speed the host's passes don't unlock yet (LP-A03).
+	ui_lock = function(h, _c)
+		rectO(h, Palette.woodDark, 0.5, 0.34, 0.46, 0.46, 1)
+		rectO(h, GOLD, 0.5, 0.66, 0.7, 0.48, 0.15)
+		rect(h, Palette.woodDark, 0.5, 0.66, 0.1, 0.2, 1)
+	end,
 	-- A watchtower on its legs with a lit window: the camera view toggle (MH-04).
 	ui_view = function(h, _c)
 		rectO(h, Palette.woodDark, 0.34, 0.74, 0.08, 0.46, 0.2, 8)

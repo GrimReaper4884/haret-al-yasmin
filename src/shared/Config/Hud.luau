@@ -54,6 +54,8 @@ return {
 	-- Right rail (Skip, Speed, View) in the thumb arc, above the jump zone; the match menu `≡` sits at
 	-- the top of the same edge. When a column cannot hold every button the rest go into the next one in.
 	RAIL = { button = 56, gap = 8, maxButtons = 3, margin = 12, menu = 48 },
+	-- The speed sheet beside the rail's Speed button (LP-A03): one chip per TD.SPEEDS entry.
+	SPEED_SHEET = { chip = 52, gap = 6, pad = 10, title = 18, caption = 16, lock = 16 },
 
 	-- Touch placement (B3): tap slop and time, the long press that cancels, the ghost's offset above
 	-- the finger, and the pick radius for selecting a placed defender.

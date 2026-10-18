@@ -55,7 +55,7 @@ clearing N on Normal; Hard after Normal, Nightmare after Hard, per episode.
 | Support | Abu Bader and Abu Hissam multiply the damage of defenders inside their range. **Buffs stack (LP-A02, D-092):** the multiplier is 1 + Σ(buff − 1) over every other support covering the defender, counting one player's copies of the same unit once (the strongest), capped at `TD.BUFF_CAP` = 1.8 (+80 %, never below one support's own buff). A sabotaged support gives nothing until it is back. Hastes (the 'akeed's Rally) multiply the cooldown, floored at `TD.HASTE_FLOOR` = 0.7. The sim caches each defender's total and recomputes it on place / upgrade / sell / ally / sabotage / wave end. The badge and the panel show the total and the count ("▲ +25% ·2"); selecting a support outlines the defenders it reaches |
 | Farm / repair | the coffee-house keeper pays cash per cleared wave; Abu Issam repairs the gate per wave |
 | Abilities | **shabriyeh** ('akeed ×6 / za'im ×10 / great za'im ×15 damage on one hit, every 12 / 9 / 7 s); **sweep** (strongman, 'arada: damage to everything in a radius) |
-| Speed | 1× / 2× free; 3× with the Fast Mode pass (host controls) |
+| Speed | 1× · 2× · 3× · 4× · 5× (`TD.SPEEDS`; host picks from the speed sheet). 1× / 2× free; 3×–5× when the host owns VIP, the premium Lane Diary of the running season or the Fast Mode pass (`MonetizationLogic.maxSpeed`, LP-A03, D-093). Other players see the speed on a read-only chip. The sim steps 20 Hz at any speed (up to 6 steps a frame); the client's snap distance grows with the speed |
 | Tick | 20 Hz fixed step; positions streamed at 10 Hz on an UnreliableRemoteEvent; client interpolates along the path |
 
 The simulation is pure (`TdSim.step(state, dt)` returns events) and covered by `tests/td.spec.luau`.

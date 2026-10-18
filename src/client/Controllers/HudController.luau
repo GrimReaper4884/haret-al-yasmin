@@ -69,7 +69,9 @@ local function build()
 	if sp then
 		sp:Destroy()
 	end
-	storeButton.Activated:Connect(ShopController.openStore)
+	storeButton.Activated:Connect(function()
+		ShopController.openStore()
+	end)
 
 	tracker = Theme.panel({
 		Name = "Errand",

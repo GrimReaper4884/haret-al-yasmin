@@ -514,4 +514,39 @@ return function(t)
 			t.eq(p.traitStones, 2)
 		end)
 	end)
+
+	-- LP-A03: the 1–5 speed ladder and who may host at 3×–5×.
+	t.describe("Match speed perks (LP-A03)", function()
+		local MonetizationLogic = t.logic("MonetizationLogic")
+		t.it("the ladder is 1..5, free up to 2, premium to 5", function()
+			t.eq(#TD.SPEEDS, 5)
+			for i, s in TD.SPEEDS do
+				t.eq(s, i, "speeds are 1, 2, 3, 4, 5 in order")
+			end
+			t.eq(TD.FREE_SPEED, 2)
+			t.eq(TD.PREMIUM_SPEED, 5)
+			t.truthy(table.find(TD.SPEEDS, TD.FREE_SPEED) and table.find(TD.SPEEDS, TD.PREMIUM_SPEED))
+		end)
+		t.it("VIP, the Fast Mode pass or the premium Diary unlock 5x; nothing else does", function()
+			t.eq(MonetizationLogic.maxSpeed(nil, false, TD), TD.FREE_SPEED)
+			t.eq(MonetizationLogic.maxSpeed({}, false, TD), TD.FREE_SPEED)
+			t.eq(MonetizationLogic.maxSpeed({ slot = true }, false, TD), TD.FREE_SPEED, "Extra Slot is not a speed pass")
+			t.eq(MonetizationLogic.maxSpeed({ vip = true }, false, TD), TD.PREMIUM_SPEED)
+			t.eq(MonetizationLogic.maxSpeed({ fast = true }, false, TD), TD.PREMIUM_SPEED)
+			t.eq(MonetizationLogic.maxSpeed({}, true, TD), TD.PREMIUM_SPEED, "premium Lane Diary")
+			t.eq(MonetizationLogic.maxSpeed({ vip = true, fast = true }, true, TD), TD.PREMIUM_SPEED, "never above the ladder")
+		end)
+		t.it("every pass that unlocks speed unlocks the same ceiling (a cheaper pass never beats a dearer one)", function()
+			local Products = t.config("Products")
+			local ceilings = {}
+			for _, key in Products.passOrder do
+				local pass = Products.gamePasses[key]
+				if pass.perk then
+					ceilings[key] = MonetizationLogic.maxSpeed({ [pass.perk] = true }, false, TD)
+				end
+			end
+			t.eq(ceilings.vip, ceilings.fast_mode)
+			t.eq(ceilings.extra_slot, TD.FREE_SPEED)
+		end)
+	end)
 end

@@ -1121,7 +1121,9 @@ local function step(dt: number)
 			rec.target += rec.vel * dt
 		end
 		local delta = rec.target - rec.dist
-		if math.abs(delta) > 8 then
+		-- At 3×–5× (LP-A03) a figure covers that much more road between two 10 Hz packets: the snap
+		-- distance grows with the speed so a fast walker is pulled in, not teleported.
+		if math.abs(delta) > 8 * math.max(1, speedMul) then
 			rec.dist = rec.target
 		else
 			rec.dist += math.max(0, rec.vel * dt + delta * math.min(1, dt * 4))

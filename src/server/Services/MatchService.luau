@@ -29,6 +29,7 @@ local UnitLogic = require(Shared.Logic.UnitLogic)
 local MatchRewards = require(Shared.Logic.MatchRewards)
 local Grants = require(Shared.Logic.Grants)
 local Validate = require(Shared.Logic.Validate)
+local MonetizationLogic = require(Shared.Logic.MonetizationLogic)
 local Settings = require(Shared.Logic.Settings)
 local EventLogic = require(Shared.Logic.EventLogic)
 local Events = require(Shared.Config.Events)
@@ -903,12 +904,12 @@ function MatchService.start()
 		if not match or match.ended or match.host ~= player then
 			return
 		end
-		if not Validate.isPositiveInteger(speed) then
-			return
-		end
-		local maxSpeed = if MonetizationService.hasPerk(player, "fast") then TD.PASS_SPEED else TD.FREE_SPEED
-		if speed > maxSpeed then
-			PlayerStateService.notify(player, "match.err.fast_pass")
+		-- One of TD.SPEEDS, and within what the host's passes allow (LP-A03).
+		local ok, why = MonetizationLogic.checkSpeed(speed, MonetizationService.maxSpeed(player), TD)
+		if not ok then
+			if why == "needs_pass" then
+				PlayerStateService.notify(player, "match.err.fast_pass")
+			end
 			return
 		end
 		match.speed = speed

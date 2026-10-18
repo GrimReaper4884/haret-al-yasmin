@@ -157,11 +157,13 @@ type RowSpec = {
 	enabled: boolean,
 	premium: boolean,
 	onClick: () -> (),
+	key: string?, -- names the row ("Row_<key>") so openStore can scroll to it
 }
 
 local function row(spec: RowSpec)
 	local rtl = LocaleController.isRtl()
 	local r = Create("Frame", {
+		Name = if spec.key then "Row_" .. spec.key else "Row",
 		LayoutOrder = spec.order,
 		BackgroundColor3 = if spec.premium then Color3.fromHex("#C9A13B") else Theme.colors.panelStroke,
 		BackgroundTransparency = if spec.premium then 0.75 else 0.88,
@@ -317,6 +319,7 @@ local function storeRows(snapshot: any)
 		local owned = pass.perk and snapshot.perks and snapshot.perks[pass.perk] == true
 		order += 1
 		row({
+			key = key,
 			order = order,
 			icon = "pass",
 			name = t(pass.nameKey),
@@ -369,13 +372,24 @@ function ShopController.close(tellServer: boolean)
 	panel.Visible = false
 end
 
-function ShopController.openStore()
+-- `focus`: a product or pass key to scroll to (the match speed sheet opens the Store at the Fast
+-- Mode pass, LP-A03). Opening never prompts a purchase; the row's own button does.
+function ShopController.openStore(focus: string?)
 	if mode == "shop" then
 		ShopController.close(true)
 	end
 	mode = "store"
 	list.CanvasPosition = Vector2.zero
 	render()
+	if focus then
+		task.defer(function()
+			local target = list:FindFirstChild("Row_" .. focus)
+			if target and target:IsA("GuiObject") then
+				local y = target.AbsolutePosition.Y - list.AbsolutePosition.Y + list.CanvasPosition.Y
+				list.CanvasPosition = Vector2.new(0, math.max(0, y))
+			end
+		end)
+	end
 end
 
 -- Close an NPC shop when the player walks away from the shopkeeper.

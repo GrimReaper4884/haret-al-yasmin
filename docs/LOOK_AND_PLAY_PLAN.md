@@ -526,7 +526,7 @@ DECISIONS; every name goes through §4.2's STOP first.
   - Accept: a Studio capture of a dying thief (and a boss) with no bar; `execute_luau` (Client) finds no
     enabled `BillboardGui` under any model whose `deathClip` is playing; no console errors over 10 waves.
 
-- [x] **LP-A02 Buffs stack with a cap, haste too, sabotage counts, visible counts** · deps: none
+- [x] 19425ee **LP-A02 Buffs stack with a cap, haste too, sabotage counts, visible counts** · deps: none
   - Goal: §3.2.
   - Create: `TD.BUFF_CAP`, `TD.HASTE_FLOOR`; `TdSim.buffInfo`; the per-tower cache; specs listed in §3.2;
     TOWER_DEFENSE.md §buffs paragraph; DECISIONS TUNE row (D-008 cap row).
@@ -538,7 +538,7 @@ DECISIONS; every name goes through §4.2's STOP first.
   - Shipped (D-092): one player's copies of a unit count once and `BUFF_CAP` is 1.8, the highest value that
     keeps the ladder; Abu Hissam + Abu Bader and two players' supports stack.
 
-- [ ] **LP-A03 Speed ladder 1–5 with the premium tier** · deps: none · STOP (Fast Mode keep/retire; strings)
+- [x] **LP-A03 Speed ladder 1–5 with the premium tier** · deps: none · STOP (Fast Mode keep/retire; strings)
   - Goal: §3.3.
   - Create: `TD.SPEEDS`, `TD.PREMIUM_SPEED`; `MonetizationService.maxSpeed(player)` (VIP | premium diary |
     fast); the speed sheet; the non-host chip; strings; `RemoteGuard` enum check; specs for the perk resolution
@@ -549,6 +549,8 @@ DECISIONS; every name goes through §4.2's STOP first.
     prompt for a restricted player (Player Emulator policy check is the owner's STOP); with `HaretDebug`
     granting the perk, 5× runs 20 waves of Episode 1 with no desync, enemies move smoothly (capture), sim p95
     measured and logged (D-014 method); non-host sees the chip.
+  - Shipped (D-093). Left for the owner: the Player Emulator policy check of the sheet (restricted region) and
+    the non-host chip in Test → Clients and Servers; 5× was run to wave 19 (stopped, never finished).
 
 ### Workstream B: the Defenders panel and unit types
 
@@ -642,7 +644,7 @@ Meshy budget: ≈ 330 credits (240 for four NPC looks + 90 for the merchant and 
 
 ## 9. Checklist (tick with the commit hash)
 
-- [x] ff75c8d LP-A01 · [x] LP-A02 · [ ] LP-A03
+- [x] ff75c8d LP-A01 · [x] 19425ee LP-A02 · [x] LP-A03
 - [ ] LP-B01 · [ ] LP-B02 · [ ] LP-B03 · [ ] LP-B04 · [ ] LP-B05
 - [ ] LP-C00 · [ ] LP-C01 · [ ] LP-C02 · [ ] LP-C03 · [ ] LP-C04 · [ ] LP-C05 · [ ] LP-C06 · [ ] LP-C07
 - [ ] LP-D00 · [ ] LP-D01 · [ ] LP-D02 · [ ] LP-D03 · [ ] LP-D04 · [ ] LP-D05 · [ ] LP-D06 · [ ] LP-D07 · [ ] LP-D08 · [ ] LP-D09 · [ ] LP-D10 · [ ] LP-D11

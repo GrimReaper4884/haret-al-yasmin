@@ -1129,4 +1129,33 @@ return function(t)
 			t.eq(DeviceTelemetry.events(counts, nil)[1].profile, "unknown")
 		end)
 	end)
+
+	t.describe("Red team: SetSpeed (LP-A03)", function()
+		t.it("only exact members of TD.SPEEDS pass; anything above the host's ceiling needs a pass", function()
+			local free, premium = TD.FREE_SPEED, TD.PREMIUM_SPEED
+			for _, bad in { 0, -1, 6, 99, 2.5, 0 / 0, math.huge, -math.huge, "3", true, {}, nil } do
+				local ok, why = MonetizationLogic.checkSpeed(bad, premium, TD)
+				t.eq(ok, false, "refused: " .. tostring(bad))
+				t.eq(why, "bad_speed")
+			end
+			for _, s in TD.SPEEDS do
+				t.eq((MonetizationLogic.checkSpeed(s, premium, TD)), true, "premium host may pick " .. s)
+				local ok, why = MonetizationLogic.checkSpeed(s, free, TD)
+				if s <= free then
+					t.eq(ok, true)
+				else
+					t.eq(why, "needs_pass", s .. "x needs a pass")
+				end
+			end
+		end)
+		t.it("1,000 requests of 5x from a free host never get through", function()
+			local passed = 0
+			for _ = 1, 1000 do
+				if MonetizationLogic.checkSpeed(5, TD.FREE_SPEED, TD) then
+					passed += 1
+				end
+			end
+			t.eq(passed, 0)
+		end)
+	end)
 end

@@ -22,8 +22,12 @@ return {
 	BETWEEN_WAVES = 9, -- countdown between waves
 	TICK = 1 / 20, -- simulation step (seconds of game time)
 	POSITION_RATE = 0.1, -- seconds between enemy position broadcasts
-	FREE_SPEED = 2, -- fastest speed without a pass
-	PASS_SPEED = 3, -- with the Fast Mode pass
+	-- Match speed (LP-A03): the host picks one of SPEEDS. FREE_SPEED is the top without a perk;
+	-- PREMIUM_SPEED needs VIP, the premium Lane Diary of the running season or the Fast Mode pass
+	-- (MonetizationLogic.maxSpeed; DECISIONS D-093).
+	SPEEDS = { 1, 2, 3, 4, 5 },
+	FREE_SPEED = 2,
+	PREMIUM_SPEED = 5,
 	MAX_PLAYERS = 4,
 	MAX_MATCHES = 6, -- arenas per server
 	RESULT_SECONDS = 12, -- how long the result screen stays before returning to the lane

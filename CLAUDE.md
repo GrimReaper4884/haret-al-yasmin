@@ -58,7 +58,7 @@ extension, and `rojo serve` is connected to Studio.
 - `script_read`, `script_grep`, `script_search`: read-only sync checks.
 - `execute_luau` (Edit / Server / Client): probes, measurements, server-side test hooks
   (`game.ServerStorage.HaretDebug:Invoke(cmd, ...)`: `state`, `reload`, `grant`, `place`, `lira`, `cash`,
-  `tp`, `failNext`), firing remotes from the Client context for validation tests. Studio freezes until the code
+  `tp`, `failNext`, `perk` (`"fast"` / `"-fast"`: this session's perk flag only)), firing remotes from the Client context for validation tests. Studio freezes until the code
   yields: chunk heavy loops with `task.wait()`.
 - `start_stop_play`, `get_console_output`, `screen_capture` (optional camera position/target): the playtest loop.
 - `user_keyboard_input` (Client): drive the Studio-only harness keys (`DebugKeysController`: `1`–`6` screens,

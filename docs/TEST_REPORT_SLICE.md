@@ -936,3 +936,20 @@ Abu Bader (18, −6), all level 1.*
 | Select the za'im | panel line "Boosted +25% by 2 supports nearby"; damage 74 → 107 shown with the buff | `a02_fighter_panel_two_supports.jpg` |
 | `lune run tests/balance` | identical to the pre-change table; Episodes 1–3 frozen rows unchanged | — |
 | Console | no errors or warnings from our code | — |
+
+### LP-A03 the speed ladder
+
+*Play Solo, Episode 1 Normal, the owner's profile (no pass owned, every product id `0`); later
+`HaretDebug perk fast` for this session only (no purchase, no profile change). Play stopped at wave 19/20 at
+5× (nothing paid). GUI clicks through `user_mouse_input` land at screen y − 58 (the top bar).*
+
+| Check | Result | Capture |
+|---|---|---|
+| Host without perks taps Speed | sheet "Match speed": 1x (current, gold) and 2x open; 3x, 4x, 5x greyed with the padlock; caption "3x to 5x: VIP, premium Diary or Fast Mode" | `docs/captures/lp/a03_speed_sheet_locked.jpg` |
+| Tap the locked 5x | notice "3x to 5x speed needs VIP, the premium Lane Diary or the Fast Mode pass."; the Store opens scrolled to Fast Mode ("3x to 5x match speed when you host", **Coming soon**: id 0, no prompt) | `a03_locked_chip_opens_store.jpg` |
+| With the `fast` perk | all five chips open; the Store row reads Owned; 5x picked, rail reads 5x | `a03_speed_sheet_unlocked.jpg`, `a03_match_at_5x.jpg` |
+| 5× smoothness (Client, 10 s RenderStepped) | 600 frames, 6,061 enemy samples, **0 pops** (per-frame speed > 3× the figure's median), max 1.9× (the pull-in) | — |
+| 5× run | wave 2 → 19 in 68 s, gate 100/100, client wave label in step with the server; server Heartbeat 16.8 ms median / 18.1 p95 / 20 max | — |
+| D-014 synthetic at 5× | `TdSim.step` 1.81 avg / 2.12 p95 / 2.75 max ms (271 attackers, 60 towers) → ≈ 4.2 ms per frame | — |
+| Non-host chip | not testable in Play Solo; needs Test → Clients and Servers (owner) | — |
+| Console | no errors or warnings from our code | — |

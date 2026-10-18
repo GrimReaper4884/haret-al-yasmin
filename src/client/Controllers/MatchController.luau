@@ -15,6 +15,8 @@ local Story = require(Shared.Config.Story)
 local IconIds = require(Shared.Config.Icons)
 local Signal = require(Shared.Util.Signal)
 local PartyLogic = require(Shared.Logic.PartyLogic)
+local MonetizationLogic = require(Shared.Logic.MonetizationLogic)
+local SeasonPass = require(Shared.Config.SeasonPass)
 local MechanicFx = require(Shared.Logic.MechanicFx)
 local Vfx = require(Shared.Config.Vfx)
 local Hud = require(Shared.Config.Hud)
@@ -35,6 +37,7 @@ local LobbyMenuController = require(script.Parent.LobbyMenuController)
 local SettingsController = require(script.Parent.SettingsController)
 local ToastController = require(script.Parent.ToastController)
 local MatchMenuController = require(script.Parent.MatchMenuController)
+local ShopController = require(script.Parent.ShopController)
 
 local MatchController = {}
 
@@ -177,6 +180,101 @@ local function railButtonOf(name: string, color: Color3, iconName: string): Text
 	return b
 end
 
+---------------------------------------------------------------- Speed sheet (LP-A03)
+
+-- The host taps Speed and picks one of TD.SPEEDS. Speeds above the host's ceiling
+-- (MonetizationLogic.maxSpeed: VIP, the premium Lane Diary or the Fast Mode pass) carry a lock and
+-- open the Store at the Fast Mode pass; the server checks again. Others see the speed only.
+local speedSheet: Frame? = nil
+local speedCatcher: TextButton? = nil
+
+local function myMaxSpeed(): number
+	local snapshot = StateController.get()
+	local pass = snapshot and snapshot.pass
+	local premium = pass ~= nil and pass.premium == true and pass.season == SeasonPass.season
+	return MonetizationLogic.maxSpeed(snapshot and snapshot.perks, premium, TD)
+end
+
+local function closeSpeedSheet()
+	if speedSheet then
+		speedSheet:Destroy()
+		speedSheet = nil
+	end
+	if speedCatcher then
+		speedCatcher:Destroy()
+		speedCatcher = nil
+	end
+end
+
+local function openSpeedSheet()
+	closeSpeedSheet()
+	local t = LocaleController.t
+	local cfg = Hud.SPEED_SHEET
+	local maxSpeed = myMaxSpeed()
+	local current = if state then state.speed or 1 else 1
+	local n = #TD.SPEEDS
+	local locked = maxSpeed < TD.SPEEDS[n]
+	local w = cfg.pad * 2 + n * cfg.chip + (n - 1) * cfg.gap
+	local h = cfg.pad * 2 + cfg.title + cfg.gap + cfg.chip + (if locked then cfg.gap + cfg.caption else 0)
+	-- Beside the Speed button, on the screen's inner side of the rail, kept inside the safe area.
+	local design = Device.designSize()
+	local bp = speedButton.Position
+	local right = (SettingsController.get("railSide") or "right") == "right"
+	local x = if right then bp.X.Offset - cfg.gap - w else bp.X.Offset + speedButton.Size.X.Offset + cfg.gap
+	local y = math.clamp(bp.Y.Offset + speedButton.Size.Y.Offset / 2 - h / 2, 4, math.max(4, design.y - h - 4))
+	local catcher = Create("TextButton", { Name = "SpeedCatcher", Text = "", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 9, Parent = hud })
+	catcher.Activated:Connect(closeSpeedSheet)
+	speedCatcher = catcher
+	local sheet = Create("Frame", {
+		Name = "SpeedSheet",
+		Position = UDim2.fromOffset(math.max(4, x), y),
+		Size = UDim2.fromOffset(w, h),
+		BackgroundColor3 = Theme.colors.panel,
+		ZIndex = 10,
+		Parent = hud,
+	}, { Create("UICorner", { CornerRadius = UDim.new(0, 12) }) })
+	Theme.border(sheet, 2.5)
+	speedSheet = sheet
+	local title = Theme.label({ Text = t("match.speed_title"), FontFace = Theme.fontBold, TextSize = Hud.TEXT_MIN + 2, Position = UDim2.fromOffset(cfg.pad, cfg.pad), Size = UDim2.new(1, -2 * cfg.pad, 0, cfg.title), ZIndex = 11, Parent = sheet })
+	Theme.align(title, LocaleController.isRtl())
+	for i, speed in TD.SPEEDS do
+		local open = speed <= maxSpeed
+		local chip = Theme.button({
+			Name = "Speed_" .. speed,
+			Text = t("match.speed", { n = speed }),
+			TextSize = 18,
+			Position = UDim2.fromOffset(cfg.pad + (i - 1) * (cfg.chip + cfg.gap), cfg.pad + cfg.title + cfg.gap),
+			Size = UDim2.fromOffset(cfg.chip, cfg.chip),
+			BackgroundColor3 = if speed == current then Theme.colors.gold elseif open then Theme.colors.button else Theme.colors.buttonDisabled,
+			ZIndex = 11,
+			Parent = sheet,
+		})
+		if not open then
+			local lock = Create("Frame", { Name = "Lock", AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, 8, 0, -4), Size = UDim2.fromOffset(cfg.lock, cfg.lock), BackgroundTransparency = 1, ZIndex = 12, Parent = chip })
+			Icons.draw("ui_lock", lock)
+			for _, d in lock:GetDescendants() do
+				if d:IsA("GuiObject") then
+					d.ZIndex = 12
+				end
+			end
+		end
+		chip.Activated:Connect(function()
+			closeSpeedSheet()
+			if not open then
+				ToastController.show("match.err.fast_pass")
+				ShopController.openStore("fast_mode")
+			elseif speed ~= current then
+				Net.event(Net.Events.SetSpeed):FireServer(speed)
+			end
+		end)
+	end
+	if locked then
+		local caption = Theme.label({ Text = t("match.speed_unlock"), TextSize = Hud.TEXT_MIN, TextColor3 = Theme.colors.textMuted, Position = UDim2.fromOffset(cfg.pad, h - cfg.pad - cfg.caption), Size = UDim2.new(1, -2 * cfg.pad, 0, cfg.caption), ZIndex = 11, Parent = sheet })
+		caption.TextXAlignment = Enum.TextXAlignment.Center
+	end
+	Juice.pop(sheet)
+end
+
 local function build()
 	local root = Root.get()
 	hud = Create("Frame", { Name = "MatchHud", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Visible = false, ZIndex = 3, Parent = root })
@@ -231,13 +329,13 @@ local function build()
 		if not state then
 			return
 		end
-		local snapshot = StateController.get()
-		local maxSpeed = if snapshot and snapshot.perks and snapshot.perks.fast then TD.PASS_SPEED else TD.FREE_SPEED
-		local nextSpeed = (state.speed or 1) + 1
-		if nextSpeed > maxSpeed then
-			nextSpeed = 1
+		if state.host ~= Players.LocalPlayer.Name then
+			ToastController.show("match.speed_host")
+		elseif speedSheet then
+			closeSpeedSheet()
+		else
+			openSpeedSheet()
 		end
-		Net.event(Net.Events.SetSpeed):FireServer(nextSpeed)
 	end)
 	layoutRail()
 
@@ -348,6 +446,7 @@ local function render()
 	if not info or not state then
 		hud.Visible = false
 		lastCash, lastWave = nil, nil
+		closeSpeedSheet()
 		return
 	end
 	local t = LocaleController.t
@@ -396,12 +495,17 @@ local function render()
 	lastWave = state.wave
 
 	local me = Players.LocalPlayer.Name
-	local skipShown, speedShown = state.phase == "prep", state.host == me
+	-- Everyone sees the speed; only the host's button opens the sheet (LP-A03), the others' is muted.
+	local skipShown, speedShown = state.phase == "prep", true
 	local relayout = skipButton.Visible ~= skipShown or speedButton.Visible ~= speedShown
 	skipButton.Visible = skipShown
 	railLabels[skipButton].Text = t("match.skip_votes", { n = state.votes or 0, total = state.players or 1 })
 	speedButton.Visible = speedShown
+	speedButton.BackgroundColor3 = if state.host == me then Theme.colors.gold else Theme.colors.textMuted
 	railLabels[speedButton].Text = t("match.speed", { n = state.speed or 1 })
+	if speedSheet and state.host ~= me then
+		closeSpeedSheet()
+	end
 	if relayout then
 		layoutRail()
 	end

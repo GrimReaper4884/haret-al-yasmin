@@ -182,6 +182,31 @@ function MonetizationService.hasPerk(player: Player, perk: string): boolean
 	return p ~= nil and p[perk] == true
 end
 
+-- The fastest match speed this player may set as host (LP-A03): VIP, the Fast Mode pass or the
+-- premium Lane Diary of the running season unlock TD.PREMIUM_SPEED.
+function MonetizationService.maxSpeed(player: Player): number
+	local profile = DataService.getProfile(player)
+	local premium = profile ~= nil and profile.pass.premium == true and profile.pass.season == SeasonPass.season
+	return MonetizationLogic.maxSpeed(perks[player], premium, TD)
+end
+
+-- Studio test hook (DebugService "perk"): sets a perk flag for this session only, never the
+-- profile or a purchase. A no-op outside Studio.
+function MonetizationService.debugPerk(player: Player, perk: string, on: boolean): boolean
+	if not game:GetService("RunService"):IsStudio() then
+		return false
+	end
+	local p = perks[player] or {}
+	perks[player] = p
+	if on then
+		p[perk] = true
+	else
+		p[perk] = nil
+	end
+	perksChanged(player)
+	return true
+end
+
 function MonetizationService.perks(player: Player): { [string]: boolean }
 	return table.clone(perks[player] or {})
 end
