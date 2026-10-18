@@ -612,6 +612,36 @@ Tag legend in the flag column: **MEANING** may say the wrong thing · **DIALECT*
 | 87 | `units.rates_title2` | Second trait reroll rates (this defender) | نسب تغيير الصفة التانية (لهالرجل) |  |  |  |
 | 88 | `units.rates_switch` | 1st / 2nd | الأولى / التانية |  |  |  |
 
+## 19. Season Story 1: the Play panel Story tab (S1-C01)
+
+*Added by hand on 2026-10-18 (S1-C01), same reason as §18.*
+
+| # | Key | English | Arabic (current) | Claude flag | Correction | OK? |
+|---|-----|---------|------------------|-------------|------------|-----|
+| 1 | `play.soon` | Coming soon | قريباً |  |  |  |
+| 2 | `play.soon_name` | Episode {n} · {title} | الحلقة {n} · {title} | {n} is shown in Arabic-Indic digits (as in the mode names). |  |  |
+| 3 | `play.hakawati` | The Hakawati: | بيحكي الحكواتي: |  |  |  |
+| 4 | `play.mechanics` | New here: | جديد هون: |  |  |  |
+| 5 | `play.first_gift` | First {d} clear: | أول فوز {d}: | {d} is the difficulty name (عادي / صعب / كابوس). |  |  |
+| 6 | `play.secret` | Every win: {pct}% chance of {unit} | كل فوز: فرصة {pct}٪ لـ{unit} |  |  |  |
+| 7 | `play.secret_pity` | Sure after {n} wins without him · the first Nightmare clear always brings him | أكيد بعد {n} فوز بدونه · وأول فوز بالكابوس بيجيبه دايماً |  |  |  |
+| 8 | `mech.stealth` | Hidden thieves | حرامية مخفيين |  |  |  |
+| 9 | `mech.armor` | Armour | دروع |  |  |  |
+| 10 | `mech.fast` | Fast riders | خيّالة سريعين |  |  |  |
+| 11 | `mech.sapper` | Wall breakers | هدّامين حيطان |  |  |  |
+| 12 | `mech.swarm` | Swarms | أسراب |  |  |  |
+| 13 | `mech.aura` | War drums | طبول |  |  |  |
+| 14 | `mech.two_paths` | Two roads | طريقين |  |  |  |
+| 15 | `mech.burn` | Fire | حريق |  |  |  |
+| 16 | `mech.shield` | Shields | تروس |  |  |  |
+| 17 | `mech.disguised` | Disguised | متنكّرين |  |  |  |
+| 18 | `mech.teleport` | Sudden jumps | نطّات فجأة |  |  |  |
+| 19 | `mech.sabotage` | Snipers | قنّاصة |  |  |  |
+| 20 | `mech.summon` | Reinforcements | نجدات |  |  |  |
+| 21 | `mech.split` | Splitting carts | عربيات بتنفلق | STYLE: «بتنفلق» (bursts open); alternative «بتتفرّق». |  |  |
+| 22 | `mech.heal` | Healers | مداوين |  |  |  |
+| 23 | `mech.ally` | An ally | حليف |  |  |  |
+
 ## Sign-off
 
 | Reviewer | Dialect / country | Date | Sections reviewed | Notes |

@@ -355,6 +355,12 @@ local function showResult(payload: any)
 	resultBanner.Image = if art and hasArt then "rbxassetid://" .. tostring(art.id) else ""
 	resultBanner.BackgroundTransparency = if hasArt then 1 else 0
 	resultBanner.BackgroundColor3 = Theme.colors.text
+	-- On a painting the outro sits low over the shade; on the plain plate it is centred.
+	resultOutro.AnchorPoint = if hasArt then Vector2.new(0.5, 1) else Vector2.new(0.5, 0.5)
+	resultOutro.Position = if hasArt then UDim2.new(0.5, 0, 1, -6) else UDim2.fromScale(0.5, 0.5)
+	resultOutro.Size = if hasArt then UDim2.new(1, -20, 0.68, 0) else UDim2.new(1, -24, 1, -12)
+	resultOutro.TextYAlignment = if hasArt then Enum.TextYAlignment.Bottom else Enum.TextYAlignment.Center
+	resultOutro.TextSize = if hasArt then 13 else 15
 	local snapshot: any = StateController.get()
 	replayButton.Visible = not payload.left and modeId ~= nil
 	nextButton.Visible = not payload.left

@@ -46,13 +46,15 @@ local TAB_COLORS = { story = Theme.colors.danger, infinite = Color3.fromHex("#3B
 local INTRO_COLOR = Color3.fromHex("#5A3E22") -- the Hakawati's voice: warm brown on the plaster panel
 local SECRET_COLOR = Color3.fromHex("#7A3FA0")
 local CARD_ICON = 18 -- px, mechanic icons on a card
-local PARTIES_HEIGHT = 92 -- px, the open-parties box under the detail (the Create button sits beside it)
+local PARTY_ROW = 37 -- px per open party row (34 + gap); the box under the detail grows with them
+local PARTIES_MIN = 48 -- px, at least the Create button's height (it sits beside the box)
 
 local modal: Modal.Modal
 local tabButtons: { [string]: TextButton } = {}
 local list: ScrollingFrame
 local detail: Frame
 local info: ScrollingFrame
+local infoHolder: Frame
 local dName: TextLabel
 local dMech: Frame
 local dDesc: TextLabel
@@ -490,6 +492,10 @@ render = function()
 		local none = Theme.label({ Text = t("play.no_parties"), TextSize = 12, TextColor3 = Theme.colors.textMuted, Size = UDim2.new(1, 0, 0, 18), ZIndex = 12, Parent = partiesList })
 		Theme.align(none, rtl)
 	end
+	-- The parties box takes only the room its rows need; the detail stack gets the rest.
+	local partiesHeight = math.max(PARTIES_MIN, 18 + n * PARTY_ROW)
+	partiesBox.Size = UDim2.new(0.6, 0, 0, partiesHeight)
+	infoHolder.Size = UDim2.new(1, 0, 1, -(partiesHeight + 4))
 end
 
 -- A wrapped label that grows with its text, for the detail stack.
@@ -528,7 +534,7 @@ local function build()
 
 	-- Detail: a scrolling stack above the Create button and the open parties.
 	detail = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(330, 0), Size = UDim2.new(1, -330, 1, 0), ZIndex = 11, Parent = body })
-	local infoHolder = Create("Frame", { Name = "Info", BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, -(PARTIES_HEIGHT + 4)), ZIndex = 11, Parent = detail })
+	infoHolder = Create("Frame", { Name = "Info", BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, -(PARTIES_MIN + 4)), ZIndex = 11, Parent = detail })
 	info = Modal.scroller(infoHolder)
 	Create("UIListLayout", { Padding = UDim.new(0, 4), SortOrder = Enum.SortOrder.LayoutOrder, Parent = info })
 	dName = Theme.display({ LayoutOrder = 1, TextSize = 20, Size = UDim2.new(1, -10, 0, 24), ZIndex = 12, Parent = info })
@@ -580,7 +586,7 @@ local function build()
 			end
 		end)
 	end)
-	partiesBox = Create("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(1, 1), Position = UDim2.fromScale(1, 1), Size = UDim2.new(0.6, 0, 0, PARTIES_HEIGHT), ZIndex = 12, Parent = detail })
+	partiesBox = Create("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(1, 1), Position = UDim2.fromScale(1, 1), Size = UDim2.new(0.6, 0, 0, PARTIES_MIN), ZIndex = 12, Parent = detail })
 	partiesLabel = Theme.label({ TextSize = 12, FontFace = Theme.fontBold, Size = UDim2.new(1, 0, 0, 16), ZIndex = 12, Parent = partiesBox })
 	partiesList = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, 18), Size = UDim2.new(1, 0, 1, -18), ZIndex = 12, Parent = partiesBox })
 	Create("UIListLayout", { Padding = UDim.new(0, 3), SortOrder = Enum.SortOrder.LayoutOrder, Parent = partiesList })
@@ -603,6 +609,11 @@ function PlayController.openAt(tabKey: string, id: string?)
 	render()
 	if info then
 		info.CanvasPosition = Vector2.zero
+	end
+	-- Bring the selected card into view (cards are 64 px with a 6 px gap).
+	local c = if id then list:FindFirstChild(id) else nil
+	if c and c:IsA("GuiObject") then
+		list.CanvasPosition = Vector2.new(0, math.max(0, (c.LayoutOrder - 1) * 70 - 6))
 	end
 end
 
