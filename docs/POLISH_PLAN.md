@@ -435,7 +435,7 @@ and the experience page shows our icon, five thumbnails and a trailer. `tools/ch
 
 ## 9. Checklist (tick with the commit hash)
 
-- [~] PV-A01 (concepts done, awaiting owner approval) · [ ] PV-A02 · [~] PV-A03 (5 of 11 attackers; the six new ones follow PV-A02) · [x] PV-A04 5babfac · [ ] PV-A05 (optional)
+- [x] PV-A01 (owner approved 2026-10-18) · [x] PV-A02 ee436d4 · [x] PV-A03 ee436d4 (all 11 attackers) · [x] PV-A04 5babfac · [ ] PV-A05 (optional)
 - [x] PV-B00 02c120c · [x] PV-B01 4a8009d + 9a0449e · [x] PV-B02 0802c02 · [x] PV-B03 407e982 · [x] PV-B04 b1ca5d8 · [x] PV-B05 b427880 · [x] PV-B06 d738e08 · [x] PV-B07 c3e69e1 · [x] PV-B08 30e6a8f
 - [x] PV-C01 9a0449e · [x] PV-C02 5603d0e · [x] PV-C03 9a0449e + b078a08 · [x] PV-C04 f51bb27 + b078a08 · [x] PV-C05 b078a08 · [x] PV-C06 b078a08
 - [x] PV-D01 e27d7cd · [ ] PV-D02 · [ ] PV-D03 · [ ] PV-D04 · [x] PV-D05 e27d7cd · [ ] PV-D06
