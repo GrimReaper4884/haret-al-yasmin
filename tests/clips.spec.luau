@@ -6,8 +6,8 @@
 
 local fs = require("@lune/fs")
 
--- Attackers still waiting for their Meshy model: the Season Story 1 batch-1 attackers (S1-S03), until
--- S1-A02 imports and bakes them.
+-- Attackers still waiting for their Meshy model: the Season Story 1 attackers of S1-S03 and S1-S08,
+-- until S1-A02 / S1-A04 import and bake them.
 local AWAITING_MODEL: { [string]: boolean } = {
 	pickpocket = true,
 	drummer = true,
@@ -19,6 +19,13 @@ local AWAITING_MODEL: { [string]: boolean } = {
 	abu_jawdan = true,
 	abu_shatour = true,
 	lateef = true,
+	rifleman = true,
+	cart = true,
+	hakim_rival = true,
+	snake = true,
+	brute = true,
+	fakhr = true,
+	abu_zira = true,
 }
 
 local B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"

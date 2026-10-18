@@ -284,6 +284,14 @@ local en: { [string]: string } = {
 	["enemy.abu_jawdan.name"] = "Sergeant Abu Jawdan",
 	["enemy.abu_shatour.name"] = "Abu Shatour",
 	["enemy.lateef.name"] = "Lateef the \"Blind\"",
+	["enemy.rifleman.name"] = "Tirailleur",
+	["enemy.cart.name"] = "Donkey Cart",
+	["enemy.hakim_rival.name"] = "Rival-lane Hakim",
+	["enemy.snake.name"] = "Grave Snake",
+	["enemy.brute.name"] = "Rival-lane Brute",
+	["enemy.fakhr.name"] = "Fakhr Abu al-Hokm",
+	["enemy.abu_zira.name"] = "Abu Zira'",
+	["enemy.rival_zaim_enraged.name"] = "Al-'Akeed Abu al-Nahr, enraged",
 
 	-- Units (original lane archetypes)
 	["unit.walad.name"] = "Lane Boy",
@@ -984,6 +992,14 @@ local ar: { [string]: string } = {
 	["enemy.abu_jawdan.name"] = "الرقيب أبو جودان",
 	["enemy.abu_shatour.name"] = "أبو شاطور",
 	["enemy.lateef.name"] = "لطيف \"الأعمى\"",
+	["enemy.rifleman.name"] = "بندقجي",
+	["enemy.cart.name"] = "عربية حمار",
+	["enemy.hakim_rival.name"] = "حكيم الحارة التانية",
+	["enemy.snake.name"] = "حيّة القبر",
+	["enemy.brute.name"] = "زكرت الحارة التانية",
+	["enemy.fakhr.name"] = "فخر أبو الحكم",
+	["enemy.abu_zira.name"] = "أبو زراع",
+	["enemy.rival_zaim_enraged.name"] = "العكيد أبو النهر، معصّب",
 
 	-- Units
 	["unit.walad.name"] = "ولد الحارة",

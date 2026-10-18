@@ -129,7 +129,7 @@ return function(t)
 		end)
 
 		t.it("every defender and attacker has a portrait of its current model", function()
-			-- Season Story 1 batch-1 attackers (S1-S03) are primitive figures until S1-A02; their boss bar
+			-- Season Story 1 attackers (S1-S03, S1-S08) are primitive figures until S1-A02/A04; their boss bar
 			-- uses the live viewport. Listed so a portrait missing anywhere else still fails.
 			local AWAITING = {
 				pickpocket = true,
@@ -142,6 +142,13 @@ return function(t)
 				abu_jawdan = true,
 				abu_shatour = true,
 				lateef = true,
+				rifleman = true,
+				cart = true,
+				hakim_rival = true,
+				snake = true,
+				brute = true,
+				fakhr = true,
+				abu_zira = true,
 			}
 			local function check(id)
 				if AWAITING[id] then

@@ -120,6 +120,7 @@ Icons.portraits = {
 	sergeant = { id = 73566511528622, model = "Sergeant" },
 	chief_thief = { id = 131496373841818, model = "Idaashari" },
 	rival_zaim = { id = 93232597039986, model = "AbuNar" },
+	rival_zaim_enraged = { id = 93232597039986, model = "AbuNar" }, -- same mesh as Abu al-Nahr (S1-S08)
 	colonel = { id = 106285960688999, model = "Commandant" },
 } :: { [string]: Portrait }
 

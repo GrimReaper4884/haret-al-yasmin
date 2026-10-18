@@ -258,6 +258,27 @@ local Looks: { [string]: Look } = {
 	abu_jawdan = { build = "stout", outfit = "uniform", beard = "none", moustache = "handlebar", hair = DARK },
 	abu_shatour = { build = "broad", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK },
 	lateef = { build = "slim", outfit = "abaya", beard = "stubble", moustache = "thin", hair = DARK, cloak = "#6E6A64" },
+	-- Season Story 1, batch 2 (S1-S08): primitive figures until S1-A04.
+	rifleman = { build = "slim", outfit = "uniform", beard = "none", moustache = "thin", hair = DARK },
+	cart = { build = "giant", outfit = "vest", beard = "none", moustache = "none", hair = GREY },
+	hakim_rival = { build = "slim", outfit = "abaya", beard = "short", moustache = "thin", hair = GREY, cloak = "#2A211B" },
+	snake = { build = "kid", outfit = "vest", beard = "none", moustache = "none", hair = DARK },
+	brute = { build = "giant", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK },
+	fakhr = { build = "giant", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK },
+	abu_zira = { build = "slim", outfit = "sherwal", beard = "none", moustache = "handlebar", hair = DARK },
+	-- The enraged 'akeed re-uses Abu al-Nahr's mesh and clips (no new mesh, STORY_PLAN §6.2); the red
+	-- tint is client work (S1-C03).
+	rival_zaim_enraged = {
+		build = "broad",
+		outfit = "bisht",
+		beard = "full",
+		moustache = "thick",
+		hair = DARK,
+		cloak = "#3E5B3A",
+		model = "AbuNar",
+		clips = "rival_zaim",
+		anims = { walk = 100088303835625 },
+	},
 	-- Abu Jawdan's escort (S1-S05): the gendarme's mesh and clips (no new mesh, STORY_PLAN §6.2).
 	corporal_minion = {
 		build = "slim",

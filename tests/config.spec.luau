@@ -258,7 +258,7 @@ return function(t)
 		local KNOWN = {
 			nameKey = true, hp = true, speed = true, reward = true, gateDamage = true, armor = true, stealth = true,
 			boss = true, swarm = true, aura = true, shield = true, burn = true, disguised = true, visual = true,
-			summon = true, teleport = true, sabotage = true, split = true, enrage = true, healAura = true,
+			summon = true, teleport = true, sabotage = true, split = true, enrage = true, healAura = true, small = true,
 		}
 		t.it("names resolve, numbers are sane, every flag is known and typed, every attacker has a look", function()
 			for id, def in Enemies do
@@ -272,7 +272,7 @@ return function(t)
 				if def.armor ~= nil then
 					t.truthy(num(def.armor, 0, 0.6), id .. " armor")
 				end
-				for _, flag in { "stealth", "boss", "swarm", "disguised" } do
+				for _, flag in { "stealth", "boss", "swarm", "disguised", "small" } do
 					t.truthy(def[flag] == nil or type(def[flag]) == "boolean", id .. "." .. flag .. " is a boolean")
 				end
 				if def.aura then

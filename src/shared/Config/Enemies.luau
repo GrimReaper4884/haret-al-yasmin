@@ -27,6 +27,7 @@ export type EnemyDef = {
 	split: { enemy: string, count: number }?, -- releases `count` attackers where it dies
 	enrage: { belowHp: number, speed: number }?, -- walks speed× faster below belowHp of its HP (capped like auras)
 	healAura: { radius: number, pct: number }?, -- other enemies within radius regain pct of max HP per second (best one)
+	small: boolean?, -- render only: half-height health bar (snakes)
 	visual: {
 		robe: string,
 		accent: string,
@@ -169,6 +170,58 @@ local Enemies: { [string]: EnemyDef } = {
 		visual = { robe = "#6E6A64", accent = "#3D3A38", skin = "#B97F5A", hat = "scarf", hatColor = "#2A211B", weapon = "stick", scale = 0.95 },
 	},
 
+	-- Season Story 1, batch 2 (STORY_PLAN §6.1, S1-S08): Episodes 7–9. Primitive figures until S1-A04.
+	rifleman = {
+		nameKey = "enemy.rifleman.name",
+		hp = 150,
+		speed = 5.0,
+		reward = 38,
+		gateDamage = 2,
+		armor = 0.2,
+		sabotage = { range = 10, duration = 2.5, cooldown = 8 }, -- stops to pin down the nearest defender
+		visual = { robe = "#8A7A52", accent = "#3D3A38", skin = "#B97F5A", hat = "tarboosh", hatColor = "#A4302A", weapon = "rifle" },
+	},
+	cart = {
+		nameKey = "enemy.cart.name",
+		hp = 420,
+		speed = 3.4,
+		reward = 60,
+		gateDamage = 3,
+		armor = 0.3,
+		split = { enemy = "thug", count = 4 }, -- four thugs jump out of the sacks
+		visual = { robe = "#6E5E50", accent = "#8C8079", skin = "#8C8079", hat = "none", hatColor = "#6E5E50", weapon = "sack", scale = 1.3 },
+	},
+	hakim_rival = {
+		nameKey = "enemy.hakim_rival.name",
+		hp = 200,
+		speed = 4.6,
+		reward = 50,
+		gateDamage = 1,
+		healAura = { radius = 8, pct = 0.02 }, -- mends the rival lane's men around him
+		visual = { robe = "#2A211B", accent = "#3E5B3A", skin = "#D2A07A", hat = "turban", hatColor = "#3E5B3A", weapon = "sack" },
+	},
+	snake = {
+		nameKey = "enemy.snake.name",
+		hp = 20,
+		speed = 12.0,
+		reward = 4,
+		gateDamage = 2,
+		stealth = true,
+		swarm = true,
+		small = true, -- half-height health bar
+		visual = { robe = "#B39B6A", accent = "#1F1B18", skin = "#B39B6A", hat = "none", hatColor = "#1F1B18", weapon = "none", scale = 0.5 },
+	},
+	brute = {
+		nameKey = "enemy.brute.name",
+		hp = 380,
+		speed = 4.2,
+		reward = 65,
+		gateDamage = 3,
+		armor = 0.2,
+		enrage = { belowHp = 0.5, speed = 1.6 }, -- wounded, he charges
+		visual = { robe = "#3D3A38", accent = "#A4302A", skin = "#B97F5A", hat = "none", hatColor = "#1F1B18", weapon = "none", scale = 1.25 },
+	},
+
 	-- Bosses
 	sergeant = {
 		nameKey = "enemy.sergeant.name",
@@ -254,6 +307,42 @@ local Enemies: { [string]: EnemyDef } = {
 		disguised = true, -- the "blind" beggar: only a lantern or a lit hit unmasks him
 		teleport = { atHp = 0.5, fraction = 0.2, telegraph = 2 }, -- at half HP he jumps a fifth of the road
 		visual = { robe = "#6E6A64", accent = "#2A211B", skin = "#B97F5A", hat = "scarf", hatColor = "#2A211B", weapon = "dagger", scale = 1.6 },
+	},
+
+	-- Season Story 1 bosses, batch 2 (STORY_PLAN §6.2, S1-S08).
+	fakhr = {
+		nameKey = "enemy.fakhr.name",
+		hp = 4200,
+		speed = 4.8,
+		reward = 800,
+		gateDamage = 90,
+		armor = 0.25,
+		boss = true,
+		enrage = { belowHp = 0.5, speed = 1.5 }, -- the plan gives no numbers: a brute's rage, a little slower (D-046)
+		visual = { robe = "#1F1B18", accent = "#A4302A", skin = "#B97F5A", hat = "hatta", hatColor = "#1F1B18", weapon = "stick", scale = 1.75 },
+	},
+	abu_zira = {
+		nameKey = "enemy.abu_zira.name",
+		hp = 5000,
+		speed = 5.2,
+		reward = 950,
+		gateDamage = 100,
+		armor = 0.2,
+		boss = true,
+		enrage = { belowHp = 0.6, speed = 1.6 }, -- plan 1.7, held at the 1.6 speed cap (D-046)
+		visual = { robe = "#6E6A64", accent = "#A4302A", skin = "#C68E64", hat = "tarboosh", hatColor = "#A4302A", weapon = "sword", scale = 1.7 },
+	},
+	rival_zaim_enraged = {
+		nameKey = "enemy.rival_zaim_enraged.name",
+		hp = 9000,
+		speed = 5.0,
+		reward = 1600,
+		gateDamage = 120,
+		armor = 0.3,
+		boss = true,
+		shield = { radius = 8, reduce = 0.3 }, -- his men close ranks around him
+		enrage = { belowHp = 0.5, speed = 1.3 },
+		visual = { robe = "#3E5B3A", accent = "#A4302A", skin = "#C68E64", hat = "tarboosh", hatColor = "#1F1B18", weapon = "dagger", scale = 1.75 },
 	},
 }
 
