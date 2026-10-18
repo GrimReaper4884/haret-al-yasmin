@@ -206,8 +206,8 @@ local function kerbProps(m: Instance, origin: CFrame, def: any, th: any)
 	local sack = hex(ArenaThemes.kerb.sack)
 	-- Kerb props line the first road only, but keep clear of every other road (twin-gate arenas)
 	local others = {}
-	for k, pts in def.paths or {} do
-		if k > 1 then
+	for ri, pts in def.paths or {} do
+		if ri > 1 then
 			table.insert(others, pts)
 		end
 	end
