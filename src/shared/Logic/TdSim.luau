@@ -695,6 +695,17 @@ local function hit(state: State, t: Tower, e: Enemy, damage: number, events: { E
 			p.kills += 1
 		end
 		table.insert(events, { type = "death", id = e.id, tower = t.id, owner = t.owner, cash = cash, boss = e.boss })
+		-- Bounty farms (Abu Samih, S1-A07) pay their owner for every death inside their range.
+		local ex, ez = Path.position(state.paths[e.pathIndex], e.dist)
+		for _, s in state.towers do
+			local b = s.stats.bounty
+			if b and dist2(s.x, s.z, ex, ez) <= s.stats.range * s.stats.range then
+				local owner = state.players[s.owner]
+				if owner then
+					owner.cash += b
+				end
+			end
+		end
 		local sp = e.split
 		if sp then
 			table.insert(state.pendingSplits, { enemy = sp.enemy, count = sp.count, dist = e.dist, hpMul = e.hpMul, speedMul = e.speed / e.baseSpeed, by = e.id, pathIndex = e.pathIndex })

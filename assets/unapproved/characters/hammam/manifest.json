@@ -1,9 +1,21 @@
 {
   "id": "hammam",
   "tasks": {
-    "concept": "01a14f22-2f16-73db-86e9-3b5a211ad98d"
+    "concept": "01a14f22-2f16-73db-86e9-3b5a211ad98d",
+    "mesh": "01a14f36-7234-76fe-922a-5d4d072831eb",
+    "rig": "01a14f37-b477-77da-aa17-ebad58facde0",
+    "clip_idle3": "01a14f41-b33d-72d7-b48a-5d6364e57637",
+    "clip_spell": "01a14f41-ee07-7760-a400-eb4ac53bdafe"
   },
   "credits": {
-    "concept": 6
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_idle3": 3,
+    "clip_spell": 3
+  },
+  "clips": {
+    "idle3": 243,
+    "spell": 125
   }
 }

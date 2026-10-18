@@ -190,6 +190,28 @@ local BUILD: { [string]: Builder } = {
 		light.Shadows = false
 		light.Parent = flame
 	end,
+	ladle = function(m, H)
+		-- A long brass ladle (fist mount): handle forward, the bowl at its end.
+		local L = H * 0.32
+		piece(m, CYL, Vector3.new(L, H * 0.02, H * 0.02), CFrame.new(0, 0, -L * 0.35) * ALONG, "#C9A13B", M.Metal)
+		piece(m, BALL, Vector3.new(H * 0.08, H * 0.05, H * 0.08), CFrame.new(0, -H * 0.02, -L * 0.85), "#B8913A", M.Metal)
+	end,
+	club = function(m, H)
+		-- Fakhr's spiked club (fist mount): a thick wooden head studded with iron.
+		local L = H * 0.4
+		piece(m, CYL, Vector3.new(L * 0.5, H * 0.035, H * 0.035), CFrame.new(0, 0, -L * 0.15) * ALONG, "#5A3A22", M.Wood)
+		local head = piece(m, CYL, Vector3.new(L * 0.5, H * 0.08, H * 0.08), CFrame.new(0, 0, -L * 0.6) * ALONG, "#4A2F1C", M.Wood)
+		for k = 0, 5 do
+			local a = k / 6 * math.pi * 2
+			piece(m, BLOCK, Vector3.new(H * 0.025, H * 0.025, H * 0.025), head.CFrame * CFrame.new(math.cos(a) * H * 0.045, math.sin(a) * H * 0.045, (k % 2 - 0.5) * L * 0.3), "#3A3A3C", M.Metal)
+		end
+	end,
+	bottle = function(m, H)
+		-- A broken green bottle held by the neck (hang mount: the jagged body below the fist).
+		local s = H * 0.06
+		piece(m, CYL, Vector3.new(s * 0.9, s * 0.4, s * 0.4), CFrame.new(0, s * 0.1, 0) * UP, "#2F6B3A", M.Glass, 0.25)
+		piece(m, CYL, Vector3.new(s * 1.4, s * 0.9, s * 0.9), CFrame.new(0, -s * 1.0, 0) * UP, "#3E8A4C", M.Glass, 0.3)
+	end,
 	dagger = function(m, H)
 		local L = H * 0.24
 		piece(m, BLOCK, Vector3.new(L * 0.1, L * 0.1, L * 0.3), CFrame.new(0, 0, L * 0.02), "#2B1D14", M.Wood)
@@ -215,6 +237,9 @@ local BOOST: { [string]: number } = {
 	cleaver = 1.3,
 	dagger = 1.3,
 	oillamp = 1.4,
+	ladle = 1.3,
+	club = 1.2,
+	bottle = 1.4,
 }
 
 -- What each character holds. `throws` = hidden for a moment after it leaves the hand (ThrowFx).
@@ -250,6 +275,16 @@ HandProps.HELD = {
 		{ kind = "torch", hand = "LeftHand", mount = "hang" },
 	},
 	lateef = { { kind = "dagger", hand = "RightHand", mount = "fist", tilt = 20 } },
+	-- Batch 2 (S1-A04) and the new defenders (S1-A05, S1-A07).
+	fakhr = { { kind = "club", hand = "RightHand", mount = "fist", tilt = 35 } },
+	abu_zira = {
+		{ kind = "bottle", hand = "LeftHand", mount = "hang" },
+		{ kind = "dagger", hand = "RightHand", mount = "fist", tilt = 20 },
+	},
+	adashari = { { kind = "lantern", hand = "RightHand", mount = "hang" } }, -- one arm: lantern in the right
+	hammam = { { kind = "bowl", hand = "RightHand", mount = "hang" } },
+	hummus = { { kind = "ladle", hand = "RightHand", mount = "fist", tilt = 30 } },
+	iskafi = { { kind = "hammer", hand = "RightHand", mount = "fist", tilt = 45 } },
 } :: { [string]: { { kind: string, hand: string, mount: string, throws: string?, tilt: number? } } }
 
 -- Builds and binds the props for `id` on `model`. Must run while the bones are at rest (no

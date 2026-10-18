@@ -19,6 +19,7 @@ export type Stats = {
 	stun: number?,
 	buff: number?,
 	income: number?,
+	bounty: number?, -- cash to the owner for every enemy that dies inside its range (farm, S1-A07)
 	heal: number?,
 	cash: number, -- kill reward multiplier
 	hitsStealth: boolean,
@@ -204,6 +205,7 @@ function UnitLogic.stats(def: any, level: number, stars: number, trait: any?, st
 		stun = lv.stun,
 		buff = if lv.buff then lv.buff + beadBuff else nil,
 		income = lv.income,
+		bounty = lv.bounty,
 		heal = if lv.heal then lv.heal + beadHeal else nil,
 		cash = (if trait and trait.cash then trait.cash else 1) * (1 + (if bead then math.min(beadCash, bead.cap) else 0)),
 		hitsStealth = def.hitsStealth == true or (trait ~= nil and trait.hitsStealth == true),

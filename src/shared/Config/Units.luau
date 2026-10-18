@@ -32,6 +32,7 @@ export type Level = {
 	stun: number?,
 	buff: number?,
 	income: number?,
+	bounty: number?, -- farm: cash for every enemy that dies inside its range, whoever lands the blow
 	heal: number?,
 }
 
@@ -153,6 +154,85 @@ local Units: { [string]: UnitDef } = {
 			L(460, 15, 15, 1.0),
 		},
 		visual = { robe = "#2B3550", accent = "#B5532C", skin = "#C68E64", hat = "scarf", hatColor = "#F4F1EA", weapon = "lantern" },
+	},
+	-- Season Story 1 defenders (STORY_PLAN §7.5, S1-A07).
+	-- Abu Samih the hummus seller: a farm that pays for every attacker that falls in his range.
+	hummus = {
+		nameKey = "unit.hummus.name",
+		descKey = "unit.hummus.desc",
+		rarity = "rare",
+		role = "farm",
+		maxPlaced = 3,
+		levels = {
+			L(320, 4, 9, 1.2, { bounty = 6 }),
+			L(220, 6, 9.5, 1.15, { bounty = 9 }),
+			L(360, 8, 10, 1.1, { bounty = 13 }),
+			L(560, 11, 10.5, 1.05, { bounty = 18 }),
+			L(800, 14, 11, 1.0, { bounty = 24 }),
+		},
+		visual = { robe = "#8A8A84", accent = "#D9C9A8", skin = "#C68E64", hat = "cap", hatColor = "#F4F1EA", weapon = "tray" },
+	},
+	-- Abu Hamoud the cobbler: nails on the road; whoever steps in them slows.
+	iskafi = {
+		nameKey = "unit.iskafi.name",
+		descKey = "unit.iskafi.desc",
+		rarity = "rare",
+		role = "splash",
+		maxPlaced = 5,
+		levels = {
+			L(240, 4, 10, 1.6, { splash = 3, slow = 0.6, slowFor = 2 }),
+			L(160, 7, 10.5, 1.55, { splash = 3.3, slow = 0.6, slowFor = 2 }),
+			L(280, 10, 11, 1.5, { splash = 3.7, slow = 0.6, slowFor = 2 }),
+			L(440, 14, 11.5, 1.45, { splash = 4.1, slow = 0.6, slowFor = 2 }),
+			L(680, 20, 12, 1.4, { splash = 4.5, slow = 0.6, slowFor = 2 }),
+		},
+		visual = { robe = "#5A4632", accent = "#3B2A20", skin = "#C68E64", hat = "cap", hatColor = "#1F1B18", weapon = "hammer" },
+	},
+	-- Abu Basim of the hammam: a cloud of steam every 3 s over his whole range that slows the crowd
+	-- and takes a burn stack off the gate (the plan's "aura", built from splash + slow + douse).
+	hammam = {
+		nameKey = "unit.hammam.name",
+		descKey = "unit.hammam.desc",
+		rarity = "epic",
+		role = "splash",
+		maxPlaced = 2,
+		douse = 1,
+		levels = {
+			L(480, 2, 11, 3.0, { splash = 11, slow = 0.8, slowFor = 3 }),
+			L(320, 3, 12, 3.0, { splash = 12, slow = 0.77, slowFor = 3 }),
+			L(480, 4, 13, 3.0, { splash = 13, slow = 0.74, slowFor = 3 }),
+			L(720, 6, 14, 3.0, { splash = 14, slow = 0.71, slowFor = 3 }),
+			L(1000, 8, 15, 3.0, { splash = 15, slow = 0.68, slowFor = 3 }),
+			L(1400, 10, 16, 3.0, { splash = 16, slow = 0.65, slowFor = 3 }),
+		},
+		signature = {
+			a = { key = "scald", cost = 2100, set = { douse = 2 } },
+			b = { key = "fog", cost = 2100, set = { slow = 0.55 } },
+		},
+		visual = { robe = "#F4F1EA", accent = "#A4302A", skin = "#C68E64", hat = "none", hatColor = "#F4F1EA", weapon = "jug" },
+	},
+	-- Su'da Khanum: The Cry silences the road around her (ability sweep with a stun).
+	matriarch = {
+		nameKey = "unit.matriarch.name",
+		descKey = "unit.matriarch.desc",
+		rarity = "mythic",
+		role = "splash",
+		maxPlaced = 1,
+		hitsStealth = true,
+		levels = {
+			L(1300, 60, 11, 1.1, { splash = 6 }),
+			L(850, 90, 11.5, 1.05, { splash = 6.5 }),
+			L(1300, 135, 12, 1.0, { splash = 7 }),
+			L(1950, 200, 12.5, 0.95, { splash = 7.5 }),
+			L(2900, 310, 13, 0.88, { splash = 8.2 }),
+			L(4300, 480, 13.5, 0.8, { splash = 9 }),
+		},
+		ability = { kind = "sweep", cooldown = 11, multiplier = 4, radius = 11, stun = 1.2 },
+		signature = {
+			a = { key = "wail", cost = 6450, ability = { radius = 13 } },
+			b = { key = "silence", cost = 6450, ability = { stun = 1.8 } },
+		},
+		visual = { robe = "#5A2340", accent = "#C9A13B", skin = "#C68E64", hat = "scarf", hatColor = "#1F1B18", weapon = "none" },
 	},
 	farran = {
 		nameKey = "unit.farran.name",

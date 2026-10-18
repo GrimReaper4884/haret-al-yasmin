@@ -191,6 +191,43 @@ return function(t)
 			t.eq(s.players.p1.cash, 100000 + TD.WAVE_BONUS_BASE + TD.WAVE_BONUS_PER_WAVE)
 		end)
 
+		t.it("Abu Samih's bounty pays for every death in his range, whoever lands the blow (S1-A07)", function()
+			local function cashAfterKill(hx, hz)
+				local s = sim(straight, function()
+					return { spawns = { { at = 0, enemy = "gendarme", hpMul = 1, speedMul = 1 } }, count = 1 }
+				end, 1)
+				TdTowers.place(s, "p1", "qabaday", Units.qabaday, 20, 4, 0, nil, rules())
+				if hx then
+					t.truthy(TdTowers.place(s, "p1", "hummus", Units.hummus, hx, hz, 0, nil, rules()))
+				end
+				local before = s.players.p1.cash
+				local ev = run(s, 20)
+				local reward = 0
+				for _, e in ev do
+					if e.type == "death" then
+						reward += e.cash
+					end
+				end
+				return s.players.p1.cash - before - reward
+			end
+			local bounty = Units.hummus.levels[1].bounty
+			local near = cashAfterKill(16, -5) -- the gendarme falls at about x = 15, inside his range
+			local without = cashAfterKill(nil, nil)
+			t.eq(near - without, bounty, "the bounty is the only difference (wave bonuses cancel out)")
+		end)
+		t.it("the new defenders' effects (S1-A07): nails slow, steam slows and douses, The Cry stuns", function()
+			local isk = UnitLogic.stats(Units.iskafi, 1, 0, nil, 0)
+			t.eq(isk.slow, 0.6)
+			t.truthy(isk.splash and isk.splash >= 3)
+			local steam = UnitLogic.stats(Units.hammam, 1, 0, nil, 0)
+			t.eq(steam.douse, 1)
+			t.eq(steam.slow, 0.8)
+			t.eq(steam.cooldown, 3)
+			local cry = UnitLogic.stats(Units.matriarch, 1, 0, nil, 0)
+			t.eq(cry.ability.kind, "sweep")
+			t.eq(cry.ability.stun, 1.2)
+			t.eq(Units.matriarch.hitsStealth, true)
+		end)
 		t.it("a tower kills the enemy, earns cash and the match is won after the last wave", function()
 			local s = sim(straight, oneThief, 2)
 			local ok, err, tower = TdTowers.place(s, "p1", "qabaday", Units.qabaday, 50, 4, 0, nil, rules())
@@ -899,7 +936,7 @@ return function(t)
 					t.truthy(u.signature.a.key ~= u.signature.b.key, id .. " two different paths")
 				end
 			end
-			t.eq(n, 9, "the eight Epic+ banner units and Al-Adashari")
+			t.eq(n, 11, "the ten Epic+ banner units (with Abu Basim and Su'da Khanum, S1-A07) and Al-Adashari")
 		end)
 
 		t.it("cap (D-047): a path adds ≤ +35 % damage per second or exactly one effect, never both", function()

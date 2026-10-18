@@ -1,9 +1,24 @@
 {
   "id": "hakim_rival",
   "tasks": {
-    "concept": "01a14ef1-e0c8-7492-8245-d280b8222826"
+    "concept": "01a14ef1-e0c8-7492-8245-d280b8222826",
+    "mesh": "01a14f36-8aa2-70ed-ba1a-a93e07891f02",
+    "rig": "01a14f37-d289-7605-82a2-164430adcfcb",
+    "clip_cautious": "01a14f41-b33e-704a-af27-a0db4b38acc8",
+    "clip_dyingback": "01a14f41-d477-70dd-bebb-c5771130c017",
+    "clip_hitreact": "01a14f41-f6eb-7129-9e0a-f6aa521fec4f"
   },
   "credits": {
-    "concept": 6
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_cautious": 3,
+    "clip_dyingback": 3,
+    "clip_hitreact": 3
+  },
+  "clips": {
+    "cautious": 524,
+    "dyingback": 189,
+    "hitreact": 178
   }
 }

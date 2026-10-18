@@ -6,17 +6,11 @@
 
 local fs = require("@lune/fs")
 
--- Attackers still waiting for their Meshy model: the Season Story 1 attackers of S1-S08, until
--- S1-A04 imports and bakes them (batch 1 landed with S1-A02).
-local AWAITING_MODEL: { [string]: boolean } = {
-	rifleman = true,
-	cart = true,
-	hakim_rival = true,
-	snake = true,
-	brute = true,
-	fakhr = true,
-	abu_zira = true,
-}
+-- Attackers still waiting for their Meshy model (none since S1-A04).
+local AWAITING_MODEL: { [string]: boolean } = {}
+-- Static meshes with no rig (Meshy's auto-rigger is biped-only): they slide along the road unanimated,
+-- like the cat among the defenders (S1-A04).
+local STATIC_MODEL: { [string]: boolean } = { cart = true, snake = true }
 
 local B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
@@ -45,8 +39,8 @@ return function(t)
 			local checked = 0
 			for id, def in Enemies do
 				local clips = clipsOf(id)
-				if AWAITING_MODEL[id] then
-					t.eq(clips, nil, id .. " is listed as awaiting its model but has clips: update AWAITING_MODEL")
+				if AWAITING_MODEL[id] or STATIC_MODEL[id] then
+					t.eq(clips, nil, id .. " is listed as awaiting its model (or static) but has clips: update the lists")
 				else
 					t.truthy(clips, id .. " has no baked clips")
 					for _, slot in { "walk", "hit", "death" } do
@@ -59,7 +53,7 @@ return function(t)
 					checked += 1
 				end
 			end
-			t.truthy(checked >= 21, "all twenty-one imported attackers are covered")
+			t.truthy(checked >= 26, "all twenty-six rigged attackers are covered")
 		end)
 
 		t.it("each slot is well-formed: frames, fps, rotations for every bone, hips per frame", function()

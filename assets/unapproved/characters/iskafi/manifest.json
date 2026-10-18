@@ -1,9 +1,21 @@
 {
   "id": "iskafi",
   "tasks": {
-    "concept": "01a14f25-9248-710c-bd80-a5b3e46f78d4"
+    "concept": "01a14f25-9248-710c-bd80-a5b3e46f78d4",
+    "mesh": "01a14f39-c5d5-7773-b67c-89deb32ad0a8",
+    "rig": "01a14f3b-2252-75ba-9577-1e45160a3b45",
+    "clip_hammer": "01a14f41-b33a-7655-bb46-a2cd9cd78eb9",
+    "clip_idle11": "01a14f41-d518-7360-931f-7e08b0f25c78"
   },
   "credits": {
-    "concept": 6
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_hammer": 3,
+    "clip_idle11": 3
+  },
+  "clips": {
+    "hammer": 128,
+    "idle11": 251
   }
 }

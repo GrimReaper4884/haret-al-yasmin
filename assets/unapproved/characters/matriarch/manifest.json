@@ -1,9 +1,24 @@
 {
   "id": "matriarch",
   "tasks": {
-    "concept": "01a14f26-5345-74e6-ab04-a5c654714181"
+    "concept": "01a14f26-5345-74e6-ab04-a5c654714181",
+    "mesh": "01a14f3b-7000-7157-8e97-bf167ce086d7",
+    "rig": "01a14f3d-0272-7438-85a2-7eebb8605627",
+    "clip_idle1": "01a14f41-f53e-71ca-ac8b-4abcffc55e3e",
+    "clip_judgment": "01a14f42-16c1-75ee-b383-1e41998cba8d",
+    "clip_swordshout": "01a14f42-39f2-729e-aace-b559e78acfc0"
   },
   "credits": {
-    "concept": 6
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_idle1": 3,
+    "clip_judgment": 3,
+    "clip_swordshout": 3
+  },
+  "clips": {
+    "idle1": 11,
+    "judgment": 102,
+    "swordshout": 101
   }
 }
