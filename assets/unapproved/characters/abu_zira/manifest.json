@@ -1,9 +1,30 @@
 {
   "id": "abu_zira",
   "tasks": {
-    "concept": "01a14ef3-5af9-77b5-94be-f08b9a27cbfe"
+    "concept": "01a14ef3-5af9-77b5-94be-f08b9a27cbfe",
+    "mesh": "01a14f3b-99f7-7695-b647-f1bd70ef47b0",
+    "rig": "01a14f3c-c32a-757a-934c-3d522a580879",
+    "clip_battlepose": "01a14f41-b33b-7546-8783-7dd5dc6ccec3",
+    "clip_flyup": "01a14f41-d4e7-7535-bb9b-f5b71568f2d4",
+    "clip_hitreact": "01a14f41-f5eb-71a5-bf9d-1a2c92c3ee41",
+    "clip_injuredwalk": "01a14f42-17a1-7398-b339-c2aeb686cd69",
+    "clip_waisthit": "01a14f42-3948-7076-962a-1da9aa787389"
   },
   "credits": {
-    "concept": 6
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_battlepose": 3,
+    "clip_flyup": 3,
+    "clip_hitreact": 3,
+    "clip_injuredwalk": 3,
+    "clip_waisthit": 3
+  },
+  "clips": {
+    "battlepose": 377,
+    "flyup": 7,
+    "hitreact": 178,
+    "injuredwalk": 111,
+    "waisthit": 171
   }
 }

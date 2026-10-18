@@ -274,6 +274,13 @@ def bake_clip(path: Path, slot: str, opts: dict):
             if b == "Hips":
                 q = qmul(turn, q)  # the Hips' parent is the Armature: turning it turns the figure
             d = qnorm(qmul(qinv(rq), q))
+            pin = opts.get("_pin", {}).get(b)
+            if pin is not None:
+                # A bone held still in every frame (Al-Adashari's empty left sleeve, S1-A05):
+                # [x, y, z, degrees] about an axis in the bone's rest frame.
+                ax = math.sqrt(pin[0] ** 2 + pin[1] ** 2 + pin[2] ** 2)
+                h = math.radians(pin[3]) / 2
+                d = (pin[0] / ax * math.sin(h), pin[1] / ax * math.sin(h), pin[2] / ax * math.sin(h), math.cos(h))
             if d[3] < 0:
                 d = tuple(-c for c in d)
             rot_bytes += struct.pack("<hhh", *(max(-32767, min(32767, round(c * 32767))) for c in d[:3]))
@@ -317,7 +324,11 @@ def bake(cid: str):
     slots = CFG["characters"][cid]
     out = {}
     for slot, spec in slots.items():
-        opts = spec if isinstance(spec, dict) else {"clip": spec}
+        if slot.startswith("_"):
+            continue  # character-level options ("_pin")
+        opts = dict(spec) if isinstance(spec, dict) else {"clip": spec}
+        if "_pin" in slots:
+            opts["_pin"] = slots["_pin"]
         path = SRC / cid / "clips" / f"{opts['clip']}.glb"
         if not path.exists():
             print(f"  {cid}.{slot}: missing {path.relative_to(ROOT)} (run tools/anim/fetch.py)")

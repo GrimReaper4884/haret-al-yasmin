@@ -355,6 +355,104 @@
     "qabilah": {
       "idle": "idle2",
       "attack": "mage"
+    },
+    "rifleman": {
+      "walk": "quickwalk",
+      "hit": "hitreact",
+      "death": {
+        "clip": "knockdown",
+        "yaw": 0
+      }
+    },
+    "hakim_rival": {
+      "walk": "cautious",
+      "hit": "hitreact",
+      "death": {
+        "clip": "dyingback",
+        "yaw": 0
+      }
+    },
+    "brute": {
+      "walk": "orc",
+      "hit": "hitreact",
+      "death": {
+        "clip": "knockdown1",
+        "yaw": 0
+      }
+    },
+    "fakhr": {
+      "walk": "walkfight",
+      "hit": "hitreact",
+      "death": {
+        "clip": "knockdown1",
+        "yaw": 0
+      },
+      "intro": {
+        "clip": "chestpound",
+        "yaw": 0
+      },
+      "stagger": {
+        "clip": "waisthit",
+        "to": 24
+      }
+    },
+    "abu_zira": {
+      "walk": "injuredwalk",
+      "hit": "hitreact",
+      "death": {
+        "clip": "flyup",
+        "yaw": 0
+      },
+      "intro": {
+        "clip": "battlepose",
+        "yaw": 0
+      },
+      "stagger": {
+        "clip": "waisthit",
+        "to": 24
+      }
+    },
+    "hammam": {
+      "idle": "idle3",
+      "attack": "spell"
+    },
+    "hummus": {
+      "idle": "idle5",
+      "attack": "pitch"
+    },
+    "iskafi": {
+      "idle": "idle11",
+      "attack": "hammer"
+    },
+    "matriarch": {
+      "idle": "idle1",
+      "attack": "judgment",
+      "ability": "swordshout"
+    },
+    "adashari": {
+      "idle": "torch",
+      "attack": "thrust",
+      "ability": "chestpound",
+      "_pin": {
+        "LeftArm": [
+          1.0,
+          0.0,
+          0.0,
+          80.0
+        ],
+        "LeftForeArm": [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        "LeftHand": [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ]
+      }
     }
   }
 }

@@ -147,7 +147,12 @@ function BoneAnim.new(model: Model, id: string): Player?
 	for i, n in names do
 		local b = byName[n]
 		if not b then
-			return nil
+			if i == 1 then
+				return nil -- no Hips, no figure to move
+			end
+			-- A bone the importer left out (it carried no skin weight: Al-Adashari's cut-off left hand,
+			-- S1-A05): an unparented stand-in takes its writes.
+			b = Instance.new("Bone")
 		end
 		bones[i] = b
 	end

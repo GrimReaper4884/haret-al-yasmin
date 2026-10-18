@@ -192,8 +192,14 @@ local Looks: { [string]: Look } = {
 		anims = { idle = 106622979715660, attack = 134238214440993 },
 	}, -- Al-'Akeed Abu Shehan
 	qitt = { model = "Cat" },
-	-- Al-Adashari, the night guard (S1-S12): primitive until his Meshy model (S1-A05).
-	adashari = { build = "slim", outfit = "qumbaz", beard = "stubble", moustache = "thin", hair = DARK, apron = "#1F1B18" },
+	-- Al-Adashari, the night guard (S1-S12, model S1-A05): one-armed; the left forearm is cut from the mesh
+	-- (tools/anim/dropbones.py) and the bake pins the empty sleeve to his side.
+	adashari = { build = "slim", outfit = "qumbaz", beard = "stubble", moustache = "thin", hair = DARK, apron = "#1F1B18", model = "Adashari" },
+	-- Season Story 1 defenders (S1-A07).
+	hummus = { build = "slim", outfit = "apron", beard = "none", moustache = "thin", hair = DARK, apron = "#D9C9A8", model = "AbuSamih" },
+	iskafi = { build = "kid", outfit = "apron", beard = "full", moustache = "thick", hair = GREY, apron = "#5A3A22", model = "AbuHamoud" },
+	hammam = { build = "stout", outfit = "vest", beard = "short", moustache = "thick", hair = DARK, model = "AbuBasim" },
+	matriarch = { build = "normal", outfit = "abaya", beard = "none", moustache = "none", cloak = "#5A2340", model = "SudaKhanum" },
 
 	------------------------------------------------------------------ attackers
 	gendarme = {
@@ -270,14 +276,14 @@ local Looks: { [string]: Look } = {
 	abu_jawdan = { build = "stout", outfit = "uniform", beard = "none", moustache = "handlebar", hair = DARK, model = "AbuJawdan" },
 	abu_shatour = { build = "broad", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK, model = "AbuShatour" },
 	lateef = { build = "slim", outfit = "abaya", beard = "stubble", moustache = "thin", hair = DARK, cloak = "#6E6A64", model = "Lateef" },
-	-- Season Story 1, batch 2 (S1-S08): primitive figures until S1-A04.
-	rifleman = { build = "slim", outfit = "uniform", beard = "none", moustache = "thin", hair = DARK },
-	cart = { build = "giant", outfit = "vest", beard = "none", moustache = "none", hair = GREY },
-	hakim_rival = { build = "slim", outfit = "abaya", beard = "short", moustache = "thin", hair = GREY, cloak = "#2A211B" },
-	snake = { build = "kid", outfit = "vest", beard = "none", moustache = "none", hair = DARK },
-	brute = { build = "giant", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK },
-	fakhr = { build = "giant", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK },
-	abu_zira = { build = "slim", outfit = "sherwal", beard = "none", moustache = "handlebar", hair = DARK },
+	-- Season Story 1, batch 2 (S1-S08 config, S1-A04 Meshy models; the cart and the snake are static meshes).
+	rifleman = { build = "slim", outfit = "uniform", beard = "none", moustache = "thin", hair = DARK, model = "Rifleman" },
+	cart = { build = "giant", outfit = "vest", beard = "none", moustache = "none", hair = GREY, model = "DonkeyCart" },
+	hakim_rival = { build = "slim", outfit = "abaya", beard = "short", moustache = "thin", hair = GREY, cloak = "#2A211B", model = "HakimRival" },
+	snake = { build = "kid", outfit = "vest", beard = "none", moustache = "none", hair = DARK, model = "GraveSnake" },
+	brute = { build = "giant", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK, model = "Brute" },
+	fakhr = { build = "giant", outfit = "vest", beard = "stubble", moustache = "thick", hair = DARK, model = "Fakhr" },
+	abu_zira = { build = "slim", outfit = "sherwal", beard = "none", moustache = "handlebar", hair = DARK, model = "AbuZira" },
 	-- The enraged 'akeed re-uses Abu al-Nahr's mesh and clips (no new mesh, STORY_PLAN §6.2); the red
 	-- tint is client work (S1-C03).
 	rival_zaim_enraged = {

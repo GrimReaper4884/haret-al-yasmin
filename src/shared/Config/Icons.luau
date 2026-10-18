@@ -161,6 +161,12 @@ Icons.portraits = {
 	arada = { id = 112960454245872, model = "Arada" },
 	zaim_akbar = { id = 139294337065178, model = "AbuShehab" },
 	qitt = { id = 110431322219183, model = "Cat" },
+	-- Season Story 1 (S1-A05, S1-A07)
+	adashari = { id = 129480120172448, model = "Adashari" },
+	hammam = { id = 94554642685040, model = "AbuBasim" },
+	hummus = { id = 134954871256848, model = "AbuSamih" },
+	iskafi = { id = 108276284703172, model = "AbuHamoud" },
+	matriarch = { id = 136188622806631, model = "SudaKhanum" },
 	-- Attackers
 	gendarme = { id = 115451910060448, model = "Gendarme" },
 	corporal_minion = { id = 115451910060448, model = "Gendarme" }, -- same mesh as the gendarme (S1-S05)
@@ -186,6 +192,14 @@ Icons.portraits = {
 	abu_jawdan = { id = 99981072657403, model = "AbuJawdan" },
 	abu_shatour = { id = 104141919130883, model = "AbuShatour" },
 	lateef = { id = 100259993440842, model = "Lateef" },
+	-- Season Story 1, batch 2 (S1-A04)
+	rifleman = { id = 82824029232245, model = "Rifleman" },
+	cart = { id = 115383986277883, model = "DonkeyCart" },
+	hakim_rival = { id = 99400540596434, model = "HakimRival" },
+	snake = { id = 95632074308862, model = "GraveSnake" },
+	brute = { id = 92274296106421, model = "Brute" },
+	fakhr = { id = 124184204799611, model = "Fakhr" },
+	abu_zira = { id = 93274551501564, model = "AbuZira" },
 } :: { [string]: Portrait }
 
 -- Reward table key (SeasonPass, Daily, Events, Codes rewards) → icon name. `item` uses the item's

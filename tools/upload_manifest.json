@@ -624,6 +624,78 @@
       "type": "Image",
       "id": 134168283413116,
       "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Rifleman.png": {
+      "name": "Haret portrait Rifleman",
+      "type": "Image",
+      "id": 82824029232245,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/DonkeyCart.png": {
+      "name": "Haret portrait DonkeyCart",
+      "type": "Image",
+      "id": 115383986277883,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/HakimRival.png": {
+      "name": "Haret portrait HakimRival",
+      "type": "Image",
+      "id": 99400540596434,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/GraveSnake.png": {
+      "name": "Haret portrait GraveSnake",
+      "type": "Image",
+      "id": 95632074308862,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Brute.png": {
+      "name": "Haret portrait Brute",
+      "type": "Image",
+      "id": 92274296106421,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Fakhr.png": {
+      "name": "Haret portrait Fakhr",
+      "type": "Image",
+      "id": 124184204799611,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuZira.png": {
+      "name": "Haret portrait AbuZira",
+      "type": "Image",
+      "id": 93274551501564,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/Adashari.png": {
+      "name": "Haret portrait Adashari",
+      "type": "Image",
+      "id": 129480120172448,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuBasim.png": {
+      "name": "Haret portrait AbuBasim",
+      "type": "Image",
+      "id": 94554642685040,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuSamih.png": {
+      "name": "Haret portrait AbuSamih",
+      "type": "Image",
+      "id": 134954871256848,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/AbuHamoud.png": {
+      "name": "Haret portrait AbuHamoud",
+      "type": "Image",
+      "id": 108276284703172,
+      "uploaded": "2026-10-18"
+    },
+    "assets/marketing/portraits/SudaKhanum.png": {
+      "name": "Haret portrait SudaKhanum",
+      "type": "Image",
+      "id": 136188622806631,
+      "uploaded": "2026-10-18"
     }
   }
 }

@@ -1,7 +1,7 @@
 """Writes a GLB that plays a *baked* slot (src/shared/Anim/Clips/<id>.luau) on the character's rig,
 so the in-game result can be checked in Blender (tools/anim/preview.py) without Studio.
 
-    python tools/anim/baked_glb.py <id> <slot> <out.glb>
+    python tools/anim/baked_glb.py <id> <slot> <out.glb> [<mesh.glb>]
 
 Rebuilds each bone's local transform as rest · delta (the inverse of tools/anim/bake.py), with the
 root pinned in place exactly as the client plays it.
@@ -28,7 +28,7 @@ fps = int(re.search(r"fps = (\d+)", blk).group(1))
 rot = base64.b64decode(re.search(r'rot = "([^"]+)"', blk).group(1))
 hips = [tuple(float(c) for c in m) for m in re.findall(r"\{([-\d.e]+), ([-\d.e]+), ([-\d.e]+)\}", re.search(r"hips = \{(.*?)\},\n", blk).group(1))]
 
-rig = ROOT / "assets" / "unapproved" / "characters" / cid / f"{cid}_rigged.glb"
+rig = Path(sys.argv[4]) if len(sys.argv) > 4 else ROOT / "assets" / "unapproved" / "characters" / cid / f"{cid}_rigged.glb"  # optional mesh (e.g. a one-armed cut)
 f = rig.read_bytes()
 jl = struct.unpack("<I", f[12:16])[0]
 j = json.loads(f[20 : 20 + jl])
