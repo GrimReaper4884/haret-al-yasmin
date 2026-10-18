@@ -722,3 +722,17 @@ Verdict: external (Studio or a plugin), ignored (D-020).
 | Captures (Effects off = before, full = after, same cameras) | square `[16,11,19]→[0,5,0]` (`pve02_square_*`), fountain `[6,8,7]→[0,6,0]` (`pve02_fountain_*`, ripples + spray), lane `[3,7,44]→[0,11,80]` (`pve02_lane_*`, vines); also `pve02_bakery_cat`, `pve02_samovar_steam`, `pve02_birds`, `pve02_laundry` |
 | Console | no errors from our code; the shard/steam textures logged "Asset content representation is being generated" once (Roblox processing on first use) |
 | Restore | Effects back to full, language en, loadout unchanged, no lira spent |
+
+### PV-E03 arena dressing and the Rival Lane (2026-10-18, D-033)
+
+| Check | Result |
+|---|---|
+| `tools/check.ps1` | 266 specs (new `arenadressing.spec`: every arena has a complete theme; Episode 2 = `rival_lane` on the orchard's exact road/bounds/spawn; kerb props off the road, off the spawn, inside the field, 8–40 per arena, deterministic; wire lanterns hang over the road with posts clear of it; house fronts outside the field, clear of both gates, facing in) |
+| `tests/balance` | identical to the D-031 run, row for row (the dressing touches nothing the sim reads) |
+| Parts per arena (cap 1,200) | orchard 393 (kerb props 72, wire lanterns 12, haze 7, gate wall with jasmine 106); Rival Lane 382 (houses 81, kerb props 72, wire lanterns 18); lights 4 / 10 (≤ 40) |
+| Haze | Effects full 7/7 emitters on, reduced 0/7, full again 7/7 |
+| FPS (Studio, Episode 1 match) | 60.0 at full, 60.0 at reduced |
+| Captures | overhead `[3000,75,50]→[3000,20,-12]`: before `pve01_arena_night_after_2026-10-18.jpg`, after `pve03_orchard_overhead_after_2026-10-18.jpg` (jasmine on the home wall, lantern pools on the road) and `pve03_rival_lane_overhead_2026-10-18.jpg` (cool paving, dark road, houses all round); close-ups `pve03_orchard_kerb_wire_*` (crate and copper jug on the kerb, hanging lantern), `pve03_orchard_haze_jasmine_*` (haze wisps over the road), `pve03_rival_lane_street_*` (rival gate at the start, wire lantern, house fronts) |
+| Tuning during the run | Rival Lane road #8E8D86 → #625D55 (it barely read against the paving); haze transparency 0.86 → 0.76, size 7 → 8, rate 0.12 → 0.16 per stud (invisible at first) |
+| Console | no errors from our code |
+| Restore | Effects full, language en, loadout unchanged, no lira spent |

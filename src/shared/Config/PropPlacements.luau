@@ -42,6 +42,16 @@ local Placements: { lobby: { Placement }, arenas: { [string]: { Placement } } } 
 			{ prop = "bread_oven", at = { 66, 4 }, height = 7, yaw = 90, solid = true },
 			{ prop = "fountain", at = { 18, -36 }, height = 4, solid = true },
 		},
+		-- The Rival Lane: their gate at the road's start (ours, the primitive one, stands at the end:
+		-- it is what the attackers hit), lantern posts at the corners, the rival quarter's fountain.
+		rival_lane = {
+			{ prop = "gate", anchor = "start", at = { 0, 4 }, height = 20, solid = true },
+			{ prop = "lantern_post", at = { -58, 18 }, height = 9 },
+			{ prop = "lantern_post", at = { -22, 6 }, height = 9 },
+			{ prop = "lantern_post", at = { 6, -24 }, height = 9 },
+			{ prop = "lantern_post", at = { 44, 26 }, height = 9 },
+			{ prop = "fountain", at = { -44, -36 }, height = 4, solid = true }, -- the south-west corner, off the best tower ground
+		},
 		siege = {
 			{ prop = "gate", anchor = "start", at = { 0, 4 }, height = 20, solid = true },
 			{ prop = "lantern_post", at = { -46, 30 }, height = 9 },
