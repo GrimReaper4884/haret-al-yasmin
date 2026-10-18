@@ -696,6 +696,12 @@
       "type": "Image",
       "id": 136188622806631,
       "uploaded": "2026-10-18"
+    },
+    "assets/marketing/icon/icon_512.png": {
+      "name": "Haret experience icon 512",
+      "type": "Image",
+      "id": 92990313945055,
+      "uploaded": "2026-10-18"
     }
   }
 }
