@@ -20,9 +20,20 @@ export type Spot = { x: number, z: number, yaw: number, side: number }
 
 -- Spots beside the road: walking each segment from `margin` to `length - margin` every `every`
 -- studs, alternating sides at `inset` from the centreline. A spot that would sit on another stretch
--- of road (closer than `inset` to any part of the path) or within `spawnClear` of `spawn` is skipped.
-function ArenaDressing.kerbSpots(pts: { { number } }, cfg: any, spawn: { number }?): { Spot }
-	local path = Path.build(pts)
+-- of road (closer than `inset` to any part of the path, or of any road in `others`, the other roads of
+-- a twin-gate arena) or within `spawnClear` of `spawn` is skipped.
+function ArenaDressing.kerbSpots(
+	pts: { { number } },
+	cfg: any,
+	spawn: { number }?,
+	others: { { { number } } }?
+): { Spot }
+	local roads = { Path.build(pts) }
+	if others then
+		for _, o in others do
+			table.insert(roads, Path.build(o))
+		end
+	end
 	local out: { Spot } = {}
 	local side = 1
 	for i = 1, #pts - 1 do
@@ -37,7 +48,7 @@ function ArenaDressing.kerbSpots(pts: { { number } }, cfg: any, spawn: { number 
 			while d <= len - cfg.margin + 1e-9 do
 				local x = ax + ux * d + nx * cfg.inset * side
 				local z = az + uz * d + nz * cfg.inset * side
-				local clearOfRoad = Path.distanceTo(path, x, z) >= cfg.inset - 1e-6
+				local clearOfRoad = Path.distanceToAll(roads, x, z) >= cfg.inset - 1e-6
 				local clearOfSpawn = spawn == nil
 					or (x - spawn[1]) ^ 2 + (z - spawn[2]) ^ 2 >= cfg.spawnClear * cfg.spawnClear
 				if clearOfRoad and clearOfSpawn then
@@ -68,14 +79,16 @@ end
 
 -- House-block spots along the outside of the bounds: every `every` studs on each edge, centred
 -- `out` studs beyond the edge, skipping any within `clearStart` of the road's first point or
--- `clearEnd` of its last. Returns x, z and the yaw that faces the field.
+-- `clearEnd` of its last, and `clearStart` of each `starts` point (the other roads' entrances in a
+-- twin-gate arena). Returns x, z and the yaw that faces the field.
 function ArenaDressing.houseSpots(
 	bounds: { number },
 	pts: { { number } },
 	every: number,
 	out: number,
 	clearStart: number,
-	clearEnd: number
+	clearEnd: number,
+	starts: { { number } }?
 ): { Spot }
 	local x0, z0, x1, z1 = bounds[1], bounds[2], bounds[3], bounds[4]
 	local first, last = pts[1], pts[#pts]
@@ -83,6 +96,13 @@ function ArenaDressing.houseSpots(
 	local function add(x: number, z: number, yaw: number)
 		if (x - first[1]) ^ 2 + (z - first[2]) ^ 2 < clearStart * clearStart then
 			return
+		end
+		if starts then
+			for _, s in starts do
+				if (x - s[1]) ^ 2 + (z - s[2]) ^ 2 < clearStart * clearStart then
+					return
+				end
+			end
 		end
 		if (x - last[1]) ^ 2 + (z - last[2]) ^ 2 < clearEnd * clearEnd then
 			return
