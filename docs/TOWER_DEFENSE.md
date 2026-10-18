@@ -48,6 +48,7 @@ clearing N on Normal; Hard after Normal, Nightmare after Hard, per episode.
 | Upgrades | 5 levels (Rare) / 6 (Epic+); sell refunds 60 % of everything spent |
 | Targeting | first / last / strongest / closest (per defender) |
 | Stealth | night thieves and spies are invisible to defenders without `hitsStealth` (watchman, barber, 'akeed, za'im, 'arada, cat), unless the defender stands inside a watchman's lantern (`revealsStealth`: any other defender within his range sees them too; D-031) |
+| Story mechanics (Season Story 1, D-040) | built in the sim, used from Episode 4 on: **swarm** (groups up to 60, half weight in the 90-per-wave cap), **speed aura** (others nearby walk up to ×aura, best one, never past ×1.6 of base), **shield** (enemies near the bearer, itself too, take less damage; not stacking), **burn** (stacks on the gate: 1 HP per stack every 2 s for 20 s, max 5, out at wave end; `douse` defenders such as Fawza take a stack off per attack), **disguised** (only a lantern bearer or a defender in a lantern's light can hit one; lanterns and those single hits reveal it; splash never) |
 | Armor | fraction of damage ignored (bandit 15 %, rider 20 %, sapper 35 %, bosses 20–40 %) |
 | Parties | up to 4; regular enemy HP ×1 / 1.65 / 2.3 / 3.0 and boss HP ×1 / 1.35 / 1.65 / 2.1 for 1–4 players (§5) |
 | Stuns | chain, but after 6 s of a chain an enemy ignores stuns for 3 s (it walks at least a third of the time) |
@@ -80,8 +81,10 @@ The simulation is pure (`TdSim.step(state, dt)` returns events) and covered by `
 | zaim_akbar | Al-'Akeed Abu Shehab | Mythic | melee | shabriyeh ×15; season-1 pass level 50 |
 | qitt | Cat of the Lane | Secret | melee | code `QITT`, never from a banner |
 
-Copies → stars (+5 % damage each; 1/2/4/7/11 extra copies). Each owned unit has one **trait**
-(`Config/Traits`: steady, swift, keen, sharp, golden, hawk, za'im's blood, legend), rerolled with trait stones.
+Copies → stars (+5 % damage each; 1/2/4/7/11 extra copies). Each owned unit has one **trait**, and a second
+slot from 3 stars (traits v2, D-041; `Config/Traits`: steady, swift, keen, sharp, golden, hawk, za'im's blood,
+legend, lantern, fireproof, miser, twins), each rerolled with a trait stone. Two traits never stack a stat (the
+better one wins) and traits are capped at damage ×1.5, range ×1.25, cooldown ×0.85.
 
 ## 5. Attackers and balance (`Config/Enemies`, `Config/Waves`, `Config/TD`)
 
