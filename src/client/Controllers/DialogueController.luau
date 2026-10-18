@@ -13,6 +13,7 @@ local Theme = require(UI.Theme)
 local Root = require(UI.Root)
 local Device = require(UI.Device)
 local LocaleController = require(script.Parent.LocaleController)
+local MatchController = require(script.Parent.MatchController)
 
 type Payload = { npcId: string, nodeId: string, textKey: string, choices: { string } }
 
@@ -175,6 +176,11 @@ function DialogueController.start()
 	end)
 	Net.event(Net.Events.DialogueHide).OnClientEvent:Connect(function()
 		DialogueController.hide(false)
+	end)
+	-- A match takes the whole screen: a dialogue left open on the portal pad closes (and the server's
+	-- session with it) instead of covering the match HUD (MH-19).
+	MatchController.Started:Connect(function()
+		DialogueController.hide(true)
 	end)
 	LocaleController.Changed:Connect(render)
 	Device.Changed:Connect(function()

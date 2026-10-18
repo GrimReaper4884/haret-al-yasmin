@@ -891,3 +891,15 @@ Simulator limits found in this run (moved to the owner's device run):
   and the Galaxy S23 run used the top row, so this looks like the simulator's notch handling. The device run
   must confirm the sheet X, "+" and the match menu on a real iPhone.
 - The keyboard is reported, never drawn; pinch, haptics and a real keyboard need the device.
+
+## MH follow-ups: MH-19 … MH-22 (2026-10-18)
+
+*Studio Play on the TEST place, Device Simulator in ActualResolution, landscape, `Workspace.DebugHudProfile =
+"touch-phone"` (removed afterwards, simulator back to default), the Studio log overlay hidden. Probe:
+`tools/studio/hud_audit.luau`; corner collisions count only while Roblox's touch controls show, as in MH-18
+(an open sheet hides them; the raw hits listed under sheets are the sheet's own and the lobby's buttons
+behind it). The one Episode 1 match was ended by stopping Play at wave 1 (nothing paid, nothing claimed).*
+
+| Task · preset | Check | Probe (buttons · undersized · corner) | Capture |
+|---|---|---|---|
+| MH-19 · iPhone 17 Pro (750×324) | Qahwaji dialogue open in the lobby, `M` starts Episode 1: dialogue hidden at wave 1/20; lobby with controls up / match | 7 · 0 · 0 / 9 · 0 · 0 | `mh19_iphone17pro_dialogue_open_in_lobby`, `_match_start_dialogue_closed` |

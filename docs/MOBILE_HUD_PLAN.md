@@ -647,6 +647,17 @@ primitives or the PV-C01 kit; anything generated gets a COPYRIGHT_REGISTER row.
     on the Galaxy S23 and an iPhone if available, with the checklist from Part D; the Discord post.
   - **Accept:** owner reports the device run; issues become `MH-19+` tasks; P3-08 ticked.
 
+### Milestone 8: follow-ups from the MH-18 run
+
+Found in the MH-18 Part D run (TEST_REPORT_SLICE "MH after"), fixed one task per commit on `main`.
+
+- [x] **MH-19 Dialogue closes when a match starts** · deps: MH-12
+  - **Goal:** an NPC dialogue left open on the portal pad does not cover the match HUD.
+  - **Change:** `DialogueController` subscribes to `MatchController.Started` and calls `hide(true)`, which
+    also fires `DialogueClose` so `DialogueService` drops the session.
+  - **Accept:** iPhone 17 Pro: the Qahwaji's dialogue open in the lobby, `M` starts Episode 1, the
+    dialogue is gone at wave 1/20 (`mh19_iphone17pro_*`); the match audit 9 · 0 · 0; no console errors.
+
 ---
 
 ## Part D: Verification matrix and STOP list
