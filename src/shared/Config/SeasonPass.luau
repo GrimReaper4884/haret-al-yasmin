@@ -1,7 +1,8 @@
 --!strict
 -- Season pass ("Lane Diary"). Pure data. 50 levels; the free track pays everyone, the premium
--- track (game pass `season_pass`) doubles the lira and adds trait stones, a cosmetic and the
--- season's exclusive unit at level 50. XP comes from matches, dailies and quests (Logic/PassLogic).
+-- track (game pass `season_pass`) doubles the lira and adds trait stones, a cosmetic, a copy of Abu
+-- Brahim the Cloth Merchant at level 20 (LP-E04, owner D-091) and the season's exclusive unit at level
+-- 50. XP comes from matches, dailies and quests (Logic/PassLogic).
 
 export type Reward = { lira: number?, qirsh: number?, traitStones: number?, item: string?, unit: string? }
 export type Tier = { xp: number, free: Reward, premium: Reward }
@@ -30,6 +31,8 @@ for level = 1, LEVELS do
 	end
 	if level == 15 then
 		premium.item = "shawl_embroidered"
+	elseif level == 20 then
+		premium.unit = "tajir" -- Season 1's gold-gatherer (LOOK_AND_PLAY_PLAN §7.2); a copy he already has stars him
 	elseif level == 30 then
 		premium.item = "tarboosh_gold"
 	elseif level == 50 then

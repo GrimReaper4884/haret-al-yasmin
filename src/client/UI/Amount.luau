@@ -18,11 +18,13 @@ local Amount = {}
 
 export type Entry = { icon: string?, iconColor: string?, text: string }
 -- align: where the row sits (default centre; Left is mirrored to Right in Arabic).
-export type Opts = { iconSize: number?, textSize: number?, color: Color3?, rtl: boolean?, zIndex: number?, display: boolean?, align: Enum.HorizontalAlignment?, bold: boolean? }
+-- gap: px between entries (default 6; the Lane Diary's narrow tier cells use less).
+export type Opts = { iconSize: number?, textSize: number?, color: Color3?, rtl: boolean?, zIndex: number?, display: boolean?, align: Enum.HorizontalAlignment?, bold: boolean?, gap: number? }
 
 -- The entries for a reward bundle ({ lira, qirsh, traitStones, cash, xp, item, unit, units }),
--- in the same order as UI/RewardText. Numbers carry a "+".
-function Amount.reward(t: (string, { [string]: any }?) -> string, reward: any): { Entry }
+-- in the same order as UI/RewardText. Numbers carry a "+". `compact` (a narrow cell, the Lane Diary's
+-- tiers): a unit is its portrait alone, since "Unit: <name>" outgrows the cell (LP-E04).
+function Amount.reward(t: (string, { [string]: any }?) -> string, reward: any, compact: boolean?): { Entry }
 	local out: { Entry } = {}
 	local function num(key: string, n: any)
 		if type(n) == "number" and n > 0 then
@@ -39,7 +41,12 @@ function Amount.reward(t: (string, { [string]: any }?) -> string, reward: any): 
 		table.insert(out, { icon = item.icon, iconColor = item.iconColor, text = t(item.nameKey) })
 	end
 	if reward.unit and (Units :: any)[reward.unit] then
-		table.insert(out, { text = t("pass.reward.unit", { unit = t((Units :: any)[reward.unit].nameKey) }) })
+		local portrait = IconIds.portraits[reward.unit]
+		if compact and portrait and portrait.id > 0 then
+			table.insert(out, { icon = "portrait:" .. reward.unit, text = "" })
+		else
+			table.insert(out, { text = t("pass.reward.unit", { unit = t((Units :: any)[reward.unit].nameKey) }) })
+		end
 	end
 	if type(reward.units) == "table" then
 		table.insert(out, { text = t("reward.units", { n = #reward.units }) })
@@ -65,7 +72,7 @@ function Amount.fill(row: GuiObject, entries: { Entry }, opts: Opts?)
 		HorizontalAlignment = if o.align == Enum.HorizontalAlignment.Left and o.rtl then Enum.HorizontalAlignment.Right else o.align or Enum.HorizontalAlignment.Center,
 		VerticalAlignment = Enum.VerticalAlignment.Center,
 		Wraps = true,
-		Padding = UDim.new(0, 6),
+		Padding = UDim.new(0, o.gap or 6),
 		SortOrder = Enum.SortOrder.LayoutOrder,
 		Parent = row,
 	})
@@ -102,6 +109,9 @@ function Amount.fill(row: GuiObject, entries: { Entry }, opts: Opts?)
 					d.ZIndex = z
 				end
 			end
+		end
+		if e.text == "" then
+			continue -- an icon alone (a unit's portrait in a compact reward)
 		end
 		local props = {
 			Name = "Text",

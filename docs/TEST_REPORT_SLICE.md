@@ -1323,6 +1323,20 @@ placed with `placeAny tajir` (no copy granted, loadout untouched). Play stopped 
 | Portrait | rendered on magenta, cut to `assets/marketing/portraits/AbuBrahim.png`, uploaded (126484283642738) | — |
 | Console | `server ready`, no errors or warnings from our code | — |
 
+### LP-E04 Abu Brahim's story hooks
+
+*Play Solo, lobby, desktop; `HaretDebug noAutoAfk`; the Lane Diary opened with harness key 3 and scrolled by `execute_luau`.
+Nothing claimed (the owner's premium is off; every tier past 8 reads Locked). `server ready`, no errors from our code.*
+
+| Check | Result | Capture |
+|---|---|---|
+| Tier 20 before the fix | premium "+240", "+2" and "Unit: Abu Brahim the Cloth Merchant" wrap; the unit line runs under the Locked button | `docs/captures/lp/e04_diary_tier20_before_fix.jpg` |
+| Tier 50 before the fix (pre-existing) | the Akeed's "Unit: …" line hidden under the Locked button | `e04_diary_tier50_before_fix.jpg` |
+| Tier 20 after | one line: lira +240, stones +2, Abu Brahim's portrait (rows at y 0, 0, 0) | `e04_diary_tier20.jpg` |
+| Tier 50 after | one line: +600, +2, the Akeed's portrait | `e04_diary_tier50.jpg` |
+| Episode 9 outro | `season1.spec` "Episode 9 story card": the cleared tale's lines name Abu Brahim in en and ar | — |
+| Specs | 449 green (tier 20 premium grants `tajir`, not on the free track, still in the Epic pool) | — |
+
 ### LP-D10 the lane's beats
 
 *Play Solo, desktop Studio, `noAutoAfk` set; each beat reached with `HarnessClockOffset`.* `[World] built 2125 parts`, no

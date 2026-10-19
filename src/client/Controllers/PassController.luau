@@ -136,7 +136,7 @@ local function tierColumn(t: any, snapshot: any, tier: number, level: number)
 			if pad then
 				pad.PaddingBottom = UDim.new(0, 4)
 			end
-			Amount.row({ Position = UDim2.fromOffset(-10, 3), Size = UDim2.new(1, 20, 0, 20), ZIndex = 13, Parent = pb }, Amount.reward(t, reward), { iconSize = 18, textSize = 11, zIndex = 13, rtl = LocaleController.isRtl() })
+			Amount.row({ Position = UDim2.fromOffset(-10, 3), Size = UDim2.new(1, 20, 0, 20), ZIndex = 13, Parent = pb }, Amount.reward(t, reward, true), { iconSize = 18, textSize = 11, zIndex = 13, rtl = LocaleController.isRtl(), gap = 3 })
 			pb.Activated:Connect(function()
 				if enabled then
 					claim(tier, track, pb)
@@ -147,7 +147,7 @@ local function tierColumn(t: any, snapshot: any, tier: number, level: number)
 		end
 		local label = Theme.label({ Text = t("pass." .. track), TextSize = 11, Position = UDim2.fromOffset(4, y), Size = UDim2.new(1, -8, 0, 12), TextYAlignment = Enum.TextYAlignment.Top, TextColor3 = if track == "premium" then Theme.rarity.legendary else Theme.colors.text, ZIndex = 12, Parent = col })
 		label.TextXAlignment = Enum.TextXAlignment.Center
-		Amount.row({ Position = UDim2.fromOffset(2, y + 12), Size = UDim2.new(1, -4, 0, 22), ZIndex = 12, Parent = col }, Amount.reward(t, reward), { iconSize = 22, textSize = 12, rtl = LocaleController.isRtl() })
+		Amount.row({ Position = UDim2.fromOffset(2, y + 12), Size = UDim2.new(1, -4, 0, 22), ZIndex = 12, Parent = col }, Amount.reward(t, reward, true), { iconSize = 22, textSize = 12, rtl = LocaleController.isRtl(), gap = 3 })
 		local b = Theme.button({ Text = text, TextSize = 12, Position = UDim2.fromOffset(6, y + 36), Size = UDim2.new(1, -12, 0, Theme.TOUCH), BackgroundColor3 = if enabled then Theme.colors.button else Theme.colors.buttonDisabled, AutoButtonColor = enabled, ZIndex = 12, Parent = col })
 		b.Activated:Connect(function()
 			if enabled then

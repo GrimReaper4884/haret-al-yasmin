@@ -625,10 +625,10 @@ DECISIONS; every name goes through §4.2's STOP first.
 - [x] d131127 **LP-E02 "Count the gold" ability kind, the Lane Fund and Buried Jar signatures, the pickpocket steal, panel and Defenders row support** · deps: LP-E01, LP-B02
   - Accept: capture of Count the gold paying (coin flight); a two-player Studio server test (owner's STOP:
     Test → Clients and Servers) or a sim spec showing the Lane Fund paying the teammate.
-- [~] **LP-E03 Model, clips, chest and cloth props, VFX, the souq shop NPC** · deps: LP-E01, LP-D03 · STOP (≈ 90 credits) · spend approved (D-118)
+- [x] aec6653 **LP-E03 Model, clips, chest and cloth props, VFX, the souq shop NPC** · deps: LP-E01, LP-D03 · STOP (≈ 90 credits) · spend approved (D-118)
   - Accept: `.rbxm` in production, register row, idle + count clips in Studio, chest and bolts on placement,
     `cloth_merchant` in the souq with the prompt and the lore line.
-- [ ] **LP-E04 Story hooks: Episode 9 outro line, Diary tier copy, banner pool** · deps: LP-E03 · STOP (tier gift) · waits on LP-E03 (the gift ships with his model)
+- [~] **LP-E04 Story hooks: Episode 9 outro line, Diary tier copy, banner pool** · deps: LP-E03 · STOP (tier gift) · waits on LP-E03 (the gift ships with his model)
   - Accept: strings en/ar; `tests/season1.spec.luau` story-card case; Summon pool spec includes `tajir`.
 
 ### Order and sessions
@@ -649,7 +649,7 @@ Meshy budget: ≈ 330 credits (240 for four NPC looks + 90 for the merchant and 
 - [x] 01545af LP-B01 · [x] 17c73f4 LP-B02 · [x] 5cc73de LP-B03 · [x] 82f876c LP-B04 · [x] d315bda LP-B05
 - [x] 373902b LP-C00 · [x] 2ff7102 LP-C01 · [x] 3a9b3b8 LP-C02 · [x] 1b33855 LP-C03 · [x] 236d068 LP-C04 · [x] 1df1bfd LP-C05 · [x] 169ff6e LP-C06 · [x] f4c8c30 LP-C07
 - [x] 98e27c4 LP-D00 · [x] 0a9cf7f LP-D01 · [x] e4c3eae LP-D02 · [x] 540e3ec LP-D03 · [x] 58e5fdd LP-D04 · [x] 4436acb LP-D05 · [x] 2c97ee7 LP-D06 · [x] 2834681 LP-D07 · [x] cbc50e1 LP-D08 · [x] fd683c9 LP-D09 · [x] fca4d73 LP-D10 · [x] 3abe9cb LP-D11
-- [x] 2cce4ec LP-E01 · [x] d131127 LP-E02 · [~] LP-E03 · [ ] LP-E04
+- [x] 2cce4ec LP-E01 · [x] d131127 LP-E02 · [x] aec6653 LP-E03 · [~] LP-E04
 
 ## 10. STOP list for the owner (batch these)
 

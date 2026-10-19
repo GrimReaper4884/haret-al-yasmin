@@ -130,6 +130,31 @@ return function(t)
 		end)
 	end)
 
+	-- The Episode 9 story card (LP-E04, LOOK_AND_PLAY_PLAN §7.2): its outro, read on the result screen and
+	-- in the Hakawati's room once cleared, says the gold comes home to Abu Brahim, in both languages.
+	t.describe("Episode 9 story card", function()
+		local Story = t.config("Story")
+		local Modes = t.config("Modes")
+		local Strings = t.config("Strings")
+		local StoryCards = t.logic("StoryCards")
+		t.it("the card is the ninth, and its cleared tale names Abu Brahim in en and ar", function()
+			local cards = StoryCards.cards(Story, Modes)
+			t.eq(cards[9].id, "ep9")
+			local tale = StoryCards.tales(Story, { ep9 = "normal" })[9]
+			t.eq(tale.id, "ep9")
+			t.truthy(tale.unlocked)
+			t.eq(#tale.lines, 3)
+			local en, ar = {}, {}
+			for _, key in tale.lines do
+				table.insert(en, Strings.en[key])
+				table.insert(ar, Strings.ar[key])
+			end
+			t.truthy(string.find(table.concat(en, " "), "Abu Brahim", 1, true), "English outro names him")
+			t.truthy(string.find(table.concat(ar, " "), "أبو براهيم", 1, true), "Arabic outro names him")
+			t.truthy(string.find(Strings.en["unit.tajir.name"], "Abu Brahim", 1, true), "the same name as his unit")
+		end)
+	end)
+
 	t.describe("Clue config", function()
 		t.it("every clue belongs to an investigation that lists it, and vice versa", function()
 			for clueId, c in Clues do

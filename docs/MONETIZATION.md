@@ -35,7 +35,7 @@ rules: `docs/research/ROBLOX_IP_AND_POLICY.md`.*
 | `lira_100` … `lira_4000` | 100 / 320 / 700 / 1,650 / 4,500 lira | 49 / 129 / 249 / 499 / 1,199 | hidden where paid random items are restricted |
 | `qirsh_pouch/purse/chest` | 100 / 450 / 1,000 qirsh | 25 / 99 / 199 | cosmetics currency |
 | `stones_3`, `stones_10` | trait stones | 99 / 279 | trait rerolls (odds on the Units → Rates panel); hidden where paid random items are restricted |
-| `pass_premium_s1` | premium Diary track for season s1 | 799 | one per season; buying twice pays 800 lira instead; hidden where restricted (pays lira/stones) |
+| `pass_premium_s1` | premium Diary track for season s1 (a copy of Abu Brahim at level 20, LP-E04; the Akeed at level 50) | 799 | one per season; buying twice pays 800 lira instead; hidden where restricted (pays lira/stones) |
 | `pass_skip_10` | +10 Diary levels | 999 | hidden where restricted (unlocked levels pay lira) |
 | `starter_pack` | 300 lira + the 'Akeed + red tarboosh | 199 | once per player (`profile.bundles`); hidden where restricted (pays lira) |
 | `item_tarboosh_gold`, `item_qumbaz_wedding` | cosmetics | 79 / 129 | |

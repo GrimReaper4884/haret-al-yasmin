@@ -496,19 +496,26 @@ local drawers: { [string]: (Frame, Color3) -> () } = {
 
 -- An uploaded painted image for `name` (Config/Icons id > 0), fitted to the holder.
 local function image(name: string, holder: Frame, colorHex: string?): boolean
-	local def = IconIds.images[name]
-	if not def or def.id == 0 then
+	-- "portrait:<unitId>": that character's painted portrait (Config/Icons.portraits, PV-C05)
+	local unitId = string.match(name, "^portrait:(.+)$")
+	local portrait = if unitId then IconIds.portraits[unitId] else nil
+	local def = if unitId then nil else IconIds.images[name]
+	local id = if portrait then portrait.id elseif def then def.id else 0
+	if id == 0 then
 		return false
 	end
 	local img = Create("ImageLabel", {
 		Name = "Image",
 		BackgroundTransparency = 1,
 		Size = UDim2.fromScale(1, 1),
-		Image = "rbxassetid://" .. tostring(def.id),
+		Image = "rbxassetid://" .. tostring(id),
 		ScaleType = Enum.ScaleType.Fit,
 		ZIndex = holder.ZIndex,
 		Parent = holder,
 	})
+	if not def then
+		return true
+	end
 	if def.tint then
 		img.ImageColor3 = Color3.fromHex(def.tint)
 	elseif def.recolor and colorHex then

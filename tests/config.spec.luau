@@ -241,12 +241,16 @@ return function(t)
 		end)
 		t.it("no story line names a character (names wait for the S1-N01 table)", function()
 			local banned = { "Abu ", "Issam", "Shehab", "Idaashari", "Adashari", "أبو ", "الإدعشري", "العدشري" }
+			-- The one approved exception: Episode 9's outro brings the gold home to Abu Brahim (LOOK_AND_PLAY_PLAN
+			-- §7.2, owner D-091; LP-E04). Every other story line still names nobody.
+			local allowed = { ["story.ep9.outro.2"] = { ["Abu "] = true, ["أبو "] = true } }
 			for key, text in Strings.en do
 				if string.sub(key, 1, 6) == "story." then
 					for _, lang in Strings.languages do
 						local s = Strings[lang][key]
 						for _, word in banned do
-							t.truthy(not string.find(s, word, 1, true), key .. " (" .. lang .. ") names " .. word)
+							local ok = allowed[key] ~= nil and allowed[key][word] == true
+							t.truthy(ok or not string.find(s, word, 1, true), key .. " (" .. lang .. ") names " .. word)
 						end
 					end
 				end

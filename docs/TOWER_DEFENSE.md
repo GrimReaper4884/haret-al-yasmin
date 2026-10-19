@@ -73,7 +73,7 @@ The simulation is pure (`TdSim.step(state, dt)` returns events) and covered by `
 | qahwaji | Abu Hazem of the Coffee House | Rare | farm | cash per wave |
 | qabaday | Mo'ez | Epic | melee | shabriyeh ×6 |
 | haddad | Abu Shater the Blacksmith | Epic | splash | stuns |
-| tajir | Abu Brahim the Cloth Merchant | Epic | farm | no damage; 150 → 1,350 cash per wave; Count the gold (45 s: the income now); 2 per player and 2 per party; level 7: the Lane Fund (teammates +25 %) or the Buried Jar (every 5th wave ×2); a pickpocket at the gate steals 10 % of his next payout (≤ 50 %) |
+| tajir | Abu Brahim the Cloth Merchant | Epic | farm | no damage; 150 → 1,350 cash per wave; Count the gold (45 s: the income now); 2 per player and 2 per party; level 7: the Lane Fund (teammates +25 %) or the Buried Jar (every 5th wave ×2); a pickpocket at the gate steals 10 % of his next payout (≤ 50 %); banner (Epic pool) and season-1 pass level 20 (premium) |
 | mukhtar | Abu Bader | Epic | support | +15–65 % damage aura |
 | zaim | Za'im Abu Faleh | Legendary | melee | shabriyeh ×10 |
 | pahlawan | The Strongman | Legendary | splash | sweep, stun |
