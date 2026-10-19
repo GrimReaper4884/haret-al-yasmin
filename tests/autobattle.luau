@@ -59,6 +59,13 @@ AutoBattle.POLICIES = {
 		plan = { "walad", "hallaq", "natour", "qabaday", "hallaq", "haddad", "mukhtar", "qabaday", "hallaq", "natour" },
 		upgrades = true,
 	},
+	-- LP-E01 (LOOK_AND_PLAY_PLAN §7.3): re10up with two merchants and two coffee-house keepers first.
+	-- The farms must not lift a Rare/Epic loadout into cells above its tier.
+	["re10up+farm"] = {
+		label = "10 Rare/Epic + 2 merchants + 2 coffee keepers + upgrades (6 unit types)",
+		plan = { "tajir", "qahwaji", "hallaq", "natour", "qabaday", "tajir", "qahwaji", "hallaq", "haddad", "qabaday", "hallaq", "natour", "haddad", "qabaday" },
+		upgrades = true,
+	},
 	leg6 = {
 		label = "6 with a Legendary, no upgrades",
 		plan = { "walad", "hallaq", "natour", "zaim", "qabaday", "mukhtar" },
@@ -115,7 +122,7 @@ AutoBattle.POLICIES.whale2 = {
 	signature = "a",
 	slots = 7,
 }
-AutoBattle.POLICY_ORDER = { "re6", "re4up", "re6up", "re10up", "leg6", "leg10up", "leg10up+sig", "myth12up", "myth12up+beads", "whale", "whale2" }
+AutoBattle.POLICY_ORDER = { "re6", "re4up", "re6up", "re10up", "re10up+farm", "leg6", "leg10up", "leg10up+sig", "myth12up", "myth12up+beads", "whale", "whale2" }
 
 local SAMPLE_STEP = 1 -- studs between road samples for coverage
 local MAX_SPOT_DIST = 9 -- spots farther than this from the road are never considered
@@ -469,6 +476,8 @@ function AutoBattle.play(modeId: string, difficulty: string, policyId: any, opts
 		enemies = Enemies,
 		stunChainMax = TD.STUN_CHAIN_MAX,
 		buffCap = TD.BUFF_CAP,
+		stealCap = TD.STEAL_CAP,
+		farmMul = scale.farm,
 		hasteFloor = TD.HASTE_FLOOR,
 		stunImmunity = TD.STUN_IMMUNITY,
 		maxSpeedMul = WaveLogic.MAX_SPEED_MUL,

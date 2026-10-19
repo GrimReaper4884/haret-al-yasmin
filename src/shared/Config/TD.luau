@@ -40,6 +40,10 @@ return {
 	PARTY_HP = { 1, 1.65, 2.3, 3.0 },
 	PARTY_BOSS_HP = { 1, 1.35, 1.65, 2.1 },
 	PARTY_CASH = { 1, 1, 1, 1 },
+	-- Farm income in a party (LP-E01): kill cash is shared between the players but a farm pays its owner
+	-- in full, so farms weigh more the bigger the party; this scales every farm payout (wave income,
+	-- Count the gold). Solo stays ×1. Tuned with `lune run tests/balance --party N` (DECISIONS D-116).
+	PARTY_FARM = { 1, 0.6, 0.45, 0.35 },
 
 	-- Placement
 	LOADOUT_SLOTS = 6, -- +1 with the Extra Slot pass
@@ -57,6 +61,8 @@ return {
 	-- here. TOWER_DEFENSE.md §4.4, DECISIONS D-092.
 	BUFF_CAP = 1.8,
 	HASTE_FLOOR = 0.7,
+	-- Pickpockets at the gate take at most this share of one merchant payout, however many reach it (LP-E01).
+	STEAL_CAP = 0.5,
 
 	-- Difficulty: enemy HP multiplier; growth = multiplier on the per-wave HP growth of story
 	-- episodes (the opening waves stay playable with starter cash, the late waves bite); endless =

@@ -524,6 +524,7 @@ ERR_KEYS = {
 	too_close = "match.err.too_close",
 	cannot_afford = "match.err.cannot_afford",
 	unit_cap = "match.err.unit_cap",
+	party_cap = "match.err.party_cap",
 	tower_cap = "match.err.tower_cap",
 	out_of_bounds = "match.err.out_of_bounds",
 	not_in_loadout = "match.err.not_in_loadout",

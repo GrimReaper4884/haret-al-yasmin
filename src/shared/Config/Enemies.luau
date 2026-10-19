@@ -110,6 +110,7 @@ local Enemies: { [string]: EnemyDef } = {
 		speed = 9.5,
 		reward = 6,
 		gateDamage = 1,
+		steal = 0.1, -- at the gate: a tenth of each merchant's next payout (LP-E01, TD.STEAL_CAP in all)
 		swarm = true, -- groups of 12, half weight in the wave cap
 		visual = { robe = "#6E6A64", accent = "#3E5B3A", skin = "#C68E64", hat = "cap", hatColor = "#3D3A38", weapon = "sack", scale = 0.8 },
 	},

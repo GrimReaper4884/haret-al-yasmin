@@ -424,6 +424,8 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 		enemies = Enemies :: any,
 		stunChainMax = TD.STUN_CHAIN_MAX,
 		buffCap = TD.BUFF_CAP,
+		stealCap = TD.STEAL_CAP,
+		farmMul = scale.farm,
 		hasteFloor = TD.HASTE_FLOOR,
 		stunImmunity = TD.STUN_IMMUNITY,
 		maxSpeedMul = WaveLogic.MAX_SPEED_MUL,
@@ -670,6 +672,27 @@ function MatchService.debugPlace(player: Player, unitId: string, lx: number, lz:
 	local world = match.slot.origin * CFrame.new(lx, 0, lz)
 	local r = placeTower(player, unitId, world.Position.X, world.Position.Z)
 	return r.ok == true, r.err
+end
+
+-- Studio test hook (DebugService only): places `unitId` for the player at their feet without the
+-- collection check: no copy granted, the loadout untouched (LP-E01 checks of an unreleased unit).
+function MatchService.debugPlaceUnowned(player: Player, unitId: string): (boolean, string?)
+	local match = byPlayer[player]
+	local key = match and match.players[player]
+	local def = (Units :: any)[unitId]
+	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not match or match.ended or not key or not def or not root then
+		return false, "not in a match / unknown unit"
+	end
+	local lx, lz = ArenaService.toLocal(match.slot, root.Position + root.CFrame.LookVector * 4)
+	local ok, err, tower = TdTowers.place(match.state, key, unitId, def, lx, lz, 0, nil, rulesFor(match), nil)
+	if not ok or not tower then
+		return false, err
+	end
+	ArenaService.buildTower(match.slot, tower, player.Name)
+	queueEvent(match, { type = "towerPlaced", id = tower.id, owner = player.Name, unitId = unitId, x = lx, z = lz, level = 1, range = tower.stats.range })
+	pushState(match)
+	return true, tostring(tower.id)
 end
 
 -- path: nil, or "a" | "b" for the level-7 signature (TdTowers refuses it anywhere else).

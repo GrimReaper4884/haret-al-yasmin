@@ -165,7 +165,7 @@ return function(t)
 		t.it("every defender and attacker has a portrait of its current model", function()
 			-- Figures still on the primitive build (none since S1-A04/A05/A07); their boss bar uses the live
 			-- viewport. Listed so a portrait missing anywhere else still fails.
-			local AWAITING: { [string]: boolean } = {}
+			local AWAITING: { [string]: boolean } = { tajir = true } -- Abu Brahim's Meshy model is LP-E03
 			local function check(id)
 				if AWAITING[id] then
 					local look = Looks[id]

@@ -1322,3 +1322,21 @@ strings in en + ar). **Owner STOP:** the rooster file (cue `rooster`, id 0).
 
 Specs: 432 green (the 'arada's evenings, its path fits its window, the musaharati's round fits his, his lines in en + ar, no
 Ramadan event configured). **Owner STOPs:** the drum loop file (`arada_drums`) and the Ramadan event definition.
+
+### LP-E01 Abu Brahim the Cloth Merchant: config, sim, specs, balance
+
+*Specs:* 444 green, among them 11 in `td.spec` "The merchant (LP-E01)": the §7.3 ladder and payback; pays every wave and
+never acquires a target; Count the gold pays now, waits 45 s, fires on its own with auto; the Lane Fund pays two teammates
+338 each on a 1,350 wave and nobody solo; the Buried Jar pays 2,700 on wave 5; a sabotaged merchant pays nothing that wave;
+one pickpocket at the gate leaves 135 of 150, seven still leave 75, a coffee keeper loses nothing; a third merchant
+`unit_cap`; a second player's merchant over two `party_cap`; party payouts × `TD.PARTY_FARM`; solo `re10up+farm` loses ep2
+Hard, ep3 Normal, ep1 Nightmare. `meta.spec`: tajir in the Epic pool of five, Epic odds still 20 %.
+
+*Balance:* `lune run tests/balance --md` (solo, 12 loadouts) and `--party 2` / `--party 4` for `re10up+farm`, tables in
+TOWER_DEFENSE §5. Solo: no flip. Residual party cells (owner's call, D-116): p2 ep2 Hard 32/60, p2 ep4 Normal 1/100, p4 ep3
+Normal 42/100.
+
+*Studio (Play Solo, `noAutoAfk`):* `HaretDebug match ep1,normal`, `placeAny tajir` → tower 1 (a second: `too_close`, as
+placed at the same feet). Wave 1 started with K: cash 300 = 600 − 450 + 150 (Count the gold fired at the wave's start on
+auto); the panel reads "Abu Brahim the Cloth Merchant", **Count the gold**, Auto On, Sell $270 (60 % of 450). Console: no
+errors from our code. Play stopped in wave 1; the match was not finished. Capture: `docs/captures/lp/e01_merchant_panel.jpg`.

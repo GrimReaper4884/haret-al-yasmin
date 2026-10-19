@@ -73,6 +73,7 @@ The simulation is pure (`TdSim.step(state, dt)` returns events) and covered by `
 | qahwaji | Abu Hazem of the Coffee House | Rare | farm | cash per wave |
 | qabaday | Mo'ez | Epic | melee | shabriyeh ×6 |
 | haddad | Abu Shater the Blacksmith | Epic | splash | stuns |
+| tajir | Abu Brahim the Cloth Merchant | Epic | farm | no damage; 150 → 1,350 cash per wave; Count the gold (45 s: the income now); 2 per player and 2 per party; level 7: the Lane Fund (teammates +25 %) or the Buried Jar (every 5th wave ×2); a pickpocket at the gate steals 10 % of his next payout (≤ 50 %) |
 | mukhtar | Abu Bader | Epic | support | +15–65 % damage aura |
 | zaim | Za'im Abu Faleh | Legendary | melee | shabriyeh ×10 |
 | pahlawan | The Strongman | Legendary | splash | sweep, stun |
@@ -233,6 +234,98 @@ long road (`bossRoad = 2`), sends Fakhr and the commandant down the other one as
 (`Waves` pool `path`, `hp`), and makes Lateef at wave 30 the Normal wall (×1). The ally does not decide
 Episode 9 Nightmare in the harness (whale2 wins without him too).
 
+### The merchant and farms in parties (2026-10-19, LP-E01, D-116)
+
+New loadout **re10up+farm** (re10up's fighters with two merchants and two coffee keepers placed first). Solo it wins
+nothing above re10up's cells (ep2 Hard and ep3 Normal end on their last wave; asserted in `tests/td.spec.luau`).
+In parties farms weigh more (kill cash is shared, a farm pays its owner in full), so farm payouts scale with
+`TD.PARTY_FARM` (×1 / 0.6 / 0.45 / 0.35) and the merchant is capped at two per party. Residual party cells for the
+owner: party of 2 wins ep2 Hard 32/60 and ep4 Normal 1/100; party of 4 wins ep3 Normal 42/100.
+
+Solo, every loadout:
+
+| Mode | Diff. | re6 | re4up | re6up | re10up | re10up+farm | leg6 | leg10up | leg10up+sig | myth12up | myth12up+beads | whale | whale2 |
+|------|-------|------|------|------|------|------|------|------|------|------|------|------|------|
+| ep1 | normal | lost w14 | WIN 100/100 | WIN 100/100 | WIN 100/100 | WIN 96/100 | lost w19 | WIN 100/100 | WIN 100/100 | WIN 100/100 | WIN 100/100 | WIN 100/100 | WIN 100/100 |
+| ep1 | hard | lost w10 | lost w18 | lost w14 | WIN 14/60 | WIN 54/60 | lost w11 | WIN 57/60 | WIN 57/60 | WIN 54/60 | WIN 59/60 | WIN 60/60 | WIN 60/60 |
+| ep1 | nightmare | lost w9 | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | lost w10 | WIN 32/35 | WIN 35/35 | WIN 35/35 | WIN 35/35 |
+| ep2 | normal | lost w11 | lost w19 | WIN 88/100 | WIN 88/100 | WIN 91/100 | lost w15 | WIN 90/100 | WIN 90/100 | WIN 80/100 | WIN 81/100 | WIN 96/100 | WIN 100/100 |
+| ep2 | hard | lost w9 | lost w10 | lost w10 | lost w10 | lost w30 | lost w10 | WIN 40/60 | WIN 40/60 | WIN 33/60 | WIN 20/60 | WIN 50/60 | WIN 57/60 |
+| ep2 | nightmare | lost w7 | lost w7 | lost w8 | lost w8 | lost w10 | lost w8 | lost w10 | lost w10 | WIN 3/35 | WIN 5/35 | WIN 22/35 | WIN 34/35 |
+| ep3 | normal | lost w11 | lost w15 | lost w13 | lost w20 | lost w40 | lost w14 | WIN 94/100 | WIN 94/100 | WIN 83/100 | WIN 84/100 | WIN 96/100 | WIN 100/100 |
+| ep3 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w30 | lost w10 | lost w20 | lost w20 | WIN 26/60 | WIN 48/60 | WIN 56/60 | WIN 58/60 |
+| ep3 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w10 | lost w8 | lost w10 | lost w10 | lost w10 | lost w10 | WIN 29/35 | WIN 32/35 |
+| ep4 | normal | lost w11 | lost w18 | lost w20 | lost w20 | lost w40 | lost w14 | WIN 96/100 | WIN 96/100 | WIN 99/100 | WIN 100/100 | WIN 100/100 | WIN 100/100 |
+| ep4 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w20 | lost w10 | WIN 31/60 | WIN 31/60 | WIN 35/60 | WIN 40/60 | WIN 60/60 | WIN 60/60 |
+| ep4 | nightmare | lost w8 | lost w9 | lost w8 | lost w8 | lost w10 | lost w6 | lost w10 | lost w10 | lost w8 | lost w20 | WIN 30/35 | WIN 35/35 |
+| ep5 | normal | lost w12 | lost w17 | lost w30 | lost w30 | lost w30 | lost w13 | WIN 98/100 | WIN 98/100 | WIN 78/100 | WIN 87/100 | WIN 98/100 | WIN 99/100 |
+| ep5 | hard | lost w9 | lost w9 | lost w12 | lost w12 | lost w12 | lost w10 | WIN 24/60 | WIN 24/60 | lost w9 | WIN 6/60 | WIN 58/60 | WIN 60/60 |
+| ep5 | nightmare | lost w7 | lost w6 | lost w7 | lost w7 | lost w7 | lost w7 | lost w6 | lost w6 | lost w7 | lost w8 | WIN 29/35 | WIN 34/35 |
+| ep6 | normal | lost w11 | lost w13 | lost w25 | lost w50 | lost w50 | lost w13 | lost w50 | WIN 80/100 | WIN 78/100 | WIN 83/100 | WIN 96/100 | WIN 100/100 |
+| ep6 | hard | lost w10 | lost w10 | lost w10 | lost w10 | lost w25 | lost w10 | lost w10 | lost w10 | WIN 9/60 | WIN 19/60 | WIN 51/60 | WIN 58/60 |
+| ep6 | nightmare | lost w8 | lost w8 | lost w8 | lost w8 | lost w10 | lost w8 | lost w8 | lost w8 | lost w7 | lost w8 | lost w50 | WIN 35/35 |
+| infinite | normal | died w12 | died w16 | died w14 | died w17 | died w32 | died w13 | died w21 | died w21 | died w70 | died w40 | died w80 | died w80 |
+| infinite | hard | died w10 | died w10 | died w10 | died w10 | died w20 | died w10 | died w19 | died w19 | died w30 | died w40 | died w70 | died w70 |
+| infinite | nightmare | died w9 | died w10 | died w10 | died w10 | died w20 | died w10 | died w30 | died w30 | died w40 | died w40 | died w40 | died w60 |
+
+(252 runs in 61.3 s; party of 1: enemy HP ×1.00, boss HP ×1.00, cash ×1.00 each; loadouts: re6, re4up, re6up, re10up, re10up+farm, leg6, leg10up, leg10up+sig, myth12up, myth12up+beads, whale, whale2)
+
+Party of 4, the farm loadout:
+
+| Mode | Diff. | re10up+farm |
+|------|-------|------|
+| ep1 | normal | WIN 94/100 |
+| ep1 | hard | WIN 4/60 |
+| ep1 | nightmare | lost w10 |
+| ep2 | normal | WIN 72/100 |
+| ep2 | hard | lost w10 |
+| ep2 | nightmare | lost w6 |
+| ep3 | normal | WIN 42/100 |
+| ep3 | hard | lost w9 |
+| ep3 | nightmare | lost w7 |
+| ep4 | normal | lost w20 |
+| ep4 | hard | lost w8 |
+| ep4 | nightmare | lost w5 |
+| ep5 | normal | lost w30 |
+| ep5 | hard | lost w9 |
+| ep5 | nightmare | lost w7 |
+| ep6 | normal | lost w25 |
+| ep6 | hard | lost w9 |
+| ep6 | nightmare | lost w6 |
+| infinite | normal | died w20 |
+| infinite | hard | died w10 |
+| infinite | nightmare | died w10 |
+
+(21 runs in 17.1 s; party of 4: enemy HP ×3.00, boss HP ×2.10, cash ×1.00 each; loadouts: re10up+farm)
+
+Party of 2, the farm loadout:
+
+| Mode | Diff. | re10up+farm |
+|------|-------|------|
+| ep1 | normal | WIN 93/100 |
+| ep1 | hard | WIN 49/60 |
+| ep1 | nightmare | lost w10 |
+| ep2 | normal | WIN 83/100 |
+| ep2 | hard | WIN 32/60 |
+| ep2 | nightmare | lost w7 |
+| ep3 | normal | lost w40 |
+| ep3 | hard | lost w13 |
+| ep3 | nightmare | lost w8 |
+| ep4 | normal | WIN 1/100 |
+| ep4 | hard | lost w13 |
+| ep4 | nightmare | lost w6 |
+| ep5 | normal | lost w30 |
+| ep5 | hard | lost w9 |
+| ep5 | nightmare | lost w6 |
+| ep6 | normal | lost w50 |
+| ep6 | hard | lost w10 |
+| ep6 | nightmare | lost w8 |
+| infinite | normal | died w26 |
+| infinite | hard | died w20 |
+| infinite | nightmare | died w10 |
+
+(21 runs in 12.5 s; party of 2: enemy HP ×1.65, boss HP ×1.35, cash ×1.00 each; loadouts: re10up+farm)
+
 ### Party scaling (2026-10-16)
 
 Every player in a party gets the full start cash and wave bonus and builds their own defence (≤ 20 towers
@@ -245,6 +338,8 @@ players in the match; `WaveLogic.partyScale`, applied in `MatchService.create`):
 | 2 | ×1.65 | ×1.35 | ×1 |
 | 3 | ×2.3 | ×1.65 | ×1 |
 | 4 | ×3.0 | ×2.1 | ×1 |
+
+Farm payouts in a party: `TD.PARTY_FARM` ×1 / 0.6 / 0.45 / 0.35 (LP-E01, D-116).
 
 Why these shapes: a party's cash grows by N × (start + wave bonus), but kill cash is shared (it goes to the
 tower that lands the kill), the road fills up (later towers get worse spots) and more towers means fewer

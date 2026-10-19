@@ -134,6 +134,8 @@ local Looks: { [string]: Look } = {
 		model = "AbuKhater",
 		anims = { idle = 79270488835196, attack = 108770696471593 },
 	}, -- Abu Shater
+	-- Abu Brahim the Cloth Merchant (LP-E01): the primitive figure until his Meshy model ships (LP-E03).
+	tajir = { build = "stout", outfit = "qumbaz", beard = "short", moustache = "thick", hair = "#8C8079" },
 	mukhtar = {
 		build = "slim",
 		outfit = "qumbaz",

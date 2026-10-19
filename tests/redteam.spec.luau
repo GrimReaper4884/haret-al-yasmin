@@ -1097,7 +1097,7 @@ return function(t)
 			for _, err in { "bad_position", "out_of_bounds", "on_path", "too_close" } do
 				t.eq(DeviceTelemetry.classify(Hud, false, err), "invalid")
 			end
-			for _, err in { "bad_request", "not_in_match", "match_over", "not_in_loadout", "tower_cap", "unit_cap", "cannot_afford", "rate_limited", "error", nil } do
+			for _, err in { "bad_request", "not_in_match", "match_over", "not_in_loadout", "tower_cap", "unit_cap", "party_cap", "cannot_afford", "rate_limited", "error", nil } do
 				t.eq(DeviceTelemetry.classify(Hud, false, err), nil)
 			end
 		end)

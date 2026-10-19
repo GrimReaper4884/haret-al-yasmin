@@ -72,6 +72,12 @@ return function(t)
 				t.truthy(#SummonLogic.poolFor(Units, rarity) > 0, rarity .. " pool")
 			end
 			t.eq(#SummonLogic.poolFor(Units, "secret"), 0, "secrets never drop")
+			-- Abu Brahim joins the Epic pool (LP-E01): five Epics share the Epic odds evenly, the rarity's
+			-- odds unchanged (the Rates screen lists rarities; a unit's share is its rarity's ÷ the pool).
+			local epics = SummonLogic.poolFor(Units, "epic")
+			t.truthy(table.find(epics, "tajir"), "tajir is in the Epic pool")
+			t.eq(#epics, 5)
+			t.truthy(math.abs(TD.ODDS.epic - 0.2) < 1e-9, "the Epic odds did not move (20 %)")
 			for _, b in Banners do
 				t.eq(Units[b.featuredLegendary].rarity, "legendary")
 				t.eq(Units[b.featuredMythic].rarity, "mythic")

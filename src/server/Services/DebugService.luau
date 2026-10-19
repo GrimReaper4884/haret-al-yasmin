@@ -123,6 +123,9 @@ function DebugService.start()
 				return "bad arg"
 			end
 			return MatchService.debugPlace(player, unitId, tonumber(x) :: number, tonumber(z) :: number)
+		elseif cmd == "placeAny" then
+			-- "unitId": that unit at your feet in your match, no copy granted (LP-E01; no profile change)
+			return MatchService.debugPlaceUnowned(player, tostring(arg))
 		elseif cmd == "ally" then
 			-- "unitId,level": a story ally at your feet (S1-S12 checks; no profile change)
 			local unitId, lvl = string.match(tostring(arg), "^([%w_]+),(%d+)$")

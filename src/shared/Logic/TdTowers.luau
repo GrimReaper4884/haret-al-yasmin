@@ -72,6 +72,19 @@ function TdTowers.canPlace(state: any, owner: string, unitId: string, def: any, 
 	if TdTowers.countOwned(state, owner, unitId) >= def.maxPlaced + (if trait and trait.maxPlaced then trait.maxPlaced else 0) then
 		return false, "unit_cap"
 	end
+	-- A party-wide cap (the genre's farm-link limit, LP-E01): this many in the whole match, whoever owns them
+	local partyCap = def.maxPerParty
+	if partyCap then
+		local n = 0
+		for _, t in state.towers do
+			if t.unitId == unitId and not t.ally then
+				n += 1
+			end
+		end
+		if n >= partyCap then
+			return false, "party_cap"
+		end
+	end
 	local cost = UnitLogic.costFor(def.levels[1].cost, trait)
 	if p.cash < cost then
 		return false, "cannot_afford"

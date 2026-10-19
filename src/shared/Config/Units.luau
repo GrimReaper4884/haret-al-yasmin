@@ -32,17 +32,19 @@ export type Level = {
 	stun: number?,
 	buff: number?,
 	income: number?,
+	fundShare: number?, -- farm signature (the Lane Fund): every teammate also gets this share of its wave income
+	jarEvery: number?, -- farm signature (the Buried Jar): every n-th wave's income is paid twice
 	bounty: number?, -- farm: cash for every enemy that dies inside its range, whoever lands the blow
 	heal: number?,
 }
 
 export type Ability = {
-	kind: "shabriyeh" | "sweep" | "mark",
+	kind: "shabriyeh" | "sweep" | "mark" | "harvest", -- harvest: Count the gold, pays the income now (LP-E01)
 	stun: number?, -- sweep: also stuns everything it hits (signature)
 	slow: number?, -- shabriyeh: also slows the target to this speed multiplier … (signature)
 	slowFor: number?, -- … for this many seconds
 	cooldown: number, -- seconds
-	multiplier: number, -- damage multiplier on the target (shabriyeh), on everything in radius (sweep), or that the marked enemy takes from every defender (mark; cap 1.4, D-045)
+	multiplier: number, -- damage multiplier on the target (shabriyeh), on everything in radius (sweep), or that the marked enemy takes from every defender (mark; cap 1.4, D-045); harvest: the share of a wave's income it pays
 	radius: number?,
 	duration: number?, -- mark: seconds the mark lasts
 	count: number?, -- mark: how many enemies one Oath marks (default 1; signature Repentance 2)
@@ -86,6 +88,8 @@ export type UnitDef = {
 	ability: Ability?,
 	visual: Visual,
 	noBanner: boolean?, -- secret / event units never come from a banner
+	purse: boolean?, -- a pickpocket at the gate steals from its next payout (Abu Brahim's chest, LP-E01)
+	maxPerParty: number?, -- at most this many in the whole match, all players together (a farm-link limit, LP-E01)
 	signature: { a: Signature, b: Signature }?, -- level 7 (Epic and above): one of two paths, bought once at max level
 	beads: { string }?, -- the three bead kinds its slots take (default Config/Beads.byRole[role])
 }
@@ -358,6 +362,33 @@ local Units: { [string]: UnitDef } = {
 			b = { key = "forge", cost = 3000, set = { splash = 9 } },
 		},
 		visual = { robe = "#6E5E50", accent = "#3D3A38", skin = "#B97F5A", hat = "none", hatColor = "#000000", weapon = "hammer", scale = 1.12 },
+	},
+	-- Abu Brahim the Cloth Merchant (LOOK_AND_PLAY_PLAN §7, LP-E01): an Epic farm with no damage at
+	-- all. Income at wave end per level (§7.3 TUNE: payback 3.0 → 4.6 waves); Count the gold pays it
+	-- at once (45 s); level 7: the Lane Fund (teammates get 25 %) or the Buried Jar (every 5th wave
+	-- pays twice). A pickpocket at the gate steals from his next payout.
+	tajir = {
+		nameKey = "unit.tajir.name",
+		descKey = "unit.tajir.desc",
+		rarity = "epic",
+		role = "farm",
+		maxPlaced = 2,
+		maxPerParty = 2, -- one merchant's chest per lane: two in the match, whoever places them
+		levels = {
+			L(450, 0, 8, 1, { income = 150 }),
+			L(400, 0, 8, 1, { income = 270 }),
+			L(650, 0, 8, 1, { income = 440 }),
+			L(1000, 0, 8, 1, { income = 680 }),
+			L(1500, 0, 8, 1, { income = 980 }),
+			L(2200, 0, 8, 1, { income = 1350 }),
+		},
+		purse = true,
+		ability = { kind = "harvest", cooldown = 45, multiplier = 1 },
+		signature = {
+			a = { key = "fund", cost = 3400, set = { fundShare = 0.25 } },
+			b = { key = "jar", cost = 3400, set = { jarEvery = 5 } },
+		},
+		visual = { robe = "#E9DFC6", accent = "#2F5A3A", skin = "#C68E64", hat = "tarboosh", hatColor = "#A4302A", weapon = "none", scale = 1.05 },
 	},
 	mukhtar = {
 		nameKey = "unit.mukhtar.name",

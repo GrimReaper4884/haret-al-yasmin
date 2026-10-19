@@ -51,6 +51,7 @@ export type Enemy = {
 	markMul: number, -- … and takes this much more damage from every defender
 	reward: number,
 	gateDamage: number,
+	steal: number?, -- share of each merchant's next payout it takes at the gate (pickpocket, LP-E01)
 	boss: boolean,
 	alive: boolean,
 }
@@ -71,6 +72,8 @@ export type Tower = {
 	invested: number,
 	kills: number,
 	disabledUntil: number?, -- a saboteur's shot: no attacks until then
+	sabotagedWave: number?, -- the wave a saboteur last hit it in (farms then skip that wave's income)
+	stolen: number?, -- share of its next payout pickpockets have taken (purse farms, ≤ cfg.stealCap)
 	ally: boolean?, -- a story ally (TdTowers.addAlly): no owner, cannot be sold, upgraded or retargeted
 	path: string?, -- "a" | "b": its level-7 signature
 	-- What the supports around it give (LP-A02), cached by towersAct while `state.buffsDirty` is false:
@@ -130,6 +133,8 @@ export type State = {
 		burnFor: number?, -- seconds the stacks last after the newest one
 		buffCap: number?, -- stacked support buffs never multiply damage past this (nil = no cap; TD.BUFF_CAP)
 		hasteFloor: number?, -- stacked hastes never cut a cooldown below this factor (nil = no floor; TD.HASTE_FLOOR)
+		stealCap: number?, -- pickpockets take at most this share of one merchant payout (nil = 1; TD.STEAL_CAP)
+		farmMul: number?, -- every farm payout × this (the party's TD.PARTY_FARM; nil = 1)
 	},
 	buildWave: (number) -> any, -- wave number → WaveLogic.Wave
 	-- The towers' buff cache (LP-A02) is stale: set by TdTowers (place, upgrade, sell, ally) and by
@@ -232,6 +237,7 @@ local function addEnemy(state: State, enemyId: string, hpMul: number, speedMul: 
 		aura = def.aura,
 		shield = def.shield,
 		burn = def.burn,
+		steal = def.steal,
 		hpMul = hpMul,
 		pathIndex = pathIndex or 1,
 		summon = def.summon,
@@ -417,6 +423,16 @@ local function moveEnemies(state: State, dt: number, events: { Event })
 				if e.burn then
 					addBurn(state, e.burn, events)
 				end
+				-- A pickpocket at the gate dips into every merchant's chest (LP-E01)
+				if e.steal then
+					local stealCap = state.cfg.stealCap or 1
+					for _, t in state.towers do
+						if t.stats.purse and not t.ally then
+							t.stolen = math.min(stealCap, (t.stolen or 0) + e.steal)
+							table.insert(events, { type = "stolen", tower = t.id, by = e.id, share = t.stolen })
+						end
+					end
+				end
 			end
 		end
 	end
@@ -503,6 +519,7 @@ local function saboteursAct(state: State, events: { Event })
 			end
 			if best then
 				best.disabledUntil = state.time + sb.duration
+				best.sabotagedWave = state.wave -- a farm hit this wave pays nothing at its end (LP-E01)
 				state.buffsDirty = true
 				e.holdUntil = state.time + sb.duration
 				e.sabotageAt = state.time + sb.cooldown
@@ -789,11 +806,49 @@ local function splashHits(state: State, t: Tower, cx: number, cz: number, radius
 	end
 end
 
+-- One farm payout (LP-E01): what pickpockets took comes off first, the rest goes to the owner; on a
+-- wave payout the Lane Fund also gives every teammate its share (nobody else in a solo match).
+local function payFarm(state: State, t: Tower, amount: number, wave: boolean, events: { Event })
+	local p = state.players[t.owner]
+	if not p then
+		return
+	end
+	local stolen = t.stolen or 0
+	amount *= state.cfg.farmMul or 1
+	local paid = math.floor(amount * (1 - stolen) + 0.5)
+	t.stolen = nil
+	p.cash += paid
+	local shared = 0
+	local share = t.stats.fundShare
+	if wave and share then
+		local each = math.floor(paid * share + 0.5)
+		for key, other in state.players do
+			if key ~= t.owner then
+				other.cash += each
+				shared += each
+			end
+		end
+	end
+	table.insert(events, { type = "income", tower = t.id, amount = paid, stolen = math.floor(amount + 0.5) - paid, shared = shared, wave = wave })
+end
+
 local function towersAct(state: State, events: { Event })
 	refreshBuffCache(state)
 	for _, t in state.towers do
 		local st = t.stats
 		local disabled = t.disabledUntil ~= nil and state.time < t.disabledUntil
+		-- Count the gold (harvest): a farm with no attack pays its income now when its ultimate is ready
+		local hv = st.ability
+		if hv and hv.kind == "harvest" and st.income and not disabled and state.time >= t.abilityAt then
+			local owner = state.players[t.owner]
+			local auto = if t.autoAbility ~= nil then t.autoAbility else (owner == nil or owner.autoAbility ~= false)
+			if t.abilityQueued == true or auto then
+				t.abilityQueued = false
+				t.abilityAt = state.time + hv.cooldown
+				payFarm(state, t, st.income * (hv.multiplier or 1), false, events) -- multiplier: the share of a wave's income
+				table.insert(events, { type = "harvest", tower = t.id })
+			end
+		end
 		if st.damage > 0 and not disabled and state.time >= t.nextAt then
 			local sees = seesStealth(state, t)
 			local target, tx, tz = pickTarget(state, t, sees)
@@ -889,14 +944,17 @@ local function endWave(state: State, events: { Event })
 	for _, p in state.players do
 		p.cash += bonus
 	end
-	-- Farms pay their owner, healers mend the gate
+	-- Farms pay their owner (a farm a saboteur hit this wave pays nothing; the Buried Jar pays
+	-- twice every n-th wave), healers mend the gate
 	local healed = 0
 	for _, t in state.towers do
-		if t.stats.income then
-			local p = state.players[t.owner]
-			if p then
-				p.cash += t.stats.income
+		local st = t.stats
+		if st.income and t.sabotagedWave ~= state.wave then
+			local amount = st.income
+			if st.jarEvery and state.wave % st.jarEvery == 0 then
+				amount *= 2
 			end
+			payFarm(state, t, amount, true, events)
 		end
 		if t.stats.heal then
 			healed += t.stats.heal

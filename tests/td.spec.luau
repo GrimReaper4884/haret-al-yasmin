@@ -37,6 +37,7 @@ return function(t)
 			rewardMul = 1,
 			enemies = Enemies,
 			buffCap = TD.BUFF_CAP,
+			stealCap = TD.STEAL_CAP,
 			hasteFloor = TD.HASTE_FLOOR,
 		}, waveFn)
 	end
@@ -905,6 +906,226 @@ return function(t)
 		end)
 	end)
 
+	-- Abu Brahim the Cloth Merchant (LOOK_AND_PLAY_PLAN §7.3, LP-E01).
+	t.describe("The merchant (LP-E01)", function()
+		local straight = { { 0, 0 }, { 200, 0 } }
+		local V = Enemies.gendarme.visual
+		local E = setmetatable({
+			-- a walker that never reaches the gate: keeps a wave open as long as a test needs
+			wall = { nameKey = "x", hp = 1e6, speed = 0.01, reward = 0, gateDamage = 0, visual = V },
+			rifle = { nameKey = "x", hp = 1e6, speed = 5, reward = 0, gateDamage = 0, sabotage = { range = 200, duration = 1, cooldown = 999 }, visual = V },
+		}, { __index = Enemies })
+		local function simM(players, list, totalWaves, prep)
+			return TdSim.new(straight, players, 100000, 100, totalWaves or 2, prep or 1, {
+				between = 2,
+				waveBonusBase = TD.WAVE_BONUS_BASE,
+				waveBonusPerWave = TD.WAVE_BONUS_PER_WAVE,
+				rewardMul = 1,
+				enemies = E,
+				stealCap = TD.STEAL_CAP,
+			}, function()
+				local spawns = {}
+				for _, sp in list do
+					table.insert(spawns, { at = sp[2] or 0, enemy = sp[1], hpMul = 1, speedMul = 1 })
+				end
+				return { spawns = spawns, count = #spawns }
+			end)
+		end
+		local function incomes(events)
+			local out = {}
+			for _, e in events do
+				if e.type == "income" then
+					table.insert(out, e)
+				end
+			end
+			return out
+		end
+		local U = Units.tajir
+
+		t.it("is an Epic farm with no damage, two at most, §7.3's income ladder", function()
+			t.eq(U.rarity, "epic")
+			t.eq(U.role, "farm")
+			t.eq(U.maxPlaced, 2)
+			local want = { { 450, 150 }, { 400, 270 }, { 650, 440 }, { 1000, 680 }, { 1500, 980 }, { 2200, 1350 } }
+			local spent = 0
+			for i, lv in U.levels do
+				t.eq(lv.damage, 0, "never strikes, level " .. i)
+				t.eq(lv.cost, want[i][1])
+				t.eq(lv.income, want[i][2])
+				spent += lv.cost
+				t.truthy(lv.cost / lv.income <= 4.6 + 1e-9, "a step pays back within 4.6 waves")
+			end
+			t.eq(spent, 6200)
+			t.eq(U.signature.a.cost, 3400)
+			t.eq(U.ability.kind, "harvest")
+			t.eq(U.ability.cooldown, 45)
+		end)
+
+		t.it("pays at every wave end and never acquires a target", function()
+			local s = simM({ "p1" }, { { "thief" } }, 2)
+			s.players.p1.autoAbility = false
+			t.truthy(TdTowers.place(s, "p1", "tajir", U, 50, 6, 0, nil, rules()))
+			local before = s.players.p1.cash
+			local ev = run(s, 30)
+			t.eq(s.wavesCleared, 1)
+			t.eq(count(ev, "attack"), 0, "no attack ever")
+			local inc = incomes(ev)
+			t.eq(#inc, 1)
+			t.eq(inc[1].amount, 150)
+			t.eq(inc[1].wave, true)
+			t.eq(s.players.p1.cash, before + TD.WAVE_BONUS_BASE + TD.WAVE_BONUS_PER_WAVE + 150)
+		end)
+
+		t.it("Count the gold pays the income at once and waits its cooldown", function()
+			local s = simM({ "p1" }, { { "wall" } }, 1, 0.5)
+			s.players.p1.autoAbility = false
+			local _, _, tw = TdTowers.place(s, "p1", "tajir", U, 50, 6, 0, nil, rules())
+			run(s, 1) -- the wave is running
+			local before = s.players.p1.cash
+			t.truthy(TdTowers.useAbility(s, "p1", tw.id))
+			local ev = run(s, 0.5)
+			t.eq(count(ev, "harvest"), 1)
+			t.eq(s.players.p1.cash, before + 150, "the level-1 income, now")
+			t.eq(select(2, TdTowers.useAbility(s, "p1", tw.id)), "not_ready", "45 s cooldown")
+			ev = run(s, 44)
+			t.eq(count(ev, "harvest"), 0, "nothing while it cools down")
+			run(s, 1) -- 45 s after the count
+			t.truthy(TdTowers.useAbility(s, "p1", tw.id))
+			ev = run(s, 0.5)
+			t.eq(count(ev, "harvest"), 1, "ready again after 45 s")
+		end)
+
+		t.it("auto ultimate counts the gold the moment it is ready", function()
+			local s = simM({ "p1" }, { { "wall" } }, 1, 0.5)
+			TdTowers.place(s, "p1", "tajir", U, 50, 6, 0, nil, rules())
+			local ev = run(s, 50)
+			t.eq(count(ev, "harvest"), 2, "at 0 s and at 45 s")
+		end)
+
+		t.it("the Lane Fund pays teammates a quarter, nobody in solo", function()
+			local function fund(players)
+				local s = simM(players, { { "thief" } }, 2)
+				local _, _, tw = TdTowers.place(s, "p1", "tajir", U, 50, 6, 0, nil, rules())
+				for _ = 2, #U.levels do
+					TdTowers.upgrade(s, "p1", tw.id, U, rules())
+				end
+				t.truthy(TdTowers.upgrade(s, "p1", tw.id, U, rules(), "a"))
+				for _, p in s.players do
+					p.autoAbility = false
+				end
+				local cash = {}
+				for k, p in s.players do
+					cash[k] = p.cash
+				end
+				run(s, 30)
+				return s, cash
+			end
+			local s, before = fund({ "p1", "p2", "p3" })
+			local bonus = TD.WAVE_BONUS_BASE + TD.WAVE_BONUS_PER_WAVE
+			t.eq(s.players.p1.cash, before.p1 + bonus + 1350)
+			t.eq(s.players.p2.cash, before.p2 + bonus + math.floor(1350 * 0.25 + 0.5))
+			t.eq(s.players.p3.cash, before.p3 + bonus + math.floor(1350 * 0.25 + 0.5))
+			local solo, b = fund({ "p1" })
+			t.eq(solo.players.p1.cash, b.p1 + bonus + 1350, "solo: no one to share with, no extra")
+		end)
+
+		t.it("the Buried Jar pays double on waves 5, 10, 15…", function()
+			local s = simM({ "p1" }, { { "thief" } }, 6, 0.5)
+			s.players.p1.autoAbility = false
+			local _, _, tw = TdTowers.place(s, "p1", "tajir", U, 50, 6, 0, nil, rules())
+			for _ = 2, #U.levels do
+				TdTowers.upgrade(s, "p1", tw.id, U, rules())
+			end
+			t.truthy(TdTowers.upgrade(s, "p1", tw.id, U, rules(), "b"))
+			local got = {}
+			for _, e in incomes(run(s, 6 * 30)) do
+				table.insert(got, e.amount)
+			end
+			t.eq(#got, 6)
+			t.eq(got[4], 1350)
+			t.eq(got[5], 2700, "wave 5")
+			t.eq(got[6], 1350)
+		end)
+
+		t.it("a sabotaged merchant pays nothing that wave, and pays again the next", function()
+			local s = simM({ "p1" }, { { "rifle" } }, 2)
+			s.players.p1.autoAbility = false
+			TdTowers.place(s, "p1", "tajir", U, 10, 4, 0, nil, rules())
+			local ev = run(s, 2 + 0.5)
+			t.eq(count(ev, "towerDisabled"), 1, "the rifleman hits it")
+			for _, e in s.enemies do
+				e.alive = false -- end the wave
+			end
+			ev = run(s, 0.2)
+			t.eq(#incomes(ev), 0, "no income for the sabotaged wave")
+			t.eq(s.wavesCleared, 1)
+		end)
+
+		t.it("a pickpocket at the gate takes a tenth of the next payout, at most half in all", function()
+			local s = simM({ "p1" }, { { "pickpocket" } }, 2)
+			s.players.p1.autoAbility = false
+			TdTowers.place(s, "p1", "tajir", U, 50, 30, 0, nil, rules())
+			local ev = run(s, 30)
+			t.eq(count(ev, "stolen"), 1)
+			local inc = incomes(ev)
+			t.eq(inc[1].amount, 135, "150 less a tenth")
+			t.eq(inc[1].stolen, 15)
+			local s2 = simM({ "p1" }, { { "pickpocket" }, { "pickpocket" }, { "pickpocket" }, { "pickpocket" }, { "pickpocket" }, { "pickpocket" }, { "pickpocket" } }, 2)
+			s2.players.p1.autoAbility = false
+			TdTowers.place(s2, "p1", "tajir", U, 50, 30, 0, nil, rules())
+			inc = incomes(run(s2, 30))
+			t.eq(inc[1].amount, 75, "seven pickpockets still take only half")
+			local s3 = simM({ "p1" }, { { "pickpocket" } }, 2)
+			s3.players.p1.autoAbility = false
+			TdTowers.place(s3, "p1", "qahwaji", Units.qahwaji, 50, 30, 0, nil, rules())
+			inc = incomes(run(s3, 30))
+			t.eq(inc[1].amount, 90, "the coffee house keeps no chest: nothing to steal")
+		end)
+
+		t.it("two merchants in the whole party, whoever places them (party_cap)", function()
+			local s = simM({ "p1", "p2" }, { { "thief" } }, 1)
+			t.truthy(TdTowers.place(s, "p1", "tajir", U, 50, 6, 0, nil, rules()))
+			t.truthy(TdTowers.place(s, "p2", "tajir", U, 60, 6, 0, nil, rules()))
+			local ok, err = TdTowers.place(s, "p2", "tajir", U, 70, 6, 0, nil, rules())
+			t.eq(ok, false)
+			t.eq(err, "party_cap", "p2 has one, but the party has two")
+			t.eq(select(2, TdTowers.place(s, "p1", "qahwaji", Units.qahwaji, 80, 6, 0, nil, rules())), nil, "other farms are not capped by it")
+		end)
+
+		t.it("a party's farm payouts shrink with its size (TD.PARTY_FARM), solo keeps them whole", function()
+			t.eq(TD.PARTY_FARM[1], 1)
+			for n = 2, TD.MAX_PLAYERS do
+				t.truthy(TD.PARTY_FARM[n] < TD.PARTY_FARM[n - 1], "smaller with every player")
+			end
+			local WaveLogic2 = t.logic("WaveLogic")
+			t.eq(WaveLogic2.partyScale(TD, 1).farm, 1)
+			local s = simM({ "p1", "p2" }, { { "thief" } }, 2)
+			s.cfg.farmMul = WaveLogic2.partyScale(TD, 2).farm
+			for _, p in s.players do
+				p.autoAbility = false
+			end
+			TdTowers.place(s, "p1", "tajir", U, 50, 6, 0, nil, rules())
+			local inc = incomes(run(s, 30))
+			t.eq(inc[1].amount, math.floor(150 * TD.PARTY_FARM[2] + 0.5))
+		end)
+
+		t.it("the farm loadout does not lift Rare/Epic into Legendary cells solo (§7.3)", function()
+			local AutoBattle = require("./autobattle")
+			t.eq(AutoBattle.play("ep2", "hard", "re10up+farm").won, false, "ep2 Hard is leg10up's")
+			t.eq(AutoBattle.play("ep3", "normal", "re10up+farm").won, false, "ep3 Normal is leg10up's")
+			t.eq(AutoBattle.play("ep1", "nightmare", "re10up+farm").won, false, "ep1 Nightmare is myth12up's")
+		end)
+
+		t.it("a third merchant is refused (maxPlaced 2)", function()
+			local s = simM({ "p1" }, { { "thief" } }, 1)
+			t.truthy(TdTowers.place(s, "p1", "tajir", U, 50, 6, 0, nil, rules()))
+			t.truthy(TdTowers.place(s, "p1", "tajir", U, 60, 6, 0, nil, rules()))
+			local ok, err = TdTowers.place(s, "p1", "tajir", U, 70, 6, 0, nil, rules())
+			t.eq(ok, false)
+			t.eq(err, "unit_cap")
+		end)
+	end)
+
 	-- Story mechanics, batch 2 (STORY_PLAN §10.1, S1-S06): sabotage, split, enrage, heal aura and the
 	-- `mark` ability. Stand-in attackers until S1-S08 adds the real rifleman, cart, brute and hakim.
 	t.describe("Story mechanics (S1-S06)", function()
@@ -1145,6 +1366,12 @@ return function(t)
 			abCount = function(st)
 				return st.ability and st.ability.count
 			end,
+			fund = function(st)
+				return st.fundShare
+			end,
+			jar = function(st)
+				return st.jarEvery
+			end,
 			douse = function(st)
 				return st.douse
 			end,
@@ -1168,7 +1395,7 @@ return function(t)
 					t.truthy(u.signature.a.key ~= u.signature.b.key, id .. " two different paths")
 				end
 			end
-			t.eq(n, 11, "the ten Epic+ banner units (with Abu Basim and Su'da Khanum, S1-A07) and Al-Adashari")
+			t.eq(n, 12, "the ten Epic+ banner units (with Abu Basim and Su'da Khanum, S1-A07), Al-Adashari and Abu Brahim (LP-E01)")
 		end)
 
 		t.it("cap (D-047): a path adds ≤ +35 % damage per second or exactly one effect, never both", function()

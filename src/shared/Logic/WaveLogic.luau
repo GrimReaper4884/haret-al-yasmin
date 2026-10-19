@@ -76,7 +76,7 @@ export type Difficulty = { hp: number, speed: number, growth: number?, endless: 
 -- Party-size scaling: hp = HP multiplier of every regular enemy, boss = the boss's (it meets
 -- every defender on the road, so it scales less), cash = share of the start cash and wave bonus
 -- each player gets.
-export type PartyScale = { hp: number, boss: number, cash: number }
+export type PartyScale = { hp: number, boss: number, cash: number, farm: number } -- farm: TD.PARTY_FARM (LP-E01)
 
 local function partyAt(list: { number }?, players: number): number
 	if not list or #list == 0 then
@@ -92,6 +92,7 @@ function WaveLogic.partyScale(td: any, players: number): PartyScale
 		hp = partyAt(td.PARTY_HP, players),
 		boss = partyAt(td.PARTY_BOSS_HP, players),
 		cash = partyAt(td.PARTY_CASH, players),
+		farm = if td.PARTY_FARM then partyAt(td.PARTY_FARM, players) else 1,
 	}
 end
 

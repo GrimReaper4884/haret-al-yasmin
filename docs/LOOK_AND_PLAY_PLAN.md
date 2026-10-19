@@ -615,12 +615,12 @@ DECISIONS; every name goes through §4.2's STOP first.
   - Accept: `Logic/LobbyLife.clock(t)` specced (phase boundaries, determinism); captures at the four phases.
 - [x] fca4d73 **LP-D10 Beats: gate, coffee-house evening with the Hakawati's tales, patrol, diwan dispute, night watch, cameo** · deps: LP-D09, LP-D02
   - Accept: each beat captured once; `Settings.effects off` shows a static lane; 30 Hz / 120-stud budget held.
-- [x] **LP-D11 The 'arada procession and the Ramadan musaharati (event-gated)** · deps: LP-D10 · STOP (music loop)
+- [x] 3abe9cb **LP-D11 The 'arada procession and the Ramadan musaharati (event-gated)** · deps: LP-D10 · STOP (music loop)
   - Accept: capture of the procession; the musaharati appears only with the Ramadan event active.
 
 ### Workstream E: Abu Brahim the Cloth Merchant
 
-- [ ] **LP-E01 Name, lore, numbers approved; config, sim rules, specs** · deps: LP-A02 · STOP (name + numbers)
+- [x] **LP-E01 Name, lore, numbers approved; config, sim rules, specs** · deps: LP-A02 · STOP (name + numbers)
   - Accept: §7.3 specs green; `tests/balance` ladder holds or a TUNE row; Rates screen shows him in Epic.
 - [ ] **LP-E02 "Count the gold" ability kind, the Lane Fund and Buried Jar signatures, the pickpocket steal, panel and Defenders row support** · deps: LP-E01, LP-B02
   - Accept: capture of Count the gold paying (coin flight); a two-player Studio server test (owner's STOP:
@@ -648,8 +648,8 @@ Meshy budget: ≈ 330 credits (240 for four NPC looks + 90 for the merchant and 
 - [x] ff75c8d LP-A01 · [x] 19425ee LP-A02 · [x] fb9bdaa LP-A03
 - [x] 01545af LP-B01 · [x] 17c73f4 LP-B02 · [x] 5cc73de LP-B03 · [x] 82f876c LP-B04 · [x] d315bda LP-B05
 - [x] 373902b LP-C00 · [x] 2ff7102 LP-C01 · [x] 3a9b3b8 LP-C02 · [x] 1b33855 LP-C03 · [x] 236d068 LP-C04 · [x] 1df1bfd LP-C05 · [x] 169ff6e LP-C06 · [x] f4c8c30 LP-C07
-- [x] 98e27c4 LP-D00 · [x] 0a9cf7f LP-D01 · [x] e4c3eae LP-D02 · [x] 540e3ec LP-D03 · [x] 58e5fdd LP-D04 · [x] 4436acb LP-D05 · [x] 2c97ee7 LP-D06 · [x] 2834681 LP-D07 · [ ] LP-D08 · [x] fd683c9 LP-D09 · [x] fca4d73 LP-D10 · [x] LP-D11
-- [ ] LP-E01 · [ ] LP-E02 · [ ] LP-E03 · [ ] LP-E04
+- [x] 98e27c4 LP-D00 · [x] 0a9cf7f LP-D01 · [x] e4c3eae LP-D02 · [x] 540e3ec LP-D03 · [x] 58e5fdd LP-D04 · [x] 4436acb LP-D05 · [x] 2c97ee7 LP-D06 · [x] 2834681 LP-D07 · [ ] LP-D08 · [x] fd683c9 LP-D09 · [x] fca4d73 LP-D10 · [x] 3abe9cb LP-D11
+- [x] LP-E01 · [ ] LP-E02 · [ ] LP-E03 · [ ] LP-E04
 
 ## 10. STOP list for the owner (batch these)
 

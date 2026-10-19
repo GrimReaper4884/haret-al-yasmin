@@ -19,6 +19,9 @@ export type Stats = {
 	stun: number?,
 	buff: number?,
 	income: number?,
+	fundShare: number?, -- the Lane Fund: teammates' share of its wave income (LP-E01)
+	jarEvery: number?, -- the Buried Jar: every n-th wave pays twice (LP-E01)
+	purse: boolean, -- pickpockets steal from its payouts (LP-E01)
 	bounty: number?, -- cash to the owner for every enemy that dies inside its range (farm, S1-A07)
 	heal: number?,
 	cash: number, -- kill reward multiplier
@@ -205,6 +208,9 @@ function UnitLogic.stats(def: any, level: number, stars: number, trait: any?, st
 		stun = lv.stun,
 		buff = if lv.buff then lv.buff + beadBuff else nil,
 		income = lv.income,
+		fundShare = (lv :: any).fundShare,
+		jarEvery = (lv :: any).jarEvery,
+		purse = def.purse == true,
 		bounty = lv.bounty,
 		heal = if lv.heal then lv.heal + beadHeal else nil,
 		cash = (if trait and trait.cash then trait.cash else 1) * (1 + (if bead then math.min(beadCash, bead.cap) else 0)),
