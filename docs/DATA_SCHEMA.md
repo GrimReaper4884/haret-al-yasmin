@@ -29,7 +29,7 @@ type Profile = {
 	equipped: { head: string? },           -- slot → itemId (must be owned)
 	quests: { [string]: QuestRecord },
 	settings: { language: string? },       -- "en" | "ar" | nil (= follow the Roblox locale); the other keys are
-	                                       -- Logic/Settings.defs (effects, skipSummon, autoUlt, camera, autoAfk,
+	                                       -- Logic/Settings.defs (effects, laneLife (LP-D09), skipSummon, autoUlt, camera, autoAfk,
 	                                       -- autoSkip, music: boolean = true, sfx: boolean = true, cutscenes: boolean = true), checked by
 	                                       -- Settings.accept and dropped by Settings.sanitize when invalid.
 	                                       -- music / sfx are client-side only (AudioController); the server just stores them.
