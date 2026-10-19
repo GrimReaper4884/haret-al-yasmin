@@ -62,6 +62,16 @@ return {
 
 	-- Abu Hatem's corner: steam from the samovar in the coffee house (World/Zones/Extras).
 	steam = { at = { -35.5, 4.25, -3 }, rate = 4 },
+	-- Fawza calls down from her roof (LP-D07): a line every `every` s for `show` s, waving her broom
+	-- for the first `wave` s; lines take turns (Strings `roof.fawza.*`).
+	rooftop = {
+		npc = "fawza_roof",
+		every = 90,
+		show = 7,
+		offset = 20,
+		wave = 1.5,
+		lines = { "roof.fawza.1", "roof.fawza.2", "roof.fawza.3", "roof.fawza.4" },
+	},
 	-- The hammam's roof vent (World/Zones/Hammam, LP-D04), once that zone is built.
 	hammamSteam = { at = { -58, 19.6, 6 }, rate = 6 },
 

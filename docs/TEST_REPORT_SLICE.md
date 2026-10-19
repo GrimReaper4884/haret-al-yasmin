@@ -1255,3 +1255,19 @@ hammam 93 · souq 254 · orchard_road 79 · post 97`, `server ready`, no warning
 
 First pass placed the kit `police_post` as the building; the capture showed a sentry box in an empty yard, so the post became a Facade
 block with the sentry box at the mouth. **Owner STOP:** phone FPS with six zones in (2,089 parts; real device).
+
+### LP-D07 rooftop women
+
+*Play Solo, desktop Studio, `noAutoAfk` set.* `Zone_rooftop_view` 36 parts, 0 colliding; Fawza spawned (zone built).
+Three call periods watched on the client: the bubble showed "The washing will be dry before the men finish their coffee!"
+(line 3) and closed after 7 s; the next period showed "Abu Bader! Did you buy the bread or will we eat the air tonight?"
+(line 1 after line 4, the rotation wrapping); Fawza swung her broom at the start of each call.
+
+| View | What the capture shows | Capture |
+|---|---|---|
+| Fawza's roof | Fawza seated on her mat at WestB's lane edge with her broom, the washing line, basket, jar and pots | `docs/captures/lp/d07_fawza_roof.jpg` |
+| Her call | the bubble "Abu Bader! Did you buy the bread or will we eat the air tonight?" over her, broom raised | `d07_fawza_call.jpg` |
+
+Note for future captures: `screen_capture` takes several seconds to land, so a 7 s window was missed twice; the call
+capture was taken with the bubble switched on from the client probe in the same period. Studio's capture did not draw
+the bubble while it was AlwaysOnTop; it is not AlwaysOnTop now (D-112).

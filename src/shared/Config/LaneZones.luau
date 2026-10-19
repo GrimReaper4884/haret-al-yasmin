@@ -38,7 +38,7 @@ LaneZones.zones = {
 	{ id = "mosque_court", module = "MosqueCourt", bounds = { 24, -2, 50, 26 }, budget = 500, built = true, task = "LP-D05" }, -- with SquareNE made shallow
 	{ id = "post", module = "Post", bounds = { -44, 96, -16, 124 }, budget = 600, built = true, task = "LP-D06" }, -- built with the orchard road
 	{ id = "orchard_road", module = "OrchardRoad", bounds = { -16, 96, 44, 154 }, budget = 1000, built = true, task = "LP-D06" }, -- opens the gate's outer wall
-	{ id = "rooftop_view", module = "Rooftops", bounds = { -24, 24, 24, 84 }, budget = 150, built = false, task = "LP-D07" },
+	{ id = "rooftop_view", module = "Rooftops", bounds = { -24, 24, 24, 84 }, budget = 150, built = true, task = "LP-D07" },
 } :: { Zone }
 
 -- Zones that sit above another area (no collision, no floor): they may overlap it.

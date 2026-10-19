@@ -606,6 +606,11 @@ local en: { [string]: string } = {
 	["sign.hammam"] = "حمّام الحارة",
 	["sign.diwan"] = "ديوان الزعيم",
 	["sign.wanted"] = "مطلوب: العدشري",
+	-- Fawza calls down from her roof (LP-D07)
+	["roof.fawza.1"] = "Abu Bader! Did you buy the bread or will we eat the air tonight?",
+	["roof.fawza.2"] = "Who's that at Umm Baki's door so early? I see everything from up here!",
+	["roof.fawza.3"] = "The washing will be dry before the men finish their coffee!",
+	["roof.fawza.4"] = "Shh… the 'akeed is walking by. Act busy!",
 	["npc.barber.name"] = "Abu Hissam",
 	["npc.barber.role"] = "Barber",
 	["npc.qahwaji.name"] = "Abu Hazem",
@@ -1598,6 +1603,11 @@ local ar: { [string]: string } = {
 	["sign.hammam"] = "حمّام الحارة",
 	["sign.diwan"] = "ديوان الزعيم",
 	["sign.wanted"] = "مطلوب: العدشري",
+	-- Fawza calls down from her roof (LP-D07)
+	["roof.fawza.1"] = "أبو بادر! جبت الخبز ولا رح نتعشّى هوا الليلة؟",
+	["roof.fawza.2"] = "مين هاد عباب أم باقي من بكير؟ أنا شايفة كل شي من فوق!",
+	["roof.fawza.3"] = "الغسيل رح ينشف قبل ما يخلّصوا الرجال قهوتهن!",
+	["roof.fawza.4"] = "هس… العكيد ماشي من هون. اعملوا حالكن مشغولين!",
 	["npc.barber.name"] = "أبو حسام",
 	["npc.barber.role"] = "حلاق",
 	["npc.qahwaji.name"] = "أبو حازم",

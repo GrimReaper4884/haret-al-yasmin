@@ -134,4 +134,21 @@ function LobbyLife.route(points: { { number } }, speed: number, pause: number, t
 	return first[1], first[2], 0, false -- float rounding at the very end of the cycle
 end
 
+-- A rooftop neighbour's call (LP-D07): every `every` seconds of the shared clock (shifted by
+-- `offset`) she calls down for `show` seconds. Returns which of `count` lines she is calling now
+-- (they take turns, one per period) and whether this is the period's first `waveFor` seconds;
+-- nil when she is quiet.
+function LobbyLife.callAt(t: number, every: number, show: number, count: number, offset: number, waveFor: number): (number?, boolean)
+	if count <= 0 or every <= 0 then
+		return nil, false
+	end
+	local s = t - offset
+	local into = s % every
+	if into >= show then
+		return nil, false
+	end
+	local period = math.floor(s / every)
+	return period % count + 1, into < waveFor
+end
+
 return LobbyLife

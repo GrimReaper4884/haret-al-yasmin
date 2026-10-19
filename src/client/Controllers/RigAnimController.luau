@@ -507,6 +507,19 @@ local function animateNpc(m: Model, now: number, dt: number, smooth: boolean)
 	end
 end
 
+-- Plays a one-shot clip (e.g. "attack": Fawza's broom wave, LP-D07) on lane NPC `npcId` when its
+-- figure is streamed in and bound. False when it is not (yet).
+function RigAnimController.npcPlay(npcId: string, slot: string): boolean
+	local npcs = Workspace:FindFirstChild("Npcs")
+	local m = npcs and npcs:FindFirstChild(npcId)
+	local rec = if m and m:IsA("Model") then recs[m] else nil
+	local bone = rec and rec.bone
+	if not bone or BoneAnim.busy(bone) then
+		return false
+	end
+	return BoneAnim.play(bone, slot) ~= nil
+end
+
 -- Level of detail: figures off screen are skipped, distant ones update every third frame
 -- (a stride a few frames coarse is invisible past ~70 studs), the rest every frame.
 local NEAR = 70

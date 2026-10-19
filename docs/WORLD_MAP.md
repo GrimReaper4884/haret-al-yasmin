@@ -70,7 +70,7 @@ median, 17.8 ms p95).
 | `mosque_court` | 24, −2, 50, 26 | exterior only, behind SquareNE (now 6 deep): an ablaq arch at z 16..21 north of the Event arch; the court with the ablution fountain (taps, stools), a fig tree, a bench, the mosque's closed door under a canopy with a tiled band and grilled windows; the minaret in the north-east corner (moved from the skyline) | 500 (104 built) | LP-D05 | built |
 | `post` | −44, 96, −16, 124 | outside the gate, west of the road: a walled yard open to the road, the stone post building (door at z 111, barred windows), the kit's sentry box at the mouth, a flag pole with a plain pennant, two straw dummies in kepis, the "wanted: Al-Adashari" poster, a bench; Abu Jawdan at the door, Corporal Houri in the yard | 600 (97 built) | LP-D06 | built |
 | `orchard_road` | −16, 96, 44, 154 | the gate's outer wall opens (x −6..6) onto a packed-earth road to a vista wall at z 152 with the kit's rival-lane gate; east: olive (kit) and apricot orchards behind low kit walls, the well, a harvest net; west strip: the donkey cart of pickles, oil jars, the old olive with a rifle in its hollow; lights on the vista and east walls | 1,000 (79 built) | LP-D06 | built |
-| `rooftop_view` | −24, 24, 24, 84 (overhead) | two rooftops above the lane, no collision | 150 | LP-D07 | planned |
+| `rooftop_view` | −24, 24, 24, 84 (overhead) | WestB's roof: Fawza seated on its lane edge on a mat, a washing line on poles, a basket of washing, a jar, pots; EastA's roof (Feryal's, model LP-D08): a washing line, a stool, a rolled mattress, pots. Nothing collides. Fawza calls a line every 90 s and waves her broom (RooftopController) | 150 (36 built) | LP-D07 | built |
 
 ## Boundaries
 

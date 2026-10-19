@@ -128,6 +128,28 @@ return function(t)
 			t.eq(select(4, LobbyLife.route({ { 4, 5 } }, speed, pause, 10)), false, "a one-point route stands")
 		end)
 
+		t.it("the rooftop call comes every period, takes turns and waves first (LP-D07)", function()
+			local r = Cfg.rooftop
+			local n = #r.lines
+			t.eq(n, 4)
+			local idx, wave = LobbyLife.callAt(r.offset + 0.5, r.every, r.show, n, r.offset, r.wave)
+			t.eq(idx, 1)
+			t.eq(wave, true, "waves at the start")
+			idx, wave = LobbyLife.callAt(r.offset + r.wave + 0.5, r.every, r.show, n, r.offset, r.wave)
+			t.eq(idx, 1)
+			t.eq(wave, false, "then just talks")
+			t.eq((LobbyLife.callAt(r.offset + r.show + 0.1, r.every, r.show, n, r.offset, r.wave)), nil, "quiet after `show` s")
+			t.eq((LobbyLife.callAt(r.offset + r.every + 1, r.every, r.show, n, r.offset, r.wave)), 2, "the next line next period")
+			t.eq((LobbyLife.callAt(r.offset + 4 * r.every + 1, r.every, r.show, n, r.offset, r.wave)), 1, "and round again")
+			t.eq((LobbyLife.callAt(r.offset - 1, r.every, r.show, n, r.offset, r.wave)), nil, "quiet just before")
+			t.eq((LobbyLife.callAt(5, 90, 7, 0, 0, 1)), nil, "no lines, no call")
+			t.truthy(r.show < r.every and r.wave <= r.show)
+			local Strings = t.config("Strings")
+			for _, key in r.lines do
+				t.truthy(Strings.en[key] and Strings.ar[key], key .. " in en and ar")
+			end
+		end)
+
 		t.it("config stays inside the plan's budgets", function()
 			t.eq(Cfg.fountain.rate, 6)
 			t.eq(Cfg.steam.rate, 4)
