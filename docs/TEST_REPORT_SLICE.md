@@ -1116,3 +1116,18 @@ with `Z`, switched back afterwards (`settings.language` read back as `en`).*
 | Arabic mid-type | the portrait on the right, the line growing from the right edge («الكعك عم يبرد! بيت ا…») | `c04_typing_ar.jpg` |
 | Arabic complete | right-aligned line, mirrored header (close on the left), «أنا بالطريق.» below | `c04_complete_ar.jpg` |
 | Console | no errors or warnings from our code | — |
+
+### LP-C05 Units, Summon ×10, Lane Diary, Settings
+
+*Play Solo, lobby, desktop. The ×10 was a Studio-only `LocalPlayer.HaretSummonDemo` showing made-up results on
+this client: no summon, lira unchanged at 45,138. A UI language left at Arabic by an earlier `Z` (not saved
+before Play stopped) was set back to English and saved with `HaretDebug save`; the next join read `en`.*
+
+| Check | Result | Capture |
+|---|---|---|
+| Units stagger | 120 ms after open the cards' `JuiceScale`: the first at 1.00, then 1.04 / 1.03 (Back overshoot), 0.96, 0.83, and the 10th–12th still at 0.60; cards past 12 appear at once | — |
+| "New" ribbon | units obtained this session carry a red "New" ribbon until their detail is opened (none on this profile today) | — |
+| Summon ×10 with a Mythic | ten cards flip in one after another; at the 'Arada (Mythic) the grid quaked by up to 14 px for 0.6 s | `docs/captures/lp/c05_summon_x10_demo_ar.jpg` (Arabic: the language slip above) |
+| Reduced Motion | `Juice.quake` and the stagger go through `Juice.allowed` (`Logic/Motion` specs: everything off under Reduced Motion); Studio cannot set `ReducedMotionEnabled`, so no capture | — |
+| Lane Diary | the strip glides (0.5 s) to the first claimable tier, else the current level (8 here); claimable buttons get `Button.setReady` (shimmer + dot) — this profile has none claimable (1–8 claimed, premium locked) | `c05_diary_glides_to_level.jpg` |
+| Settings | four groups with an icon and a brass rule: Look and sound, In a match, Controls and screen, Language | `c05_settings_groups.jpg` |

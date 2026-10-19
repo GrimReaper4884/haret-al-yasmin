@@ -12,6 +12,7 @@ local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
 local Juice = require(UI.Juice)
+local Button = require(UI.Button)
 local Modal = require(UI.Modal)
 local Amount = require(UI.Amount)
 local Device = require(UI.Device)
@@ -41,6 +42,7 @@ local busy = false
 -- the sheet at 640x282 (head + two buttons + gap = PHONE.column; PHONE.strip adds the strip's bar).
 local PHONE = { legend = 60, head = 16, gap = 4, column = 116, strip = 128, premium = 180, skip = 140 }
 local COLUMN_W, COLUMN_GAP = 118, 6
+local scrollOnRender = true
 
 local function claim(tier: number, track: string, from: GuiObject?)
 	if busy then
@@ -140,6 +142,7 @@ local function tierColumn(t: any, snapshot: any, tier: number, level: number)
 					claim(tier, track, pb)
 				end
 			end)
+			Button.setReady(pb, enabled) -- a claimable tier shimmers and carries the dot (LP-C05)
 			return
 		end
 		local label = Theme.label({ Text = t("pass." .. track), TextSize = 11, Position = UDim2.fromOffset(4, y), Size = UDim2.new(1, -8, 0, 12), TextYAlignment = Enum.TextYAlignment.Top, TextColor3 = if track == "premium" then Theme.rarity.legendary else Theme.colors.text, ZIndex = 12, Parent = col })
@@ -148,9 +151,10 @@ local function tierColumn(t: any, snapshot: any, tier: number, level: number)
 		local b = Theme.button({ Text = text, TextSize = 12, Position = UDim2.fromOffset(6, y + 36), Size = UDim2.new(1, -12, 0, Theme.TOUCH), BackgroundColor3 = if enabled then Theme.colors.button else Theme.colors.buttonDisabled, AutoButtonColor = enabled, ZIndex = 12, Parent = col })
 		b.Activated:Connect(function()
 			if enabled then
-				claim(tier, track)
+				claim(tier, track, b)
 			end
 		end)
+		Button.setReady(b, enabled) -- a claimable tier shimmers and carries the dot (LP-C05)
 	end
 	if phone then
 		trackBlock(PHONE.head, "free", def.free)
@@ -205,10 +209,21 @@ function PassController.render()
 	end
 	-- Scroll to the oldest tier with a claim waiting, else the current level (MH-20).
 	local focus = PassLogic.firstClaimable(snapshot, SeasonPass.tiers) or level
-	strip.CanvasPosition = Vector2.new(math.max(0, (focus - 1) * (COLUMN_W + COLUMN_GAP)), 0)
+	local goal = Vector2.new(math.max(0, (focus - 1) * (COLUMN_W + COLUMN_GAP)), 0)
+	-- The strip glides there when the Diary opens (LP-C05); later renders keep the player's scroll.
+	if scrollOnRender then
+		scrollOnRender = false
+		if Juice.allowed("slide") then
+			strip.CanvasPosition = Vector2.zero
+			game:GetService("TweenService"):Create(strip, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { CanvasPosition = goal }):Play()
+		else
+			strip.CanvasPosition = goal
+		end
+	end
 end
 
 function PassController.open()
+	scrollOnRender = true
 	modal.setVisible(true)
 	PassController.render()
 end

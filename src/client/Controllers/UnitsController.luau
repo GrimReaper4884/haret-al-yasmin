@@ -34,6 +34,10 @@ local RARITY_RANK = { secret = 6, mythic = 5, legendary = 4, epic = 3, rare = 2 
 -- Role order for the grid's second sort key and the filter chips (LP-B05).
 local ROLE_ORDER = { "melee", "ranged", "splash", "support", "healer", "farm" }
 local roleFilter: string? = nil -- nil = every role
+-- Units obtained this session carry a "New" ribbon until their detail is opened (LP-C05).
+local sessionStart = os.time()
+local seenDetail: { [string]: boolean } = {}
+local staggerNext = false -- the next grid render staggers its cards in (on open and on a filter)
 local filterRow: Frame
 local filterChips: { [string]: TextButton } = {}
 
@@ -83,6 +87,7 @@ local function build()
 		local b = Theme.button({ Name = "Filter_" .. key, LayoutOrder = order, Text = "", TextSize = 14, Size = UDim2.fromOffset(width, Theme.TOUCH), BackgroundColor3 = Theme.colors.button, ZIndex = 12, Parent = filterRow })
 		b.Activated:Connect(function()
 			roleFilter = if key == "all" then nil else key
+			staggerNext = true
 			UnitsController.render()
 			Juice.veil(grid, Theme.colors.panel) -- the filtered grid cross-fades in (LP-C03)
 		end)
@@ -329,6 +334,7 @@ local function renderDetail(snapshot: any)
 	filterRow.Visible = false
 	loadoutRow.Visible = false
 	loadoutLabel.Visible = false
+	seenDetail[unitId] = true
 	local stars = UnitLogic.stars(owned.copies, TD.STAR_COPIES)
 	local card = UnitCard.create(unitId, { Position = UDim2.fromOffset(0, 0), Size = UDim2.fromOffset(150, 210) }, { stars = stars, spin = true, zindex = 12 })
 	card.Parent = detail
@@ -552,6 +558,7 @@ function UnitsController.render()
 			table.insert(ids, id)
 		end
 	end
+	local gridCards: { GuiObject } = {}
 	-- Rarity first, then role (the chips' order), then the id (LP-B05).
 	table.sort(ids, function(a, b)
 		local da, db = (Units :: any)[a], (Units :: any)[b]
@@ -580,6 +587,12 @@ function UnitsController.render()
 		local kind = UnitLogic.kind(def)
 		local card = UnitCard.create(id, { LayoutOrder = i }, { name = t(def.nameKey), stars = UnitLogic.stars(owned.copies, TD.STAR_COPIES), selected = inLoadout, sub = kindLine(t, def), role = def.role, reach = kind.reach })
 		card.Parent = grid
+		table.insert(gridCards, card)
+		if (owned.at or 0) >= sessionStart and not seenDetail[id] then
+			local ribbon = Theme.display({ Name = "NewRibbon", Text = t("units.new_ribbon"), TextSize = 12, TextColor3 = Color3.fromHex("#FFD970"), AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, 4, 0, 22), Size = UDim2.fromOffset(46, 18), Rotation = 12, BackgroundColor3 = Theme.v2.diwanRed, BackgroundTransparency = 0, ZIndex = 14, Parent = card })
+			ribbon.TextXAlignment = Enum.TextXAlignment.Center
+			Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = ribbon })
+		end
 		local hit = Button.hit({ Text = "", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 13, Parent = card })
 		Juice.press(hit)
 		Juice.tilt(card, hit)
@@ -588,10 +601,16 @@ function UnitsController.render()
 			UnitsController.render()
 		end)
 	end
+	-- The cards arrive one after another on open and on a filter (Juice.stagger: 30 ms apart, 12 at most).
+	if staggerNext then
+		staggerNext = false
+		Juice.stagger(gridCards, 0.03, 12)
+	end
 end
 
 function UnitsController.open()
 	selected = nil
+	staggerNext = true
 	modal.setVisible(true)
 	UnitsController.render()
 end

@@ -190,6 +190,9 @@ local function showCards(results: { any })
 		Juice.pop(c, 0.4)
 		if SummonSequence.rank(results[1].rarity) >= 3 then
 			SummonController.shabriyehFlash(t("match.shabriyeh"))
+			if SummonSequence.rank(results[1].rarity) >= SummonSequence.rank("mythic") then
+				Juice.quake(revealGrid, 12, 0.6)
+			end
 		end
 		return
 	end
@@ -226,6 +229,9 @@ local function showCards(results: { any })
 			if rank >= 3 then
 				best = math.max(best, rank)
 				SummonController.shabriyehFlash(t("match.shabriyeh"))
+				if rank >= SummonSequence.rank("mythic") then
+					Juice.quake(revealGrid, 12, 0.6) -- a Mythic shakes the screen (LP-C05)
+				end
 				task.wait(0.55)
 			else
 				AudioController.sting("summon_reveal")
@@ -411,6 +417,25 @@ function SummonController.start()
 	StateController.Changed:Connect(render)
 	LocaleController.Changed:Connect(render)
 	LobbyMenuController.register("summon", SummonController.open)
+	if game:GetService("RunService"):IsStudio() then
+		-- Studio test hook (LP-C05 evidence): LocalPlayer.HaretSummonDemo:Invoke() shows a made-up ×10
+		-- with one Mythic on this client only: no summon, no lira, no profile change.
+		local hook = Instance.new("BindableFunction")
+		hook.Name = "HaretSummonDemo"
+		hook.OnInvoke = function(): any
+			local ids = { "walad", "hallaq", "khayyat", "natour", "saqqa", "farran", "qahwaji", "mukhtar", "zaim", "arada" }
+			local fake = {}
+			for _, id in ids do
+				local def = (Units :: any)[id]
+				if def then
+					table.insert(fake, { unitId = id, rarity = def.rarity, result = "copy" })
+				end
+			end
+			SummonController.showResults(fake)
+			return #fake
+		end
+		hook.Parent = game:GetService("Players").LocalPlayer
+	end
 	task.spawn(function()
 		while true do
 			task.wait(30)

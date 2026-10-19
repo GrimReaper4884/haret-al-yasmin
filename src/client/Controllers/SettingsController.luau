@@ -83,6 +83,15 @@ end
 
 type Row = { key: string, labelKey: string, options: { { value: any, textKey: string } } }
 
+-- Theme v2 (LP-C05): the rows in four groups, each under an icon and a title.
+local GROUPS: { { titleKey: string, icon: string, keys: { string } } } = {
+	{ titleKey = "settings.group.look", icon = "ui_music", keys = { "effects", "cutscenes", "music", "sfx", "skipSummon" } },
+	{ titleKey = "settings.group.match", icon = "act_speed", keys = { "camera", "autoUlt", "autoSkip", "autoAfk" } },
+	{ titleKey = "settings.group.controls", icon = "ui_settings", keys = { "uiScale", "panelSide", "quickPlace", "railSide" } },
+	{ titleKey = "settings.group.language", icon = "ui_codes", keys = { "language" } },
+}
+local groupLabels: { TextLabel } = {}
+
 local ROWS: { Row } = {
 	{
 		key = "effects",
@@ -204,17 +213,42 @@ local function render()
 		end
 	end
 	hint.Text = t("settings.effects.hint")
+	for g, group in GROUPS do
+		local l = groupLabels[g]
+		if l then
+			l.Text = t(group.titleKey)
+			Theme.align(l, rtl)
+		end
+	end
 	Theme.align(hint, rtl)
 end
 
 local function build()
 	-- The rows scroll once they outgrow the body (a sheet on phones).
-	modal = Modal.create("Settings", 560, math.min(#ROWS * (Theme.TOUCH + 6) + 48, MAX_BODY), { fill = true })
+	modal = Modal.create("Settings", 560, math.min(#ROWS * (Theme.TOUCH + 6) + #GROUPS * 36 + 48, MAX_BODY), { fill = true })
 	local body = Modal.scroller(modal.body)
 	Create("UIPadding", { PaddingTop = UDim.new(0, 3), PaddingBottom = UDim.new(0, 3), PaddingRight = UDim.new(0, 12), Parent = body })
 	Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = body })
+	-- Each row's place: its group's header, then the group's rows in order.
+	local orderOf: { [string]: number } = {}
+	for g, group in GROUPS do
+		local head = Create("Frame", { Name = "Group" .. g, LayoutOrder = g * 100, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 30), ZIndex = 11, Parent = body })
+		local icon = Create("Frame", { Size = UDim2.fromOffset(24, 24), Position = UDim2.fromOffset(0, 3), BackgroundTransparency = 1, ZIndex = 12, Parent = head })
+		Icons.draw(group.icon, icon)
+		for _, d in icon:GetDescendants() do
+			if d:IsA("GuiObject") then
+				d.ZIndex = 12
+			end
+		end
+		local label = Theme.display({ TextSize = 17, TextColor3 = Theme.v2.woodDark, Position = UDim2.fromOffset(30, 0), Size = UDim2.new(1, -30, 1, 0), ZIndex = 12, Parent = head })
+		groupLabels[g] = label
+		Create("Frame", { AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(1, 0, 0, 2), BackgroundColor3 = Theme.v2.brass, BorderSizePixel = 0, ZIndex = 11, Parent = head })
+		for k, key in group.keys do
+			orderOf[key] = g * 100 + k
+		end
+	end
 	for i, row in ROWS do
-		local line = Create("Frame", { LayoutOrder = i, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, Theme.TOUCH), ZIndex = 11, Parent = body })
+		local line = Create("Frame", { LayoutOrder = orderOf[row.key] or (1000 + i), BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, Theme.TOUCH), ZIndex = 11, Parent = body })
 		rowLabels[row.key] = Theme.label({ TextSize = 15, FontFace = Theme.fontBold, Size = UDim2.fromScale(0.38, 1), ZIndex = 11, Parent = line })
 		local opts = Create("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.fromScale(0.62, 1), ZIndex = 11, Parent = line })
 		Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = opts })
@@ -239,9 +273,9 @@ local function build()
 			end)
 		end
 	end
-	hint = Theme.label({ LayoutOrder = #ROWS + 1, TextSize = 12, TextColor3 = Theme.colors.textMuted, Size = UDim2.new(1, 0, 0, 18), ZIndex = 11, Parent = body })
+	hint = Theme.label({ LayoutOrder = 2000, TextSize = 12, TextColor3 = Theme.colors.textMuted, Size = UDim2.new(1, 0, 0, 18), ZIndex = 11, Parent = body })
 	Theme.label({
-		LayoutOrder = #ROWS + 2,
+		LayoutOrder = 2001,
 		Text = "v" .. Version.VERSION,
 		TextSize = 12,
 		TextColor3 = Theme.colors.textMuted,

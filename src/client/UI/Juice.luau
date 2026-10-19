@@ -271,6 +271,26 @@ function Juice.veil(frame: GuiObject, color: Color3)
 	end)
 end
 
+-- A screen quake (a Mythic pull, Theme v2 LP-C05): `gui` jolts in two dimensions for `seconds`,
+-- easing out. Nothing under Reduced Motion or with Effects off.
+function Juice.quake(gui: GuiObject, amplitude: number?, seconds: number?)
+	if not Juice.allowed("pop") or Fx.level() == "off" then
+		return
+	end
+	local base = gui.Position
+	local amp = amplitude or 10
+	local life = seconds or 0.5
+	task.spawn(function()
+		local t0 = os.clock()
+		while os.clock() - t0 < life do
+			local k = 1 - (os.clock() - t0) / life
+			gui.Position = base + UDim2.fromOffset(math.random(-amp, amp) * k, math.random(-amp, amp) * k)
+			task.wait(0.03)
+		end
+		gui.Position = base
+	end)
+end
+
 -- A currency pill's glow when it gains (Theme v2, LP-C02): its edge flashes gold and fades back.
 function Juice.glow(gui: GuiObject)
 	local stroke = gui:FindFirstChild("Border")
