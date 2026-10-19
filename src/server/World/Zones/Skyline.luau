@@ -58,9 +58,21 @@ function Skyline.build(map: Instance)
 			end
 		end
 	end
+	-- A backdrop piece standing inside a built zone goes (the orchard road covers one dome and a cypress)
+	local function inBuilt(x: number, z: number): boolean
+		for _, b in built do
+			if x >= b[1] and x <= b[3] and z >= b[2] and z <= b[4] then
+				return true
+			end
+		end
+		return false
+	end
 	-- Domes
 	for _, d in { { 55, 30, -80, 18 }, { -62, 24, 60, 12 }, { 30, 22, 112, 10 } } do
 		local x, drum, z, r = d[1], d[2], d[3], d[4]
+		if inBuilt(x, z) then
+			continue
+		end
 		ghost(Kit.column(m, "Drum", Vector3.new(x, 0, z), drum, r * 2, Palette.stoneLight, M.Limestone))
 		ghost(Kit.ball(m, "Dome", Vector3.new(x, drum, z), r * 2, Color3.fromHex("#7F8E8C"), M.Slate))
 		ghost(Kit.column(m, "Finial", Vector3.new(x, drum + r - 0.5, z), 4, 0.6, Palette.copper, M.Metal))
@@ -79,6 +91,9 @@ function Skyline.build(map: Instance)
 	end
 	-- Cypresses
 	for _, c in { { -56, -60 }, { -54, 70 }, { 52, 60 }, { 50, -40 }, { -30, 108 }, { 38, -84 } } do
+		if inBuilt(c[1], c[2]) then
+			continue
+		end
 		for k = 0, 2 do
 			ghost(Kit.ball(m, "Cypress", Vector3.new(c[1], 22 + k * 5, c[2]), 6 - k * 1.5, Color3.fromHex("#2F4A2A"), M.Grass))
 		end

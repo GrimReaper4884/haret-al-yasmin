@@ -36,8 +36,8 @@ LaneZones.zones = {
 	{ id = "hammam", module = "Hammam", bounds = { -62, 0, -24, 40 }, budget = 700, built = true, task = "LP-D04" }, -- + its passage under WestB
 	{ id = "diwan", module = "Diwan", bounds = { 24, -28, 54, -2 }, budget = 900, built = true, task = "LP-D05" }, -- with SquareSE made shallow
 	{ id = "mosque_court", module = "MosqueCourt", bounds = { 24, -2, 50, 26 }, budget = 500, built = true, task = "LP-D05" }, -- with SquareNE made shallow
-	{ id = "post", module = "Post", bounds = { -40, 96, -16, 120 }, budget = 600, built = false, task = "LP-D06" },
-	{ id = "orchard_road", module = "OrchardRoad", bounds = { -16, 96, 40, 150 }, budget = 1000, built = false, task = "LP-D06" },
+	{ id = "post", module = "Post", bounds = { -44, 96, -16, 124 }, budget = 600, built = true, task = "LP-D06" }, -- built with the orchard road
+	{ id = "orchard_road", module = "OrchardRoad", bounds = { -16, 96, 44, 154 }, budget = 1000, built = true, task = "LP-D06" }, -- opens the gate's outer wall
 	{ id = "rooftop_view", module = "Rooftops", bounds = { -24, 24, 24, 84 }, budget = 150, built = false, task = "LP-D07" },
 } :: { Zone }
 

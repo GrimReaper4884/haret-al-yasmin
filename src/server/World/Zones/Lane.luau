@@ -53,7 +53,13 @@ local function gate(map: Instance)
 	-- The heavy studded leaves stand open against the lane walls by day; the night bar leans by
 	-- the east jamb (Props2.gate; the S1E1 thread clue sits by the west leaf).
 	Props2.gate(m, Kit.faceFrame(Vector3.new(0, 0, 91), Vector3.new(0, 0, 1)), 12, 13, true)
-	Kit.box(m, "OuterWall", -30, 0, 96, 30, 20, 98, Palette.stoneWarm, M.Limestone)
+	if LaneZoneLogic.built(LaneZones.zones, "orchard_road") then
+		-- The road to the orchards goes on through the gate (Zones/OrchardRoad, LP-D06)
+		Kit.box(m, "OuterWall", -30, 0, 96, -6, 20, 98, Palette.stoneWarm, M.Limestone)
+		Kit.box(m, "OuterWallE", 6, 0, 96, 30, 20, 98, Palette.stoneWarm, M.Limestone)
+	else
+		Kit.box(m, "OuterWall", -30, 0, 96, 30, 20, 98, Palette.stoneWarm, M.Limestone)
+	end
 	Props.lantern(m, Kit.faceFrame(Vector3.new(-9, 11, 88), Vector3.new(0, 0, -1)))
 	Props.lantern(m, Kit.faceFrame(Vector3.new(9, 11, 88), Vector3.new(0, 0, -1)))
 

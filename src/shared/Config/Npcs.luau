@@ -194,7 +194,7 @@ local Npcs: { [string]: NpcDef } = {
 		clipsFrom = { idle = "natour" }, -- an enemy figure: it has a walk, no idle of its own
 		nameKey = "npc.sergeant_npc.name",
 		roleKey = "npc.sergeant_npc.role",
-		position = { -27, 0, 106 }, -- at the post's desk (LP-D06 places it)
+		position = { -31, 0, 109 }, -- in the post's yard, before its door (World/Zones/Post)
 		yaw = -90, -- faces the road (+X)
 		skin = "#C08A62",
 		robe = "#3B4A3A",
@@ -207,7 +207,7 @@ local Npcs: { [string]: NpcDef } = {
 		clipsFrom = { idle = "natour" },
 		nameKey = "npc.corporal_npc.name",
 		roleKey = "npc.corporal_npc.role",
-		position = { -21, 0, 112 }, -- by the post's door (LP-D06 places it)
+		position = { -24.5, 0, 113.5 }, -- in the post's yard (World/Zones/Post)
 		yaw = -90,
 		skin = "#B97F5A",
 		robe = "#3B4A3A",

@@ -1240,3 +1240,18 @@ Client, 8 s RenderStepped: 481 frames, 60.1 FPS, 16.6 ms median / 18.0 ms p95, a
 | From the square's south-west | the minaret over SquareNE; the 'akeed walking by the diwan portal | `d05_minaret.jpg` |
 
 **Owner STOP:** phone FPS with four zones in (1,924 parts; real device).
+
+### LP-D06 the post and the orchard road
+
+*Play Solo, desktop Studio, `noAutoAfk` set.* Console: `[World] built 2089 parts (budget 9000) · diwan 115 · mosque_court 104 ·
+hammam 93 · souq 254 · orchard_road 79 · post 97`, `server ready`, no warnings from our code. Abu Jawdan and Corporal Houri spawned
+(zone built). Client, 8 s RenderStepped: 481 frames, 60.1 FPS, 16.7 ms median / 18.1 ms p95, all 2,089 map parts streamed in.
+
+| View | What the capture shows | Capture |
+|---|---|---|
+| Through the gate | the road beyond the open leaves, low orchard walls and the well on the left, the pickle cart on the right, the rival lane's gate at the end | `docs/captures/lp/d06_through_gate.jpg` |
+| Post yard | the stone post with its door and barred windows, Abu Jawdan at the door, Corporal Houri by the sentry box, the flag pole, the wanted poster, the straw dummies | `d06_post_yard.jpg` |
+| Road's end | the rival gate on the vista wall, olives, the cart with its pickle jars, the well | `d06_road_end.jpg` |
+
+First pass placed the kit `police_post` as the building; the capture showed a sentry box in an empty yard, so the post became a Facade
+block with the sentry box at the mouth. **Owner STOP:** phone FPS with six zones in (2,089 parts; real device).
