@@ -226,6 +226,47 @@ local Npcs: { [string]: NpcDef } = {
 		robe = "#5E7D3A",
 		accent = "#FBF8F1",
 	},
+	-- LP-D13 (owner approved 2026-10-19, D-122): the za'im's two elders on the liwan's back bench either side of
+	-- him, the lane's notables in their unit figures (no new names); ambient: the za'im takes the prompt.
+	elder_baker = {
+		look = "farran",
+		pose = "seated",
+		zone = "diwan",
+		talk = false,
+		nameKey = "npc.elder_baker.name",
+		roleKey = "npc.elder_baker.role",
+		position = { 50.7, 1.2, -18.6 }, -- the back bench (World/Zones/Diwan), south of the za'im
+		yaw = 90, -- faces the door (-X)
+		skin = "#C08A62",
+		robe = "#EADFC8",
+		accent = "#6B4423",
+	},
+	elder_smith = {
+		look = "haddad",
+		pose = "seated",
+		zone = "diwan",
+		talk = false,
+		nameKey = "npc.elder_smith.name",
+		roleKey = "npc.elder_smith.role",
+		position = { 50.7, 1.2, -11.4 }, -- the back bench, north of the za'im
+		yaw = 90,
+		skin = "#B97F5A",
+		robe = "#3B4A3A",
+		accent = "#1F1B18",
+	},
+	-- Eido the bath attendant by the towel bench in the hammam's court (LP-D13): a crowd look, ambient.
+	hammam_worker = {
+		zone = "hammam",
+		talk = false,
+		nameKey = "npc.hammam_worker.name",
+		roleKey = "npc.hammam_worker.role",
+		position = { -46.6, 0, 34.6 }, -- beside the bench of folded towels (World/Zones/Hammam)
+		yaw = 0, -- faces the bath-house (-Z)
+		skin = "#C68E64",
+		robe = "#FBF8F1",
+		accent = "#A4302A",
+		headwear = "cap",
+	},
 	-- LP-D08: the four Meshy looks of their own (Config/CharacterLooks "lane NPCs").
 	feryal_roof = {
 		look = "feryal",

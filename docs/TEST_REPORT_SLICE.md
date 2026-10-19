@@ -1353,6 +1353,15 @@ stopped at gate 96: no match ended, nothing paid. The fanous was attached with C
 | Balance | `lune run tests/balance ev_ramadan`: see D-122 | — |
 | Specs | 451 green (window, villains, no-Robux shop, event-only item; strings inside the lane) | — |
 
+### LP-D13 Eido and the diwan's elders
+
+*Play Solo, lobby; `HaretDebug noAutoAfk`. `server ready`, no errors from our code.*
+
+| Check | Result | Capture |
+|---|---|---|
+| The liwan | Abu Baseer, Za'im Abu Faleh and Abu Shater seated side by side on the back bench behind the low table | `docs/captures/lp/d13_liwan.jpg` |
+| The hammam court | Eido by the bench of folded towels, Abu Basim beside the door | `d13_eido.jpg` |
+
 ### LP-D10 the lane's beats
 
 *Play Solo, desktop Studio, `noAutoAfk` set; each beat reached with `HarnessClockOffset`.* `[World] built 2125 parts`, no
