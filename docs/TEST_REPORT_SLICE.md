@@ -1340,3 +1340,14 @@ Normal 42/100.
 placed at the same feet). Wave 1 started with K: cash 300 = 600 − 450 + 150 (Count the gold fired at the wave's start on
 auto); the panel reads "Abu Brahim the Cloth Merchant", **Count the gold**, Auto On, Sell $270 (60 % of 450). Console: no
 errors from our code. Play stopped in wave 1; the match was not finished. Capture: `docs/captures/lp/e01_merchant_panel.jpg`.
+
+### LP-E02 the merchant on screen
+
+*Play Solo, `noAutoAfk`, `HaretDebug match ep1,normal` + `placeAny tajir` + `cash 20000`; upgrades sent through the client's
+UpgradeTower remote.* Five upgrades `true`; the path "a" request answered `false: solo_path`. The chooser (debug log hidden for
+the capture): "The Lane Fund" greyed with "No one to share with in a match alone.", "The Buried Jar · Every fifth wave pays
+double.", both $3,400, Sell $3,720 — `docs/captures/lp/e02_chooser_solo.jpg`. Count the gold tapped through UseAbility: cash
+14,550 → 15,900 (+1,350) with 6 coin frames on screen at that instant; the next Count captured with a coin leaving Abu Brahim
+toward the cash pill (17,440) — `e02_count_gold.jpg`. Console: no errors from our code. Play stopped in wave 2, match not
+finished. Specs: 446 green (the Lane Fund refused alone and allowed with a teammate; `Vfx.FARM` within the coin pool).
+**Owner STOP:** Test → Clients and Servers with two players to watch the Fund pay the teammate live.

@@ -531,6 +531,7 @@ ERR_KEYS = {
 	max_level = "match.err.max_level",
 	match_over = "match.err.match_over",
 	bad_path = "match.err.bad_path",
+	solo_path = "match.err.solo_path",
 	bad_request = "notify.error",
 }
 
@@ -578,6 +579,12 @@ local function effectiveAuto(rec: any): boolean
 end
 
 local portraitFor: string? = nil
+
+-- True in a one-player match (the Lane Fund has no one to share with there, LP-E02).
+local function soloMatch(): boolean
+	local info = MatchController.info()
+	return info ~= nil and #info.players < 2
+end
 
 local function renderTowerPanel()
 	local id = selected
@@ -702,10 +709,15 @@ local function renderTowerPanel()
 			local nameLabel = card:FindFirstChild("PathName") :: TextLabel
 			local descLabel = card:FindFirstChild("PathDesc") :: TextLabel
 			local costLabel = card:FindFirstChild("PathCost") :: TextLabel
+			-- The Lane Fund in a one-player match: greyed, it says why (LP-E02)
+			local alone = UnitLogic.pathNeedsParty(def, pathKey) and soloMatch()
+			if alone and sigPick == pathKey then
+				sigPick = nil
+			end
 			nameLabel.Text = t(base .. ".name")
-			descLabel.Text = t(base .. ".desc")
+			descLabel.Text = if alone then t("match.sig_solo") else t(base .. ".desc")
 			costLabel.Text = t("match.sig_cost", { n = cost })
-			card.BackgroundColor3 = if sigPick == pathKey then rarityColor:Lerp(Color3.new(0, 0, 0), 0.25) else Theme.colors.button
+			card.BackgroundColor3 = if alone then Theme.colors.buttonDisabled elseif sigPick == pathKey then rarityColor:Lerp(Color3.new(0, 0, 0), 0.25) else Theme.colors.button
 			local border = card:FindFirstChild("Border") :: UIStroke?
 			if border then
 				border.Color = if sigPick == pathKey then Theme.colors.gold else Theme.colors.panelStroke
@@ -1457,6 +1469,12 @@ function PlacementController.start()
 	for _, v in views do
 		for pathKey, card in v.sigCards do
 			card.Activated:Connect(function()
+				local rec = if selected then towers[selected] else nil
+				local def = if rec then (Units :: any)[rec.unitId] else nil
+				if def and UnitLogic.pathNeedsParty(def, pathKey) and soloMatch() then
+					ToastController.show("match.err.solo_path")
+					return
+				end
 				sigPick = pathKey
 				Juice.punch(card, 0.08)
 				renderTowerPanel()

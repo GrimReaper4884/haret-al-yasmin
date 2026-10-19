@@ -31,6 +31,7 @@ local SettingsController = require(script.Parent.SettingsController)
 local MatchCameraController = require(script.Parent.MatchCameraController)
 local PlacementController = require(script.Parent.PlacementController)
 local RigAnimController = require(script.Parent.RigAnimController)
+local ToastController = require(script.Parent.ToastController)
 local CoinFlight = require(UI.CoinFlight)
 
 local MatchFxController = {}
@@ -531,6 +532,61 @@ local function towerSold(at: Vector3)
 	end
 end
 
+-- A farm paying out (LP-E02): a gold ring pulses on it; your own farm's coins fly to your cash pill
+-- with the coin sound. A pickpocket's theft flashes red (and you are told once a wave).
+local function farmRing(at: Vector3, color: string)
+	local c = Vfx.FARM
+	local ring = Fx.part(Enum.PartType.Cylinder, true)
+	if ring then
+		ring.Color = Color3.fromHex(color)
+		ring.Transparency = 0.25
+		ring.Size = Vector3.new(0.2, 1.5, 1.5)
+		ring.CFrame = CFrame.new(at + Vector3.new(0, 0.25, 0)) * CFrame.Angles(0, 0, math.rad(90))
+		Fx.fade(ring, c.ringLife, { Size = Vector3.new(0.1, c.ringSize, c.ringSize), Transparency = 1 })
+	end
+end
+
+local function farmPaid(towerId: number, amount: number)
+	local at = towerAt[towerId]
+	local ti = towerInfo[towerId]
+	if not at or amount <= 0 then
+		return
+	end
+	if Fx.any() then
+		farmRing(at, Vfx.FARM.ringColor)
+	end
+	if not ti or ti.owner ~= Players.LocalPlayer.Name then
+		return
+	end
+	AudioController.sting("coin")
+	local pill = MatchController.cashPill()
+	if not pill or not Fx.any() then
+		return
+	end
+	local c = Vfx.FARM
+	for i = 1, c.coins do
+		task.delay((i - 1) * c.coinGap, function()
+			local jitter = Vector3.new((math.random() - 0.5) * 1.5, 3 + math.random(), (math.random() - 0.5) * 1.5)
+			CoinFlight.fly(at + jitter, pill)
+		end)
+	end
+end
+
+local stolenWave = -1
+local function farmRobbed(towerId: number)
+	local at = towerAt[towerId]
+	if at and Fx.any() then
+		farmRing(at, Vfx.FARM.stolenColor)
+	end
+	local ti = towerInfo[towerId]
+	local s = MatchController.state()
+	local wave = if s and type(s.wave) == "number" then s.wave else 0
+	if ti and ti.owner == Players.LocalPlayer.Name and wave ~= stolenWave then
+		stolenWave = wave
+		ToastController.show("match.stolen")
+	end
+end
+
 ---------------------------------------------------------------- Moments (PV-B06)
 
 local topBand: Frame
@@ -819,6 +875,12 @@ local function onEvents(events: { any })
 			towerAt[e.id] = nil
 		elseif e.type == "attack" and e.ability then
 			ultimate(e)
+		elseif e.type == "income" and type(e.tower) == "number" and type(e.amount) == "number" then
+			farmPaid(e.tower, e.amount)
+		elseif e.type == "harvest" and type(e.tower) == "number" then
+			RigAnimController.attack(e.tower, nil, true) -- Count the gold: his counting gesture
+		elseif e.type == "stolen" and type(e.tower) == "number" then
+			farmRobbed(e.tower)
 		elseif e.type == "waveStart" or e.type == "waveEnd" or e.type == "won" or e.type == "lost" or e.type == "ally" then
 			if e.type == "waveEnd" then
 				AudioController.music("match")

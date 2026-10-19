@@ -178,6 +178,15 @@ function TdTowers.upgrade(state: any, owner: string, towerId: any, def: any, rul
 		if path ~= "a" and path ~= "b" then
 			return false, "bad_path", nil
 		end
+		if UnitLogic.pathNeedsParty(def, path) then
+			local players = 0
+			for _ in state.players do
+				players += 1
+			end
+			if players < 2 then
+				return false, "solo_path", nil -- the Lane Fund with no one to share with (LP-E02)
+			end
+		end
 		local cost = UnitLogic.costFor(sig[path].cost, t.trait)
 		if p.cash < cost then
 			return false, "cannot_afford", nil

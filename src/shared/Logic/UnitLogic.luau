@@ -224,6 +224,13 @@ function UnitLogic.stats(def: any, level: number, stars: number, trait: any?, st
 	}
 end
 
+-- A level-7 path that only pays off with teammates (the Lane Fund, LP-E02): refused in a one-player
+-- match, greyed in the panel there.
+function UnitLogic.pathNeedsParty(def: any, path: string): boolean
+	local sig = def.signature and def.signature[path]
+	return sig ~= nil and sig.set ~= nil and sig.set.fundShare ~= nil
+end
+
 -- What kind of defender a unit is (LP-B05, LOOK_AND_PLAY_PLAN §6.3), derived from its config so the
 -- cards and the hotbar can say it: role, attack pattern at level 1 (single target, splash radius, a
 -- slowing trap patch, or no attack), what it can reach (stealth, a lantern for others, dousing the
@@ -234,7 +241,7 @@ export type Kind = {
 	pattern: "single" | "splash" | "trap" | "none",
 	splash: number?, -- radius (studs) for splash and trap
 	reach: { string }, -- "stealth" | "lantern" | "douse", in that order
-	ability: string?, -- "shabriyeh" | "sweep" | "mark"
+	ability: string?, -- "shabriyeh" | "sweep" | "mark" | "harvest"
 	abilityCooldown: number?,
 	economy: { kind: "income" | "bounty", amount: number }?,
 	maxPlaced: number,

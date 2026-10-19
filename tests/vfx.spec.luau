@@ -450,5 +450,12 @@ return function(t)
 			t.truthy(S.aura.transparency >= 0.6 and S.shield.transparency >= 0.6, "rings stay subtle")
 			t.truthy(S.reveal.life <= 1.5 and S.summon.life <= 1.5, "flashes are short")
 		end)
+
+		t.it("a farm payout's coins and rings stay small (LP-E02)", function()
+			local F = Vfx.FARM
+			t.truthy(F.coins >= 1 and F.coins <= Vfx.COIN_FLIGHT.max, "no more coins than the flight pool")
+			t.truthy(F.coinGap > 0 and F.coinGap * F.coins < 1, "the burst lasts under a second")
+			t.truthy(F.ringLife > 0 and F.ringLife <= 1 and F.ringSize > 0 and F.ringSize <= 10)
+		end)
 	end)
 end

@@ -90,6 +90,9 @@ return {
 	-- petals; upgrade: `stars` gold sparks bursting up and a 1 -> `punch` -> 1 scale punch on the
 	-- figure, plus a brief gold glow from level `glowLevel`; sell: `coins` cash coins into the pill.
 	-- The range ring gets an ablaq edge of `dashes` alternating basalt/cream dashes.
+	-- A farm paying out (LP-E02): coins fly from it to the owner's cash pill and a gold ring pulses on
+	-- it; a pickpocket's theft flashes a red ring (one toast a wave).
+	FARM = { coins = 5, coinGap = 0.07, ringColor = "#F2C14E", ringSize = 6, ringLife = 0.6, stolenColor = "#C9483B" },
 	TOWER = {
 		dustRadius = 3.5, dustLife = 0.45, dustColor = "#D8C4A0",
 		petals = 4, petalLife = 0.8, petalColor = "#FFF6EA",
