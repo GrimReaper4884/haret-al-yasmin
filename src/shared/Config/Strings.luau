@@ -6,8 +6,6 @@
 local en: { [string]: string } = {
 	-- HUD
 	["hud.currency"] = "{n} qirsh",
-	["hud.quest_header"] = "Errand",
-	["hud.no_quest"] = "Talk to the neighbors to find work.",
 	["hud.language"] = "عربي",
 	["hud.close"] = "Close",
 
@@ -15,8 +13,10 @@ local en: { [string]: string } = {
 	["prompt.talk"] = "Talk",
 
 	-- NPCs
-	["npc.abu_nadim.name"] = "Abu Nadim",
-	["npc.abu_nadim.role"] = "Baker",
+	["npc.abu_baseer.name"] = "Abu Baseer",
+	["npc.abu_baseer.role"] = "Baker",
+	["dlg.abu_baseer.greet"] = "Ahlan! Bread and ka'ak, hot from the oven. And when the thieves come at night, I throw loaves, not punches.",
+	["dlg.abu_baseer.greet.ok"] = "Bless your oven!",
 	["npc.sitt_wardeh.name"] = "Sitt Wardeh",
 	["npc.sitt_wardeh.role"] = "Neighbor",
 	["npc.khalil_tailor.name"] = "Khalil",
@@ -24,14 +24,10 @@ local en: { [string]: string } = {
 
 	-- Items
 	["item.basket_kaak.name"] = "Basket of ka'ak",
-	["item.basket_kaak.desc"] = "Warm sesame ka'ak from Abu Nadim's oven.",
+	["item.basket_kaak.desc"] = "Warm sesame ka'ak from Abu Baseer's oven.",
 	["item.tarboosh_red.name"] = "Red tarboosh",
 	["item.tarboosh_red.desc"] = "A felt tarboosh with a black silk tassel, pressed by Khalil himself.",
 
-	-- Quest
-	["quest.delivery_kaak.title"] = "Warm ka'ak for Sitt Wardeh",
-	["quest.delivery_kaak.obj_active"] = "Bring the basket to Sitt Wardeh's house, south of the fountain.",
-	["quest.delivery_kaak.obj_completed"] = "Delivered. Abu Nadim is grateful.",
 
 	-- Shop
 	["shop.khalil_tailor.title"] = "Khalil's tailoring",
@@ -48,58 +44,23 @@ local en: { [string]: string } = {
 	["dlg.common.one_moment"] = "One moment.",
 	["dlg.common.maybe_later"] = "Maybe later.",
 
-	-- Dialogue: Abu Nadim
-	["dlg.abu_nadim.offer"] = "Ahlan, newcomer! My hands are deep in dough and Sitt Wardeh is waiting for her ka'ak. Could you carry this basket to her house, past the fountain?",
-	["dlg.abu_nadim.offer.accept"] = "Of course, I'll take it.",
-	["dlg.abu_nadim.accepted"] = "Bless your hands! And mind you don't nibble any on the way.",
-	["dlg.abu_nadim.accepted.ok"] = "Not a single crumb!",
-	["dlg.abu_nadim.waiting"] = "The ka'ak is getting cold! Sitt Wardeh lives south, past the fountain.",
-	["dlg.abu_nadim.thanks"] = "Sitt Wardeh says you were quicker than my own son. Come back soon, there's always work at the oven.",
 
 	-- Dialogue: Sitt Wardeh
-	["dlg.sitt_wardeh.greet"] = "Welcome to our lane, my child. If you're looking for work, Abu Nadim the baker always needs a hand.",
-	["dlg.sitt_wardeh.delivery"] = "Is that Abu Nadim's ka'ak I smell? Come in, come in, put it right here.",
-	["dlg.sitt_wardeh.delivery.give"] = "Here you are, Sitt Wardeh.",
-	["dlg.sitt_wardeh.delivered"] = "Still warm! Take these fifty qirsh, and no arguing. Go and buy yourself something proper from Khalil.",
-	["dlg.sitt_wardeh.after"] = "May God keep you. The whole lane is talking about the helpful newcomer.",
+	["dlg.sitt_wardeh.greet"] = "Welcome to our lane, my child. If you're hungry, Abu Baseer's oven is always warm.",
 
 	-- Dialogue: Khalil
 	["dlg.khalil_tailor.greet"] = "A bare head on a fine day like this? That won't do. My tarboosh are the best in the city.",
 	["dlg.khalil_tailor.greet.shop"] = "Show me your work.",
 
-	-- Season 1 · Episode 1
+	-- Hajj Rashid
 	["npc.hajj_rashid.name"] = "Hajj Rashid",
 	["npc.hajj_rashid.role"] = "Spice merchant",
 	["prompt.inspect"] = "Inspect",
-	["hud.episode"] = "Season 1 · Episode {n}",
-	["hud.clues"] = "Clues {n}/{total}",
-	["quest.s1e1.title"] = "Wedding Eve",
-	["quest.s1e1.obj_active"] = "Search the lane for traces: by Hajj Rashid's chest, at the gate, around the fountain.",
-	["quest.s1e1.obj_ready"] = "Bring what you found to Hajj Rashid.",
-	["quest.s1e1.obj_completed"] = "Episode 1 complete. To be continued…",
-	["clue.slipper.name"] = "Slipper print",
-	["clue.slipper.text"] = "A soft slipper print in spilled cumin beside the chest. Not a boot: whoever did this belongs to the house, or the lane.",
-	["clue.thread.name"] = "Indigo thread",
-	["clue.thread.text"] = "A torn indigo thread caught on a nail of the gate door. Someone squeezed through the locked gate in the night.",
-	["clue.token.name"] = "Copper token",
-	["clue.token.text"] = "A copper token stamped with a crescent, dropped beside a bench. No shop in our lane gives tokens like this.",
 	["clue.close"] = "Noted",
 	["notify.clue_found"] = "Clue found: {clue} ({n}/{total})",
 	["dlg.hajj_rashid.busy"] = "Not now, child, not now. A wedding tomorrow and a thousand things to do!",
-	["dlg.hajj_rashid.plea"] = "You're the newcomer who helped Sitt Wardeh? Then come closer, and keep your voice down.",
-	["dlg.hajj_rashid.plea.ask"] = "What's wrong, Hajj?",
-	["dlg.hajj_rashid.plea2"] = "Layla's necklace, the diamonds her mother wore on her own wedding day, is gone from my chest. The gate was locked all night. One of our own took it.",
-	["dlg.hajj_rashid.plea2.accept"] = "I'll find out what happened.",
-	["dlg.hajj_rashid.plea2.decline"] = "This isn't my business.",
-	["dlg.hajj_rashid.accepted"] = "God bless you. Look quietly: by my chest, at the gate, around the fountain. And not a word to Mansour the qabaday. He shouts first and thinks later.",
-	["dlg.hajj_rashid.searching"] = "Anything yet? Someone must have left a trace. Try my chest, the gate, and the fountain.",
-	["dlg.hajj_rashid.report"] = "A slipper print… indigo thread on the gate… and a copper token from outside the lane? Then someone left at night.",
-	["dlg.hajj_rashid.report.give"] = "Here's everything I found.",
-	["dlg.hajj_rashid.reported"] = "Take this for your trouble. But keep your eyes open. Mansour will want a name by sunset, and I fear he'll pick the wrong one.",
-	["dlg.hajj_rashid.reported.ok"] = "I'll keep watching.",
-	["dlg.hajj_rashid.after"] = "Layla tells me to be patient. Patient! With her wedding hanging by a thread…",
 
-	-- Wardrobe
+	-- Cosmetics
 	["item.tarboosh_black.name"] = "Black tarboosh",
 	["item.tarboosh_black.desc"] = "Sober black felt with a red tassel, for the serious gentleman.",
 	["item.taqiyah_white.name"] = "White cap",
@@ -126,10 +87,6 @@ local en: { [string]: string } = {
 	["item.shawl_embroidered.desc"] = "A turquoise shawl with a gold border, embroidered by the women of the lane.",
 
 	-- Store and Robux
-	["hud.wardrobe"] = "Wardrobe",
-	["wardrobe.title"] = "Your wardrobe",
-	["wardrobe.empty"] = "Nothing here yet. Visit Khalil the tailor in the lane.",
-	["wardrobe.errand_item"] = "Errand item",
 	["store.title"] = "The lane store",
 	["store.open"] = "+",
 	["store.robux"] = "R$ {n}",
@@ -616,7 +573,7 @@ local en: { [string]: string } = {
 
 	-- Lobby signs and ambience (world text)
 	["sign.lane"] = "حارة الياسمين",
-	["sign.bakery"] = "فرن أبو نديم",
+	["sign.bakery"] = "فرن أبو بصير",
 	["sign.tailor"] = "خياطة خليل",
 	["sign.spice"] = "عطارة الحاج رشيد",
 	["sign.barber"] = "حلاق الحارة",
@@ -665,7 +622,6 @@ local en: { [string]: string } = {
 	["dlg.akeed_npc.greet"] = "Stand straight, young man. The lane needs you at the gate tonight.",
 	["dlg.akeed_npc.greet.go"] = "To the gate",
 	["dlg.hammam_owner.greet"] = "Steam, soap and a good scrub! Come out of my hammam looking like a groom.",
-	["dlg.hammam_owner.greet.go"] = "Show me the wardrobe",
 	["dlg.sergeant_npc.greet"] = "Ahem! Orders are posted on the board. The post expects every man of the lane to read them.",
 	["dlg.sergeant_npc.greet.go"] = "Read the orders",
 	["dlg.mukhtar_npc.greet"] = "Shh, not so loud! My wife is up on the roof, and she hears everything. Everything!",
@@ -850,8 +806,6 @@ local en: { [string]: string } = {
 	-- LP-D13: the bath attendant (one letter off) and the diwan's elders (approved roster names)
 	["npc.hammam_worker.name"] = "Eido",
 	["npc.hammam_worker.role"] = "Bath attendant",
-	["npc.elder_baker.name"] = "Abu Baseer",
-	["npc.elder_baker.role"] = "Elder of the lane, the baker",
 	["npc.elder_smith.name"] = "Abu Shater",
 	["npc.elder_smith.role"] = "Elder of the lane, the blacksmith",
 	["npc.grocer.name"] = "Abu Marzouk",
@@ -1085,28 +1039,25 @@ local en: { [string]: string } = {
 
 local ar: { [string]: string } = {
 	["hud.currency"] = "{n} قرش",
-	["hud.quest_header"] = "مشوار",
-	["hud.no_quest"] = "احكِ مع الجيران لتلاقي شغل.",
 	["hud.language"] = "English",
 	["hud.close"] = "إغلاق",
 
 	["prompt.talk"] = "احكِ",
 
-	["npc.abu_nadim.name"] = "أبو نديم",
-	["npc.abu_nadim.role"] = "الفرّان",
+	["npc.abu_baseer.name"] = "أبو بصير",
+	["npc.abu_baseer.role"] = "الفرّان",
+	["dlg.abu_baseer.greet"] = "أهلين! خبز وكعك سخن من الفرن. وإذا إجوا الحرامية بالليل، بضربهن بالأرغفة مش بالقبضات.",
+	["dlg.abu_baseer.greet.ok"] = "يسلم فرنك!",
 	["npc.sitt_wardeh.name"] = "الست وردة",
 	["npc.sitt_wardeh.role"] = "جارة",
 	["npc.khalil_tailor.name"] = "خليل",
 	["npc.khalil_tailor.role"] = "الخيّاط",
 
 	["item.basket_kaak.name"] = "سلّة كعك",
-	["item.basket_kaak.desc"] = "كعك بالسمسم سخن من فرن أبو نديم.",
+	["item.basket_kaak.desc"] = "كعك بالسمسم سخن من فرن أبو بصير.",
 	["item.tarboosh_red.name"] = "طربوش أحمر",
 	["item.tarboosh_red.desc"] = "طربوش جوخ بشرّابة حرير سوداء، كبسه خليل بإيده.",
 
-	["quest.delivery_kaak.title"] = "كعك سخن للست وردة",
-	["quest.delivery_kaak.obj_active"] = "وصّل السلّة لبيت الست وردة، جنوب البحرة.",
-	["quest.delivery_kaak.obj_completed"] = "تمّ التوصيل. أبو نديم ممنون منك.",
 
 	["shop.khalil_tailor.title"] = "خياطة خليل",
 	["shop.buy"] = "اشترِ · {price}",
@@ -1121,18 +1072,8 @@ local ar: { [string]: string } = {
 	["dlg.common.one_moment"] = "لحظة.",
 	["dlg.common.maybe_later"] = "يمكن بعدين.",
 
-	["dlg.abu_nadim.offer"] = "أهلين بالجار الجديد! إيديّ غرقانين بالعجين والست وردة ناطرة كعكاتها. بتوصّل هالسلّة لبيتها، ورا البحرة؟",
-	["dlg.abu_nadim.offer.accept"] = "أكيد، هاتها.",
-	["dlg.abu_nadim.accepted"] = "تسلم إيديك! وانتبه لا تاكل شي بالطريق.",
-	["dlg.abu_nadim.accepted.ok"] = "ولا فتفوتة!",
-	["dlg.abu_nadim.waiting"] = "الكعك عم يبرد! بيت الست وردة جنوب، ورا البحرة.",
-	["dlg.abu_nadim.thanks"] = "الست وردة بتقول إنك أسرع من ابني. ارجع قريباً، الشغل عالفرن ما بيخلص.",
 
-	["dlg.sitt_wardeh.greet"] = "أهلاً بحارتنا يا ابني. إذا بدك شغل، أبو نديم الفرّان دايماً بدّه حدا يساعده.",
-	["dlg.sitt_wardeh.delivery"] = "هيدي ريحة كعك أبو نديم؟ تفضّل تفضّل، حطّها هون.",
-	["dlg.sitt_wardeh.delivery.give"] = "تفضّلي يا ست وردة.",
-	["dlg.sitt_wardeh.delivered"] = "بعدها سخنة! خود هالخمسين قرش وبلا نقاش. روح اشتري شي يليق فيك من عند خليل.",
-	["dlg.sitt_wardeh.after"] = "الله يحميك. كل الحارة عم تحكي عن الجار الجديد الشاطر.",
+	["dlg.sitt_wardeh.greet"] = "أهلاً بحارتنا يا ابني. إذا جعت، فرن أبو بصير دايماً سخن.",
 
 	["dlg.khalil_tailor.greet"] = "راسك مكشوف بهيك نهار حلو؟ ما بيصير. طرابيشي أحسن طرابيش بالبلد.",
 	["dlg.khalil_tailor.greet.shop"] = "فرجيني شغلك.",
@@ -1140,33 +1081,9 @@ local ar: { [string]: string } = {
 	["npc.hajj_rashid.name"] = "الحاج رشيد",
 	["npc.hajj_rashid.role"] = "العطّار",
 	["prompt.inspect"] = "افحص",
-	["hud.episode"] = "الموسم ١ · الحلقة {n}",
-	["hud.clues"] = "الأدلّة {n}/{total}",
-	["quest.s1e1.title"] = "ليلة العرس",
-	["quest.s1e1.obj_active"] = "دوّر بالحارة على أثر: جنب صندوق الحاج رشيد، عند البوابة، وحوالي البحرة.",
-	["quest.s1e1.obj_ready"] = "خود اللي لقيته للحاج رشيد.",
-	["quest.s1e1.obj_completed"] = "خلصت الحلقة الأولى. يتبع…",
-	["clue.slipper.name"] = "أثر شحّاطة",
-	["clue.slipper.text"] = "أثر شحّاطة طرية بالكمّون المكبوب جنب الصندوق. مش جزمة: اللي عملها من أهل البيت، أو من الحارة.",
-	["clue.thread.name"] = "خيط نيلي",
-	["clue.thread.text"] = "خيط نيلي مقطوع علقان بمسمار باب البوابة. حدا انسلّ من البوابة المسكّرة بالليل.",
-	["clue.token.name"] = "فيشة نحاس",
-	["clue.token.text"] = "فيشة نحاس مختومة بهلال، واقعة جنب مقعد. ولا دكان بحارتنا بيعطي هيك فيش.",
 	["clue.close"] = "تمام",
 	["notify.clue_found"] = "لقيت دليل: {clue} ({n}/{total})",
 	["dlg.hajj_rashid.busy"] = "مش هلّق يا ابني، مش هلّق. العرس بكرة وعندي ألف شغلة!",
-	["dlg.hajj_rashid.plea"] = "إنت الجار الجديد اللي ساعد الست وردة؟ طيب قرّب، ووطّي صوتك.",
-	["dlg.hajj_rashid.plea.ask"] = "خير يا حاج؟",
-	["dlg.hajj_rashid.plea2"] = "عقد ليلى، الألماس اللي لبسته إمها يوم عرسها، راح من صندوقي. البوابة كانت مسكّرة طول الليل. واحد منّا أخده.",
-	["dlg.hajj_rashid.plea2.accept"] = "رح أعرف شو صار.",
-	["dlg.hajj_rashid.plea2.decline"] = "هاد مش شغلي.",
-	["dlg.hajj_rashid.accepted"] = "الله يرضى عليك. دوّر بهدوء: جنب صندوقي، عند البوابة، وحوالي البحرة. وولا كلمة لمنصور القبضاي، بيصرّخ أول وبيفكّر بعدين.",
-	["dlg.hajj_rashid.searching"] = "لقيت شي؟ أكيد حدا ترك أثر. شوف جنب صندوقي، والبوابة، والبحرة.",
-	["dlg.hajj_rashid.report"] = "أثر شحّاطة… خيط نيلي عالبوابة… وفيشة نحاس من برّا الحارة؟ يعني حدا طلع بالليل.",
-	["dlg.hajj_rashid.report.give"] = "هاد كل شي لقيته.",
-	["dlg.hajj_rashid.reported"] = "خود هدول عتعبك. بس خلّي عيونك مفتّحة. منصور رح يطلب اسم قبل المغرب، وخايف ينقّي الاسم الغلط.",
-	["dlg.hajj_rashid.reported.ok"] = "رح ضلّ منتبه.",
-	["dlg.hajj_rashid.after"] = "ليلى بتقلّي اصبر. أصبر! وعرسها معلّق بشعرة…",
 
 	["item.tarboosh_black.name"] = "طربوش أسود",
 	["item.tarboosh_black.desc"] = "جوخ أسود رزين بشرّابة حمرا، للأفندي الجدّي.",
@@ -1193,10 +1110,6 @@ local ar: { [string]: string } = {
 	["item.shawl_embroidered.name"] = "شال مطرّز",
 	["item.shawl_embroidered.desc"] = "شال فيروزي بحاشية دهبية، طرّزوه نسوان الحارة.",
 
-	["hud.wardrobe"] = "الخزانة",
-	["wardrobe.title"] = "خزانتك",
-	["wardrobe.empty"] = "لسا ما في شي. زور خليل الخيّاط بالحارة.",
-	["wardrobe.errand_item"] = "غرض مشوار",
 	["store.title"] = "دكّانة الحارة",
 	["store.open"] = "+",
 	["store.robux"] = "R$ {n}",
@@ -1681,7 +1594,7 @@ local ar: { [string]: string } = {
 
 	-- Lobby signs and ambience (world text)
 	["sign.lane"] = "حارة الياسمين",
-	["sign.bakery"] = "فرن أبو نديم",
+	["sign.bakery"] = "فرن أبو بصير",
 	["sign.tailor"] = "خياطة خليل",
 	["sign.spice"] = "عطارة الحاج رشيد",
 	["sign.barber"] = "حلاق الحارة",
@@ -1730,7 +1643,6 @@ local ar: { [string]: string } = {
 	["dlg.akeed_npc.greet"] = "انتصب يا شب. الحارة محتاجتك عالباب الليلة.",
 	["dlg.akeed_npc.greet.go"] = "عالباب",
 	["dlg.hammam_owner.greet"] = "بخار وصابون وتكييسة محرزة! اطلع من حمّامي متل العريس.",
-	["dlg.hammam_owner.greet.go"] = "فرجيني الخزانة",
 	["dlg.sergeant_npc.greet"] = "احم! الأوامر معلّقة عاللوح. المخفر بدو كل رجال الحارة يقروها.",
 	["dlg.sergeant_npc.greet.go"] = "اقرا الأوامر",
 	["dlg.mukhtar_npc.greet"] = "هس، وطّي صوتك! مرتي فوق عالسطح، وبتسمع كل شي. كل شي!",
@@ -1912,8 +1824,6 @@ local ar: { [string]: string } = {
 	["npc.hammam_owner.role"] = "صاحب الحمّام",
 	["npc.hammam_worker.name"] = "عيدو",
 	["npc.hammam_worker.role"] = "المكيّس",
-	["npc.elder_baker.name"] = "أبو بصير",
-	["npc.elder_baker.role"] = "من كبار الحارة، الفرّان",
 	["npc.elder_smith.name"] = "أبو شاطر",
 	["npc.elder_smith.role"] = "من كبار الحارة، الحدّاد",
 	["npc.grocer.name"] = "أبو مرزوك",

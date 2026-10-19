@@ -57,7 +57,7 @@ return {
 		portrait = 72,
 		cps = 18,
 		choiceGap = 0.06,
-		screens = { "units", "daily", "pass", "play", "wardrobe", "event", "summon", "store" },
+		screens = { "units", "daily", "pass", "play", "event", "summon", "store" },
 	},
 	-- The match HUD skin (Theme v2, LP-C06): the gate cracks below `crackAt` of its HP; the result's
 	-- cash curve is a `spark` px tall line.

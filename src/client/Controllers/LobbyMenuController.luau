@@ -1,7 +1,7 @@
 --!strict
 -- Lobby chrome for the tower-defense update: the lira pill next to the coins, and the lobby menu.
 -- On a phone (MOBILE_HUD_PLAN B6) the menu is a bottom bar between Roblox's thumbstick and jump
--- (Play, Units, Summon, Diary, More); More opens a sheet with Daily, Codes, the Hakawati, Wardrobe,
+-- (Play, Units, Summon, Diary, More); More opens a sheet with Daily, Codes, the Hakawati,
 -- the Event while one runs, Language, Music and Settings, and the top row keeps only the lira and
 -- coin pills. Tablets and desktop get the Theme v2 rail (LP-C02): a wood panel with a large gold Play
 -- that breathes, Units / Summon / Diary beside it and the smaller tiles (Event, Daily, Codes, AFK,
@@ -32,14 +32,14 @@ local LocaleController = require(script.Parent.LocaleController)
 
 local LobbyMenuController = {}
 
-local LOBBY_WIDGETS = { "Coins", "Errand", "Language", "Wardrobe", "Music", "Lira", "Menu", "LobbyBar", "TestMode" }
+local LOBBY_WIDGETS = { "Coins", "Language", "Music", "Lira", "Menu", "LobbyBar", "TestMode" }
 -- Top-row buttons that live in the More sheet on a phone (B6).
-local PHONE_HIDDEN = { Language = true, Wardrobe = true, Music = true }
+local PHONE_HIDDEN = { Language = true, Music = true }
 
 local RAIL_TOP = { "units", "summon", "pass" }
 local RAIL_SMALL = { "event", "daily", "codes", "afk", "settings" }
 local BAR = { "play", "units", "summon", "pass", "more" }
-local MORE = { "daily", "codes", "afk", "wardrobe", "event", "language", "music", "settings" }
+local MORE = { "daily", "codes", "afk", "event", "language", "music", "settings" }
 local COLORS: { [string]: Color3 } = {
 	play = Theme.v2.goldLeaf,
 	event = Color3.fromHex("#2F7D6B"),
@@ -51,11 +51,10 @@ local COLORS: { [string]: Color3 } = {
 	afk = Color3.fromHex("#8A5A2B"),
 	settings = Color3.fromHex("#6E5E50"),
 	more = Color3.fromHex("#6E5E50"),
-	wardrobe = Theme.colors.quest,
 	language = Theme.colors.button,
 	music = Color3.fromHex("#6E5E50"),
 }
-local ICONS: { [string]: string? } = { wardrobe = "tarboosh", language = nil, music = "ui_music" }
+local ICONS: { [string]: string? } = { language = nil, music = "ui_music" }
 
 local liraLabel: TextLabel
 local grid: Frame
@@ -266,7 +265,7 @@ local function build()
 		local captionX = 6
 		if iconName then
 			local icon = Create("Frame", { Name = "Icon", AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.fromScale(0, 0.5), Size = UDim2.fromOffset(30, 30), BackgroundTransparency = 1, ZIndex = 12, Parent = b })
-			Icons.draw(iconName, icon, if key == "wardrobe" then "#F2E6CF" else nil)
+			Icons.draw(iconName, icon)
 			for _, d in icon:GetDescendants() do
 				if d:IsA("GuiObject") then
 					d.ZIndex = 12
@@ -305,9 +304,6 @@ local function applyVisibility()
 				w.Visible = not away and snapshot ~= nil and not snapshot.persistent
 			elseif PHONE_HIDDEN[name] then
 				w.Visible = not away and not phone
-			elseif name == "Errand" then
-				-- The tracker steps aside while someone talks (the dialogue takes the screen's bottom).
-				w.Visible = not away and not dialogueOpen
 			else
 				w.Visible = not away
 			end
@@ -352,19 +348,6 @@ local function layout()
 	local bottomKeep = if reserved.left then (reserved.left.y1 - reserved.left.y0) / scale + 8 else 8
 	local gridY = math.max(0, math.min(d.y * 0.45, d.y - bottomKeep - grid.Size.Y.Offset))
 	grid.Position = UDim2.fromOffset(10, gridY)
-	-- On a narrow tablet the rail reaches the errand card (right edge, centred at 45 % height): the
-	-- card then rises to end above the rail.
-	local errand = root:FindFirstChild("Errand")
-	if errand and errand:IsA("GuiObject") and not phone then
-		local h = errand.AbsoluteSize.Y / scale
-		local left = d.x - 12 - errand.Size.X.Offset
-		local cy = d.y * 0.45
-		local overlaps = 10 + grid.Size.X.Offset + R.gap > left and cy + h / 2 > gridY - R.gap
-		if overlaps then
-			cy = math.max(Hud.TOP_CLEAR + 52 + h / 2, gridY - R.gap - h / 2)
-		end
-		errand.Position = UDim2.new(1, -12, 0, cy)
-	end
 	-- Phone bar: centred in the band between the corners.
 	local bar = HudLayout.lobbyBar(Hud, Device.profile(), scale, Device.safeSize(), #BAR, reserved)
 	lobbyBar.Position = UDim2.fromOffset(bar.x, bar.y)
@@ -465,8 +448,6 @@ render = function()
 		for _, e in list do
 			if key == "language" then
 				e.caption.Text = t("hud.language")
-			elseif key == "wardrobe" then
-				e.caption.Text = t("hud.wardrobe")
 			elseif labels[key] then
 				e.caption.Text = labels[key]()
 			else
@@ -516,11 +497,6 @@ function LobbyMenuController.start()
 		local dialogue = Root.get():WaitForChild("Dialogue", 10)
 		if dialogue and dialogue:IsA("GuiObject") then
 			dialogue:GetPropertyChangedSignal("Visible"):Connect(applyVisibility)
-		end
-		local errand = Root.get():WaitForChild("Errand", 10)
-		if errand and errand:IsA("GuiObject") then
-			errand:GetPropertyChangedSignal("AbsoluteSize"):Connect(layout)
-			layout()
 		end
 		local queue = Root.get():WaitForChild("Queue", 10)
 		if queue and queue:IsA("GuiObject") then

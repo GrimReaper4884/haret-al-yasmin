@@ -842,12 +842,12 @@ return function(t)
 		end)
 		t.it("dialogue: hostile choice indices resolve to nothing", function()
 			for _, v in HOSTILE do
-				t.eq(DialogueLogic.choice(Dialogue.abu_nadim, "offer", v), nil, named(v))
+				t.eq(DialogueLogic.choice(Dialogue.khalil_tailor, "greet", v), nil, named(v))
 			end
-			t.eq(DialogueLogic.choice(Dialogue.abu_nadim, "offer", nil), nil)
+			t.eq(DialogueLogic.choice(Dialogue.khalil_tailor, "greet", nil), nil)
 			for _, v in HOSTILE do
 				if type(v) == "string" then
-					t.eq(DialogueLogic.choice(Dialogue.abu_nadim, v, 1), nil, "node " .. named(v))
+					t.eq(DialogueLogic.choice(Dialogue.khalil_tailor, v, 1), nil, "node " .. named(v))
 				end
 			end
 		end)

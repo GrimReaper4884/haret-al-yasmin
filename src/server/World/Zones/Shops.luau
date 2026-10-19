@@ -1,5 +1,5 @@
 --!strict
--- Shops on the lane and the square: Abu Nadim's bakery, Khalil's tailoring and Hajj Rashid's
+-- Shops on the lane and the square: Abu Baseer's bakery, Khalil's tailoring and Hajj Rashid's
 -- spice shop. NPC positions live in Config/Npcs; these props are built around them.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

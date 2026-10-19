@@ -202,7 +202,7 @@ end
 
 local function signs(map: Instance)
 	local m = Kit.model(map, "Signs")
-	Props2.sign(m, Kit.faceFrame(Vector3.new(-7.7, 12.9, 60), Vector3.new(1, 0, 0)), 9, ar("sign.bakery"), "Furn Abu Nadim", Palette.fabricIndigo)
+	Props2.sign(m, Kit.faceFrame(Vector3.new(-7.7, 12.9, 60), Vector3.new(1, 0, 0)), 9, ar("sign.bakery"), "Furn Abu Baseer", Palette.fabricIndigo)
 	Props2.sign(m, Kit.faceFrame(Vector3.new(7.7, 12.9, 56), Vector3.new(-1, 0, 0)), 8, ar("sign.tailor"), "Khayyat Khalil", Palette.fabricRed)
 	Props2.sign(m, Kit.faceFrame(Vector3.new(-23.7, 11.5, 10), Vector3.new(1, 0, 0)), 9, ar("sign.spice"), "Attara al-Hajj Rashid", Palette.vine)
 	-- Notice board by the spawn: where codes and news are pinned

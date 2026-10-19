@@ -10,9 +10,11 @@ return function(t)
 	local RateLimiter = t.logic("RateLimiter")
 	local Validate = t.logic("Validate")
 	local Items = t.config("Items")
-	local Quests = t.config("Quests")
+	local Errands = require("./errands.fixture") -- the removed errands, kept to cover the quest engine
+	local Quests = Errands.Quests
 	local Shops = t.config("Shops")
 	local Dialogue = t.config("Dialogue")
+	local Fixture = Errands.Dialogue
 	local Economy = t.config("Economy")
 
 	local function profile(over)
@@ -184,23 +186,23 @@ return function(t)
 	end)
 
 	t.describe("DialogueLogic", function()
-		t.it("picks Abu Nadim's node from quest state", function()
+		t.it("picks the giver's node from quest state", function()
 			local p = profile()
-			t.eq(DialogueLogic.entryNode(Dialogue.abu_nadim, p), "offer")
+			t.eq(DialogueLogic.entryNode(Fixture.baker, p), "offer")
 			p.quests.delivery_kaak = { state = "active" }
-			t.eq(DialogueLogic.entryNode(Dialogue.abu_nadim, p), "waiting")
+			t.eq(DialogueLogic.entryNode(Fixture.baker, p), "waiting")
 			p.quests.delivery_kaak.state = "completed"
-			t.eq(DialogueLogic.entryNode(Dialogue.abu_nadim, p), "thanks")
+			t.eq(DialogueLogic.entryNode(Fixture.baker, p), "thanks")
 		end)
 		t.it("falls back to an unconditional entry", function()
 			t.eq(DialogueLogic.entryNode(Dialogue.sitt_wardeh, profile()), "greet")
 		end)
 		t.it("rejects forged choice indices", function()
 			for _, bad in { 0, 3, 1.5, -1, "1", 0 / 0, math.huge } do
-				t.eq(DialogueLogic.choice(Dialogue.abu_nadim, "offer", bad), nil, tostring(bad))
+				t.eq(DialogueLogic.choice(Fixture.baker, "offer", bad), nil, tostring(bad))
 			end
-			t.truthy(DialogueLogic.choice(Dialogue.abu_nadim, "offer", 1))
-			t.eq(DialogueLogic.choice(Dialogue.abu_nadim, "nonexistent", 1), nil)
+			t.truthy(DialogueLogic.choice(Fixture.baker, "offer", 1))
+			t.eq(DialogueLogic.choice(Fixture.baker, "nonexistent", 1), nil)
 		end)
 	end)
 

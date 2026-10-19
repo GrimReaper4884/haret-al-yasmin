@@ -1,14 +1,16 @@
 --!nocheck
--- Season 1 · Episode 1: investigation quests, clues, prerequisites, "ready" dialogue state.
+-- Investigation quests (the removed Episode 1 errand, now a fixture): clues, prerequisites, "ready"
+-- dialogue state; and the Episode 9 story card.
 
 return function(t)
 	local QuestLogic = t.logic("QuestLogic")
 	local DialogueLogic = t.logic("DialogueLogic")
 	local ProfileSchema = t.logic("ProfileSchema")
 	local Items = t.config("Items")
-	local Quests = t.config("Quests")
+	local Errands = require("./errands.fixture")
+	local Quests = Errands.Quests
 	local Clues = t.config("Clues")
-	local Dialogue = t.config("Dialogue")
+	local Dialogue = Errands.Dialogue
 	local Economy = t.config("Economy")
 
 	local Q = "s1e1_wedding_eve"
@@ -105,8 +107,8 @@ return function(t)
 		end)
 	end)
 
-	t.describe("Hajj Rashid dialogue", function()
-		local tree = Dialogue.hajj_rashid
+	t.describe("Investigation dialogue", function()
+		local tree = Dialogue.merchant
 		t.it("follows the episode states", function()
 			local p = profile()
 			t.eq(DialogueLogic.entryNode(tree, p, Quests), "busy")
@@ -125,8 +127,8 @@ return function(t)
 			local p = profile()
 			QuestLogic.accept(p, "delivery_kaak", Quests, Items, 1)
 			t.eq(QuestLogic.state(p, "delivery_kaak", Quests), "ready")
-			t.eq(DialogueLogic.entryNode(Dialogue.sitt_wardeh, p, Quests), "delivery")
-			t.eq(DialogueLogic.entryNode(Dialogue.abu_nadim, p, Quests), "waiting")
+			t.eq(DialogueLogic.entryNode(Dialogue.neighbour, p, Quests), "delivery")
+			t.eq(DialogueLogic.entryNode(Dialogue.baker, p, Quests), "waiting")
 		end)
 	end)
 
@@ -156,6 +158,7 @@ return function(t)
 	end)
 
 	t.describe("Clue config", function()
+		local Quests = t.config("Quests") -- the live config, not the fixture
 		t.it("every clue belongs to an investigation that lists it, and vice versa", function()
 			for clueId, c in Clues do
 				local q = Quests[c.quest]

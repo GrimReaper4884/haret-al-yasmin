@@ -24,9 +24,11 @@ export type NpcDef = {
 export type Pose = "stand" | "seated" | "walk"
 
 local Npcs: { [string]: NpcDef } = {
-	abu_nadim = {
-		nameKey = "npc.abu_nadim.name",
-		roleKey = "npc.abu_nadim.role",
+	-- Abu Baseer the baker at his own oven (owner, 2026-10-19): the `farran` unit's figure.
+	abu_baseer = {
+		look = "farran",
+		nameKey = "npc.abu_baseer.name",
+		roleKey = "npc.abu_baseer.role",
 		position = { -11, 0, 60 },
 		yaw = -90, -- faces the lane (+X)
 		skin = "#C68E64",
@@ -227,21 +229,9 @@ local Npcs: { [string]: NpcDef } = {
 		robe = "#5E7D3A",
 		accent = "#FBF8F1",
 	},
-	-- LP-D13 (owner approved 2026-10-19, D-122): the za'im's two elders on the liwan's back bench either side of
-	-- him, the lane's notables in their unit figures (no new names); ambient: the za'im takes the prompt.
-	elder_baker = {
-		look = "farran",
-		pose = "seated",
-		zone = "diwan",
-		talk = false,
-		nameKey = "npc.elder_baker.name",
-		roleKey = "npc.elder_baker.role",
-		position = { 50.7, 1.2, -18.6 }, -- the back bench (World/Zones/Diwan), south of the za'im
-		yaw = 90, -- faces the door (-X)
-		skin = "#C08A62",
-		robe = "#EADFC8",
-		accent = "#6B4423",
-	},
+	-- LP-D13 (owner approved 2026-10-19, D-122): an elder on the liwan's back bench beside the za'im, a lane
+	-- notable in his unit figure (no new name); ambient: the za'im takes the prompt. (Abu Baseer, the
+	-- other elder, moved to his oven on 2026-10-19.)
 	elder_smith = {
 		look = "haddad",
 		pose = "seated",

@@ -11,31 +11,7 @@ export type ClueDef = {
 	order: number, -- display order in the HUD journal
 }
 
-local Clues: { [string]: ClueDef } = {
-	clue_slipper = {
-		quest = "s1e1_wedding_eve",
-		nameKey = "clue.slipper.name",
-		textKey = "clue.slipper.text",
-		position = { -21.5, 0.1, 8 },
-		look = "slipper",
-		order = 1,
-	},
-	clue_thread = {
-		quest = "s1e1_wedding_eve",
-		nameKey = "clue.thread.name",
-		textKey = "clue.thread.text",
-		position = { -5.1, 5, 89 },
-		look = "thread",
-		order = 2,
-	},
-	clue_token = {
-		quest = "s1e1_wedding_eve",
-		nameKey = "clue.token.name",
-		textKey = "clue.token.text",
-		position = { 12, 0.1, -9 },
-		look = "token",
-		order = 3,
-	},
-}
+-- No clue spots: the Episode 1 errand was removed with the rest of the lane's errands (Config/Quests).
+local Clues: { [string]: ClueDef } = {}
 
 return Clues

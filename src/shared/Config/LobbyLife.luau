@@ -178,7 +178,7 @@ return {
 	-- The hammam's roof vent (World/Zones/Hammam, LP-D04), once that zone is built.
 	hammamSteam = { at = { -58, 19.6, 6 }, rate = 6 },
 
-	-- Abu Nadim's oven (World/Zones/Shops): passing by it makes the fire flare and puffs flour.
+	-- Abu Baseer's oven (World/Zones/Shops): passing by it makes the fire flare and puffs flour.
 	oven = {
 		mouth = { -12.2, 2.4, 60 },
 		puff = { -10.6, 4.6, 60 }, -- the flour rises over the bread counter in front of the mouth

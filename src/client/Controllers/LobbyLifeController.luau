@@ -1,7 +1,7 @@
 --!strict
 -- Lobby life (POLISH_PLAN PV-E02), all on this client: washing that sways on its lines, jasmine
 -- climbing six walls, a flock of birds over the square, spray and ripples in the fountain, steam
--- from Abu Hatem's samovar, Abu Nadim's oven flaring and puffing flour when you walk past, and
+-- from Abu Hatem's samovar, Abu Baseer's oven flaring and puffing flour when you walk past, and
 -- cats that turn to look at the nearest player. Numbers in Config/LobbyLife, math in
 -- Logic/LobbyLife. Gated by the Lane life setting (off: nothing, lite: no particles; LP-D09) and by
 -- distance: farther than `radius` from the camera, a piece holds still or switches off. The

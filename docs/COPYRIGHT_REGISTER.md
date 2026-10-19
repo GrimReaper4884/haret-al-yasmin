@@ -32,7 +32,7 @@ We do not use any of the following:
 | ID | Item | Type | Source / author | License | Similarity check | Status |
 |----|------|------|-----------------|---------|------------------|--------|
 | C-001 | Game title "Haret Al-Yasmin" | Name | Original (generic Arabic: "Jasmine Lane") | n/a | Generic descriptive phrase. Screening 2026-10-16 (`research/ROBLOX_IP_AND_POLICY.md` §4.1): **no mark** for حارة الياسمين / Haret Al-Yasmin or variants in TMview (~75 offices), Madrid Monitor or USPTO; no same-name game, app, series or Roblox experience. "Jasmine Lane" registered only in class 14 (US) and food/restaurant classes (CN). **Not yet searched: SAIP (KSA), WIPO Global Brand Database, UAE** (owner, by hand) | Needs human review (screening: low risk) |
-| C-002 | NPC "Abu Nadim" (baker) | Character | Original writing | Owned | Common kunya; not a principal character name in the shows listed in §1 to our knowledge; **needs native-speaker and legal check** | Needs human review |
+| C-002 | NPC "Abu Nadim" (baker) | Character | Original writing | Owned | Common kunya; not a principal character name in the shows listed in §1 to our knowledge; **needs native-speaker and legal check** | Retired 2026-10-19 (D-132): the NPC is gone; the bakery is Abu Baseer's (C-241 name) |
 | C-003 | NPC "Sitt Wardeh" | Character | Original writing | Owned | As above | Needs human review |
 | C-004 | NPC "Khalil the tailor" | Character | Original writing | Owned | As above | Needs human review |
 | C-005 | Quest "Warm Ka'ak for Sitt Wardeh" | Story / dialogue | Original writing (`Config/Dialogue.luau`, `Config/Strings.luau`) | Owned | Everyday errand; no lines adapted from TV | Self-assessed OK |
