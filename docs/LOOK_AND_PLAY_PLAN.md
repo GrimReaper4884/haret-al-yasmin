@@ -628,7 +628,7 @@ DECISIONS; every name goes through §4.2's STOP first.
 - [x] aec6653 **LP-E03 Model, clips, chest and cloth props, VFX, the souq shop NPC** · deps: LP-E01, LP-D03 · STOP (≈ 90 credits) · spend approved (D-118)
   - Accept: `.rbxm` in production, register row, idle + count clips in Studio, chest and bolts on placement,
     `cloth_merchant` in the souq with the prompt and the lore line.
-- [~] **LP-E04 Story hooks: Episode 9 outro line, Diary tier copy, banner pool** · deps: LP-E03 · STOP (tier gift) · waits on LP-E03 (the gift ships with his model)
+- [x] fc26273 **LP-E04 Story hooks: Episode 9 outro line, Diary tier copy, banner pool** · deps: LP-E03 · STOP (tier gift) · waits on LP-E03 (the gift ships with his model)
   - Accept: strings en/ar; `tests/season1.spec.luau` story-card case; Summon pool spec includes `tajir`.
 
 ### Order and sessions
@@ -649,7 +649,7 @@ Meshy budget: ≈ 330 credits (240 for four NPC looks + 90 for the merchant and 
 - [x] 01545af LP-B01 · [x] 17c73f4 LP-B02 · [x] 5cc73de LP-B03 · [x] 82f876c LP-B04 · [x] d315bda LP-B05
 - [x] 373902b LP-C00 · [x] 2ff7102 LP-C01 · [x] 3a9b3b8 LP-C02 · [x] 1b33855 LP-C03 · [x] 236d068 LP-C04 · [x] 1df1bfd LP-C05 · [x] 169ff6e LP-C06 · [x] f4c8c30 LP-C07
 - [x] 98e27c4 LP-D00 · [x] 0a9cf7f LP-D01 · [x] e4c3eae LP-D02 · [x] 540e3ec LP-D03 · [x] 58e5fdd LP-D04 · [x] 4436acb LP-D05 · [x] 2c97ee7 LP-D06 · [x] 2834681 LP-D07 · [x] cbc50e1 LP-D08 · [x] fd683c9 LP-D09 · [x] fca4d73 LP-D10 · [x] 3abe9cb LP-D11
-- [x] 2cce4ec LP-E01 · [x] d131127 LP-E02 · [x] aec6653 LP-E03 · [~] LP-E04
+- [x] 2cce4ec LP-E01 · [x] d131127 LP-E02 · [x] aec6653 LP-E03 · [x] fc26273 LP-E04
 
 ## 10. STOP list for the owner (batch these)
 
@@ -671,6 +671,11 @@ Servers for the non-host speed chip and the Lane Fund paying a teammate; a real 
 (2,125 lobby parts) and evening/night; the farm-in-party cells of D-116 (accept, or tune those episodes); Abdo the
 hammam worker and the diwan's two elders have no approved names yet.
 
+**Update 2026-10-19 (after LP-D08, LP-E03, LP-E04):** the Meshy spends are done (265 of the 330 credits approved; balance
+2,365) and the D-116 farm cells are accepted (D-118). A Ramadan event and the three names are drafted in §12 for one owner review.
+Still the owner's: the sound files (AUDIO_COMMISSION Batches 3–4), the chrome and role-icon images, a real-phone run of the bigger
+lane, Test → Clients and Servers (the non-host speed chip, the Lane Fund paying a teammate) and the Player Emulator policy check.
+
 ## 11. Rules for this pass (in addition to CLAUDE.md)
 
 - The game is live. Every commit publish-safe; desktop behaviour unchanged unless the task says so.
@@ -678,3 +683,44 @@ hammam worker and the diwan's two elders have no approved names yet.
   en + ar, every name through §4.2 and the register, no series title anywhere, no actor likeness in prompts.
 - Never finish a Studio test match (it pays the live profile); stop Play.
 - Shared checkout: stage only your hunks; no stash, checkout, reset or whole-file reformat.
+
+## 12. Drafts for one owner review (2026-10-19, not shipped)
+
+Nothing below is in `Config` or `Strings` yet. Each item ships only after the owner says yes (or edits it), then gets
+its register row, strings (en + ar), specs and a DECISIONS row.
+
+### 12.1 The Ramadan event (turns on the musaharati of LP-D11)
+
+The musaharati walks only while an event with id `ramadan` runs (D-115). Proposal, in `Config/Events` shape:
+
+| Field | Proposal | Why |
+|---|---|---|
+| id | `ramadan` | the id LaneBeatsController already checks |
+| Name | "Lantern Nights" / «ليالي الفوانيس» (`event.ramadan.name`) | the month's lanterns and late nights in the lane; no religious wording in the title |
+| Description | "Every night of the month the musaharati drums the lane awake and the thieves think everyone sleeps. Keep the lanterns lit until dawn." / «كل ليلة بهالشهر المسحّراتي بيصحّي الحارة، والحرامية مفكرين الكل نايم. خلّوا الفوانيس مضوية للصبح.» | ties the beat to play; no fasting or prayer shown |
+| Dates | `startsAt` 1801958400 (2027-02-07 00:00 UTC) → `endsAt` 1804723200 (2027-03-11 00:00 UTC) | Ramadan 1448 is expected to begin around 8 Feb 2027 (moon sighting can move it a day); this covers the month and the first day of the Eid. **Owner: confirm or pick the local calendar.** |
+| Currency | "{n} lanterns" / «{n} فانوس» | `currencyKey` like the olives |
+| Mode | `ev_ramadan` "The Musaharati's Round" / «جولة المسحّراتي»: `kind = "event"`, arena `saha` (the square) under the night look (Episode 1's dusk lighting), 15 waves, rewards `{ lira = 60, qirsh = 120, xp = 100 }` (= Olive Harvest) | no new map or art |
+| Waves | `Config/Waves.events.ev_ramadan`: night thieves, pickpockets (they steal from farms, LP-E01) and disguised men from wave 6; a rival-lane boss at wave 15 (`rival_zaim`, owner's pick; **not** `chief_thief`, who is Al-Adashari, forgiven in Episode 9). Tuned like `ev_olive` (`lune run tests/balance` must show it winnable on Normal with a starter loadout) | existing enemies and clips |
+| Earn | `perWave` 3, `winBonus` 25, `maxCurrency` 100000 | = Olive Harvest |
+| Shop (no Robux) | qirsh 400 (15 lanterns, stock 10) · lira 120 (30, stock 10) · 1 trait stone (45, stock 5) · cosmetic **"Brass fanous" hand lantern** (160, stock 1) | the first three exist; the cosmetic needs one Meshy prop (≈ 36 credits) and an `Items` row, **or** reuse `tarboosh_black` if the owner prefers no spend |
+| Lane | the musaharati (exists); string lights of paper lanterns over the lane (Props.lantern variants, no crescent or other religious symbol); the coffee house stays open late (the evening beat runs into the night) | decorations gated on `EventLogic.isActive(…, "ramadan")` like the musaharati |
+| Not included | no iftar cannon, no prayer times, no fasting mechanic, no religious lines anywhere; the lines stay those of D-115 ("Wake up, sleepers! It's time for suhoor!", "Up, lane of jasmine, the night is short!") | respect, and the CLAUDE.md IP and content rules |
+
+Restricted players (PolicyService) see the same event: it sells nothing for Robux; lira and stones come only from
+lanterns earned in play, as with the olives.
+
+### 12.2 Names: the hammam worker and the diwan's two elders
+
+Rule (STORY_PLAN §3): one letter changed in both languages where possible, still a lane name, nothing religiously or
+politically loaded, the trade kept in the role string.
+
+| NPC | Today | Proposal (EN / AR) | Letter | Note |
+|---|---|---|---|---|
+| Hammam worker (LP-D04, crowd look) | "Abdo" (§4.1 placeholder) / عبدو | **Eido the Bath Attendant / عيدو المكيّس** | ب→ي | Eido is an everyday nickname; «المكيّس» is the hammam's scrubber. Alternative: Abso / عبسو (د→س, a comic grumbler) |
+| Diwan elder 1 (LP-D05) | none | **Recommended: Abu Baseer the Baker** (`farran`, already approved, model exists) | — | no new name, no Meshy spend: the lane's notables sit with the za'im |
+| Diwan elder 2 (LP-D05) | none | **Recommended: Abu Shater the Blacksmith** (`haddad`, already approved, model exists) | — | as above; both seated on the liwan bench beside Za'im Abu Faleh |
+| (fallback) elders as new characters | — | Abu Wadi' / أبو وديع and Abu Na'im / أبو نعيم | original | only if the owner wants two new faces: original kunyas, not drama names; each would need a look (crowd look, or ≈ 47 Meshy credits each) |
+
+The drama's own diwan elders are not identified here: this agent could not confirm their names from the project's
+sources, and a guessed name would risk the wrong character. The recommendation therefore reuses approved figures.
