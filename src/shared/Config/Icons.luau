@@ -172,6 +172,7 @@ Icons.portraits = {
 	hummus = { id = 134954871256848, model = "AbuSamih" },
 	iskafi = { id = 108276284703172, model = "AbuHamoud" },
 	matriarch = { id = 136188622806631, model = "SudaKhanum" },
+	tajir = { id = 126484283642738, model = "AbuBrahim" }, -- LP-E03
 	-- Attackers
 	gendarme = { id = 115451910060448, model = "Gendarme" },
 	corporal_minion = { id = 115451910060448, model = "Gendarme" }, -- same mesh as the gendarme (S1-S05)

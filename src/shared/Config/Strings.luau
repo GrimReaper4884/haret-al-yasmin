@@ -664,6 +664,9 @@ local en: { [string]: string } = {
 	["dlg.grocer.greet.go"] = "Show me the lane store",
 	["dlg.sheikh.greet"] = "Good evening, my son. Sit a while in the shade; the lane is calmer here.",
 	["dlg.sheikh.greet.ok"] = "Thank you, Sheikh.",
+	-- LP-E03: Abu Brahim in the souq (his lore line, unit.tajir.desc, in his own words)
+	["dlg.cloth_merchant.greet"] = "My gold is the lane's gold, my son. I never drew a knife in my life: I count, I save, and when the lane needs it, I open the chest.",
+	["dlg.cloth_merchant.greet.go"] = "Show me the lane store",
 
 	-- Settings
 	["hud.settings"] = "Settings",
@@ -1690,6 +1693,8 @@ local ar: { [string]: string } = {
 	["dlg.grocer.greet.go"] = "فرجيني دكّانة الحارة",
 	["dlg.sheikh.greet"] = "مسا الخير يا ابني. اقعد شوي بالفي، الحارة هون أهدى.",
 	["dlg.sheikh.greet.ok"] = "تسلم يا شيخ.",
+	["dlg.cloth_merchant.greet"] = "دهبي دهب الحارة يا ابني. عمري ما سحبت سكين: بعدّ وبحوّش، ولما الحارة بتحتاج، بفتح الصندوق.",
+	["dlg.cloth_merchant.greet.go"] = "فرجيني دكّانة الحارة",
 
 	-- Settings
 	["hud.settings"] = "إعدادات",

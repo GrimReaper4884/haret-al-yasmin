@@ -3,7 +3,7 @@
 -- north of the Event arch (z 16..21; the block is 6 deep there, x 24..30) opens into the courtyard
 -- (x 30..48, z -2..24): the ablution fountain with its stools, a fig tree, a bench, and the mosque's
 -- closed wooden door under a canopy in the east wall. The minaret stands in the north-east corner
--- (moved here from the skyline). The sheikh sits by the door once his model ships (LP-D08). Built
+-- (moved here from the skyline). The sheikh sits on a bench by the door (LP-D08). Built
 -- into `Zone_mosque_court` by WorldService when Config/LaneZones marks it built.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

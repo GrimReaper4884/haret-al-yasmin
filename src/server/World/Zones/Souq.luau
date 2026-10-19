@@ -221,7 +221,7 @@ local function grocer(m: Model)
 end
 
 -- Abu Brahim's cloth shop (niche z 46..52 on the east wall): bolts on shelves and on the awning, the
--- money chest under the counter. Abu Brahim himself stands here once his model ships (LP-E03).
+-- money chest under the counter. Abu Brahim stands before the counter (Config/Npcs `cloth_merchant`, LP-E03).
 local function clothShop(m: Model)
 	local colors = { Palette.fabricRed, Palette.fabricIndigo, Palette.jasmine, Palette.tile, Color3.fromHex("#C9A13B"), Palette.vine }
 	Kit.box(m, "Counter", 60.1, 0, 46.6, 61, 2.6, 51.4, Palette.wood, M.WoodPlanks)

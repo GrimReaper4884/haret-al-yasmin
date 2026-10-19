@@ -316,6 +316,19 @@ local Dialogue: { [string]: Tree } = {
 			},
 		},
 	},
+	-- LP-E03: Abu Brahim says his piece and opens the lane store.
+	cloth_merchant = {
+		entries = { { node = "greet" } },
+		nodes = {
+			greet = {
+				textKey = "dlg.cloth_merchant.greet",
+				choices = {
+					{ textKey = "dlg.cloth_merchant.greet.go", action = { type = "screen", screen = "store" } },
+					{ textKey = "dlg.common.maybe_later", action = { type = "close" } },
+				},
+			},
+		},
+	},
 	sheikh = {
 		entries = { { node = "greet" } },
 		nodes = {

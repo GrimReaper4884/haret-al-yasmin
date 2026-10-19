@@ -263,6 +263,19 @@ local Npcs: { [string]: NpcDef } = {
 		robe = "#EADFC8",
 		accent = "#4A3426",
 	},
+	-- Abu Brahim the Cloth Merchant before his counter in the souq (LP-E03): his unit's figure; his
+	-- prompt opens the lane store with his line (the unit's lore, in his own words).
+	cloth_merchant = {
+		look = "tajir",
+		zone = "souq",
+		nameKey = "npc.cloth_merchant.name",
+		roleKey = "npc.cloth_merchant.role",
+		position = { 59, 0, 48.6 }, -- before his counter (World/Zones/Souq `clothShop`, counter x 60.1..61)
+		yaw = 90, -- faces the corridor (-X)
+		skin = "#C68E64",
+		robe = "#E9DFC6",
+		accent = "#2F5A3A",
+	},
 	-- Abu Brahim's son by the cloth shop in the souq (LP-D03): a crowd look, ambient.
 	ibrahim_son = {
 		zone = "souq",

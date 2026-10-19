@@ -1,0 +1,11 @@
+{
+  "id": "merchant_chest",
+  "tasks": {
+    "concept": "01a15286-1e17-752d-b600-09bba02952cd",
+    "mesh": "01a15288-6ad8-77c4-b5c3-68588852a877"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30
+  }
+}

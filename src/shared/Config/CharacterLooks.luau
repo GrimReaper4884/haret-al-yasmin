@@ -29,7 +29,12 @@ export type Look = {
 	modelYaw: number?, -- degrees to turn an imported model that does not already face -Z (GLB imports do)
 	anims: { idle: number?, attack: number?, walk: number? }?, -- published animation asset ids
 	clips: string?, -- baked clip set (Anim/Clips/<id>) when it is not this id's own: a re-skin on another figure's mesh
+	beside: Beside?, -- a PropModels prop set on the ground beside the placed tower (LP-E03: Abu Brahim's chest and cloth)
 }
+
+-- Where the prop goes, in the tower's own frame (it faces the road along -Z): studs to its right (`x`) and
+-- behind it (`z`), turned `yaw` degrees, scaled to `height` studs.
+export type Beside = { prop: string, x: number, z: number, yaw: number, height: number }
 
 local DARK = "#1F1B18"
 local GREY = "#8C8079"
@@ -135,7 +140,16 @@ local Looks: { [string]: Look } = {
 		anims = { idle = 79270488835196, attack = 108770696471593 },
 	}, -- Abu Shater
 	-- Abu Brahim the Cloth Merchant (LP-E01): the primitive figure until his Meshy model ships (LP-E03).
-	tajir = { build = "stout", outfit = "qumbaz", beard = "short", moustache = "thick", hair = "#8C8079" },
+	-- Abu Brahim the Cloth Merchant (LP-E03): his money chest with two bolts of cloth stands beside him.
+	tajir = {
+		build = "stout",
+		outfit = "qumbaz",
+		beard = "short",
+		moustache = "thick",
+		hair = "#8C8079",
+		model = "AbuBrahim",
+		beside = { prop = "merchant_chest", x = 1.9, z = 0.6, yaw = -25, height = 1.5 },
+	},
 	mukhtar = {
 		build = "slim",
 		outfit = "qumbaz",

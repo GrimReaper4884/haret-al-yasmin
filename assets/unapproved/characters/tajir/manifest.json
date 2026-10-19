@@ -1,0 +1,21 @@
+{
+  "id": "tajir",
+  "tasks": {
+    "concept": "01a15286-1e08-736b-b31d-edfd72f36ff1",
+    "mesh": "01a15286-d74e-77e6-a1a9-1d8ee46743b3",
+    "rig": "01a15288-1abd-74d4-bea5-9a7744b2fb10",
+    "clip_cheerup": "01a15288-b2a7-7437-84ce-f8e5a2def7bb",
+    "clip_lookaround": "01a15288-d474-7708-8a7e-85877db7b484"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_cheerup": 3,
+    "clip_lookaround": 3
+  },
+  "clips": {
+    "cheerup": 298,
+    "lookaround": 338
+  }
+}

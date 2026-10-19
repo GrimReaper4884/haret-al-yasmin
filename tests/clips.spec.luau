@@ -120,4 +120,22 @@ return function(t)
 			t.truthy(n >= 17, "the 13 model NPCs of §4.2 and the four Meshy looks of LP-D08 (" .. n .. ")")
 		end)
 	end)
+	-- A prop set beside a placed tower (CharacterLooks `beside`, LP-E03: Abu Brahim's chest and cloth).
+	t.describe("Props beside a tower (LP-E03)", function()
+		t.it("every beside prop is a production prop, small, and next to its figure", function()
+			local n = 0
+			for id, look in Looks do
+				local b = look.beside
+				if b then
+					n += 1
+					t.truthy(fs.isFile("assets/production/PropModels/" .. b.prop .. ".rbxm"), id .. " beside prop " .. b.prop .. " is in production")
+					t.truthy(b.height >= 0.5 and b.height <= 3, id .. " beside height")
+					t.truthy(math.abs(b.x) <= 3 and math.abs(b.z) <= 3 and math.abs(b.x) + math.abs(b.z) >= 1, id .. " beside offset: close, not inside him")
+					t.truthy(b.yaw >= -180 and b.yaw <= 180, id .. " beside yaw")
+				end
+			end
+			t.truthy(Looks.tajir.beside ~= nil and Looks.tajir.beside.prop == "merchant_chest", "Abu Brahim has his chest")
+			t.truthy(n >= 1, "at least one beside prop")
+		end)
+	end)
 end

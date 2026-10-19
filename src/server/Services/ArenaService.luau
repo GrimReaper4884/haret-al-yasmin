@@ -8,6 +8,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Units = require(Shared.Config.Units)
+local Looks = require(Shared.Config.CharacterLooks)
 local Arenas = require(Shared.Config.Arenas)
 local TD = require(Shared.Config.TD)
 local Path = require(Shared.Logic.Path)
@@ -99,6 +100,16 @@ function ArenaService.buildTower(slot: Slot, tower: any, ownerName: string): Mod
 	local at = slot.origin * CFrame.new(tower.x, 0, tower.z)
 	local look = slot.origin * CFrame.new(bx, 0, bz)
 	model:PivotTo(CFrame.lookAt(at.Position, look.Position))
+	-- A prop beside him (Abu Brahim's chest and cloth, LP-E03): inside his model, so it streams with
+	-- him and goes when he is sold; not solid, so it never blocks a placement ray.
+	local beside = ((Looks :: any)[tower.unitId] or {}).beside
+	if beside then
+		local ground = model:GetPivot() * CFrame.new(beside.x, 0, beside.z) * CFrame.Angles(0, math.rad(beside.yaw), 0)
+		local prop = PropDressing.spawn(model, beside.prop, ground, beside.height, false)
+		if prop then
+			prop.Name = "Beside"
+		end
+	end
 	model:SetAttribute("TowerId", tower.id)
 	model:SetAttribute("UnitId", tower.unitId)
 	model:SetAttribute("Owner", ownerName)

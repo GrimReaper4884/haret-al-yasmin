@@ -29,6 +29,8 @@ local function spawnProp(
 		return nil
 	end
 	local m = t:Clone()
+	-- With a PrimaryPart the bottom-centre WorldPivot below would not take (KitLayout.place, D-068).
+	m.PrimaryPart = nil
 	for _, junk in { "InitialPoses", "AnimSaves", "AnimationController" } do
 		local j = m:FindFirstChild(junk)
 		if j then
@@ -55,6 +57,9 @@ local function spawnProp(
 	m.Parent = parent
 	return m
 end
+
+-- The same placer for one prop outside the placement tables (a tower's chest, ArenaService LP-E03).
+PropDressing.spawn = spawnProp
 
 local function place(parent: Instance, origin: CFrame, p: Placements.Placement, startFrame: CFrame?)
 	local base = if p.anchor == "start" and startFrame then startFrame else origin

@@ -56,7 +56,9 @@
     "talkpassion": 308,
     "talkhip": 309,
     "handrub": 318,
-    "idle4": 244
+    "idle4": 244,
+    "lookaround": 338,
+    "cheerup": 298
   },
   "characters": {
     "qahwaji": {
@@ -471,6 +473,10 @@
     },
     "sheikh": {
       "idle": "idle1"
+    },
+    "tajir": {
+      "idle": "lookaround",
+      "attack": "cheerup"
     }
   }
 }

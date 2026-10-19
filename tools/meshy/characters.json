@@ -328,6 +328,12 @@
       "prompt": "Dignified elderly 1930s Damascus neighbourhood elder, calm gentle smiling face, neat short white beard, white turban wound around a small red cap, long cream robe under a dark brown open cloak, soft leather slippers, both hands open and empty, arms straight out to the sides, modest clothing.",
       "texture": "Cream robe, dark brown wool cloak, white turban over a red cap, tan slippers, warm tan skin.",
       "_note": "LP-D08 NPC (Sheikh Abd al-Halim in the mosque court, seated, greeting only). Period costume only, no symbols or books."
+    },
+    "tajir": {
+      "height": 1.75,
+      "prompt": "Plump cautious 1930s Damascus cloth merchant, greying beard trimmed short, red fez, long fine striped silk qumbaz robe under a dark green waistcoat with a brass watch chain, wary sidelong look, both hands open and empty, arms straight out to the sides.",
+      "texture": "Cream and gold striped silk robe, dark green waistcoat, brass watch chain, red fez, grey beard, warm tan skin.",
+      "_note": "LP-E03 (Abu Brahim the Cloth Merchant, Season 1 Epic farm). Empty hands: the money chest is the separate prop merchant_chest beside his tower (fused props stretch when animated)."
     }
   },
   "prop_style": "Stylized chunky cartoon game prop for a mobile tower-defense game set in a 1930s Damascus old-city lane, toy-like proportions, clean simple shapes, bold readable silhouette, hand-painted flat colors with soft shading, warm limestone and wood palette, single object centered, three-quarter view, no characters, no text, no background.",
@@ -376,6 +382,12 @@
       "prompt": "Large terracotta pot with a climbing white jasmine plant from an old Damascus courtyard: rounded clay pot with a painted blue band, a bushy dark green jasmine with many small white star flowers, a few tendrils curling over the rim.",
       "texture": "Warm terracotta, cobalt blue band, dark glossy green leaves, white flowers.",
       "polycount": 2000
+    },
+    "merchant_chest": {
+      "prompt": "Cloth merchant's ground display from a 1930s Damascus souq: a small sturdy wooden money chest banded with dark iron straps and a brass lock, lid slightly open with a few gold coins showing, and two thick rolled bolts of striped cloth leaning against its side.",
+      "texture": "Dark walnut wood, black iron bands, shiny brass lock, gold coins, one bolt in red and cream stripes and one in green and gold stripes.",
+      "polycount": 2000,
+      "_note": "LP-E03: the chest and the cloth bolts as one prop (two separate Meshy props would exceed the task's 90-credit budget)."
     }
   }
 }

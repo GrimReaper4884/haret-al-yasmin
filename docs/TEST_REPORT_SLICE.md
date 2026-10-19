@@ -1308,6 +1308,21 @@ one line (`target()` returns the day look). Specs: 430 green (clock, fade, prese
 | The Hakawati, AFK room | his figure on the dais at (−3000, 1.2, 10.4), open-hands idle (the room itself streams in only for a player inside) | `d08_hakawati_afk_room.jpg` |
 | Harness note | a staged `screen_capture` camera left the follow camera behind the grocer, so his prompt never showed; arrow keys turned the camera and E then worked | — |
 
+### LP-E03 Abu Brahim's figure, chest and souq shop
+
+*Play Solo on the TEST place (`rojo serve` had died mid-session; restarted and reconnected first, `script_grep` found
+`cloth_merchant` and `PropDressing.spawn`); `HaretDebug noAutoAfk`; an Episode 1 Normal match by `HaretDebug match`, Abu Brahim
+placed with `placeAny tajir` (no copy granted, loadout untouched). Play stopped in wave 3; the match never finished.*
+
+| Check | Result | Capture |
+|---|---|---|
+| Souq | Abu Brahim before his counter under the cloth shelves, his son Brahim beside him | `docs/captures/lp/e03_souq_merchant.jpg` |
+| His prompt | E → "My gold is the lane's gold, my son. I never drew a knife in my life: I count, I save, and when the lane needs it, I open the chest." → "Show me the lane store" → the store opens (read back on the client) | `e03_merchant_dialogue.jpg` |
+| On placement | `Tower_1` holds `Beside` (the chest with two cloth bolts, 1.50 studs) on the ground at his right | `e03_tower_chest.jpg` |
+| Count the gold | `UseAbility` early: "The ultimate is still recovering"; auto-ult then fired it by itself; with his auto off and 46 s waited, the manual use sent `harvest`: he stoops over the chest, coins fly to the cash pill (1,300) | `e03_count_gold.jpg` |
+| Portrait | rendered on magenta, cut to `assets/marketing/portraits/AbuBrahim.png`, uploaded (126484283642738) | — |
+| Console | `server ready`, no errors or warnings from our code | — |
+
 ### LP-D10 the lane's beats
 
 *Play Solo, desktop Studio, `noAutoAfk` set; each beat reached with `HarnessClockOffset`.* `[World] built 2125 parts`, no
