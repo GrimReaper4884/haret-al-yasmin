@@ -233,7 +233,7 @@ models, red-teaming, onboarding measurement, and live ops.
 - [ ] **P4-04 Mobile performance pass** · deps: P1-18, P3-01
   - **Goal:** LOD (animation off beyond 220 studs already; health bars off beyond 80), part and texture budgets, instance counts per arena.
   - **Accept:** P1-18 numbers re-measured and logged.
-- [~] **P4-05 Backups and rollback drill** · deps: P2-15 · RestoreService + docs/ops/rollback.md built 2026-10-19 (D-130); the two-step drill's finish is pending (Roblox keeps one version per key per window)
+- [x] 0119f88 **P4-05 Backups and rollback drill** · deps: P2-15 · RestoreService + docs/ops/rollback.md (D-130); drill passed 2026-10-19 (exact)
   - **Create:** `src/server/Services/RestoreService.luau` (restore a profile version by timestamp via DataStore versions; replay the audit log) and `docs/ops/rollback.md`.
   - **Accept:** a drill on a test account restores state exactly.
 - [ ] **P4-06 Error telemetry** · deps: P3-07

@@ -1537,3 +1537,13 @@ Episodes 1–2 cleared, not 9.*
 | `HaretDebug "storyClear"` | "Al-Adashari · The Night Guard" by the cart's shafts | `docs/art/s1a08_gate_cart_after_ep9_2026-10-19.jpg` |
 | `"storyClear","off"` | 8 parts, the label and the light hidden again | — |
 | Console | `server ready`, no errors from our code | — |
+
+### P4-05 rollback drill
+
+*Store `HaretDrill` (never a player profile), key `drill_6b3a2ed5-c59f-4569-ad95-c1a4c63c3eb5`, run from Studio Edit.*
+
+| Step | Result |
+|---|---|
+| Probe | two `SetAsync` 2 s apart leave 1 listed version; `GetVersionAsync` on the first id returns nil (one version per window) |
+| `drillBegin` | version A written (a daily: 130 lira) at 1792411901787 ms |
+| `drillFinish`, 62 min later | B written (a match, a 10x summon, a paid 300-lira receipt); 2 versions listed; rolled back to A: `applied = true`, `lost = 2`, `replayed = 1`, `net` lira -420 / qirsh +120; the key holds A's profile plus the receipt (430 lira, the receipt's ledger entry and PurchaseId), lock cleared: **`exact = true`** |
