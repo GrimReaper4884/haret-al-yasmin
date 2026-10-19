@@ -155,7 +155,7 @@ local Npcs: { [string]: NpcDef } = {
 		zone = "diwan",
 		nameKey = "npc.zaim_npc.name",
 		roleKey = "npc.zaim_npc.role",
-		position = { 46, 1.2, -18 }, -- in the liwan (LP-D05 places it)
+		position = { 50.7, 1.2, -15 }, -- in the middle of the liwan's back bench (World/Zones/Diwan)
 		yaw = 90, -- faces the door (-X: the diwan opens west onto the square)
 		skin = "#C08A62",
 		robe = "#1F1B18",
@@ -168,8 +168,9 @@ local Npcs: { [string]: NpcDef } = {
 		clipsFrom = { walk = "abu_jawdan" }, -- a proud stride
 		nameKey = "npc.akeed_npc.name",
 		roleKey = "npc.akeed_npc.role",
-		position = { 26, 0, -10 },
-		route = { { 26, -10 }, { 17, 2 }, { 3, 30 }, { 0, 76 }, { -3, 30 }, { 17, -2 } }, -- diwan door to the gate
+		position = { 43.5, 0, -9.5 },
+		-- from the liwan through the diwan's portal and the square, up the lane to the gate and back
+		route = { { 43.5, -9.5 }, { 31, -12.4 }, { 20, -13.5 }, { 10, -4 }, { 3, 30 }, { 0, 76 }, { -3, 30 }, { 10, -6 }, { 20, -13.5 }, { 31, -12.4 } },
 		phase = 0,
 		yaw = 0,
 		skin = "#B97F5A",

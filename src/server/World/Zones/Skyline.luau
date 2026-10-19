@@ -65,16 +65,18 @@ function Skyline.build(map: Instance)
 		ghost(Kit.ball(m, "Dome", Vector3.new(x, drum, z), r * 2, Color3.fromHex("#7F8E8C"), M.Slate))
 		ghost(Kit.column(m, "Finial", Vector3.new(x, drum + r - 0.5, z), 4, 0.6, Palette.copper, M.Metal))
 	end
-	-- Minaret
-	local mx, mz = -48, -92
-	ghost(Kit.column(m, "MinaretShaft", Vector3.new(mx, 0, mz), 58, 7, Palette.stoneLight, M.Limestone))
-	for _, y in { 18, 30, 42 } do
-		ghost(Kit.column(m, "MinaretBand", Vector3.new(mx, y, mz), 1.2, 7.4, Palette.basalt, M.Basalt))
+	-- Minaret (it moves into the mosque court once that zone is built, LP-D05)
+	if not LaneZoneLogic.built(LaneZones.zones, "mosque_court") then
+		local mx, mz = -48, -92
+		ghost(Kit.column(m, "MinaretShaft", Vector3.new(mx, 0, mz), 58, 7, Palette.stoneLight, M.Limestone))
+		for _, y in { 18, 30, 42 } do
+			ghost(Kit.column(m, "MinaretBand", Vector3.new(mx, y, mz), 1.2, 7.4, Palette.basalt, M.Basalt))
+		end
+		ghost(Kit.column(m, "Balcony", Vector3.new(mx, 50, mz), 1.2, 10, Palette.stoneWarm, M.Limestone))
+		ghost(Kit.column(m, "Lantern", Vector3.new(mx, 58, mz), 7, 4.5, Palette.stoneLight, M.Limestone))
+		ghost(Kit.ball(m, "Cap", Vector3.new(mx, 65.5, mz), 5, Color3.fromHex("#5E7D3A"), M.Slate))
+		ghost(Kit.column(m, "Spire", Vector3.new(mx, 67.5, mz), 4, 0.5, Palette.copper, M.Metal))
 	end
-	ghost(Kit.column(m, "Balcony", Vector3.new(mx, 50, mz), 1.2, 10, Palette.stoneWarm, M.Limestone))
-	ghost(Kit.column(m, "Lantern", Vector3.new(mx, 58, mz), 7, 4.5, Palette.stoneLight, M.Limestone))
-	ghost(Kit.ball(m, "Cap", Vector3.new(mx, 65.5, mz), 5, Color3.fromHex("#5E7D3A"), M.Slate))
-	ghost(Kit.column(m, "Spire", Vector3.new(mx, 67.5, mz), 4, 0.5, Palette.copper, M.Metal))
 	-- Cypresses
 	for _, c in { { -56, -60 }, { -54, 70 }, { 52, 60 }, { 50, -40 }, { -30, 108 }, { 38, -84 } } do
 		for k = 0, 2 do

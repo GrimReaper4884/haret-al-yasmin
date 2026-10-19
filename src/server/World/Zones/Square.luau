@@ -5,6 +5,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Palette = require(ReplicatedStorage:WaitForChild("Shared").Config.Palette)
+local LaneZones = require(ReplicatedStorage:WaitForChild("Shared").Config.LaneZones)
+local LaneZoneLogic = require(ReplicatedStorage:WaitForChild("Shared").Logic.LaneZoneLogic)
 local World = script.Parent.Parent
 local Kit = require(World.Kit)
 local Props = require(World.Props)
@@ -53,9 +55,22 @@ function Square.build(map: Instance)
 
 	-- Surrounding façades
 	Facade.build(m, "SquareNW", -40, 0, -24, 24, 20, "X", 1, { lantern = 2 })
-	Facade.build(m, "SquareNE", 24, 0, 40, 24, 21, "X", -1, { jetty = true, lantern = 2 })
+	if LaneZoneLogic.built(LaneZones.zones, "mosque_court") then
+		-- 6 deep, with the mosque court's arch at z 16..21 (Zones/MosqueCourt, LP-D05)
+		Facade.build(m, "SquareNE", 24, 0, 30, 16, 21, "X", -1, { jetty = true, lantern = 2 })
+		Kit.box(m, "SquareNEPier", 24, 0, 21, 30, 21, 24, Palette.stoneLight, M.Limestone)
+		Kit.box(m, "SquareNEPierParapet", 24, 21, 21, 30, 22.2, 24, Palette.stoneWarm, M.Limestone)
+	else
+		Facade.build(m, "SquareNE", 24, 0, 40, 24, 21, "X", -1, { jetty = true, lantern = 2 })
+	end
 	-- SquareSW (x -40..-24, z -26..0) is the coffee house, built in Zones/Extras.
-	Facade.build(m, "SquareSE", 24, -26, 40, 0, 20, "X", -1, { door = false })
+	if LaneZoneLogic.built(LaneZones.zones, "diwan") then
+		-- 6 deep, with the diwan's portal at z -16..-11 (Zones/Diwan, LP-D05)
+		Facade.build(m, "SquareSE", 24, -11, 30, 0, 20, "X", -1, { door = false })
+		Facade.build(m, "SquareSEs", 24, -26, 30, -16, 20, "X", -1, { door = false })
+	else
+		Facade.build(m, "SquareSE", 24, -26, 40, 0, 20, "X", -1, { door = false })
+	end
 	Facade.build(m, "SouthW", -40, -42, -16, -26, 20, "Z", 1, { doorAt = -26 })
 	Facade.build(m, "SouthE", 16, -42, 40, -26, 22, "Z", 1, { doorAt = 26, jetty = true })
 	Kit.box(m, "CornerNW", -24, 0, 24, -8, 20, 26, Palette.stoneLight, M.Limestone)

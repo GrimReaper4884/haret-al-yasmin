@@ -1225,3 +1225,18 @@ the idle timer took the character into the Hakawati's room; one cup paid the own
 
 First layout (passage at the plan's (−24, 12)) was dropped after the capture from the square showed it opening behind the
 Play hall's arch and pad: D-109. **Owner STOP:** phone FPS with both zones in (real device).
+
+### LP-D05 the diwan and the mosque court
+
+*Play Solo, desktop Studio, `noAutoAfk` set.* Console: `[World] built 1924 parts (budget 9000) · souq 254 · diwan 115 ·
+mosque_court 104 · hammam 93`, `server ready`, no warnings from our code; 2 lights in each zone; the za'im and the 'akeed spawned.
+Client, 8 s RenderStepped: 481 frames, 60.1 FPS, 16.6 ms median / 18.0 ms p95, all 1,924 map parts streamed in.
+
+| View | What the capture shows | Capture |
+|---|---|---|
+| Square, east side | the diwan's ablaq portal with its sign and tiled panel beside the Event arch; Abu Bader on his bench | `docs/captures/lp/d05_square_east.jpg` |
+| Liwan | Za'im Abu Faleh seated on the back bench with his cane, the low table with the coffee pot and cups, cushions on three sides, the rug | `d05_diwan_liwan.jpg` |
+| Mosque court | the ablution fountain with taps and stools, the mosque door under its canopy, tiled band, grilled windows, bench, fig tree | `d05_mosque_court.jpg` |
+| From the square's south-west | the minaret over SquareNE; the 'akeed walking by the diwan portal | `d05_minaret.jpg` |
+
+**Owner STOP:** phone FPS with four zones in (1,924 parts; real device).
