@@ -9,6 +9,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared.Net)
 local Dialogue = require(Shared.Config.Dialogue)
 local Quests = require(Shared.Config.Quests)
+local Hud = require(Shared.Config.Hud)
 local DialogueLogic = require(Shared.Logic.DialogueLogic)
 local DataService = require(script.Parent.DataService)
 local NpcService = require(script.Parent.NpcService)
@@ -111,6 +112,13 @@ local function choose(player: Player, index: any)
 			if not ok then
 				PlayerStateService.notify(player, "afk.err." .. tostring(err))
 			end
+			return
+		elseif action.type == "screen" then
+			-- A lane NPC sends the player to a lobby screen (LP-D02): the dialogue closes and the
+			-- client opens that screen. Only the screens Hud.DIALOGUE lists; opening a screen grants nothing.
+			sessions[player] = nil
+			local screen = action.screen
+			hideEvent:FireClient(player, if screen and table.find(Hud.DIALOGUE.screens, screen) then screen else nil)
 			return
 		elseif action.type == "close" then
 			close(player)

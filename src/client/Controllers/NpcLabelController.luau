@@ -61,15 +61,18 @@ local function attach(model: Instance)
 		return
 	end
 	local npcId = model:GetAttribute("NpcId")
-	local head = model:WaitForChild("Head", 10)
-	if type(npcId) ~= "string" or not head then
+	-- An avatar rig has a Head; a unit / enemy figure (LP-D02) is one mesh on its Root.
+	local head = if model:GetAttribute("Rigged") then model.PrimaryPart else model:WaitForChild("Head", 10)
+	if type(npcId) ~= "string" or not head or not head:IsA("BasePart") then
 		return
 	end
+	-- (a seated figure's Root is lowered with it: only the legs bend, the head stays at its top)
+	local over = if head.Name == "Head" then 2.6 else head.Size.Y / 2 + 1.6
 	local gui = Create("BillboardGui", {
 		Name = "NpcLabel",
 		Adornee = head,
 		Size = UDim2.fromOffset(160, 70),
-		StudsOffset = Vector3.new(0, 2.6, 0),
+		StudsOffset = Vector3.new(0, over, 0),
 		MaxDistance = 60,
 		AlwaysOnTop = false,
 		LightInfluence = 0,
@@ -92,8 +95,8 @@ local function attach(model: Instance)
 		Size = UDim2.new(1, 0, 0, 40),
 		Parent = gui,
 	})
-	local root = model:FindFirstChild("HumanoidRootPart")
-	local prompt = root and root:FindFirstChildOfClass("ProximityPrompt")
+	local found = model:FindFirstChild("TalkPrompt", true)
+	local prompt = if found and found:IsA("ProximityPrompt") then found else nil
 	local l: Label = { model = model, npcId = npcId, name = name, marker = marker, prompt = prompt }
 	labels[model] = l
 	update(l)

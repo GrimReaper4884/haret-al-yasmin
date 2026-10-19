@@ -1163,3 +1163,31 @@ RenderStepped: 601 frames, 60 FPS, 16.6 ms median / 17.8 ms p95; all 1,423 map p
 `tests/lanezones.spec.luau`: no new zone overlaps another or the slice, every budget ≤ 1,200, slice + planned
 (1,423 + 4,850 = 6,273) ≤ 9,000. **Owner STOP:** the phone ≥ 30 FPS check needs a real device (Studio's
 emulator runs on this PC's GPU); it becomes meaningful once zones are built (LP-D03+).
+
+### LP-D02 the lane's cast in their figures
+
+*Play Solo, desktop Studio, lobby. `[World] built 1423 parts (budget 9000)`, `server ready`, no warnings from our code.*
+Workspace.Npcs on the server: 12 at join (the four slice avatars, the hakawati, Abu Hissam, Abu Hazem, Abu Hares, Abu Bader,
+Su'da Khanum, Umm Baki, Abu Ghadeb), all seven look NPCs `Imported = true` with a 5.6-stud Root; `HaretDebug:Invoke("npcs")`
+added the six zone NPCs (6). No block figure anywhere a model exists (the R15 figures left are the slice's own four
+characters and the crowd walkers, which have no model).
+
+| NPC | What the capture shows | Capture |
+|---|---|---|
+| Abu Bader | seated on the square's north-east bench, knees forward, stick in hand; label above his fez | `docs/captures/lp/d02_mukhtar_bench_akeed_walk.jpg` |
+| Al-'Akeed Abu Shehan | (zone NPC, debug-spawned) striding past Abu Bader with the borrowed proud walk, shibriyeh in hand | same capture |
+| Su'da Khanum | seated on the liwan cushions behind the low table | `d02_umm_hissam_seated.jpg` |
+| Su'da Khanum's prompt | E → portrait dialogue "Show me your men…" → "Here are my defenders" → server sends `units`, the Units screen opens | `d02_umm_hissam_dialogue.jpg`, `d02_umm_hissam_opens_units.jpg` |
+| Umm Baki | walking up the lane with her oil lamp (borrowed cautious walk, yaw along the leg) | `d02_midwife_walking.jpg` |
+| Abu Ghadeb | walking round the square with his bowl | `d02_balila_walking.jpg` |
+| Routes | top view: both walkers' loops clear the fountain basin, the benches and the planters | `d02_square_routes_top.jpg` |
+| Abu Jawdan, Corporal Houri | standing at the post's provisional spot with Abu Hares's idle (enemy figures have no idle of their own) | `d02_post_sergeant_corporal.jpg` |
+| Abu Basim | standing in the empty hammam plot with his bowl | `d02_hammam_owner.jpg` |
+| Za'im Abu Faleh | seated with his cane (provisional spot, no diwan yet: seated in the air until LP-D05) | `d02_zaim_seated.jpg` |
+| Fawza | seated on the west roof edge over the lane with her broom | `d02_fawza_roof.jpg` |
+| Abu Hissam, Abu Hazem, Abu Hares | their unit models in place of the old avatars (barber shot taken while the lane had streamed out) | `d02_barber.jpg`, `d02_qahwaji.jpg`, `d02_natour.jpg` |
+
+Specs: `LobbyLife.route` (stand, walk, stand; position and yaw on each leg; the same every cycle; a one-point
+route stands), every look names a production `.rbxm`, every pose has its clips (own or borrowed), walkers start
+on their route, zone ids exist, ambient NPCs have no dialogue, every `screen` action is listed. Twice during the
+run the idle timer took the character into the Hakawati's room (3 s and 37 s); left at once, AFK lira today 0.

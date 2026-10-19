@@ -94,6 +94,40 @@ return function(t)
 			t.truthy(mid > 1 and mid < o.boost)
 		end)
 
+		t.it("a walker's route is a deterministic loop: stand, walk, stand (LP-D02)", function()
+			local function near(a, b, eps, msg)
+				t.truthy(math.abs(a - b) <= eps, (msg or "near") .. ": " .. tostring(a) .. " vs " .. tostring(b))
+			end
+			local pts = { { 0, 0 }, { 0, -12 }, { 9, -12 } } -- legs of 12, 9 and 15 studs
+			local speed, pause = 3, 2
+			t.eq(LobbyLife.routeCycle(pts, speed, pause), 3 * 2 + (12 + 9 + 15) / 3)
+			local x, z, yaw, moving = LobbyLife.route(pts, speed, pause, 1)
+			t.eq(x, 0)
+			t.eq(z, 0)
+			t.eq(moving, false, "stands at the first point first")
+			near(yaw, LobbyLife.yawToward(9, -12, 0, 0), 1e-9, "faces along the leg it came in on")
+			x, z, yaw, moving = LobbyLife.route(pts, speed, pause, 2 + 2) -- 2 s into the first leg
+			t.eq(moving, true)
+			near(x, 0, 1e-9)
+			near(z, -6, 1e-9)
+			near(yaw, 0, 1e-9, "walking -Z faces yaw 0")
+			x, z, _, moving = LobbyLife.route(pts, speed, pause, 2 + 4 + 1) -- standing at point 2
+			t.eq(moving, false)
+			near(z, -12, 1e-9)
+			local cycle = LobbyLife.routeCycle(pts, speed, pause)
+			for _, at in { 0.5, 3.3, 9.9, 17.2 } do
+				local ax, az, ayaw, am = LobbyLife.route(pts, speed, pause, at)
+				local bx, bz, byaw, bm = LobbyLife.route(pts, speed, pause, at + cycle * 7)
+				near(ax, bx, 1e-6)
+				near(az, bz, 1e-6)
+				near(ayaw, byaw, 1e-6)
+				t.eq(am, bm, "the same every cycle")
+			end
+			x, z = LobbyLife.route(pts, speed, pause, cycle - 0.01)
+			t.truthy(math.abs(x) < 0.1 and math.abs(z) < 0.1, "the last leg closes the loop")
+			t.eq(select(4, LobbyLife.route({ { 4, 5 } }, speed, pause, 10)), false, "a one-point route stands")
+		end)
+
 		t.it("config stays inside the plan's budgets", function()
 			t.eq(Cfg.fountain.rate, 6)
 			t.eq(Cfg.steam.rate, 4)

@@ -16,7 +16,7 @@ end
 local QuestLogic = sibling("QuestLogic")
 
 type Condition = { quest: string, state: string }
-type Choice = { textKey: string, action: { type: string, quest: string?, shop: string? }?, next: string? }
+type Choice = { textKey: string, action: { type: string, quest: string?, shop: string?, screen: string? }?, next: string? }
 type Node = { textKey: string, choices: { Choice } }
 type NpcDialogue = { entries: { { condition: Condition?, node: string } }, nodes: { [string]: Node } }
 

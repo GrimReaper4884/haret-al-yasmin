@@ -91,4 +91,47 @@ function LobbyLife.flare(since: number, boost: number, duration: number): number
 	return boost + (1 - boost) * (since / duration)
 end
 
+-- A walking NPC's loop (LP-D02): `points` is a closed loop of { x, z }; at each point the walker
+-- stands `pause` seconds, then walks to the next at `speed` studs/s. The cycle length in seconds.
+function LobbyLife.routeCycle(points: { { number } }, speed: number, pause: number): number
+	local total = 0
+	local n = #points
+	for i = 1, n do
+		local a, b = points[i], points[i % n + 1]
+		total += pause + math.sqrt((b[1] - a[1]) ^ 2 + (b[2] - a[2]) ^ 2) / speed
+	end
+	return total
+end
+
+-- Where the walker is `t` seconds into the shared clock (every client and the server agree):
+-- x, z, the yaw it faces (towards the next point while walking, along the leg it came in on while
+-- standing) and whether it is walking.
+function LobbyLife.route(points: { { number } }, speed: number, pause: number, t: number): (number, number, number, boolean)
+	local n = #points
+	local cycle = LobbyLife.routeCycle(points, speed, pause)
+	if n == 0 then
+		return 0, 0, 0, false
+	end
+	local first = points[1]
+	if n == 1 or cycle <= 0 then
+		return first[1], first[2], 0, false
+	end
+	local left = t % cycle
+	for i = 1, n do
+		local a, b = points[i], points[i % n + 1]
+		if left < pause then
+			local prev = points[(i - 2) % n + 1]
+			return a[1], a[2], LobbyLife.yawToward(prev[1], prev[2], a[1], a[2]), false
+		end
+		left -= pause
+		local legT = math.sqrt((b[1] - a[1]) ^ 2 + (b[2] - a[2]) ^ 2) / speed
+		if left < legT then
+			local k = left / legT
+			return a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k, LobbyLife.yawToward(a[1], a[2], b[1], b[2]), true
+		end
+		left -= legT
+	end
+	return first[1], first[2], 0, false -- float rounding at the very end of the cycle
+end
+
 return LobbyLife

@@ -106,9 +106,13 @@ return function(t)
 	end)
 
 	t.describe("NPCs and dialogue", function()
-		t.it("every NPC has dialogue and strings", function()
+		t.it("every NPC has dialogue and strings (ambient ones have none)", function()
 			for id, n in Npcs do
-				t.truthy(Dialogue[id], id .. " dialogue")
+				if n.talk == false then
+					t.eq(Dialogue[id], nil, id .. " is ambient: no prompt, no dialogue")
+				else
+					t.truthy(Dialogue[id], id .. " dialogue")
+				end
 				checkKey(n.nameKey, id)
 				checkKey(n.roleKey, id)
 			end
@@ -144,6 +148,9 @@ return function(t)
 								t.eq(Shops[a.shop].npc, npcId, where .. " shop belongs to npc")
 							elseif a.type == "afk" then
 								t.eq(npcId, "qahwaji", where .. " only the coffee-house keeper sends players upstairs")
+							elseif a.type == "screen" then
+								local Hud = t.config("Hud")
+								t.truthy(table.find(Hud.DIALOGUE.screens, a.screen), where .. " opens a listed screen")
 							else
 								t.eq(a.type, "close", where .. " action type")
 							end

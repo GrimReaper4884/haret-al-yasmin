@@ -23,6 +23,7 @@ local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local LocaleController = require(script.Parent.LocaleController)
 local MatchController = require(script.Parent.MatchController)
+local LobbyMenuController = require(script.Parent.LobbyMenuController)
 
 type Payload = { npcId: string, nodeId: string, textKey: string, choices: { string } }
 
@@ -317,8 +318,13 @@ function DialogueController.start()
 		render()
 		typeLine()
 	end)
-	Net.event(Net.Events.DialogueHide).OnClientEvent:Connect(function()
+	Net.event(Net.Events.DialogueHide).OnClientEvent:Connect(function(screen: any)
 		DialogueController.hide(false)
+		-- A lane NPC's "screen" choice (LP-D02): open that lobby screen.
+		local open = if type(screen) == "string" then LobbyMenuController.opener(screen) else nil
+		if open then
+			open()
+		end
 	end)
 	-- A match takes the whole screen: a dialogue left open on the portal pad closes (and the server's
 	-- session with it) instead of covering the match HUD (MH-19).

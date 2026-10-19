@@ -35,6 +35,7 @@ local AfkService = require(script.Parent.AfkService)
 local FunnelService = require(script.Parent.FunnelService)
 local RemoteFuzz = require(script.Parent.RemoteFuzz)
 local MonetizationService = require(script.Parent.MonetizationService)
+local NpcService = require(script.Parent.NpcService)
 local Wallet = require(ReplicatedStorage:WaitForChild("Shared").Logic.Wallet)
 local Economy = require(ReplicatedStorage:WaitForChild("Shared").Config.Economy)
 local TD = require(ReplicatedStorage:WaitForChild("Shared").Config.TD)
@@ -201,6 +202,9 @@ function DebugService.start()
 				return "bad arg"
 			end
 			return MonetizationService.debugPerk(player, perk, off ~= "-")
+		elseif cmd == "npcs" then
+			-- LP-D02: show the NPCs still waiting for their zone at their provisional spots
+			return NpcService.spawnWaiting()
 		end
 		return "unknown command"
 	end

@@ -7,6 +7,18 @@
 
 return {
 	radius = 120, -- studs from the camera; farther pieces hold still / switch off
+
+	-- The lane's cast (LP-D02, Config/Npcs): walkers stroll their route at `walkSpeed` and stand
+	-- `pause` s at each point; the server moves them `serverHz` times a second (prompt range) and each
+	-- client draws them smoothly on the same clock. A seated figure bends `thigh` / `knee` degrees at
+	-- the hip and knee bones over its idle clip, its hip bone `lift` studs above the seat (`drop` ×
+	-- its height when a figure has no hip bone).
+	npcs = {
+		walkSpeed = 3.6,
+		pause = 4,
+		serverHz = 10,
+		sit = { thigh = -90, knee = 90, lift = 0.35, drop = 0.3 },
+	},
 	hz = 30, -- animation updates per second
 	staticHz = 2, -- how often far-away vines are hidden / shown again
 

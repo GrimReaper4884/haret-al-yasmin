@@ -18,6 +18,9 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Units = require(Shared.Config.Units)
 local Looks = require(Shared.Config.CharacterLooks)
 local Vfx = require(Shared.Config.Vfx)
+local Npcs = require(Shared.Config.Npcs)
+local LifeCfg = require(Shared.Config.LobbyLife)
+local LobbyLife = require(Shared.Logic.LobbyLife)
 local BoneAnim = require(Shared.Anim.BoneAnim)
 local MatchController = require(script.Parent.MatchController)
 local EnemyRenderController = require(script.Parent.EnemyRenderController)
@@ -421,6 +424,89 @@ function RigAnimController.adopt(model: Model)
 	end)
 end
 
+-- The lane's cast (Workspace.Npcs, LP-D02): each figure loops its idle, borrowing a clip it lacks
+-- (Config/Npcs `clipsFrom`); a walker follows its route on the server's clock, so every client draws
+-- the same walk the server moves (prompt range); a seated one bends at the hips and knees.
+type NpcRec = { def: any, bound: boolean, sit: { { bone: Bone, cf: CFrame } }? }
+local npcRecs: { [Model]: NpcRec } = {}
+
+local function npcRec(m: Model): NpcRec?
+	local r = npcRecs[m]
+	if r then
+		return r
+	end
+	local id = m:GetAttribute("NpcId")
+	local def = if type(id) == "string" then (Npcs :: any)[id] else nil
+	if not def then
+		return nil
+	end
+	r = { def = def, bound = false, sit = nil }
+	npcRecs[m] = r
+	m.Destroying:Connect(function()
+		npcRecs[m] = nil
+	end)
+	return r
+end
+
+local function bindNpc(n: NpcRec, rec: Rec)
+	local bone = rec.bone
+	if not bone or n.bound then
+		return
+	end
+	n.bound = true
+	for slot, fromId in n.def.clipsFrom or {} do
+		BoneAnim.borrow(bone, fromId, slot)
+	end
+	BoneAnim.loop(bone, "idle")
+	if n.def.pose == "seated" then
+		local sit = LifeCfg.npcs.sit
+		local bend = {
+			LeftUpLeg = CFrame.Angles(math.rad(sit.thigh), 0, 0),
+			RightUpLeg = CFrame.Angles(math.rad(sit.thigh), 0, 0),
+			LeftLeg = CFrame.Angles(math.rad(sit.knee), 0, 0),
+			RightLeg = CFrame.Angles(math.rad(sit.knee), 0, 0),
+		}
+		local list = {}
+		for _, d in rec.model:GetDescendants() do
+			local cf = if d:IsA("Bone") then (bend :: any)[d.Name] else nil
+			if cf then
+				table.insert(list, { bone = d :: Bone, cf = cf })
+			end
+		end
+		n.sit = list
+	end
+end
+
+local function animateNpc(m: Model, now: number, dt: number, smooth: boolean)
+	local n = npcRec(m)
+	if not n then
+		return
+	end
+	local rec = track(m, true)
+	bindNpc(n, rec)
+	local def = n.def
+	local bone = rec.bone
+	if def.pose == "walk" and def.route then
+		local cfg = LifeCfg.npcs
+		local x, z, yaw, moving = LobbyLife.route(def.route, cfg.walkSpeed, cfg.pause, Workspace:GetServerTimeNow() + (def.phase or 0))
+		m:PivotTo(CFrame.new(x, def.position[2], z) * CFrame.Angles(0, yaw, 0))
+		if bone then
+			local authored = BoneAnim.walkSpeed(bone)
+			BoneAnim.loop(bone, if moving then "walk" else "idle", if moving and authored > 0 then cfg.walkSpeed / authored else 1)
+		end
+	end
+	if not bone then
+		animateTower(rec, now, dt, smooth)
+		return
+	end
+	BoneAnim.step(bone, dt, smooth)
+	if n.sit then
+		for _, s in n.sit do
+			s.bone.Transform *= s.cf
+		end
+	end
+end
+
 -- Level of detail: figures off screen are skipped, distant ones update every third frame
 -- (a stride a few frames coarse is invisible past ~70 studs), the rest every frame.
 local NEAR = 70
@@ -476,6 +562,18 @@ local function step(dt: number)
 	for m in extras do
 		if m.Parent and m.PrimaryPart then
 			animateTower(track(m, true), now, dt, true)
+		end
+	end
+	local npcs = Workspace:FindFirstChild("Npcs")
+	if npcs then
+		for _, m in npcs:GetChildren() do
+			if m:IsA("Model") and m.PrimaryPart and m:GetAttribute("Rigged") then
+				i += 1
+				local show, far = visible(camera, m.PrimaryPart.Position, camPos)
+				if show and (not far or (frame + i) % 3 == 0) then
+					animateNpc(m, now, if far then dt * 3 else dt, not far)
+				end
+			end
 		end
 	end
 end

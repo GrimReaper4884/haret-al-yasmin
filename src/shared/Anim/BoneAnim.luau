@@ -182,6 +182,49 @@ function BoneAnim.new(model: Model, id: string): Player?
 	}
 end
 
+-- Gives this figure another character's clip for `slot` (a lane NPC wearing a unit's model walks
+-- with an enemy's walk, LP-D02). Every Meshy rig shares one skeleton; the clip is remapped by bone
+-- name when the lists differ. False when `fromId` has no such clip.
+function BoneAnim.borrow(p: Player, fromId: string, slot: string): boolean
+	local set, raw = clipsFor(fromId)
+	local c = set and set[slot]
+	local _, own = clipsFor(p.id)
+	if not c or not raw or not own then
+		return false
+	end
+	local same = #raw.bones == #own.bones
+	if same then
+		for i, n in own.bones do
+			if raw.bones[i] ~= n then
+				same = false
+				break
+			end
+		end
+	end
+	if not same then
+		local at: { [string]: number } = {}
+		for i, n in raw.bones do
+			at[n] = i
+		end
+		local rots = table.create(c.frames)
+		for f, row in c.rots do
+			local out = table.create(#own.bones)
+			for i, n in own.bones do
+				local k = at[n]
+				out[i] = if k then row[k] else CFrame.identity
+			end
+			rots[f] = out
+		end
+		c = { frames = c.frames, fps = c.fps, rots = rots, hips = c.hips, move = c.move, hit = c.hit }
+	end
+	p.clips = table.clone(p.clips) -- the decoded set is shared by every copy of this character
+	p.clips[slot] = c
+	if p.loopName == slot or (slot == "idle" and p.loopName == nil) then
+		p.loop = nil -- re-pick on the next loop()
+	end
+	return true
+end
+
 -- Sets the looping clip ("idle" / "walk"); keeps its place if it is already playing.
 function BoneAnim.loop(p: Player, slot: string, speed: number?)
 	local c = p.clips[slot] or p.clips.idle or p.clips.walk

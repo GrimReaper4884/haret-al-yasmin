@@ -3,7 +3,7 @@
 -- player's quest state; the client only ever sends the index of a choice in the current node.
 -- Local types only (erased at runtime) so this file stays loadable by Lune tests.
 
-export type Action = { type: string, quest: string?, shop: string? }
+export type Action = { type: string, quest: string?, shop: string?, screen: string? } -- screen: a Hud.DIALOGUE.screens key
 export type Choice = { textKey: string, action: Action?, next: string? }
 export type Node = { textKey: string, choices: { Choice } }
 export type Entry = { condition: { quest: string, state: string }?, node: string }
@@ -200,6 +200,106 @@ local Dialogue: { [string]: Tree } = {
 			greet = {
 				textKey = "dlg.natour.greet",
 				choices = { { textKey = "dlg.natour.greet.ok" } },
+			},
+		},
+	},
+	-- The bigger lane's cast (LP-D02): each opens the screen that fits the character (§4.2).
+	umm_hissam = {
+		entries = { { node = "greet" } },
+		nodes = {
+			greet = {
+				textKey = "dlg.umm_hissam.greet",
+				choices = {
+					{ textKey = "dlg.umm_hissam.greet.go", action = { type = "screen", screen = "units" } },
+					{ textKey = "dlg.common.maybe_later", action = { type = "close" } },
+				},
+			},
+		},
+	},
+	midwife = {
+		entries = { { node = "greet" } },
+		nodes = {
+			greet = {
+				textKey = "dlg.midwife.greet",
+				choices = {
+					{ textKey = "dlg.midwife.greet.go", action = { type = "screen", screen = "daily" } },
+					{ textKey = "dlg.common.maybe_later", action = { type = "close" } },
+				},
+			},
+		},
+	},
+	zaim_npc = {
+		entries = { { node = "greet" } },
+		nodes = {
+			greet = {
+				textKey = "dlg.zaim_npc.greet",
+				choices = {
+					{ textKey = "dlg.zaim_npc.greet.go", action = { type = "screen", screen = "pass" } },
+					{ textKey = "dlg.common.maybe_later", action = { type = "close" } },
+				},
+			},
+		},
+	},
+	akeed_npc = {
+		entries = { { node = "greet" } },
+		nodes = {
+			greet = {
+				textKey = "dlg.akeed_npc.greet",
+				choices = {
+					{ textKey = "dlg.akeed_npc.greet.go", action = { type = "screen", screen = "play" } },
+					{ textKey = "dlg.common.maybe_later", action = { type = "close" } },
+				},
+			},
+		},
+	},
+	hammam_owner = {
+		entries = { { node = "greet" } },
+		nodes = {
+			greet = {
+				textKey = "dlg.hammam_owner.greet",
+				choices = {
+					{ textKey = "dlg.hammam_owner.greet.go", action = { type = "screen", screen = "wardrobe" } },
+					{ textKey = "dlg.common.maybe_later", action = { type = "close" } },
+				},
+			},
+		},
+	},
+	sergeant_npc = {
+		entries = { { node = "greet" } },
+		nodes = {
+			greet = {
+				textKey = "dlg.sergeant_npc.greet",
+				choices = {
+					{ textKey = "dlg.sergeant_npc.greet.go", action = { type = "screen", screen = "event" } },
+					{ textKey = "dlg.common.maybe_later", action = { type = "close" } },
+				},
+			},
+		},
+	},
+	mukhtar_npc = {
+		entries = { { node = "greet" } },
+		nodes = {
+			greet = {
+				textKey = "dlg.mukhtar_npc.greet",
+				choices = { { textKey = "dlg.mukhtar_npc.greet.ok" } },
+			},
+		},
+	},
+	-- Abu Ghadeb, the lane's gossip: three spiteful lines, one after another.
+	balila = {
+		entries = { { node = "greet" } },
+		nodes = {
+			greet = {
+				textKey = "dlg.balila.greet",
+				choices = { { textKey = "dlg.balila.more", next = "second" }, { textKey = "dlg.common.goodbye" } },
+			},
+			second = {
+				textKey = "dlg.balila.second",
+				choices = { { textKey = "dlg.balila.more", next = "third" }, { textKey = "dlg.common.goodbye" } },
+			},
+			third = {
+				textKey = "dlg.balila.third",
+				choices = { { textKey = "dlg.balila.enough" } },
 			},
 		},
 	},

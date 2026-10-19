@@ -52,7 +52,13 @@ return {
 	TOAST = { lobbyTop = 80, matchTop = 100, keepBottom = 160, step = 46, max = 3 },
 	-- The NPC dialogue (Theme v2, LP-C04): portrait size, typewriter speed (characters a second) and the
 	-- gap between the choices sliding in.
-	DIALOGUE = { portrait = 72, cps = 18, choiceGap = 0.06 },
+	-- `screens`: the lobby screens a dialogue choice may open (Config/Dialogue action "screen", LP-D02).
+	DIALOGUE = {
+		portrait = 72,
+		cps = 18,
+		choiceGap = 0.06,
+		screens = { "units", "daily", "pass", "play", "wardrobe", "event", "summon" },
+	},
 	-- The match HUD skin (Theme v2, LP-C06): the gate cracks below `crackAt` of its HP; the result's
 	-- cash curve is a `spark` px tall line.
 	MATCH_SKIN = { crackAt = 0.3, spark = { w = 150, h = 20, thickness = 2 }, waveIcon = 26 },
