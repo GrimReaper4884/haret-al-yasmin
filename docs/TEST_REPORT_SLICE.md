@@ -1103,3 +1103,16 @@ was not redeemed (the dialog was answered "Back").*
 | Toast stack | a refusal (red "!"), a gain (lira coin) and news (plain) stacked; each dismisses on a tap or a sideways swipe | `c03_toast_stack.jpg` |
 | Tab cross-fade | Play's Story / Endless / Event tabs and the Units role chips lay a panel-coloured veil that fades out in 0.15 s (none under Reduced Motion) | — |
 | Console | no errors or warnings from our code | — |
+
+### LP-C04 portrait dialogue with the typewriter
+
+*Play Solo; the player put beside Abu Nadim (`HaretDebug`-free: a server `PivotTo`) and `E` pressed. Arabic
+with `Z`, switched back afterwards (`settings.language` read back as `en`).*
+
+| Check | Result | Capture |
+|---|---|---|
+| English mid-type | "The ka'ak is gett…" at 18 characters a second beside Abu Nadim's face in a brass frame (a live view of his figure: he wears no unit look) | `docs/captures/lp/c04_typing_en.jpg` |
+| Tap completes | a tap on the line typed the rest at once; "I'm on my way." slid in after | `c04_tap_completes_choice_slides_en.jpg` |
+| Arabic mid-type | the portrait on the right, the line growing from the right edge («الكعك عم يبرد! بيت ا…») | `c04_typing_ar.jpg` |
+| Arabic complete | right-aligned line, mirrored header (close on the left), «أنا بالطريق.» below | `c04_complete_ar.jpg` |
+| Console | no errors or warnings from our code | — |

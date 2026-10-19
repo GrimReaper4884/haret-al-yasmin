@@ -583,10 +583,10 @@ DECISIONS; every name goes through §4.2's STOP first.
   - Shipped (D-098) with the chrome at id 0 (drawn style kept): the 9-slice images wait for the owner's upload.
 - [x] 3a9b3b8 **LP-C02 Lobby bar: hierarchy, dots, breathing Play; currency pills count and glow** · deps: LP-C01
   - Accept: captures desktop/tablet/phone; a Daily claim flies coins and counts the pill; dots clear on open.
-- [x] **LP-C03 Panels, modals, sheets, tabs, toasts, confirm** · deps: LP-C01
+- [x] 1b33855 **LP-C03 Panels, modals, sheets, tabs, toasts, confirm** · deps: LP-C01
   - Accept: every screen opens with the same motion; tab cross-fade; `Modal.confirm` used by Sell, Reroll,
     Leave, Redeem; toast stack capture.
-- [ ] **LP-C04 Portrait dialogue with typewriter (EN and RTL AR)** · deps: LP-C01, PV-C05 portraits
+- [x] **LP-C04 Portrait dialogue with typewriter (EN and RTL AR)** · deps: LP-C01, PV-C05 portraits
   - Accept: Abu Nadim's errand in both languages captured mid-type; tap completes; choices slide.
 - [ ] **LP-C05 Units, Summon ×10 stagger, Lane Diary auto-scroll and shimmer, Settings groups** · deps: LP-C01, LP-B05
   - Accept: captures; a Mythic ×10 shakes (and does not with Reduced Motion).
@@ -647,7 +647,7 @@ Meshy budget: ≈ 330 credits (240 for four NPC looks + 90 for the merchant and 
 
 - [x] ff75c8d LP-A01 · [x] 19425ee LP-A02 · [x] fb9bdaa LP-A03
 - [x] 01545af LP-B01 · [x] 17c73f4 LP-B02 · [x] 5cc73de LP-B03 · [x] 82f876c LP-B04 · [x] d315bda LP-B05
-- [x] 373902b LP-C00 · [x] 2ff7102 LP-C01 · [x] 3a9b3b8 LP-C02 · [x] LP-C03 · [ ] LP-C04 · [ ] LP-C05 · [ ] LP-C06 · [ ] LP-C07
+- [x] 373902b LP-C00 · [x] 2ff7102 LP-C01 · [x] 3a9b3b8 LP-C02 · [x] 1b33855 LP-C03 · [x] LP-C04 · [ ] LP-C05 · [ ] LP-C06 · [ ] LP-C07
 - [ ] LP-D00 · [ ] LP-D01 · [ ] LP-D02 · [ ] LP-D03 · [ ] LP-D04 · [ ] LP-D05 · [ ] LP-D06 · [ ] LP-D07 · [ ] LP-D08 · [ ] LP-D09 · [ ] LP-D10 · [ ] LP-D11
 - [ ] LP-E01 · [ ] LP-E02 · [ ] LP-E03 · [ ] LP-E04
 

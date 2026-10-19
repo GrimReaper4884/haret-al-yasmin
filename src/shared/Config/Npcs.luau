@@ -11,6 +11,7 @@ export type NpcDef = {
 	robe: string,
 	accent: string,
 	headwear: string?,
+	look: string?, -- a unit or enemy id (Config/CharacterLooks): its portrait in the dialogue (LP-C04)
 }
 
 local Npcs: { [string]: NpcDef } = {
@@ -55,6 +56,7 @@ local Npcs: { [string]: NpcDef } = {
 		headwear = "tarboosh",
 	},
 	barber = {
+		look = "umm_hara",
 		nameKey = "npc.barber.name",
 		roleKey = "npc.barber.role",
 		position = { 14.5, 0.3, 36 },
@@ -65,6 +67,7 @@ local Npcs: { [string]: NpcDef } = {
 		headwear = "tarboosh",
 	},
 	qahwaji = {
+		look = "qahwaji",
 		nameKey = "npc.qahwaji.name",
 		roleKey = "npc.qahwaji.role",
 		position = { -27, 0.3, -13 },
@@ -75,6 +78,7 @@ local Npcs: { [string]: NpcDef } = {
 		headwear = "tarboosh",
 	},
 	natour = {
+		look = "natour",
 		nameKey = "npc.natour.name",
 		roleKey = "npc.natour.role",
 		position = { 5.5, 0, 84 },

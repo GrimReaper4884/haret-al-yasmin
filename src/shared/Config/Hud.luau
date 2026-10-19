@@ -50,6 +50,9 @@ return {
 	-- pips), and the bottom band they never enter (hotbar, cash pill, Place / Cancel); `step` is one
 	-- toast plus its gap, `max` the most shown at once where they fit.
 	TOAST = { lobbyTop = 80, matchTop = 100, keepBottom = 160, step = 46, max = 3 },
+	-- The NPC dialogue (Theme v2, LP-C04): portrait size, typewriter speed (characters a second) and the
+	-- gap between the choices sliding in.
+	DIALOGUE = { portrait = 72, cps = 18, choiceGap = 0.06 },
 
 	-- Right rail (Skip, Speed, View) in the thumb arc, above the jump zone; the match menu `≡` sits at
 	-- the top of the same edge. When a column cannot hold every button the rest go into the next one in.
