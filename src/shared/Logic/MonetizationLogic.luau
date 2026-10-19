@@ -25,7 +25,7 @@ type Profile = {
 	receipts: { [string]: number },
 	[string]: any,
 }
-type DevProduct = { kind: string, amount: number?, item: string?, fallbackQirsh: number?, fallbackLira: number?, season: string?, bundle: any?, oneTime: boolean? }
+type DevProduct = { kind: string, productId: number?, amount: number?, item: string?, fallbackQirsh: number?, fallbackLira: number?, season: string?, bundle: any?, oneTime: boolean? }
 
 export type GrantResult = "granted" | "already" | "fallback"
 
@@ -228,6 +228,41 @@ function MonetizationLogic.canPrompt(profile: Profile, product: DevProduct?, pro
 		return false, "already_owned"
 	end
 	return true, nil
+end
+
+-- Rewarded video ads (Config/Products `ads`). `state` is this session's record for the player:
+-- `shown` ads started so far and `lastAt` when the last one finished. One ad per cfg.cooldownSeconds
+-- and cfg.perSession per session; the reward product must exist (id > 0) and never fund random items.
+export type AdState = { shown: number, lastAt: number? }
+export type AdConfig = { enabled: boolean, reward: string, cooldownSeconds: number, perSession: number }
+
+-- `studio` = a Studio playtest, which may play ads before serving is enabled.
+function MonetizationLogic.canShowAd(state: AdState?, now: number, cfg: AdConfig, reward: DevProduct?, studio: boolean?): (boolean, string?)
+	if not cfg.enabled and not studio then
+		return false, "not_available"
+	end
+	if not reward or not isAmount(reward.productId) or MonetizationLogic.fundsRandomItems(reward) then
+		return false, "not_available"
+	end
+	local shown = if state then state.shown else 0
+	if shown >= cfg.perSession then
+		return false, "session_cap"
+	end
+	local last = state and state.lastAt
+	if last and now - last < cfg.cooldownSeconds then
+		return false, "cooldown"
+	end
+	return true, nil
+end
+
+-- When the next ad may play (a time on the same clock as `lastAt`; 0 = already); nil once the
+-- session cap is reached.
+function MonetizationLogic.adReadyAt(state: AdState?, cfg: AdConfig): number?
+	if state and state.shown >= cfg.perSession then
+		return nil
+	end
+	local last = state and state.lastAt
+	return if last then last + cfg.cooldownSeconds else 0
 end
 
 return MonetizationLogic

@@ -63,7 +63,7 @@ at once instead of waiting for Roblox's ownership cache.
 - [ ] If the dashboard offers **regional pricing / price optimization** on products or passes, leave it
       **off** for now so the prices below are what testers see.
 
-### B2.2 Create the developer products (15)
+### B2.2 Create the developer products (15) — done 2026-10-19 by Claude in Chrome (owner-approved prices, managed pricing off; plus `ad_qirsh_25`, 7 R$)
 
 Creator Dashboard → **Haret Al-Yasmin (TEST)** → **Monetization** → **Developer Products** →
 **Create a Developer Product**. For each row: name, description, (icon), price → **Save** (or
@@ -90,7 +90,7 @@ Creator Dashboard → **Haret Al-Yasmin (TEST)** → **Monetization** → **Deve
 The keys `lira_300 / lira_650 / lira_1500 / lira_4000` are historical names; the amounts in the Name
 column are what the game grants.
 
-### B2.3 Create the game passes (4)
+### B2.3 Create the game passes (4) — done 2026-10-19, all on sale
 
 Monetization → **Passes** → **Create a Pass** → image (optional for now), name, description → **Create
 Pass**. Then open the pass → **Sales** (or **Monetization**) → switch **Item for Sale** on → price →
@@ -145,8 +145,8 @@ send Claude the questions that pushed it there.
 
 ### B2.6 Paste the ids
 
-- [ ] Paste each id into `src/shared/Config/Products.luau` at the lines above (or send the 15 ids to Claude
-      to paste). Do not change `robux = …`; that field is display-only and the real price always comes
+- [x] Paste each id into `src/shared/Config/Products.luau` at the lines above (or send the 15 ids to Claude
+      to paste). (2026-10-19: all 16 products and 4 passes, by Claude.) Do not change `robux = …`; that field is display-only and the real price always comes
       from Roblox.
 - [ ] `lune run tests/run` still passes. Commit with a message like "Products: TEST experience ids".
 - [ ] Open the TEST place in Studio (**File → Open from Roblox**, or `rojo serve` + Connect on that place).

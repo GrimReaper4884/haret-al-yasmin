@@ -6,15 +6,19 @@
 --    then answers PurchaseGranted. Any failure answers NotProcessedYet so Roblox retries later.
 --  * Game passes grant their cosmetics and perk flags (vip / fast / slot): checked on join, and
 --    applied straight away for the session when PromptGamePassPurchaseFinished reports a purchase.
+--  * Rewarded video ads (AdService): the client asks, the server checks the cooldown and plays one;
+--    Roblox pays the reward product (Config/Products `ads`) through ProcessReceipt like a purchase.
 --  * PolicyService: players whose region restricts paid random items cannot buy anything that
 --    funds them: lira, trait stones, the starter pack, premium Diary, Diary skips
 --    (MonetizationLogic.fundsRandomItems).
 
+local AdService = game:GetService("AdService")
 local MarketplaceService = game:GetService("MarketplaceService")
 local PolicyService = game:GetService("PolicyService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RobloxAnalytics = game:GetService("AnalyticsService")
+local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared.Net)
@@ -41,6 +45,9 @@ local byProductId: { [number]: string } = {}
 local byPassId: { [number]: string } = {}
 local perks: { [Player]: { [string]: boolean } } = {}
 local restricted: { [Player]: boolean } = {}
+local ads: { [Player]: MonetizationLogic.AdState } = {}
+local ownedPasses: { [Player]: { [string]: boolean } } = {} -- pass keys owned this session (the store shows "Owned")
+local adPlaying: { [Player]: boolean } = {}
 
 local function grantCtx(): MonetizationLogic.GrantContext
 	return {
@@ -108,6 +115,11 @@ local function processReceipt(info: { [string]: any }): Enum.ProductPurchaseDeci
 		return Enum.ProductPurchaseDecision.NotProcessedYet
 	end
 
+	if info.ProductPurchaseChannel == Enum.ProductPurchaseChannel.AdReward then
+		pcall(function()
+			RobloxAnalytics:LogCustomEvent(player, "ad_reward", 1)
+		end)
+	end
 	-- The ledger key is the PurchaseId, so a replayed receipt ("already") never writes a second line.
 	local ok, err, result = DataService.mutate(player, function(profile)
 		return MonetizationLogic.grantReceipt(profile, tostring(info.PurchaseId), product, grantCtx())
@@ -137,7 +149,10 @@ local function processReceipt(info: { [string]: any }): Enum.ProductPurchaseDeci
 end
 
 -- Sets the pass's perk flag for this session and grants its cosmetics (once).
-local function applyPass(player: Player, pass: any)
+local function applyPass(player: Player, pass: any, key: string)
+	local passes = ownedPasses[player] or {}
+	ownedPasses[player] = passes
+	passes[key] = true
 	local owned = perks[player] or {}
 	perks[player] = owned
 	if pass.perk then
@@ -167,7 +182,7 @@ local function grantOwnedPasses(player: Player)
 				return MarketplaceService:UserOwnsGamePassAsync(player.UserId, pass.gamePassId)
 			end)
 			if okOwn and owns then
-				applyPass(player, pass)
+				applyPass(player, pass, key)
 			elseif not okOwn then
 				warn("[Monetization] pass check failed for " .. key)
 			end
@@ -254,6 +269,47 @@ function MonetizationService.start()
 	PlayerStateService.addExtra(function(player: Player, s: { [string]: any })
 		s.perks = table.clone(perks[player] or {})
 		s.restricted = restricted[player] == true
+		s.ownedPasses = table.clone(ownedPasses[player] or {})
+		-- When the store's ad row can play again (os.time; 0 = now, nil = this session's cap reached).
+		s.adReadyAt = MonetizationLogic.adReadyAt(ads[player], Products.ads)
+	end)
+
+	RemoteGuard.event(Net.Events.RequestRewardedAd, RemoteGuard.STRICT, function(player: Player)
+		if adPlaying[player] or not DataService.getProfile(player) then
+			return
+		end
+		local now = os.time()
+		local reward = (Products.devProducts :: any)[Products.ads.reward]
+		local ok, err = MonetizationLogic.canShowAd(ads[player], now, Products.ads, reward, RunService:IsStudio())
+		if not ok then
+			if err == "cooldown" then
+				local wait = (MonetizationLogic.adReadyAt(ads[player], Products.ads) or now) - now
+				PlayerStateService.notify(player, "notify.ad_cooldown", { n = math.max(1, math.ceil(wait / 60)) })
+			else
+				PlayerStateService.notify(player, "notify.ad_unavailable")
+			end
+			return
+		end
+		adPlaying[player] = true
+		local state: MonetizationLogic.AdState = ads[player] or { shown = 0, lastAt = nil }
+		state.shown += 1
+		ads[player] = state
+		local okShow, result = pcall(function()
+			local adReward = AdService:CreateAdRewardFromDevProductId(reward.productId)
+			return AdService:ShowRewardedVideoAdAsync(player, adReward)
+		end)
+		adPlaying[player] = nil
+		if not player.Parent then
+			return
+		end
+		if okShow and result == Enum.ShowAdResult.ShowCompleted then
+			state.lastAt = os.time() -- the reward itself arrives through ProcessReceipt
+		else
+			state.shown -= 1 -- nothing was watched: the attempt doesn't count
+			warn("[Monetization] rewarded ad not shown: " .. tostring(result))
+			PlayerStateService.notify(player, "notify.ad_unavailable")
+		end
+		PlayerStateService.schedule(player)
 	end)
 
 	RemoteGuard.event(Net.Events.RequestProduct, RemoteGuard.STRICT, function(player: Player, key: any)
@@ -296,7 +352,7 @@ function MonetizationService.start()
 		-- purchase (and never reflects a Studio test purchase). The next join re-checks ownership.
 		local key = byPassId[passId]
 		if purchased and key and player.Parent then
-			applyPass(player, (Products.gamePasses :: any)[key])
+			applyPass(player, (Products.gamePasses :: any)[key], key)
 			perksChanged(player)
 		end
 	end)
@@ -308,6 +364,9 @@ function MonetizationService.start()
 	Players.PlayerRemoving:Connect(function(player: Player)
 		perks[player] = nil
 		restricted[player] = nil
+		ads[player] = nil
+		adPlaying[player] = nil
+		ownedPasses[player] = nil
 	end)
 end
 

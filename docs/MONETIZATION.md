@@ -39,6 +39,11 @@ rules: `docs/research/ROBLOX_IP_AND_POLICY.md`.*
 | `pass_skip_10` | +10 Diary levels | 999 | hidden where restricted (unlocked levels pay lira) |
 | `starter_pack` | 300 lira + the 'Akeed + red tarboosh | 199 | once per player (`profile.bundles`); hidden where restricted (pays lira) |
 | `item_tarboosh_gold`, `item_qumbaz_wedding` | cosmetics | 79 / 129 | |
+| `ad_qirsh_25` | 25 qirsh | 7 | the rewarded video ad's reward (§5); not a store row |
+
+All 16 products and 4 passes exist on the TEST experience since 2026-10-19 (ids in `Config/Products`,
+managed pricing off). The creator account owns every pass automatically, so pass purchases can't be
+test-bought from it; use a second account for that.
 
 ### Game passes (permanent)
 
@@ -51,8 +56,8 @@ rules: `docs/research/ROBLOX_IP_AND_POLICY.md`.*
 
 ### Other levers
 
-Premium Payouts (engagement), paid private servers (~100 R$/month, owner toggle), Immersive Ads later
-(13+ only, needs 2,000 monthly visitors and the questionnaire), UGC accessories later.
+Premium Payouts (engagement), paid private servers (~100 R$/month, owner toggle), rewarded video ads
+(built, §5; serving off until the experience qualifies), UGC accessories later.
 
 ## 3. Lira economy
 
@@ -111,6 +116,14 @@ and stones are region-gated (§B2.0, §5).
   against an exact enumeration of `rerollTrait`.
 - **Policy:** `PolicyService` per player on join; failure to read the policy is treated as restricted.
 - **Analytics:** IAP economy events for qirsh/lira, custom events per product key, summon and pass events.
+- **Rewarded video ads:** the store shows a "Watch an ad · 25 qirsh" row when AdService says an ad is
+  available; the client fires `RequestRewardedAd`, the server (`MonetizationLogic.canShowAd`: one per 10 min,
+  6 a session, reward must exist and never fund random items) calls `ShowRewardedVideoAdAsync` with an
+  `AdReward` made from `ad_qirsh_25`, and Roblox pays it through `ProcessReceipt` (channel `AdReward`) like a
+  purchase. Qirsh only buys cosmetics, so the reward is never a random item (Roblox's rule). `Products.ads.enabled`
+  is **false** until the owner turns on Creator Hub → Monetization → Ads → Rewarded Video → Serving
+  (needs 13+, ID-verified and 2-step-verified publisher, an approved questionnaire and the visitor bar);
+  Studio ignores the flag. Verified in Studio 2026-10-19: ShowCompleted → receipt → +25 qirsh, cooldown shown.
 - Unit tests: `tests/monetization.spec.luau`, `tests/meta.spec.luau`.
 
 ## 6. KPIs to watch

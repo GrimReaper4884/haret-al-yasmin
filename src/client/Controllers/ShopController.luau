@@ -1,10 +1,12 @@
 --!strict
 -- Shop panel, two modes:
 --   "shop"  — an NPC shop opened by the server (ShopShow); qirsh items and Robux-only items.
---   "store" — the coin store opened from the HUD "+" button; qirsh packs and game passes.
+--   "store" — the coin store opened from the HUD "+" button; qirsh packs, game passes and, when
+--             Roblox has one to show, a rewarded video ad for qirsh (Config/Products `ads`).
 -- Every action is a request the server validates (price, funds, ownership, range, product live).
 -- Robux prices shown here come from MarketplaceService, never from config.
 
+local AdService = game:GetService("AdService")
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -41,6 +43,11 @@ local list: ScrollingFrame
 local mode: "shop" | "store" | nil = nil
 local shopId: string? = nil
 local busy = false
+
+-- Whether Roblox has a rewarded video ad for this player right now (AdService; nil = not asked yet).
+-- An "available" answer is good for one ad, so it is asked again each time the store opens.
+local adAvailable: boolean? = nil
+local adChecking = false
 
 -- Robux price cache: product/pass id → price (or false while unknown/failed)
 local robuxPrice: { [string]: number | boolean } = {}
@@ -321,6 +328,29 @@ local function storeRows(snapshot: any)
 		order += 1
 		productRow(order, key, IconIds.product[product.kind], t("hud.currency", { n = product.amount }), false)
 	end
+	-- The rewarded ad (never for a reward that funds random items; canShowAd on the server re-checks).
+	local reward = (Products.devProducts :: any)[Products.ads.reward]
+	local adsOn = Products.ads.enabled or game:GetService("RunService"):IsStudio()
+	if adsOn and adAvailable and reward and reward.productId > 0 then
+		local readyAt = snapshot.adReadyAt
+		local wait = if readyAt == nil then nil else math.max(0, readyAt - Workspace:GetServerTimeNow())
+		order += 1
+		row({
+			key = "ad",
+			order = order,
+			icon = IconIds.product.qirsh,
+			name = t("store.ad.name"),
+			desc = t("store.ad.desc", { n = reward.amount }),
+			buttonText = if wait == nil then t("store.ad.done") elseif wait > 0 then t("store.ad.wait", { n = math.max(1, math.ceil(wait / 60)) }) else t("store.ad.button"),
+			enabled = wait == 0,
+			premium = false,
+			onClick = function()
+				adAvailable = nil -- one ad per "available" answer: ask again next time
+				Net.event(Net.Events.RequestRewardedAd):FireServer()
+				render()
+			end,
+		})
+	end
 	for _, key in Products.extrasOrder do
 		local product = (Products.devProducts :: any)[key]
 		local owned = product.oneTime and snapshot.bundles and snapshot.bundles[product.nameKey] ~= nil
@@ -333,7 +363,7 @@ local function storeRows(snapshot: any)
 	for _, key in Products.passOrder do
 		local pass = (Products.gamePasses :: any)[key]
 		local price = priceOf("pass", pass.gamePassId)
-		local owned = pass.perk and snapshot.perks and snapshot.perks[pass.perk] == true
+		local owned = (snapshot.ownedPasses and snapshot.ownedPasses[key] == true) or (pass.perk and snapshot.perks and snapshot.perks[pass.perk] == true)
 		order += 1
 		row({
 			key = key,
@@ -401,6 +431,19 @@ function ShopController.openStore(focus: string?)
 	mode = "store"
 	list.CanvasPosition = Vector2.zero
 	render()
+	if not adChecking then
+		adChecking = true
+		task.spawn(function()
+			local ok, result = pcall(function()
+				return AdService:GetAdAvailabilityNowAsync(Enum.AdFormat.RewardedVideo)
+			end)
+			adAvailable = ok and result ~= nil and result.AdAvailabilityResult == Enum.AdAvailabilityResult.IsAvailable
+			adChecking = false
+			if mode == "store" then
+				render()
+			end
+		end)
+	end
 	if focus then
 		task.defer(function()
 			local target = list:FindFirstChild("Row_" .. focus)

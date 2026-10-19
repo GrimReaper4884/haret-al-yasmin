@@ -21,6 +21,7 @@ Net.Events = {
 	ClueShow = "ClueShow", -- S→C clueId (clue card)
 	RequestProduct = "RequestProduct", -- C→S product key (server validates, then prompts)
 	RequestPass = "RequestPass", -- C→S game pass key
+	RequestRewardedAd = "RequestRewardedAd", -- C→S (server checks the cooldown, then plays a rewarded video ad)
 
 	-- Tower defense: lobby queue
 	QueueState = "QueueState", -- S→C { partyId, modeId, players, countdown, difficulty, host, max } | nil

@@ -259,4 +259,48 @@ return function(t)
 			end
 		end)
 	end)
+
+	t.describe("Rewarded video ads", function()
+		local cfg = Products.ads
+		local reward = Products.devProducts[cfg.reward]
+		t.it("the reward is a live qirsh product that never funds random items", function()
+			t.truthy(reward, "reward product exists")
+			t.eq(reward.kind, "qirsh")
+			t.truthy(reward.productId > 0, "reward product is created")
+			t.eq(MonetizationLogic.fundsRandomItems(reward), false)
+			t.truthy(Strings.en["store.ad.desc"] and Strings.ar["store.ad.desc"], "disclosure strings")
+			for _, list in { Products.storeOrder, Products.liraOrder, Products.extrasOrder } do
+				t.eq(table.find(list, cfg.reward), nil, "the ad reward is not a store row")
+			end
+			t.truthy(cfg.cooldownSeconds > 0 and cfg.perSession > 0)
+		end)
+		t.it("nothing plays while serving is off, except in a Studio playtest", function()
+			local off = table.clone(cfg)
+			off.enabled = false
+			t.eq(MonetizationLogic.canShowAd(nil, 0, off, reward, false), false)
+			t.truthy(MonetizationLogic.canShowAd(nil, 0, off, reward, true), "Studio")
+		end)
+		t.it("one ad per cooldown, at most perSession a session", function()
+			cfg = table.clone(cfg)
+			cfg.enabled = true
+			t.truthy(MonetizationLogic.canShowAd(nil, 1000, cfg, reward), "first ad")
+			t.eq(MonetizationLogic.adReadyAt(nil, cfg), 0)
+			local state = { shown = 1, lastAt = 1000 }
+			local ok, err = MonetizationLogic.canShowAd(state, 1000 + cfg.cooldownSeconds - 1, cfg, reward)
+			t.eq(ok, false)
+			t.eq(err, "cooldown")
+			t.eq(MonetizationLogic.adReadyAt(state, cfg), 1000 + cfg.cooldownSeconds)
+			t.truthy(MonetizationLogic.canShowAd(state, 1000 + cfg.cooldownSeconds, cfg, reward), "after the cooldown")
+			local capped = { shown = cfg.perSession, lastAt = 0 }
+			local ok2, err2 = MonetizationLogic.canShowAd(capped, 10 ^ 9, cfg, reward)
+			t.eq(ok2, false)
+			t.eq(err2, "session_cap")
+			t.eq(MonetizationLogic.adReadyAt(capped, cfg), nil)
+		end)
+		t.it("refuses a missing, uncreated or random-funding reward", function()
+			t.eq(MonetizationLogic.canShowAd(nil, 0, cfg, nil), false)
+			t.eq(MonetizationLogic.canShowAd(nil, 0, cfg, { productId = 0, kind = "qirsh", amount = 25 }), false)
+			t.eq(MonetizationLogic.canShowAd(nil, 0, cfg, { productId = 5, kind = "lira", amount = 25 }), false)
+		end)
+	end)
 end
