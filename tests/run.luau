@@ -127,6 +127,7 @@ local specs = {
 	require("./season1.spec"),
 	require("./monetization.spec"),
 	require("./td.spec"),
+	require("./lanezones.spec"),
 	require("./meta.spec"),
 	require("./settings.spec"),
 	require("./party.spec"),

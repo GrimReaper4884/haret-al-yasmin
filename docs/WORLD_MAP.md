@@ -54,6 +54,24 @@ Built in `src/server/World/` (Kit → Props → Facade → Zones). Signature ele
 
 Part count: **1,267** (budget 6,000).
 
+## The bigger lane (LOOK_AND_PLAY_PLAN §4.1, LP-D00 scaffolding)
+
+The slice's coordinates stay. New zones grow outward; each is a `Model` named `Zone_<id>` with
+`ModelStreamingMode = Atomic`, built by `server/World/Zones/<module>.luau` once its task ships (the table is
+`src/shared/Config/LaneZones.luau`; `tests/lanezones.spec.luau` checks no overlap and the budget). Lobby budget
+**9,000 parts** (6,000 stream at once); baseline at LP-D00: **1,423 parts**, desktop Studio 60 FPS (16.6 ms
+median, 17.8 ms p95).
+
+| Zone ID | Bounds (x0, z0, x1, z1) | What | Budget | Task | Status |
+|---------|------|------|--------|------|--------|
+| `souq` | 24, 40, 60, 72 | covered souq off the lane's east side: grocer, pottery, clogs, Abu Brahim's cloth shop | 1,000 | LP-D03 | planned |
+| `hammam` | −62, 0, −40, 26 | domed hammam façade west of the square | 700 | LP-D04 | planned |
+| `diwan` | 24, −30, 52, −4 | the za'im's house and liwan | 900 | LP-D05 | planned |
+| `mosque_court` | 24, −4, 48, 24 | the courtyard wall, ablution fountain, fig tree, minaret (exterior only) | 500 | LP-D05 | planned |
+| `post` | −40, 96, −16, 120 | the gendarmerie post outside the gate | 600 | LP-D06 | planned |
+| `orchard_road` | −16, 96, 40, 150 | the road to the orchards outside the gate | 1,000 | LP-D06 | planned |
+| `rooftop_view` | −24, 24, 24, 84 (overhead) | two rooftops above the lane, no collision | 150 | LP-D07 | planned |
+
 ## Boundaries
 
 The building blocks themselves enclose the play space. Two invisible walls (`Transparency = 1`,

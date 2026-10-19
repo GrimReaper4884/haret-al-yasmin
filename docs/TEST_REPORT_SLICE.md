@@ -1154,3 +1154,12 @@ the confirmation's primary, refusal toasts, `Button.setReady` turning on) and si
 `coin` with the lobby coin flight. Everything goes through the `sfx` setting. **Missing files for the owner:**
 `ui_open`, `ui_close`, `ui_confirm`, `ui_deny`, `ui_ready` (briefs in AUDIO_COMMISSION Batch 3), plus the
 older `wave_clear` and `summon_reveal`.
+
+### LP-D00 zone scaffolding and the lobby baseline
+
+*Play Solo, desktop Studio, the lobby at spawn.* Console: `[World] built 1423 parts (budget 9000)`; no zone is
+built yet (`built = false` for all seven in `Config/LaneZones`), so the lane is unchanged. Client 10 s
+RenderStepped: 601 frames, 60 FPS, 16.6 ms median / 17.8 ms p95; all 1,423 map parts streamed in on the client.
+`tests/lanezones.spec.luau`: no new zone overlaps another or the slice, every budget ≤ 1,200, slice + planned
+(1,423 + 4,850 = 6,273) ≤ 9,000. **Owner STOP:** the phone ≥ 30 FPS check needs a real device (Studio's
+emulator runs on this PC's GPU); it becomes meaningful once zones are built (LP-D03+).

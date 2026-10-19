@@ -9,6 +9,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Palette = require(ReplicatedStorage:WaitForChild("Shared").Config.Palette)
+local LaneZones = require(ReplicatedStorage:WaitForChild("Shared").Config.LaneZones)
 local World = script.Parent.Parent:WaitForChild("World")
 local Kit = require(World.Kit)
 local Atmosphere = require(World.Atmosphere)
@@ -23,7 +24,36 @@ local PropDressing = require(World.PropDressing)
 
 local WorldService = {}
 
-WorldService.PART_BUDGET = 6000
+WorldService.PART_BUDGET = LaneZones.PART_BUDGET -- 9,000 with the bigger lane (LP-D00); 6,000 stream at once
+
+-- The bigger lane's zones (Config/LaneZones, LP-D00): each a Model that streams as one piece, built by
+-- server/World/Zones/<module> once its task ships (`built`). Returns the zone's part count.
+local function buildZones(map: Model): { [string]: number }
+	local counts: { [string]: number } = {}
+	for _, z in LaneZones.zones do
+		local module = if z.built then Zones:FindFirstChild(z.module) else nil
+		if module and module:IsA("ModuleScript") then
+			local zone = Instance.new("Model")
+			zone.Name = "Zone_" .. z.id
+			zone.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
+			zone:SetAttribute("Bounds", table.concat(z.bounds, ","))
+			local dynamicRequire: any = require
+			dynamicRequire(module).build(zone)
+			zone.Parent = map
+			local n = 0
+			for _, d in zone:GetDescendants() do
+				if d:IsA("BasePart") then
+					n += 1
+				end
+			end
+			counts[z.id] = n
+			if n > z.budget then
+				warn(string.format("[World] zone %s has %d parts (budget %d)", z.id, n, z.budget))
+			end
+		end
+	end
+	return counts
+end
 
 local function bounds(map: Instance)
 	local m = Kit.model(map, "Bounds")
@@ -81,6 +111,7 @@ function WorldService.build()
 	Extras.build(map)
 	PropDressing.dressLobby(map)
 	PropDressing.swap(map)
+	local zoneParts = buildZones(map)
 	bounds(map)
 	map.Parent = Workspace
 
@@ -102,6 +133,9 @@ function WorldService.build()
 		end
 	end
 	local msg = string.format("[World] built %d parts (budget %d)", parts, WorldService.PART_BUDGET)
+	for id, n in zoneParts do
+		msg ..= string.format(" · %s %d", id, n)
+	end
 	if parts > WorldService.PART_BUDGET then
 		warn(msg)
 	else
