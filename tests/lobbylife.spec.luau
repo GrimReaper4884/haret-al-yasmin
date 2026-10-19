@@ -246,6 +246,33 @@ return function(t)
 			end
 		end)
 
+		t.it("the 'arada every third evening; the musaharati only in its event (LP-D11)", function()
+			local C, A = Cfg.CLOCK, Cfg.beats.arada
+			t.eq(LobbyLife.aradaAt(480 + A.from + 1, C, A), 1, "the first evening of three")
+			t.eq(LobbyLife.aradaAt(720 + 480 + A.from + 1, C, A), nil, "not the second")
+			t.eq(LobbyLife.aradaAt(1440 + 480 + A.from + 1, C, A), nil, "not the third")
+			t.eq(LobbyLife.aradaAt(2160 + 480 + A.from + 1, C, A), 1, "the fourth again: every 36 minutes")
+			t.eq(LobbyLife.aradaAt(480 + A.from + A.length + 1, C, A), nil, "over")
+			t.truthy(A.from + A.length <= 120, "inside the evening")
+			t.eq(LobbyLife.pathLength({ { 0, 0 }, { 3, 4 }, { 3, 10 } }), 11)
+			t.truthy(LobbyLife.pathLength(A.route) / A.speed + 2 * A.gap <= A.length, "the last rank reaches the gate in time")
+			local M0 = Cfg.beats.musaharati
+			t.truthy(LobbyLife.pathLength(M0.route) / M0.speed <= M0.length, "the musaharati finishes his round")
+			local EventLogic = t.logic("EventLogic")
+			local M = Cfg.beats.musaharati
+			local now = 1800000000
+			t.eq(EventLogic.isActive(({} :: any)[M.event], now), false, "no such event: no musaharati")
+			local running = { [M.event] = { startsAt = now - 10, endsAt = now + 10 } }
+			t.eq(EventLogic.isActive(running[M.event], now), true, "while it runs")
+			t.eq(EventLogic.isActive(running[M.event], now + 11), false, "and not after")
+			local Events = t.config("Events")
+			t.eq(Events[M.event], nil, "no Ramadan event is configured yet (the owner adds it)")
+			local Strings = t.config("Strings")
+			for _, k in M.calls do
+				t.truthy(Strings.en[k] and Strings.ar[k], k .. " in en and ar")
+			end
+		end)
+
 		t.it("config stays inside the plan's budgets", function()
 			t.eq(Cfg.fountain.rate, 6)
 			t.eq(Cfg.steam.rate, 4)

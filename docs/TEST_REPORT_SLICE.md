@@ -1308,3 +1308,17 @@ Budget: 8 s RenderStepped with the patrol out: 481 frames, 60.1 FPS, 16.6 ms med
 and animate within 120 studs (Config/LobbyLife `hz`, `radius`). Specs: 431 green (beat windows by phase, the evening slot of
 the patrol skipped, a window crossing into the evening cut, gate angles at night/dawn and the 4-stud gap, tale and call
 strings in en + ar). **Owner STOP:** the rooster file (cue `rooster`, id 0).
+
+### LP-D11 the 'arada and the musaharati
+
+*Play Solo, desktop Studio, `noAutoAfk` set; `HarnessClockOffset` to an evening that is a multiple of three.*
+
+| Check | Result | Capture |
+|---|---|---|
+| 'arada, 16 s in | six dancers in pairs crossing the square from the diwan portal, swords and shields, evening light | `docs/captures/lp/d11_arada.jpg` |
+| 'arada, 34 s in | the lead pair at (1.6, 62.8) going up the lane; 3 rice emitters on (white specks falling) | `d11_arada_lane.jpg` |
+| Musaharati without the event (night + 28 s) | no figure (`Musaharati` absent) | — |
+| Musaharati with `HarnessEvent = ramadan` | the drummer walks the lane; at 24.5 s his bubble "Wake up, sleepers! It's time for suhoor!" | `d11_musaharati_call.jpg` |
+
+Specs: 432 green (the 'arada's evenings, its path fits its window, the musaharati's round fits his, his lines in en + ar, no
+Ramadan event configured). **Owner STOPs:** the drum loop file (`arada_drums`) and the Ramadan event definition.

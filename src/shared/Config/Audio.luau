@@ -35,6 +35,7 @@ local Audio: { [string]: Cue } = {
 	ui_deny = { id = 0, kind = "sting", volume = 0.4 }, -- a dull wooden knock, two beats
 	ui_ready = { id = 0, kind = "sting", volume = 0.35 }, -- a small finger-cymbal (sagat) chime
 	rooster = { id = 0, kind = "sting", volume = 0.4 }, -- a rooster at dawn, distant (LP-D10); silent until supplied
+	arada_drums = { id = 0, kind = "sting", volume = 0.5 }, -- the 'arada's drums and chant, ~75 s (LP-D11); silent until supplied
 }
 
 return Audio

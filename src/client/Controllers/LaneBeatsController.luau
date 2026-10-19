@@ -10,7 +10,10 @@
 --     shake on it; players close by see the (cosmetic) lane fund grow;
 --   * the coffee-house evening: six neighbours on the benches and the Hakawati on his stool telling a
 --     tale in three lines (a different tale each evening);
---   * the cameo: one night in each, Al-Adashari slips up the souq to Abu Brahim's shutter and is gone.
+--   * the cameo: one night in each, Al-Adashari slips up the souq to Abu Brahim's shutter and is gone;
+--   * the 'arada (LP-D11): every third evening six sword-and-shield dancers process from the diwan to
+--     the gate, rice falling from the roofs;
+--   * the musaharati (LP-D11): in the nights of a running Ramadan event a drummer calls the lane.
 -- Lane life "off" stops all of it (the gate stays open). Figures exist only while their beat plays and
 -- animate only within LobbyLife `radius` of the camera, at most `hz` times a second.
 
@@ -22,6 +25,8 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Cfg = require(Shared.Config.LobbyLife)
 local Enemies = require(Shared.Config.Enemies)
+local Events = require(Shared.Config.Events)
+local EventLogic = require(Shared.Logic.EventLogic)
 local Units = require(Shared.Config.Units)
 local LobbyLife = require(Shared.Logic.LobbyLife)
 local RigBuilder = require(Shared.Util.RigBuilder)
@@ -447,13 +452,132 @@ local function runWatch(t: number, cam: Vector3, dt: number)
 	end
 end
 
+-- The 'arada
+type Arada = { dancers: { Walker }, rice: { ParticleEmitter }, flourish: { number } }
+local arada: Arada? = nil
+local function runArada(t: number, cam: Vector3, dt: number)
+	local a = B.arada
+	local into = LobbyLife.aradaAt(t, C, a)
+	if not into then
+		if arada then
+			for _, w in arada.dancers do
+				w.model:Destroy()
+			end
+			for _, e in arada.rice do
+				local p = e.Parent
+				if p then
+					p:Destroy()
+				end
+			end
+			arada = nil
+		end
+		return
+	end
+	if not arada then
+		local dancers = {}
+		for i = 1, 6 do
+			table.insert(dancers, walker("Arada" .. i, "arada", (Units :: any).arada.visual, "drummer"))
+		end
+		local rice = {}
+		for _, r in a.rice do
+			local p = Instance.new("Part")
+			p.Anchored = true
+			p.CanCollide = false
+			p.CanQuery = false
+			p.CanTouch = false
+			p.Transparency = 1
+			p.Size = Vector3.new(10, 0.2, 6)
+			p.CFrame = CFrame.new(r[1], r[2], r[3])
+			p.Parent = folder
+			local e = Instance.new("ParticleEmitter")
+			e.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+			e.Color = ColorSequence.new(Color3.fromHex("#F4EFE2"))
+			e.Size = NumberSequence.new(0.18)
+			e.Lifetime = NumberRange.new(2.5, 3.5)
+			e.Speed = NumberRange.new(1, 2)
+			e.EmissionDirection = Enum.NormalId.Bottom
+			e.Acceleration = Vector3.new(0, -6, 0)
+			e.SpreadAngle = Vector2.new(30, 30)
+			e.Rate = 0
+			e.Parent = p
+			table.insert(rice, e)
+		end
+		arada = { dancers = dancers, rice = rice, flourish = { 0, 0, 0, 0, 0, 0 } }
+		AudioController.sting("arada_drums")
+	end
+	local ar = arada :: Arada
+	local oneWay = LobbyLife.pathLength(a.route) / a.speed
+	for i, w in ar.dancers do
+		local rank = math.floor((i - 1) / 2)
+		local side = if i % 2 == 1 then -1.2 else 1.2
+		local s = math.clamp(into - rank * a.gap, 0, oneWay - 0.01)
+		local x, z, yaw = LobbyLife.route(a.route, a.speed, 0, s)
+		local moving = into - rank * a.gap > 0 and into - rank * a.gap < oneWay
+		local cf = CFrame.new(x, 0, z) * CFrame.Angles(0, yaw, 0) * CFrame.new(side, 0, 0)
+		w.model:PivotTo(cf)
+		if near(cf.Position, cam) then
+			local p = w.bone
+			-- a sword flourish over the walk every few seconds, the pairs out of step
+			if p and moving and into - ar.flourish[i] > 3 + (i % 3) * 0.5 then
+				ar.flourish[i] = into
+				BoneAnim.play(p, "attack", 1, 0.55)
+			end
+			stride(w, moving, a.speed, dt)
+		end
+	end
+	local rate = if LobbyLife.tier(Fx.laneLife()).particles then 14 else 0
+	for _, e in ar.rice do
+		e.Rate = rate
+	end
+end
+
+-- The musaharati
+local musaharati: { w: Walker, bubble: Bubble }? = nil
+local function eventOn(id: string): boolean
+	if RunService:IsStudio() then
+		local h = Players.LocalPlayer:GetAttribute("HarnessEvent") -- Studio harness: pretend this event runs
+		if h == id then
+			return true
+		end
+	end
+	return EventLogic.isActive((Events :: any)[id], Workspace:GetServerTimeNow())
+end
+
+local function runMusaharati(t: number, cam: Vector3, dt: number)
+	local m = B.musaharati
+	local s = if eventOn(m.event) then LobbyLife.inPhase(t, C, m.phase, m.from, m.from + m.length) else nil
+	if not s then
+		if musaharati then
+			musaharati.w.model:Destroy()
+			musaharati.bubble.gui:Destroy()
+			musaharati = nil
+		end
+		return
+	end
+	if not musaharati then
+		local w = walker("Musaharati", "drummer", (Enemies :: any).drummer.visual, nil)
+		musaharati = { w = w, bubble = bubble(w.model.PrimaryPart :: BasePart, 4.4) }
+	end
+	local mm = musaharati :: any
+	local oneWay = LobbyLife.pathLength(m.route) / m.speed
+	local x, z, yaw = LobbyLife.route(m.route, m.speed, 0, math.min(s, oneWay - 0.01))
+	local moving = s < oneWay
+	local cf = CFrame.new(x, 0, z) * CFrame.Angles(0, yaw, 0)
+	mm.w.model:PivotTo(cf)
+	if near(cf.Position, cam) then
+		stride(mm.w, moving, m.speed, dt)
+	end
+	local k = math.floor(s / m.callEvery)
+	say(mm.bubble, if s % m.callEvery < m.callSeconds then m.calls[k % #m.calls + 1] else nil)
+end
+
 local function clearAll()
 	setGate(100)
 	if patrol then
 		hidePostCorporal(false)
 	end
 	folder:ClearAllChildren() -- every beat figure and bubble lives here
-	dispute, coffee, cameo, patrol = nil, nil, nil, nil
+	dispute, coffee, cameo, patrol, arada, musaharati = nil, nil, nil, nil, nil, nil
 	watchBubble, zaimBubble = nil, nil
 end
 
@@ -485,6 +609,8 @@ local function step(dt: number)
 	runDispute(t)
 	runCoffee(t)
 	runWatch(t, cam, span)
+	runArada(t, cam, span)
+	runMusaharati(t, cam, span)
 end
 
 function LaneBeatsController.start()

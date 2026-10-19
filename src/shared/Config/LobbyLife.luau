@@ -58,6 +58,33 @@ return {
 			hakawati = { -29.4, -13, 90 }, -- x, z, yaw: on a stool facing the west bench
 			seats = { { -36.3, -14.5, -90 }, { -36.3, -10.5, -90 }, { -36.3, -6.5, -90 }, { -33, -24.4, 180 }, { -29.5, -24.4, 180 }, { -26.5, -24.4, 180 } },
 		},
+		-- The 'arada (LP-D11): every third evening a wedding procession of six sword-and-shield dancers
+		-- (the `arada` unit's model, its dance as the idle) leaves the diwan, crosses the square and goes
+		-- up the lane to the gate; rice falls from the rooftops over the lane (Lane life "full" only).
+		-- Its drum loop is cue `arada_drums` (silent until supplied).
+		arada = {
+			phase = "evening",
+			everyEvenings = 3,
+			from = 20,
+			length = 75,
+			speed = 2.6,
+			gap = 1.6, -- seconds between ranks
+			route = { { 31, -13.5 }, { 20, -13.5 }, { 10, -4 }, { 9, 14 }, { 1, 30 }, { 0, 82 } },
+			rice = { { -6, 18, 40 }, { 6, 18, 52 }, { -6, 18, 66 } }, -- x, y, z: emitters along the roofs' edges
+		},
+		-- The musaharati (LP-D11): in the night of a running event with this id only (Config/Events) a
+		-- drummer walks the lane calling the neighbours to their suhoor.
+		musaharati = {
+			event = "ramadan",
+			phase = "night",
+			from = 10,
+			length = 100,
+			speed = 2.4,
+			route = { { 0, 82 }, { 1, 30 }, { -9, 14 }, { 0, -2 } },
+			calls = { "beat.musaharati.1", "beat.musaharati.2" },
+			callEvery = 12,
+			callSeconds = 6,
+		},
 		-- The night watch: Abu Hares calls twice; Al-Adashari slips up the souq to Abu Brahim's
 		-- shutter and is gone.
 		watch = {

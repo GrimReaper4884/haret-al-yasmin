@@ -224,4 +224,23 @@ function LobbyLife.gateAngle(t: number, c: Clock, g: { swing: number, nightAngle
 	return 100
 end
 
+-- The length of an open path of { x, z } points (a procession that ends where it ends).
+function LobbyLife.pathLength(points: { { number } }): number
+	local total = 0
+	for i = 2, #points do
+		local a, b = points[i - 1], points[i]
+		total += math.sqrt((b[1] - a[1]) ^ 2 + (b[2] - a[2]) ^ 2)
+	end
+	return total
+end
+
+-- The 'arada (LP-D11): every `everyEvenings`-th evening of the lane clock, from `from` to
+-- `from + length` seconds into it. Returns seconds into the procession, or nil.
+function LobbyLife.aradaAt(t: number, c: Clock, a: { phase: string, everyEvenings: number, from: number, length: number }): number?
+	if math.floor(t / c.cycle) % a.everyEvenings ~= 0 then
+		return nil
+	end
+	return LobbyLife.inPhase(t, c, a.phase, a.from, a.from + a.length)
+end
+
 return LobbyLife

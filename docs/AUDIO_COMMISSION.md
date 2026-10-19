@@ -72,6 +72,7 @@ we are hiring a player rather than using a sample library.
 | Cue | Length | Brief |
 |---|---|---|
 | `rooster` | ~1.5 s | A rooster at dawn, distant (a rooftop away), one crow, light room tone. 2 takes. |
+| `arada_drums` | ~75 s | A wedding 'arada passing by: tabl and daff, men's call-and-response, swords clashing on shields on the beat; starts close, fades as it moves off. Original, no recognisable melody. 1 take. |
 
 ### Delivery
 
