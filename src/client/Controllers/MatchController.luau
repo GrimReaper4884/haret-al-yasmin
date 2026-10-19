@@ -16,6 +16,7 @@ local IconIds = require(Shared.Config.Icons)
 local Signal = require(Shared.Util.Signal)
 local PartyLogic = require(Shared.Logic.PartyLogic)
 local MonetizationLogic = require(Shared.Logic.MonetizationLogic)
+local MatchRewards = require(Shared.Logic.MatchRewards)
 local SeasonPass = require(Shared.Config.SeasonPass)
 local MechanicFx = require(Shared.Logic.MechanicFx)
 local Vfx = require(Shared.Config.Vfx)
@@ -76,6 +77,10 @@ local burnRow: Frame -- flame pips under the gate bar, one per burn stack (S1-C0
 local burnPips: { Frame } = {}
 local lastBurn = 0
 local cashLabel: TextLabel
+local waveIcon: Frame -- the episode's art (or a drawn gate) at the wave pill's start (LP-C06)
+local gateCrack: Frame -- crack lines over the gate meter below MATCH_SKIN.crackAt
+local resultSpark: Frame -- the result's cash-per-wave curve
+local resultSparkLabel: TextLabel
 local cashBox: Frame
 local flash: Frame
 local skipButton: TextButton
@@ -175,6 +180,12 @@ end
 -- A square rail button: icon on top, a short outlined label under it.
 local function railButtonOf(name: string, color: Color3, iconName: string): TextButton
 	local b = Theme.button({ Name = "Rail_" .. name, Text = "", Size = UDim2.fromOffset(Hud.RAIL.button, Hud.RAIL.button), BackgroundColor3 = color, ZIndex = 3, Parent = railContainer })
+	-- Theme v2 (LP-C06): the rail wears the brass edge and, once uploaded, the carved-wood chrome.
+	local edge = b:FindFirstChild("Border")
+	if edge and edge:IsA("UIStroke") then
+		edge.Color = Theme.v2.brass
+	end
+	Theme.chrome(b, "button")
 	local pad = b:FindFirstChildOfClass("UIPadding")
 	if pad then
 		pad:Destroy()
@@ -298,9 +309,23 @@ local function build()
 	Theme.border(wavePill, 2.5)
 	waveLabel = Theme.display({ TextSize = 22, Size = UDim2.fromScale(1, 1), ZIndex = 4, Parent = wavePill })
 	waveLabel.TextXAlignment = Enum.TextXAlignment.Center
+	-- Theme v2 (LP-C06): the episode's icon at the pill's start and a brass edge.
+	local skin = Hud.MATCH_SKIN
+	waveIcon = Create("Frame", { Name = "EpisodeIcon", AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 6, 0.5, 0), Size = UDim2.fromOffset(skin.waveIcon, skin.waveIcon), BackgroundTransparency = 1, ZIndex = 5, Parent = wavePill })
+	local pillStroke = wavePill:FindFirstChild("Border")
+	if pillStroke and pillStroke:IsA("UIStroke") then
+		pillStroke.Color = Theme.v2.brass
+	end
 	countLabel = Theme.display({ TextSize = 14, TextColor3 = Color3.fromHex("#FFE9B8"), Size = UDim2.new(1, 0, 0, 16), Position = UDim2.fromOffset(0, 36), ZIndex = 3, Parent = top })
 	countLabel.TextXAlignment = Enum.TextXAlignment.Center
 	gateMeter = Theme.meter({ Position = UDim2.fromOffset(10, 55), Size = UDim2.new(1, -20, 0, 20), ZIndex = 3, Parent = top }, Theme.colors.hpHigh)
+	-- Cracks across the gate bar once it is low (LP-C06): three dark jagged strokes over the fill.
+	-- Over the fill (same ZIndex, a later sibling) and under the HP text; clear of the centred label.
+	local crackZ = gateMeter.fill.ZIndex
+	gateCrack = Create("Frame", { Name = "Crack", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Visible = false, ZIndex = crackZ, Parent = gateMeter.frame })
+	for _, c in { { 0.08, -24, 0.7 }, { 0.12, 30, 0.55 }, { 0.17, -15, 0.45 }, { 0.86, -35, 0.8 }, { 0.9, 20, 0.5 } } do
+		Create("Frame", { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(c[1], 0.5), Size = UDim2.new(0, 2, c[3], 0), Rotation = c[2], BackgroundColor3 = Color3.fromHex("#1A120B"), BorderSizePixel = 0, ZIndex = crackZ, Parent = gateCrack })
+	end
 	local pip = Vfx.STORY.burnPip
 	burnRow = Create("Frame", { Name = "Burn", AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 76), Size = UDim2.fromOffset((pip + 2) * TD.BURN_MAX_STACKS, pip), BackgroundTransparency = 1, Visible = false, ZIndex = 3, Parent = top })
 	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, Padding = UDim.new(0, 2), SortOrder = Enum.SortOrder.LayoutOrder, Parent = burnRow })
@@ -365,7 +390,7 @@ local function build()
 	flash = Create("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.fromHex("#C0281E"), BackgroundTransparency = 1, BorderSizePixel = 0, Active = false, Parent = fxGui })
 	Create("UIGradient", { Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.5, 0.85), NumberSequenceKeypoint.new(1, 0) }), Parent = flash })
 
-	result = Modal.create("MatchResult", 460, 150)
+	result = Modal.create("MatchResult", 460, 174) -- +24: the cash curve row (LP-C06)
 	-- The mode's painted banner (PV-C06) between the title and the rewards.
 	resultBanner = Create("ImageLabel", {
 		Name = "Banner",
@@ -409,13 +434,20 @@ local function build()
 	result.body.LayoutOrder = 3
 	-- Waves held and the "Rewards" header, then the rewards as icon + number, then first clear and
 	-- event currency (three stacked pieces so the icon row never overlaps text).
-	local stack = Create("Frame", { Name = "Stack", BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 100), ZIndex = 11, Parent = result.body })
+	local stack = Create("Frame", { Name = "Stack", BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 124), ZIndex = 11, Parent = result.body })
 	Create("UIListLayout", { Padding = UDim.new(0, 2), HorizontalAlignment = Enum.HorizontalAlignment.Center, SortOrder = Enum.SortOrder.LayoutOrder, Parent = stack })
 	resultBody = Theme.label({ LayoutOrder = 1, TextSize = 15, Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, ZIndex = 11, Parent = stack })
 	resultBody.TextXAlignment = Enum.TextXAlignment.Center
 	resultAmounts = Amount.row({ Name = "Rewards", LayoutOrder = 2, Size = UDim2.new(1, 0, 0, 30), ZIndex = 11, Parent = stack }, {})
 	resultExtra = Theme.label({ LayoutOrder = 3, TextSize = 15, FontFace = Theme.fontBold, TextColor3 = Theme.colors.quest, Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, ZIndex = 11, Parent = stack })
 	resultExtra.TextXAlignment = Enum.TextXAlignment.Center
+	-- The cash each wave brought (LP-C06, MatchRewards.cashCurve from the server's per-wave totals).
+	local sk = Hud.MATCH_SKIN.spark
+	-- One row: the caption, then the line beside it.
+	local sparkRow = Create("Frame", { Name = "CashCurve", LayoutOrder = 4, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, sk.h + 2), ZIndex = 11, Parent = stack })
+	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, VerticalAlignment = Enum.VerticalAlignment.Center, Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = sparkRow })
+	resultSparkLabel = Theme.label({ LayoutOrder = 1, TextSize = 12, TextColor3 = Theme.colors.textMuted, AutomaticSize = Enum.AutomaticSize.X, Size = UDim2.fromOffset(0, sk.h), TextWrapped = false, ZIndex = 11, Parent = sparkRow })
+	resultSpark = Create("Frame", { Name = "Line", LayoutOrder = 2, Size = UDim2.fromOffset(sk.w, sk.h), BackgroundColor3 = Theme.v2.woodDark, BackgroundTransparency = 0.88, ZIndex = 11, Parent = sparkRow }, { Create("UICorner", { CornerRadius = UDim.new(0, 4) }) })
 	-- Replay · Next · Back to the lane (the genre's end screen: keep playing without walking back).
 	local row = Create("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.fromScale(0.5, 1), Size = UDim2.new(1, 0, 0, Theme.TOUCH), ZIndex = 11, Parent = result.body })
 	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = row })
@@ -485,6 +517,11 @@ local function render()
 	local frac = if state.gateMax > 0 then state.gateHp / state.gateMax else 0
 	gateMeter.fill.BackgroundColor3 = if frac > 0.5 then Theme.colors.hpHigh elseif frac > 0.25 then Theme.colors.hpMid else Theme.colors.hpLow
 	gateMeter.set(frac, t("match.gate") .. "  " .. state.gateHp .. " / " .. state.gateMax)
+	local cracked = frac < Hud.MATCH_SKIN.crackAt
+	if cracked and not gateCrack.Visible then
+		Juice.shake(gateMeter.frame)
+	end
+	gateCrack.Visible = cracked
 	-- Burn stacks on the gate (Episode 5's torchbearers): one flame each; a new one punches.
 	local burn = MechanicFx.burnPips(state.gateBurn, TD.BURN_MAX_STACKS)
 	for i, holder in burnPips do
@@ -517,6 +554,17 @@ local function render()
 
 	local me = Players.LocalPlayer.Name
 	-- Everyone sees the speed; only the host's button opens the sheet (LP-A03), the others' is muted.
+	-- The episode's icon on the wave pill (its painted art once, else the drawn gate).
+	if info and waveIcon:GetAttribute("Mode") ~= info.modeId then
+		waveIcon:SetAttribute("Mode", info.modeId)
+		waveIcon:ClearAllChildren()
+		local art = IconIds.modes[info.modeId]
+		if art and art.id > 0 then
+			Create("ImageLabel", { Image = "rbxassetid://" .. art.id, ScaleType = Enum.ScaleType.Crop, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ZIndex = 5, Parent = waveIcon }, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+		else
+			Icons.draw("ui_play", waveIcon)
+		end
+	end
 	local skipShown, speedShown = state.phase == "prep", true
 	local relayout = skipButton.Visible ~= skipShown or speedButton.Visible ~= speedShown
 	skipButton.Visible = skipShown
@@ -565,6 +613,27 @@ local function showResult(payload: any)
 		end
 	end
 	resultBody.Text = table.concat(lines, "\n")
+	-- The cash curve: one segment per wave between the sparkline's points.
+	for _, c in resultSpark:GetChildren() do
+		if c:IsA("Frame") and c.Name == "Seg" then
+			c:Destroy()
+		end
+	end
+	local curve = if type(payload.cashCurve) == "table" then payload.cashCurve else {}
+	local sk = Hud.MATCH_SKIN.spark
+	local pts = MatchRewards.sparkline(curve, sk.w, sk.h)
+	for i = 2, #pts do
+		local a, b = pts[i - 1], pts[i]
+		local dx, dy = b[1] - a[1], b[2] - a[2]
+		local len = math.sqrt(dx * dx + dy * dy)
+		Create("Frame", { Name = "Seg", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromOffset((a[1] + b[1]) / 2, (a[2] + b[2]) / 2), Size = UDim2.fromOffset(len + 1, sk.thickness), Rotation = math.deg(math.atan2(dy, dx)), BackgroundColor3 = Theme.v2.goldLeaf, BorderSizePixel = 0, ZIndex = 12, Parent = resultSpark })
+	end
+	local total = 0
+	for _, v in curve do
+		total += v
+	end
+	resultSparkLabel.Text = if #curve > 0 then t("match.cash_curve", { n = total }) else ""
+	resultSpark.Visible = #pts > 0
 	resultExtra.Text = table.concat(extra, "\n")
 	resultAmounts.Visible = r ~= nil
 	local rewardEntries = if r then Amount.reward(t, { lira = r.lira, qirsh = r.qirsh, xp = r.xp, traitStones = r.traitStones }) else {}

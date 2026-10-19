@@ -1131,3 +1131,16 @@ before Play stopped) was set back to English and saved with `HaretDebug save`; t
 | Reduced Motion | `Juice.quake` and the stagger go through `Juice.allowed` (`Logic/Motion` specs: everything off under Reduced Motion); Studio cannot set `ReducedMotionEnabled`, so no capture | — |
 | Lane Diary | the strip glides (0.5 s) to the first claimable tier, else the current level (8 here); claimable buttons get `Button.setReady` (shimmer + dot) — this profile has none claimable (1–8 claimed, premium locked) | `c05_diary_glides_to_level.jpg` |
 | Settings | four groups with an icon and a brass rule: Look and sound, In a match, Controls and screen, Language | `c05_settings_groups.jpg` |
+
+### LP-C06 the match HUD skin and the result's cash curve
+
+*Play Solo, `HaretDebug match ep1,normal`, desktop; the gate set to 25 with `HaretDebug gate 25` during the
+prep countdown (no attacker reached it); the result screen was a client-only `MatchEnd` fired from the Server
+VM with a made-up 20-wave curve, so the server match never ended and nothing was paid. Play stopped after.*
+
+| Check | Result | Capture |
+|---|---|---|
+| 100 % gate | the wave pill carries Episode 1's painted icon and a brass edge; the rail buttons wear brass edges | `docs/captures/lp/c06_gate_100.jpg` |
+| 25 % gate | the bar turns red and cracks at both ends (under the "The Gate 25 / 100" text), shaking once as it cracks | `c06_gate_25_cracked.jpg` |
+| Result | "Cash by wave · 7730 in all" beside a gold line over the 20 waves (`MatchRewards.sparkline`), Replay / Next / Back still inside the 584 px window | `c06_result_cash_curve.jpg` |
+| Specs | `MatchRewards.cashCurve` (per-wave gains, never negative) and `MatchRewards.sparkline` (points inside the box, top value at y 0, one value draws a flat line) | — |

@@ -161,6 +161,42 @@ function MatchRewards.record(profile: any, modeId: string, mode: any, difficulty
 end
 
 -- Whether a mode/difficulty is open to this profile.
+-- The result screen's cash curve (Theme v2, LP-C06). `totals` holds the player's running total of
+-- cash earned (cash + spent) at the end of each wave, in order; the curve is what each wave added
+-- (never negative; the first wave counts from `start`, the match's starting cash).
+function MatchRewards.cashCurve(totals: { number }, start: number): { number }
+	local out = {}
+	local prev = start
+	for _, v in totals do
+		table.insert(out, math.max(0, v - prev))
+		prev = math.max(prev, v)
+	end
+	return out
+end
+
+-- Points of a sparkline in a w × h box (y grows down): one point per value, evenly spaced, the
+-- highest value at the top, zero at the bottom. One value draws a flat line across; none, nothing.
+function MatchRewards.sparkline(values: { number }, w: number, h: number): { { number } }
+	local n = #values
+	if n == 0 then
+		return {}
+	end
+	local top = 0
+	for _, v in values do
+		top = math.max(top, v)
+	end
+	local pts = {}
+	for i, v in values do
+		local x = if n == 1 then 0 else (i - 1) / (n - 1) * w
+		local y = if top <= 0 then h else h - v / top * h
+		table.insert(pts, { x, y })
+	end
+	if n == 1 then
+		table.insert(pts, { w, pts[1][2] })
+	end
+	return pts
+end
+
 function MatchRewards.canPlay(profile: any, modeId: string, modes: { [string]: any }, difficulty: string, td: any): (boolean, string?)
 	local mode = modes[modeId]
 	if not mode then

@@ -66,6 +66,7 @@ export type Match = {
 	eventBuffer: { any },
 	buffShown: { [number]: number }, -- tower id → the support buff on its badge (absent = none)
 	buffCount: { [number]: number }, -- tower id → how many supports that buff adds up (LP-A02)
+	cashTotals: { [string]: { number } }, -- sim key → cash + spent at each wave end (the result's curve, LP-C06)
 	revealShown: { [number]: number }, -- tower id → the lantern tower letting it see stealth (absent = none)
 	sabotaged: { [number]: number }, -- tower id → game time its sabotage ends (towerDisabled; D-038)
 	script: any?, -- the episode's scripted beats (Config/Waves episodes[id].script): the ally's turn
@@ -331,7 +332,9 @@ local function finish(match: Match, won: boolean)
 		if match.players[p] then
 			flushPlacements(match, p)
 			local reward = rewardPlayer(match, p, outcome)
-			evEnd:FireClient(p, { won = won, waves = outcome.wavesCleared, reward = reward })
+			local key = match.players[p]
+			local curve = MatchRewards.cashCurve(match.cashTotals[key] or {}, math.floor(TD.START_CASH * WaveLogic.partyScale(TD, #match.order).cash + 0.5))
+			evEnd:FireClient(p, { won = won, waves = outcome.wavesCleared, reward = reward, cashCurve = curve })
 			if won and match.mode.kind == "story" then
 				FunnelService.reach(p, "clear")
 			end
@@ -456,6 +459,7 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 		eventBuffer = {},
 		buffShown = {},
 		buffCount = {},
+		cashTotals = {},
 		revealShown = {},
 		placeCounts = {},
 		sabotaged = {},
@@ -768,6 +772,12 @@ local function stepMatch(match: Match, dt: number)
 				queueEvent(match, e)
 				if t == "waveEnd" then
 					autoSkip = true
+					-- Each player's running total for the result screen's curve (LP-C06).
+					for key, ps in match.state.players do
+						local list = match.cashTotals[key] or {}
+						table.insert(list, ps.cash + ps.spent)
+						match.cashTotals[key] = list
+					end
 					-- The sim clears every sabotage at wave end
 					for id in match.sabotaged do
 						queueEvent(match, { type = "towerEnabled", id = id })

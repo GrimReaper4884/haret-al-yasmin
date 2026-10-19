@@ -53,6 +53,9 @@ return {
 	-- The NPC dialogue (Theme v2, LP-C04): portrait size, typewriter speed (characters a second) and the
 	-- gap between the choices sliding in.
 	DIALOGUE = { portrait = 72, cps = 18, choiceGap = 0.06 },
+	-- The match HUD skin (Theme v2, LP-C06): the gate cracks below `crackAt` of its HP; the result's
+	-- cash curve is a `spark` px tall line.
+	MATCH_SKIN = { crackAt = 0.3, spark = { w = 150, h = 20, thickness = 2 }, waveIcon = 26 },
 
 	-- Right rail (Skip, Speed, View) in the thumb arc, above the jump zone; the match menu `≡` sits at
 	-- the top of the same edge. When a column cannot hold every button the rest go into the next one in.
