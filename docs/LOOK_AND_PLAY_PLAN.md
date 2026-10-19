@@ -564,7 +564,7 @@ DECISIONS; every name goes through §4.2's STOP first.
   - Accept: all-off then one wave: no auto ult fires (server log); all-on: they fire; sort chips reorder.
 - [x] 82f876c **LP-B04 Rail to four buttons, phone rail spill verified** · deps: LP-B02
   - Accept: `tests/hud.spec.luau` cases for 4 buttons at the phone, tablet and desktop profiles; captures.
-- [x] **LP-B05 Unit types on cards, hotbar glyphs, the detail stat block, filters** · deps: none
+- [x] d315bda **LP-B05 Unit types on cards, hotbar glyphs, the detail stat block, filters** · deps: none
   - Create: `UnitLogic.kind`, `UnitLogic.statBlock` (pure, specced for every unit id: no `nil` fields);
     role icons (PV-C04 if missing: STOP for upload); strings.
   - Accept: every card shows role, pattern, reach, `×max`; the detail view shows the stat block incl. bounty
@@ -572,7 +572,7 @@ DECISIONS; every name goes through §4.2's STOP first.
 
 ### Workstream C: Theme v2 and motion
 
-- [ ] **LP-C00 "Before" captures and the console audit** · deps: none
+- [x] **LP-C00 "Before" captures and the console audit** · deps: none
   - Accept: 12 captures under `docs/captures/lp/before_*`; the `203785492` source identified (or documented as
     engine-side) in TEST_REPORT_SLICE.
 - [ ] **LP-C01 Theme tokens v2, 9-slice chrome, button states** · deps: none · STOP (chrome image upload)
@@ -645,8 +645,8 @@ Meshy budget: ≈ 330 credits (240 for four NPC looks + 90 for the merchant and 
 ## 9. Checklist (tick with the commit hash)
 
 - [x] ff75c8d LP-A01 · [x] 19425ee LP-A02 · [x] fb9bdaa LP-A03
-- [x] 01545af LP-B01 · [x] 17c73f4 LP-B02 · [x] 5cc73de LP-B03 · [x] 82f876c LP-B04 · [x] LP-B05
-- [ ] LP-C00 · [ ] LP-C01 · [ ] LP-C02 · [ ] LP-C03 · [ ] LP-C04 · [ ] LP-C05 · [ ] LP-C06 · [ ] LP-C07
+- [x] 01545af LP-B01 · [x] 17c73f4 LP-B02 · [x] 5cc73de LP-B03 · [x] 82f876c LP-B04 · [x] d315bda LP-B05
+- [x] LP-C00 · [ ] LP-C01 · [ ] LP-C02 · [ ] LP-C03 · [ ] LP-C04 · [ ] LP-C05 · [ ] LP-C06 · [ ] LP-C07
 - [ ] LP-D00 · [ ] LP-D01 · [ ] LP-D02 · [ ] LP-D03 · [ ] LP-D04 · [ ] LP-D05 · [ ] LP-D06 · [ ] LP-D07 · [ ] LP-D08 · [ ] LP-D09 · [ ] LP-D10 · [ ] LP-D11
 - [ ] LP-E01 · [ ] LP-E02 · [ ] LP-E03 · [ ] LP-E04
 

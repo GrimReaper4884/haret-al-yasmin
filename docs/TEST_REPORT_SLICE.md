@@ -1025,3 +1025,37 @@ then `HaretDebug match ep1,normal` for the hotbar (stopped in prep, nothing paid
 | Arabic | detail and grid right-to-left with the Arabic kind lines | `b05_detail_ar.jpg`, `b05_grid_ar.jpg` |
 | Hotbar | a role glyph bottom-right on every slot; the za'im (2/2) and the 'Arada (1/1) dim at their cap | `b05_hotbar_glyphs_cap_dim.jpg` |
 | Console | no errors or warnings from our code | — |
+
+### LP-C00 the "before" set and the console audit (Theme v2 baseline)
+
+*Play Solo, desktop 1636×584 (UIScale 1.273), the owner's profile; screens opened with the harness keys,
+lobby views with staged `screen_capture` cameras, the match with `HaretDebug match ep1,normal` (stopped in
+prep, nothing paid). The Units grid already carries LP-B05's badges; everything else is pre-Theme-v2.*
+
+| # | Capture (`docs/captures/lp/`) | What it shows for LP-C |
+|---|---|---|
+| 1 | `before_01_lobby_gate.jpg` | the spawn: two pills, `+`, language, Wardrobe, mute, the 3×3 tile grid (Play no larger than Codes), the errand card; block-figure NPCs (Abu Hares, Abu Nadim) |
+| 2 | `before_02_lobby_lane.jpg` | the lane towards the square; Daily carries the only notification dot |
+| 3 | `before_03_lobby_square.jpg` | fountain square, coffee house front, Hajj Rashid |
+| 4 | `before_04_coffee_house.jpg` | the coffee house: Abu Hazem as a block figure, empty benches |
+| 5 | `before_05_units.jpg` | Units grid (LP-B05 badges, rarity → role) |
+| 6 | `before_06_summon.jpg` | Summon: banner, two featured cards, ×1 / ×10 / Rates |
+| 7 | `before_07_lane_diary.jpg` | Lane Diary: level, XP bar, tier strip (not scrolled to the current tier, no shimmer on claimables) |
+| 8 | `before_08_codes.jpg` | Codes |
+| 9 | `before_09_daily.jpg` | Daily: claimable day 3, the plain Claim button (not claimed) |
+| 10 | `before_10_store.jpg` | the Store, titled **"Qirsh store"** while its first rows sell lira |
+| 11 | `before_11_match_walk.jpg` | match HUD on foot, prep: wave pill, gate bar, rail of four, hotbar, cash pill |
+| 12 | `before_12_match_watchtower.jpg` | the watchtower view during wave 1 |
+| 13 | `before_13_afk_room_idle.jpg` | (incidental) the lobby's idle timer moved the player into the Hakawati's room mid-audit; left at once with `N`: 31 s of AFK time and no lira reached the profile |
+
+**Findings for LP-C03** (screens): the Store is not a `Modal`, so (a) opening it from the harness put it *under*
+the open Daily modal, (b) the harness `X` ("close every screen") leaves it open, and (c) it stayed open into a
+match started from the lobby. The Store's title reads "Qirsh store" on the mixed lira / qirsh list.
+
+**Console audit.** Every join still logs `ContentId: rbxassetid://203785492 failed due to: Asset type does not
+match requested type` ×5–6 on client and server, plus Roblox's own UIBlox `FoundationProvider` warnings. Today's
+Edit-DataModel scan of 108,124 instances (Texture, Image, SoundId, MeshId, sky, material maps, clothing,
+cursor, scroll-bar images…) found the id nowhere, and a grep of the repo finds it only in the docs. This agrees
+with DECISIONS D-020 (a public 2015 *audio* asset, "Pop Close Sound", requested by Studio or a plugin): engine-
+side, not ours. Nothing of ours logs at join beyond `[World] built 1423 parts (budget 6000)` and
+`[HaretAlYasmin] server ready`.
