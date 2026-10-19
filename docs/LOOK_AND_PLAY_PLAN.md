@@ -609,7 +609,7 @@ DECISIONS; every name goes through §4.2's STOP first.
 - [ ] **LP-D03 The souq alley** (done: §9) · deps: LP-D00, LP-D02 · **LP-D04 The hammam** (done: §9) · **LP-D05 The diwan and the mosque court** (done: §9) · **LP-D06 The post and the orchard road** (done: §9) · **LP-D07 Rooftop women** (done: §9)
   - Each: zone built from the kit; ≤ its part budget; props from `PropModels` or kit; NPCs placed; WORLD_MAP
     row; captures from two angles; phone FPS check.
-- [ ] **LP-D08 Four new NPC looks through Meshy (Hakawati, Feryal, grocer, sheikh)** · deps: LP-D01 · STOP (≈ 240 credits)
+- [!] **LP-D08 Four new NPC looks through Meshy (Hakawati, Feryal, grocer, sheikh)** · deps: LP-D01 · STOP (≈ 240 credits) · waiting for the owner's go on the spend (balance 2,630 on 2026-10-19)
   - Accept: concept judged, GLB imported, `.rbxm` saved, register rows, idle clips, captures.
 - [x] fd683c9 **LP-D09 Lane clock, evening and night lighting presets** · deps: LP-D00
   - Accept: `Logic/LobbyLife.clock(t)` specced (phase boundaries, determinism); captures at the four phases.
@@ -622,13 +622,13 @@ DECISIONS; every name goes through §4.2's STOP first.
 
 - [x] 2cce4ec **LP-E01 Name, lore, numbers approved; config, sim rules, specs** · deps: LP-A02 · STOP (name + numbers)
   - Accept: §7.3 specs green; `tests/balance` ladder holds or a TUNE row; Rates screen shows him in Epic.
-- [x] **LP-E02 "Count the gold" ability kind, the Lane Fund and Buried Jar signatures, the pickpocket steal, panel and Defenders row support** · deps: LP-E01, LP-B02
+- [x] d131127 **LP-E02 "Count the gold" ability kind, the Lane Fund and Buried Jar signatures, the pickpocket steal, panel and Defenders row support** · deps: LP-E01, LP-B02
   - Accept: capture of Count the gold paying (coin flight); a two-player Studio server test (owner's STOP:
     Test → Clients and Servers) or a sim spec showing the Lane Fund paying the teammate.
-- [ ] **LP-E03 Model, clips, chest and cloth props, VFX, the souq shop NPC** · deps: LP-E01, LP-D03 · STOP (≈ 90 credits)
+- [!] **LP-E03 Model, clips, chest and cloth props, VFX, the souq shop NPC** · deps: LP-E01, LP-D03 · STOP (≈ 90 credits) · waiting for the owner's go on the spend
   - Accept: `.rbxm` in production, register row, idle + count clips in Studio, chest and bolts on placement,
     `cloth_merchant` in the souq with the prompt and the lore line.
-- [ ] **LP-E04 Story hooks: Episode 9 outro line, Diary tier copy, banner pool** · deps: LP-E03 · STOP (tier gift)
+- [!] **LP-E04 Story hooks: Episode 9 outro line, Diary tier copy, banner pool** · deps: LP-E03 · STOP (tier gift) · waits on LP-E03 (the gift ships with his model)
   - Accept: strings en/ar; `tests/season1.spec.luau` story-card case; Summon pool spec includes `tajir`.
 
 ### Order and sessions
@@ -648,8 +648,8 @@ Meshy budget: ≈ 330 credits (240 for four NPC looks + 90 for the merchant and 
 - [x] ff75c8d LP-A01 · [x] 19425ee LP-A02 · [x] fb9bdaa LP-A03
 - [x] 01545af LP-B01 · [x] 17c73f4 LP-B02 · [x] 5cc73de LP-B03 · [x] 82f876c LP-B04 · [x] d315bda LP-B05
 - [x] 373902b LP-C00 · [x] 2ff7102 LP-C01 · [x] 3a9b3b8 LP-C02 · [x] 1b33855 LP-C03 · [x] 236d068 LP-C04 · [x] 1df1bfd LP-C05 · [x] 169ff6e LP-C06 · [x] f4c8c30 LP-C07
-- [x] 98e27c4 LP-D00 · [x] 0a9cf7f LP-D01 · [x] e4c3eae LP-D02 · [x] 540e3ec LP-D03 · [x] 58e5fdd LP-D04 · [x] 4436acb LP-D05 · [x] 2c97ee7 LP-D06 · [x] 2834681 LP-D07 · [ ] LP-D08 · [x] fd683c9 LP-D09 · [x] fca4d73 LP-D10 · [x] 3abe9cb LP-D11
-- [x] 2cce4ec LP-E01 · [x] LP-E02 · [ ] LP-E03 · [ ] LP-E04
+- [x] 98e27c4 LP-D00 · [x] 0a9cf7f LP-D01 · [x] e4c3eae LP-D02 · [x] 540e3ec LP-D03 · [x] 58e5fdd LP-D04 · [x] 4436acb LP-D05 · [x] 2c97ee7 LP-D06 · [x] 2834681 LP-D07 · [!] LP-D08 · [x] fd683c9 LP-D09 · [x] fca4d73 LP-D10 · [x] 3abe9cb LP-D11
+- [x] 2cce4ec LP-E01 · [x] d131127 LP-E02 · [!] LP-E03 · [!] LP-E04
 
 ## 10. STOP list for the owner (batch these)
 
@@ -662,6 +662,14 @@ Meshy budget: ≈ 330 credits (240 for four NPC looks + 90 for the merchant and 
 5. Chrome / role-icon image uploads (PV-C04/C05 route) if not already live.
 6. Player Emulator policy check for the speed sheet; a real-device run of the new lane (FPS, streaming).
 7. UI sound files that AUDIO_COMMISSION.md lists as missing.
+
+**Still open after the LP pass (2026-10-19):** the Meshy spends for LP-D08 (≈ 240) and LP-E03 (≈ 90), balance 2,630;
+chrome and role-icon uploads (`Config/Icons.chrome`, ids 0); the silent cues (`ui_open`, `ui_close`, `ui_confirm`,
+`ui_deny`, `ui_ready`, `wave_clear`, `summon_reveal`, `rooster`, `arada_drums`; briefs in AUDIO_COMMISSION Batches 3–4);
+a Ramadan event definition for the musaharati; the Player Emulator policy check of the speed sheet; Test → Clients and
+Servers for the non-host speed chip and the Lane Fund paying a teammate; a real phone for the bigger lane's FPS
+(2,125 lobby parts) and evening/night; the farm-in-party cells of D-116 (accept, or tune those episodes); Abdo the
+hammam worker and the diwan's two elders have no approved names yet.
 
 ## 11. Rules for this pass (in addition to CLAUDE.md)
 
