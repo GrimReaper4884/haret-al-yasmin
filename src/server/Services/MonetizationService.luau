@@ -224,6 +224,20 @@ local function loadPolicy(player: Player)
 	PlayerStateService.schedule(player)
 end
 
+-- Studio harness only (DebugService): play this session as a player whose region restricts paid random items, or
+-- read the real policy again ("clear"). Exercises the restricted UI path without the Player Emulator (LP-F05).
+function MonetizationService.debugRestricted(player: Player, on: boolean?)
+	if not game:GetService("RunService"):IsStudio() then
+		return
+	end
+	if on == nil then
+		loadPolicy(player) -- yields: a later call must not be overwritten by this read
+		return
+	end
+	restricted[player] = on
+	PlayerStateService.schedule(player)
+end
+
 function MonetizationService.start()
 	for key, p in Products.devProducts :: any do
 		if p.productId > 0 then

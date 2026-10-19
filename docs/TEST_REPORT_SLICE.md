@@ -1463,3 +1463,22 @@ the four ids synced (`script_grep` "SliceScale = c.scale").*
 
 Not captured: a `Modal` confirm with the frame (Sell/Leave/Redeem need an action the run avoided), and a phone-size
 capture (the frames scale with SliceScale; the device route is LP-F01).
+
+### LP-F05 the restricted path (forced flag; the Player Emulator itself not driven)
+
+*Play Solo, `HaretDebug noAutoAfk`, then `HaretDebug "policy","restricted"` (`clear` read the real policy first:
+`false` for the owner in Studio). `tools/check.ps1` green (453 specs). Matches started with `M` and stopped in wave 1.*
+
+| Check | Result | Capture |
+|---|---|---|
+| Store, open policy | 5 lira packs, 3 qirsh packs, starter pack, 2 stone packs, Diary skip, 4 passes | `docs/captures/lp/f05_store_open.jpg` |
+| Store, restricted | rows: qirsh 100 / 450 / 1,000, VIP, Fast Mode, Extra slot, Lane Patron: nothing that funds lira or stones | `f05_store_restricted.jpg` |
+| Speed sheet, restricted (before the fix) | caption "3x to 5x: VIP, premium Diary or Fast Mode": names a restricted item | `f05_speed_restricted_before_fix.jpg` |
+| Speed sheet, restricted (after) | 3x-5x locked, caption "3x to 5x: VIP or Fast Mode" | `f05_speed_restricted.jpg` |
+| Tap a locked chip, restricted | toast "3x to 5x speed needs VIP or the Fast Mode pass.", Store opens at Fast Mode ("Coming soon": ids 0, no prompt) | `f05_lock_tap_restricted.jpg` |
+| Diary, restricted | no Buy Premium, no Skip; premium rewards shown as a track only | `f05_diary_restricted.jpg` |
+| Summon, restricted | "Lira can't be bought in your region. Earn it from matches, dailies and codes." | `f05_summon_restricted.jpg` |
+| Console | `server ready`, no errors from our code | — |
+
+Note from the run: `policy clear` re-reads PolicyService, which yields; when it ran asynchronously it overwrote a
+`restricted` set right after it (the first store capture is therefore the open policy). `clear` now waits for the read.

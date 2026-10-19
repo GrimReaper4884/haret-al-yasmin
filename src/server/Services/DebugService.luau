@@ -205,6 +205,16 @@ function DebugService.start()
 				return "bad arg"
 			end
 			return MonetizationService.debugPerk(player, perk, off ~= "-")
+		elseif cmd == "policy" then
+			-- "restricted" | "open" | "clear": this session's paid-random-items policy (LP-F05 checks; no profile change)
+			if arg == "restricted" or arg == "open" then
+				MonetizationService.debugRestricted(player, arg == "restricted")
+			elseif arg == "clear" then
+				MonetizationService.debugRestricted(player, nil)
+			else
+				return "bad arg"
+			end
+			return MonetizationService.isRestricted(player)
 		elseif cmd == "noAutoAfk" then
 			-- Studio runs driven through MCP send no input: keep the idle walk to the AFK room off
 			player:SetAttribute("HarnessNoAutoAfk", arg ~= "off")

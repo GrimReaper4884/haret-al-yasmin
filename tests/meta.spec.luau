@@ -555,6 +555,22 @@ return function(t)
 			t.eq(MonetizationLogic.maxSpeed({}, true, TD), TD.PREMIUM_SPEED, "premium Lane Diary")
 			t.eq(MonetizationLogic.maxSpeed({ vip = true, fast = true }, true, TD), TD.PREMIUM_SPEED, "never above the ladder")
 		end)
+		t.it("a restricted host is never pointed at the premium Diary for speed (LP-F05)", function()
+			local Strings = t.config("Strings")
+			local unlock, err = MonetizationLogic.speedUnlockKeys(true)
+			local openUnlock, openErr = MonetizationLogic.speedUnlockKeys(false)
+			t.eq(openUnlock, "match.speed_unlock")
+			t.eq(openErr, "match.err.fast_pass")
+			t.truthy(unlock ~= openUnlock and err ~= openErr)
+			for _, lang in { "en", "ar" } do
+				for _, key in { unlock, err } do
+					local s = Strings[lang][key]
+					t.truthy(type(s) == "string" and s ~= "", key .. " in " .. lang)
+					t.truthy(not (string.find(s, "Diary", 1, true) or string.find(s, "الدفتر", 1, true)), key .. " names no Diary in " .. lang)
+				end
+			end
+			t.truthy(MonetizationLogic.fundsRandomItems({ kind = "passPremium" } :: any), "the premium Diary funds lira")
+		end)
 		t.it("every pass that unlocks speed unlocks the same ceiling (a cheaper pass never beats a dearer one)", function()
 			local Products = t.config("Products")
 			local ceilings = {}

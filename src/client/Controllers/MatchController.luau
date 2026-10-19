@@ -238,6 +238,8 @@ local function openSpeedSheet()
 	local current = if state then state.speed or 1 else 1
 	local n = #TD.SPEEDS
 	local locked = maxSpeed < TD.SPEEDS[n]
+	local snapshot: any = StateController.get()
+	local unlockKey, errKey = MonetizationLogic.speedUnlockKeys(snapshot and snapshot.restricted)
 	local w = cfg.pad * 2 + n * cfg.chip + (n - 1) * cfg.gap
 	local h = cfg.pad * 2 + cfg.title + cfg.gap + cfg.chip + (if locked then cfg.gap + cfg.caption else 0)
 	-- Beside the Speed button, on the screen's inner side of the rail, kept inside the safe area.
@@ -285,7 +287,7 @@ local function openSpeedSheet()
 		chip.Activated:Connect(function()
 			closeSpeedSheet()
 			if not open then
-				ToastController.show("match.err.fast_pass")
+				ToastController.show(errKey)
 				ShopController.openStore("fast_mode")
 			elseif speed ~= current then
 				Net.event(Net.Events.SetSpeed):FireServer(speed)
@@ -293,7 +295,7 @@ local function openSpeedSheet()
 		end)
 	end
 	if locked then
-		local caption = Theme.label({ Text = t("match.speed_unlock"), TextSize = Hud.TEXT_MIN, TextColor3 = Theme.colors.textMuted, Position = UDim2.fromOffset(cfg.pad, h - cfg.pad - cfg.caption), Size = UDim2.new(1, -2 * cfg.pad, 0, cfg.caption), ZIndex = 11, Parent = sheet })
+		local caption = Theme.label({ Text = t(unlockKey), TextSize = Hud.TEXT_MIN, TextColor3 = Theme.colors.textMuted, Position = UDim2.fromOffset(cfg.pad, h - cfg.pad - cfg.caption), Size = UDim2.new(1, -2 * cfg.pad, 0, cfg.caption), ZIndex = 11, Parent = sheet })
 		caption.TextXAlignment = Enum.TextXAlignment.Center
 	end
 	Juice.pop(sheet)

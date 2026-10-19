@@ -185,6 +185,15 @@ function MonetizationLogic.maxSpeed(perks: { [string]: boolean }?, premiumDiary:
 	return td.FREE_SPEED
 end
 
+-- The Strings keys that tell a host how to unlock 3x-5x (LP-F05): the caption under the speed sheet and the refusal
+-- toast. A restricted player (paid random items) is never pointed at the premium Lane Diary, which funds lira.
+function MonetizationLogic.speedUnlockKeys(restricted: boolean?): (string, string)
+	if restricted then
+		return "match.speed_unlock_restricted", "match.err.fast_pass_restricted"
+	end
+	return "match.speed_unlock", "match.err.fast_pass"
+end
+
 -- Validates a SetSpeed request: "bad_speed" unless it is one of td.SPEEDS (exact membership, so
 -- NaN, 2.5, "3" and 99 are refused), "needs_pass" above `maxSpeed`.
 function MonetizationLogic.checkSpeed(speed: any, maxSpeed: number, td: any): (boolean, string?)

@@ -953,7 +953,8 @@ function MatchService.start()
 		local ok, why = MonetizationLogic.checkSpeed(speed, MonetizationService.maxSpeed(player), TD)
 		if not ok then
 			if why == "needs_pass" then
-				PlayerStateService.notify(player, "match.err.fast_pass")
+				local _, errKey = MonetizationLogic.speedUnlockKeys(MonetizationService.isRestricted(player))
+				PlayerStateService.notify(player, errKey)
 			end
 			return
 		end
