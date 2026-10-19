@@ -150,6 +150,7 @@ local specs = {
 	require("./placeflow.spec"),
 	require("./autoplay.spec"),
 	require("./analytics.spec"),
+	require("./restore.spec"),
 }
 for _, spec in specs do
 	spec(t)

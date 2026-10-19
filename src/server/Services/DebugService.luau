@@ -36,6 +36,7 @@ local FunnelService = require(script.Parent.FunnelService)
 local RemoteFuzz = require(script.Parent.RemoteFuzz)
 local MonetizationService = require(script.Parent.MonetizationService)
 local NpcService = require(script.Parent.NpcService)
+local RestoreService = require(script.Parent.RestoreService)
 local Wallet = require(ReplicatedStorage:WaitForChild("Shared").Logic.Wallet)
 local Economy = require(ReplicatedStorage:WaitForChild("Shared").Config.Economy)
 local TD = require(ReplicatedStorage:WaitForChild("Shared").Config.TD)
@@ -215,6 +216,21 @@ function DebugService.start()
 				return "bad arg"
 			end
 			return MonetizationService.isRestricted(player)
+		elseif cmd == "restore" then
+			-- "<userId> <unix seconds> [apply]": roll a profile back (P4-05, docs/ops/rollback.md); dry unless "apply"
+			local uid, at, mode = string.match(tostring(arg), "^(%d+)%s+(%d+)%s*(%a*)$")
+			if not uid then
+				return "bad arg"
+			end
+			return HttpService:JSONEncode(RestoreService.restoreUser(tonumber(uid) :: number, tonumber(at) :: number, mode == "apply"))
+		elseif cmd == "restoreDrill" then
+			-- P4-05: the rollback drill on the separate HaretDrill store (never a player's profile):
+			-- "begin", then an hour later "finish <key> <ms>" (Roblox keeps one version per key per window)
+			local key, at = string.match(tostring(arg), "^finish%s+(%S+)%s+(%d+)$")
+			if key then
+				return HttpService:JSONEncode(RestoreService.drillFinish(key, tonumber(at) :: number))
+			end
+			return HttpService:JSONEncode(RestoreService.drillBegin())
 		elseif cmd == "storyClear" then
 			-- S1-A08 checks: show the figures gated on a story clear for this session ("off" hides them); no profile change
 			player:SetAttribute("HarnessStoryClear", arg ~= "off")
