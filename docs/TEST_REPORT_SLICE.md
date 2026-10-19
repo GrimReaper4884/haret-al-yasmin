@@ -1515,3 +1515,12 @@ specced) and a phone-size capture of the four-row menu.
 | Match start | `[Analytics] progression Start Story 4 ep4 (hard)` then `AnalyticsService: LogProgressionStartEvent event fired.` |
 | Complete / Fail | not fired in Studio (a match end pays the owner's live profile); the mapping is specced for every mode |
 | Console | `server ready`, no errors from our code |
+
+### S1-A05 Al-Adashari's ability (the last capture)
+
+*Play Solo, `HaretDebug noAutoAfk`, `"match","ep1,normal"`, in-match `cash 5000` (no profile change), `place`
+Al-Adashari by the orchard road; `UseAbility` fired from the Client until a `mark` event arrived; stopped in wave 2.*
+
+| Check | Result | Capture |
+|---|---|---|
+| The ultimate | `mark` event; the banner "The Oath · Al-Adashari, the Night Guard"; the gendarmes walking into his lane by the lamp post | `docs/art/s1a05_adashari_ability_2026-10-19.jpg` |
