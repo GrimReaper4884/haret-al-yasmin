@@ -42,6 +42,9 @@ local busy = false
 -- the sheet at 640x282 (head + two buttons + gap = PHONE.column; PHONE.strip adds the strip's bar).
 local PHONE = { legend = 60, head = 16, gap = 4, column = 116, strip = 128, premium = 180, skip = 140 }
 local COLUMN_W, COLUMN_GAP = 118, 6
+-- Tablet / desktop column: the level, then per track a label (12), its reward (22), a 2 px gap and the
+-- 48 px button (= 84) with 6 px before the next track (block 90); the strip adds the bar under it.
+local DESKTOP = { head = 20, block = 90, column = 200, strip = 212, body = Theme.TOUCH + 24 + 212 }
 local scrollOnRender = true
 
 local function claim(tier: number, track: string, from: GuiObject?)
@@ -62,7 +65,7 @@ end
 
 local function build()
 	-- fill: on a phone the body is the sheet's height and shapePass packs both tracks into it.
-	modal = Modal.create("Pass", 720, 262, { fill = true })
+	modal = Modal.create("Pass", 720, DESKTOP.body, { fill = true })
 	local body = modal.body
 	-- Top: the level and the season end on the left, Premium and Skip (48 px) on the right (MOBILE_HUD_PLAN B7).
 	levelLabel = Theme.label({ TextSize = 16, FontFace = Theme.fontBold, Size = UDim2.new(1, -400, 0, 22), ZIndex = 11, Parent = body })
@@ -72,7 +75,7 @@ local function build()
 	xpFill = Create("Frame", { Size = UDim2.fromScale(0, 1), BackgroundColor3 = Theme.colors.quest, BorderSizePixel = 0, ZIndex = 12, Parent = xpBar }, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
 	xpLabel = Theme.label({ TextSize = 11, FontFace = Theme.fontBold, Size = UDim2.fromScale(1, 1), ZIndex = 13, Parent = xpBar })
 	xpLabel.TextXAlignment = Enum.TextXAlignment.Center
-	holder = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, Theme.TOUCH + 24), Size = UDim2.new(1, 0, 0, 190), ZIndex = 11, Parent = body })
+	holder = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, Theme.TOUCH + 24), Size = UDim2.new(1, 0, 0, DESKTOP.strip), ZIndex = 11, Parent = body })
 	strip = Modal.scroller(holder, true)
 	-- Phones: the track names stand once at the left of the strip instead of in every column.
 	legend = Create("Frame", { Name = "Legend", BackgroundTransparency = 1, Size = UDim2.new(0, PHONE.legend, 1, 0), Visible = false, ZIndex = 11, Parent = holder })
@@ -94,7 +97,7 @@ local function build()
 	end)
 end
 
--- Phone: the top row and the compact strip; elsewhere the original 262 px body.
+-- Phone: the top row and the compact strip; elsewhere the DESKTOP body.
 local function shapePass()
 	if not holder then
 		return
@@ -112,7 +115,7 @@ local function shapePass()
 	premiumButton.Size = UDim2.fromOffset(if phone then PHONE.premium else 210, Theme.TOUCH)
 	skipButton.Size = UDim2.fromOffset(if phone then PHONE.skip else 170, Theme.TOUCH)
 	holder.Position = UDim2.fromOffset(0, if phone then Theme.TOUCH + 6 else Theme.TOUCH + 24)
-	holder.Size = UDim2.new(1, 0, 0, if phone then PHONE.strip else 190)
+	holder.Size = UDim2.new(1, 0, 0, if phone then PHONE.strip else DESKTOP.strip)
 	legend.Visible = phone
 	strip.Position = UDim2.fromOffset(if phone then PHONE.legend else 0, 0)
 	strip.Size = UDim2.new(1, if phone then -PHONE.legend else 0, 1, 0)
@@ -121,7 +124,7 @@ end
 local function tierColumn(t: any, snapshot: any, tier: number, level: number)
 	local def = SeasonPass.tiers[tier]
 	local phone = Device.isPhone()
-	local col = Create("Frame", { LayoutOrder = tier, Size = UDim2.fromOffset(COLUMN_W, if phone then PHONE.column else 186), BackgroundColor3 = if tier <= level then Theme.colors.quest else Theme.colors.panelStroke, BackgroundTransparency = if tier <= level then 0.8 else 0.9, BorderSizePixel = 0, ZIndex = 11, Parent = strip }, { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) })
+	local col = Create("Frame", { LayoutOrder = tier, Size = UDim2.fromOffset(COLUMN_W, if phone then PHONE.column else DESKTOP.column), BackgroundColor3 = if tier <= level then Theme.colors.quest else Theme.colors.panelStroke, BackgroundTransparency = if tier <= level then 0.8 else 0.9, BorderSizePixel = 0, ZIndex = 11, Parent = strip }, { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) })
 	local head = Theme.label({ Text = t("pass.level", { n = tier }), TextSize = if phone then 12 else 13, FontFace = Theme.fontBold, Size = UDim2.new(1, 0, 0, if phone then PHONE.head else 18), ZIndex = 12, Parent = col })
 	head.TextXAlignment = Enum.TextXAlignment.Center
 	local function trackBlock(y: number, track: string, reward: any)
@@ -160,8 +163,8 @@ local function tierColumn(t: any, snapshot: any, tier: number, level: number)
 		trackBlock(PHONE.head, "free", def.free)
 		trackBlock(PHONE.head + Theme.TOUCH + PHONE.gap, "premium", def.premium)
 	else
-		trackBlock(20, "free", def.free)
-		trackBlock(102, "premium", def.premium)
+		trackBlock(DESKTOP.head, "free", def.free)
+		trackBlock(DESKTOP.head + DESKTOP.block, "premium", def.premium)
 	end
 end
 

@@ -251,7 +251,8 @@ local function build()
 				d.ZIndex = 12
 			end
 		end
-		local label = Theme.display({ TextSize = 17, TextColor3 = Theme.v2.woodDark, Position = UDim2.fromOffset(30, 0), Size = UDim2.new(1, -30, 1, 0), ZIndex = 12, Parent = head })
+		-- Dark wood letters on the parchment, no outline (a dark outline on dark text reads as a smudge).
+		local label = Theme.label({ TextSize = 18, FontFace = Theme.fontDisplay, TextColor3 = Theme.v2.woodDark, Position = UDim2.fromOffset(30, 0), Size = UDim2.new(1, -30, 1, 0), ZIndex = 12, Parent = head })
 		groupLabels[g] = label
 		Create("Frame", { AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(1, 0, 0, 2), BackgroundColor3 = Theme.v2.brass, BorderSizePixel = 0, ZIndex = 11, Parent = head })
 		for k, key in group.keys do

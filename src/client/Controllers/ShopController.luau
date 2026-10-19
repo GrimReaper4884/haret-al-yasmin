@@ -73,8 +73,8 @@ local function build()
 		Parent = panel,
 	})
 	title = Theme.label({
-		TextSize = 20,
-		FontFace = Theme.fontBold,
+		TextSize = 22,
+		FontFace = Theme.fontDisplay, -- the title face of every other screen (UI/Modal)
 		Size = UDim2.new(1, -(Theme.TOUCH + 4), 1, 0),
 		Parent = header,
 	})
@@ -214,6 +214,13 @@ local function row(spec: RowSpec)
 	})
 	Theme.align(name, rtl)
 	Theme.align(desc, rtl)
+	-- A product whose only line is its amount ("100 lira") says it once, centred in the row.
+	if spec.desc == "" or spec.desc == spec.name then
+		desc.Visible = false
+		name.TextSize = 19
+		name.Position = UDim2.new(0, name.Position.X.Offset, 0.5, -12)
+		name.Size = UDim2.new(1, -(78 + 120), 0, 24)
+	end
 
 	local action = Theme.button({
 		Text = spec.buttonText,

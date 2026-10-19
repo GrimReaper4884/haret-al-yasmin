@@ -98,13 +98,19 @@ local function build()
 		Size = UDim2.new(1, -130, 0, Theme.TOUCH),
 		BackgroundColor3 = Color3.fromHex("#FBF8F1"),
 		TextColor3 = Theme.colors.text,
+		PlaceholderColor3 = Theme.colors.textMuted,
 		TextSize = 20,
 		FontFace = Theme.fontBold,
 		ClearTextOnFocus = false,
 		Text = "",
 		ZIndex = 11,
 		Parent = body,
-	}, { Create("UICorner", { CornerRadius = UDim.new(0, 10) }), Create("UIStroke", { Color = Theme.colors.panelStroke, Thickness = 2 }) })
+	}, {
+		Create("UICorner", { CornerRadius = UDim.new(0, 10) }),
+		-- Border mode: a Contextual stroke on a TextBox outlines the letters, not the box.
+		Create("UIStroke", { Color = Theme.colors.panelStroke, Thickness = 2, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }),
+		Create("UIPadding", { PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12) }),
+	})
 	redeem = Theme.button({ TextSize = 15, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, 0, 0, 44), Size = UDim2.fromOffset(120, Theme.TOUCH), BackgroundColor3 = Theme.colors.quest, ZIndex = 11, Parent = body })
 	result = Theme.label({ TextSize = 14, FontFace = Theme.fontBold, TextColor3 = Theme.colors.accent, Position = UDim2.fromOffset(0, 104), Size = UDim2.new(1, 0, 0, 22), ZIndex = 11, Parent = body })
 	granted = Amount.row({ Name = "Granted", Position = UDim2.fromOffset(0, 126), Size = UDim2.new(1, 0, 0, 28), ZIndex = 11, Parent = body }, {})

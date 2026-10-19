@@ -14,3 +14,17 @@
 13 https://d8j0ntlcm91z4.cloudfront.net/user_3IJiH5kuN2vdmh2VPVcXHw6TXWy/hf_20261018_001921_603b901a-ead3-43a4-bab9-23c6a2bd698b.png
 14 https://d8j0ntlcm91z4.cloudfront.net/user_3IJiH5kuN2vdmh2VPVcXHw6TXWy/hf_20261018_001922_08ffd796-27fd-4407-a37f-7e005f904834.png
 15 https://d8j0ntlcm91z4.cloudfront.net/user_3IJiH5kuN2vdmh2VPVcXHw6TXWy/hf_20261018_001921_984dc499-5eb2-4ca2-b5a6-7e09b88f4ac9.png
+
+# 2026-10-19 episodes 4-9 (HUD polish pass)
+ep4_v0 https://d8j0ntlcm91z4.cloudfront.net/user_3IJiH5kuN2vdmh2VPVcXHw6TXWy/hf_20261019_201823_a71386b4-80ac-4b33-829b-30e917777626.png
+ep4_v1 https://d8j0ntlcm91z4.cloudfront.net/user_3IJiH5kuN2vdmh2VPVcXHw6TXWy/hf_20261019_201823_60bf211c-8d4e-496f-9ae8-5b9f3483fca4.png
+ep5_v0 https://d8j0ntlcm91z4.cloudfront.net/user_3IJiH5kuN2vdmh2VPVcXHw6TXWy/hf_20261019_201822_8832e419-3758-4c0f-bc00-5aed372cb1ea.png
+ep5_v1 https://d8j0ntlcm91z4.cloudfront.net/user_3IJiH5kuN2vdmh2VPVcXHw6TXWy/hf_20261019_201820_d53d2ecc-9935-4ba1-b56c-95cf7db0ee7d.png
+ep6_v0 https://d8j0ntlcm91z4.cloudfront.net/user_3IJiH5kuN2vdmh2VPVcXHw6TXWy/hf_20261019_201822_fd0f0bd6-368b-4e12-8f61-86d4934e38e5.png
+ep6_v1 https://d8j0ntlcm91z4.cloudfront.net/user_3IJiH5kuN2vdmh2VPVcXHw6TXWy/hf_20261019_201823_b278db4f-5b2e-4a10-a648-e24b48f86cfd.png
+ep7_v0 https://d8j0ntlcm91z4.cloudfront.net/user_3IJiH5kuN2vdmh2VPVcXHw6TXWy/hf_20261019_201823_fe19a482-23c5-4ae5-b6b2-24054e986a0f.png
+ep7_v1 https://d8j0ntlcm91z4.cloudfront.net/user_3IJiH5kuN2vdmh2VPVcXHw6TXWy/hf_20261019_201822_c1d3ee6e-eb29-4c11-b251-d65eeb298713.png
+ep8_v0 https://d8j0ntlcm91z4.cloudfront.net/user_3IJiH5kuN2vdmh2VPVcXHw6TXWy/hf_20261019_201822_a656ca6b-efc6-4329-8a4c-c948667304b6.png
+ep8_v1 https://d8j0ntlcm91z4.cloudfront.net/user_3IJiH5kuN2vdmh2VPVcXHw6TXWy/hf_20261019_201821_ab046cf4-5d13-4df4-a194-c9003f57e3ca.png
+ep9_v0 https://d8j0ntlcm91z4.cloudfront.net/user_3IJiH5kuN2vdmh2VPVcXHw6TXWy/hf_20261019_201822_84f30dba-23fa-4e88-9c4f-d76fcb15a3d8.png
+ep9_v1 https://d8j0ntlcm91z4.cloudfront.net/user_3IJiH5kuN2vdmh2VPVcXHw6TXWy/hf_20261019_201824_68573e6e-b0bb-4bbc-93b5-3a7f7ce395ff.png

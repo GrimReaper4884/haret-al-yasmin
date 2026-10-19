@@ -305,6 +305,10 @@ render = function()
 		Theme.align(l, rtl)
 	end
 	langButton.Text = t("hud.language")
+	-- The toggle names the other language: "عربي" in English mode. Fredoka One has no Arabic glyphs
+	-- (a thin fallback under a heavy outline), so the Arabic label gets the bold UI face instead.
+	langButton.FontFace = if rtl then Theme.fontDisplay else Theme.fontBold
+	langButton.TextSize = if rtl then 17 else 21
 	wardrobeButton.Text = t("hud.wardrobe")
 	testBadge.Visible = snapshot ~= nil and not snapshot.persistent
 	testBadge.Text = t("notify.persistence_disabled")

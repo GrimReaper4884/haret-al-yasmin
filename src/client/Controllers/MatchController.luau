@@ -200,6 +200,9 @@ local function railButtonOf(name: string, color: Color3, iconName: string): Text
 	local label = Theme.display({ Name = "Label", Text = "", TextSize = Hud.TEXT_MIN, AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -3), Size = UDim2.new(1, -4, 0, 16), ZIndex = 4, Parent = b })
 	label.TextXAlignment = Enum.TextXAlignment.Center
 	label.TextWrapped = false
+	-- A long word ("Defenders") shrinks to the button's width instead of spilling past its edges.
+	label.TextScaled = true
+	Create("UITextSizeConstraint", { MaxTextSize = Hud.TEXT_MIN, MinTextSize = 10, Parent = label })
 	railLabels[b] = label
 	return b
 end

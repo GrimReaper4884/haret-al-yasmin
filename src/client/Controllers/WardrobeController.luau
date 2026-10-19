@@ -59,8 +59,8 @@ local function build()
 		Parent = panel,
 	})
 	title = Theme.label({
-		TextSize = 20,
-		FontFace = Theme.fontBold,
+		TextSize = 22,
+		FontFace = Theme.fontDisplay, -- the title face of every other screen (UI/Modal)
 		Size = UDim2.new(1, -(Theme.TOUCH + 4), 1, 0),
 		Parent = header,
 	})
@@ -224,6 +224,7 @@ end
 function WardrobeController.open()
 	open = true
 	panel.Visible = true
+	Modal.opening(panel) -- one screen at a time, the backdrop and the pop, like every Modal screen
 	render(true)
 end
 
@@ -256,7 +257,11 @@ end
 function WardrobeController.start()
 	build()
 	fitList()
-	Modal.track(panel)
+	-- Joins the screens: closes with them (backdrop tap, match start) and gets the dimmed backdrop.
+	Modal.adopt(panel, "Wardrobe", function()
+		open = false
+		lastKey = ""
+	end)
 	Device.Changed:Connect(fitList)
 	panel:GetPropertyChangedSignal("Visible"):Connect(fitList)
 	StateController.Changed:Connect(function()

@@ -111,6 +111,13 @@ Icons.modes = {
 	ep1 = { id = 98610965293669 },
 	ep2 = { id = 70959689012811 },
 	ep3 = { id = 93089947848285 },
+	-- Episodes 4-9 (2026-10-19 HUD polish pass), the same painted night style as 1-3
+	ep4 = { id = 101304423896292 },
+	ep5 = { id = 81073002617459 },
+	ep6 = { id = 86844710945459 },
+	ep7 = { id = 113299739814834 },
+	ep8 = { id = 81385103214367 },
+	ep9 = { id = 77205432615484 },
 	ev_olive = { id = 119222103493381 },
 	ev_ramadan = { id = 77282830122368 }, -- LP-D12 Lantern Nights
 	infinite = { id = 108697701587533 },

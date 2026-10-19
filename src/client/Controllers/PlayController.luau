@@ -316,7 +316,7 @@ local function card(id: string, i: number, number: number?): TextButton
 			Size = UDim2.fromScale(1, 1),
 			Image = "rbxassetid://" .. tostring(art.id),
 			ScaleType = Enum.ScaleType.Crop,
-			ImageColor3 = if unlocked then Color3.fromRGB(175, 170, 165) else Color3.fromRGB(80, 80, 80),
+			ImageColor3 = if unlocked then Color3.fromRGB(175, 170, 165) else Color3.fromRGB(105, 102, 100),
 			ZIndex = 12,
 			Parent = b,
 		}, { Create("UICorner", { CornerRadius = UDim.new(0, 10) }) })
@@ -554,7 +554,7 @@ local function stackLabel(order: number, props: { [string]: any }): TextLabel
 end
 
 local function build()
-	modal = Modal.create("Play", 780, 252, { fill = true })
+	modal = Modal.create("Play", 780, 292, { fill = true })
 	local body = modal.body
 
 	-- Tabs (a column on desktop, a strip on a phone: shapePlay)

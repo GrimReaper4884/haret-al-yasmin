@@ -112,7 +112,8 @@ local function build()
 	local gridTop = 88 + Theme.TOUCH + 6
 	local gridHolder = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, gridTop), Size = UDim2.new(1, 0, 1, -gridTop), ZIndex = 11, Parent = body })
 	grid = Modal.scroller(gridHolder)
-	Create("UIGridLayout", { CellSize = UDim2.fromOffset(96, 124), CellPadding = UDim2.fromOffset(8, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = grid })
+	local gridLayout = Create("UIGridLayout", { CellSize = UDim2.fromOffset(96, 124), CellPadding = UDim2.fromOffset(8, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = grid })
+	Modal.fitGrid(grid, gridLayout, Vector2.new(96, 124), 8)
 	detail = Create("Frame", { BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 12, Visible = false, Parent = body })
 	-- Trait reroll rates (paid random item: trait stones are sold for Robux). Covers the detail view.
 	ratesPanel = Theme.panel({ Name = "TraitRates", Size = UDim2.fromScale(1, 1), ZIndex = 14, Visible = false, Parent = body })

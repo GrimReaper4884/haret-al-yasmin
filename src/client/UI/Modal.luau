@@ -44,6 +44,11 @@ Modal.BODY_HEIGHT = 236 -- px at UIScale 1
 local PAD_TOP, PAD_BOTTOM, GAP = 10, 12, 8
 local SWIPE_PX = 50
 local SCROLL_BAR = 10 -- px, the content's scroll bar while it can scroll
+-- Room inside the content's clip so the outer strokes and rounded corners of the last row (buttons,
+-- cards) are not cut flat at the edge: px at UIScale 1, top / bottom / each side.
+local INSET_Y, INSET_BOTTOM, INSET_X = 3, 6, 3
+-- A desktop panel never grows past the safe area: header, gaps and this margin come off the height.
+local DESKTOP_MARGIN = 12
 
 local openModals: { [Frame]: boolean } = {}
 local overlays: { GuiObject } = {}
@@ -100,6 +105,14 @@ local function closeOthers(except: Frame)
 	end
 end
 
+-- Roblox draws a 1 px track for a ScrollingFrame even at ScrollBarThickness 0: hide the bar image
+-- whenever the area cannot scroll.
+local function setScrolling(content: ScrollingFrame, on: boolean)
+	content.ScrollingEnabled = on
+	content.ScrollBarThickness = if on then SCROLL_BAR else 0
+	content.ScrollBarImageTransparency = if on then 0 else 1
+end
+
 -- Sheet on a phone, centred panel elsewhere.
 local function applyShape(s: Shape)
 	if Device.isPhone() then
@@ -109,8 +122,7 @@ local function applyShape(s: Shape)
 		s.panel.Size = UDim2.new(1, -2 * m, 1, -2 * m)
 		s.content.AutomaticSize = Enum.AutomaticSize.None
 		s.content.Size = UDim2.new(1, 0, 1, -(Theme.TOUCH + GAP))
-		s.content.ScrollingEnabled = true
-		s.content.ScrollBarThickness = SCROLL_BAR
+		setScrolling(s.content, true)
 		-- A body built around its own scroller fills the sheet; any other keeps its height and the
 		-- sheet scrolls it (room left for the bar).
 		local window = s.content.AbsoluteSize.Y / math.max(Device.scale(), 0.01)
@@ -121,13 +133,18 @@ local function applyShape(s: Shape)
 		s.panel.Size = UDim2.fromScale(0.94, 0)
 		s.panel.AutomaticSize = Enum.AutomaticSize.Y
 		-- As tall as its rows (a plain height: a parent's AutomaticSize does not count its padding
-		-- around an auto-sized ScrollingFrame), rounded up so no sub-pixel remainder shows a bar.
+		-- around an auto-sized ScrollingFrame), rounded up so no sub-pixel remainder shows a bar; capped
+		-- at the safe area, past which the rows scroll.
 		s.content.AutomaticSize = Enum.AutomaticSize.None
-		s.content.Size = UDim2.new(1, 0, 0, math.ceil(s.list.AbsoluteContentSize.Y / math.max(Device.scale(), 0.01)))
-		s.content.ScrollingEnabled = false
-		s.content.ScrollBarThickness = 0
-		s.content.CanvasPosition = Vector2.zero
-		s.body.Size = UDim2.new(1, 0, 0, s.bodyHeight)
+		local rows = math.ceil(s.list.AbsoluteContentSize.Y / math.max(Device.scale(), 0.01)) + INSET_Y + INSET_BOTTOM
+		local room = math.floor(Device.designSize().y - 2 * DESKTOP_MARGIN - PAD_TOP - PAD_BOTTOM - Theme.TOUCH - GAP)
+		local tall = room > Theme.TOUCH and rows > room
+		s.content.Size = UDim2.new(1, 0, 0, if tall then room else rows)
+		setScrolling(s.content, tall)
+		if not tall then
+			s.content.CanvasPosition = Vector2.zero
+		end
+		s.body.Size = UDim2.new(1, if tall then -SCROLL_BAR - 2 else 0, 0, s.bodyHeight)
 	end
 	-- Typing on touch: anchored to the top of the safe area, ending above the keyboard.
 	local kb = s.keyboard
@@ -140,8 +157,7 @@ local function applyShape(s: Shape)
 		s.panel.Size = if Device.isPhone() then UDim2.new(1, -2 * Hud.SHEET_MARGIN, 0, fit.height) else UDim2.new(0.94, 0, 0, fit.height)
 		s.content.AutomaticSize = Enum.AutomaticSize.None
 		s.content.Size = UDim2.new(1, 0, 1, if fit.header then -(Theme.TOUCH + GAP) else 0)
-		s.content.ScrollingEnabled = true
-		s.content.ScrollBarThickness = SCROLL_BAR
+		setScrolling(s.content, true)
 	end
 end
 
@@ -211,6 +227,13 @@ function Modal.create(name: string, maxWidth: number, bodyHeight: number?, opts:
 		Parent = panel,
 	})
 	local contentList = Create("UIListLayout", { Padding = UDim.new(0, GAP), SortOrder = Enum.SortOrder.LayoutOrder, Parent = content })
+	Create("UIPadding", {
+		PaddingTop = UDim.new(0, INSET_Y),
+		PaddingBottom = UDim.new(0, INSET_BOTTOM),
+		PaddingLeft = UDim.new(0, INSET_X),
+		PaddingRight = UDim.new(0, INSET_X),
+		Parent = content,
+	})
 	local body = Create("Frame", {
 		Name = "Body",
 		LayoutOrder = 2,
@@ -336,6 +359,7 @@ local function syncBackdrop()
 			return
 		end
 		local made = Button.hit({ Name = "ModalBackdrop", BackgroundColor3 = Color3.new(0, 0, 0), Size = UDim2.fromScale(1, 1), ZIndex = 9, Visible = false, Parent = Root.get() })
+		Root.bleed(made)
 		made.Activated:Connect(function()
 			for f in openModals do
 				if f.Visible then
@@ -424,6 +448,7 @@ local function buildConfirm(): ConfirmUi
 	local root = Root.get()
 	local shield = Button.hit({ Name = "ConfirmShield", BackgroundColor3 = Color3.new(0, 0, 0), Size = UDim2.fromScale(1, 1), ZIndex = 34, Visible = false, Parent = root })
 	shield.BackgroundTransparency = 0.45
+	Root.bleed(shield)
 	local frame = Theme.panel({ Name = "Confirm", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(380, 0), AutomaticSize = Enum.AutomaticSize.Y, ZIndex = 35, Visible = false, Parent = root })
 	Create("UIPadding", { PaddingTop = UDim.new(0, 12), PaddingBottom = UDim.new(0, 12), PaddingLeft = UDim.new(0, 14), PaddingRight = UDim.new(0, 14), Parent = frame })
 	Create("UIListLayout", { Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Center, Parent = frame })
@@ -504,6 +529,28 @@ function Modal.scroller(parent: Instance, horizontal: boolean?): ScrollingFrame
 		Parent = parent,
 	})
 	return sf
+end
+
+-- A card grid in a vertical scroller: whole columns only, clear of the scroll bar, each cell resized
+-- (keeping `cell`'s aspect, never below 90 %) so the row fills the width instead of running under the
+-- bar or leaving a ragged gap on the right.
+function Modal.fitGrid(sf: ScrollingFrame, layout: UIGridLayout, cell: Vector2, gap: number)
+	sf.VerticalScrollBarInset = Enum.ScrollBarInset.Always
+	layout.CellPadding = UDim2.fromOffset(gap, gap)
+	local function fit()
+		local w = (sf.AbsoluteSize.X - sf.ScrollBarThickness * Device.scale()) / math.max(Device.scale(), 0.01)
+		if w <= cell.X then
+			layout.CellSize = UDim2.fromOffset(cell.X, cell.Y)
+			return
+		end
+		-- As many columns as fit with cells at least 90 % of `cell`, then stretched to the width.
+		local cols = math.max(1, math.floor((w + gap) / (cell.X * 0.9 + gap)))
+		local cw = math.floor((w - (cols - 1) * gap) / cols)
+		layout.CellSize = UDim2.fromOffset(cw, math.floor(cell.Y * cw / cell.X))
+	end
+	sf:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit)
+	Device.Changed:Connect(fit)
+	fit()
 end
 
 return Modal

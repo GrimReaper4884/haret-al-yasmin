@@ -165,13 +165,10 @@ return function(t)
 		end)
 
 		t.it("every mode has a banner and every difficulty a ribbon", function()
-			-- Episodes 4–6 (S1-S04) show the fallback card until their PV-C06 banners are painted.
-			local AWAITING_BANNER = { ep4 = true, ep5 = true, ep6 = true, ep7 = true, ep8 = true, ep9 = true }
+			-- Every mode, Episodes 4-9 included since the 2026-10-19 polish pass: no grey fallback cards.
 			for id in Modes do
 				local def = Icons.modes[id]
-				if not AWAITING_BANNER[id] then
-					t.truthy(def and def.id > 0, "Modes." .. id .. " has no banner in Icons.modes")
-				end
+				t.truthy(def and def.id > 0, "Modes." .. id .. " has no banner in Icons.modes")
 			end
 			for _, d in TD.DIFFICULTY_ORDER do
 				known("diff_" .. d, "difficulty")

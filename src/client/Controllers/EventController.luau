@@ -10,12 +10,14 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared.Net)
 local Events = require(Shared.Config.Events)
 local Items = require(Shared.Config.Items)
+local IconIds = require(Shared.Config.Icons)
 local EventLogic = require(Shared.Logic.EventLogic)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
 local Modal = require(UI.Modal)
 local Juice = require(UI.Juice)
+local Amount = require(UI.Amount)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 local LobbyMenuController = require(script.Parent.LobbyMenuController)
@@ -31,6 +33,7 @@ local ERR_KEYS = {
 }
 
 local modal: Modal.Modal
+local banner: ImageLabel
 local nameLabel: TextLabel
 local descLabel: TextLabel
 local timeLabel: TextLabel
@@ -38,6 +41,7 @@ local currencyLabel: TextLabel
 local shopList: ScrollingFrame
 local playButton: TextButton
 local busy = false
+local BANNER_H = 76
 
 local function current(): (string?, any)
 	local ids = EventLogic.active(Events :: any, os.time())
@@ -75,6 +79,7 @@ local function render()
 		descLabel.Text = ""
 		timeLabel.Text = ""
 		currencyLabel.Text = ""
+		banner.Image = ""
 		playButton.Visible = false
 		return
 	end
@@ -85,35 +90,47 @@ local function render()
 	descLabel.Text = t(def.descKey)
 	timeLabel.Text = fmtLeft(math.max(0, def.endsAt - os.time()))
 	currencyLabel.Text = t(def.currencyKey, { n = have })
-	for _, l in { nameLabel, descLabel, timeLabel, currencyLabel } do
+	for _, l in { nameLabel, descLabel, currencyLabel } do
 		Theme.align(l, rtl)
 	end
+	-- The time left sits at the far edge of the banner (the left one in Arabic).
+	timeLabel.TextXAlignment = if rtl then Enum.TextXAlignment.Left else Enum.TextXAlignment.Right
+	-- The event's painted banner (PV-C06) behind its name; the plain wood strip until one exists.
+	local art = IconIds.modes[def.modeId]
+	banner.Image = if art and art.id > 0 then "rbxassetid://" .. art.id else ""
 	playButton.Text = t("event.play")
 	playButton.Visible = true
 	for i, entry in def.shop do
 		local bought = if rec and rec.bought[entry.key] then rec.bought[entry.key] else 0
 		local soldOut = bought >= entry.stock
 		local row = Create("Frame", { LayoutOrder = i, BackgroundColor3 = Theme.colors.panelStroke, BackgroundTransparency = 0.85, Size = UDim2.new(1, -12, 0, Theme.TOUCH + 4), ZIndex = 12, Parent = shopList }, { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) })
-		local name = entry.nameKey
-		local label = Theme.label({
-			Text = t(name) .. "   ·   " .. t("event.stock", { n = entry.stock - bought, max = entry.stock }),
+		-- What it gives as icons, its stock as a quiet note beside the price.
+		Amount.row({ Position = UDim2.fromOffset(8, 0), Size = UDim2.new(1, -240, 1, 0), ZIndex = 13, Parent = row }, Amount.reward(t, entry.reward), {
+			iconSize = 28,
+			textSize = 15,
+			bold = true,
+			align = Enum.HorizontalAlignment.Left,
+			rtl = rtl,
+			zIndex = 13,
+		})
+		local owned = entry.reward.item and (Items :: any)[entry.reward.item] and snapshot and snapshot.inventory[entry.reward.item]
+		local stock = Theme.label({
+			Text = if owned then t("event.owned") else t("event.stock", { n = entry.stock - bought, max = entry.stock }),
 			TextSize = 13,
-			FontFace = Theme.fontBold,
-			Position = UDim2.fromOffset(8, 0),
-			Size = UDim2.new(1, -140, 1, 0),
+			TextColor3 = Theme.colors.textMuted,
+			AnchorPoint = Vector2.new(if rtl then 0 else 1, 0.5),
+			Position = UDim2.new(if rtl then 0 else 1, if rtl then 140 else -140, 0.5, 0),
+			Size = UDim2.fromOffset(90, 20),
 			ZIndex = 13,
 			Parent = row,
 		})
-		Theme.align(label, rtl)
-		if entry.reward.item and (Items :: any)[entry.reward.item] and snapshot and snapshot.inventory[entry.reward.item] then
-			label.Text ..= "   ·   " .. t("event.owned")
-		end
+		stock.TextXAlignment = if rtl then Enum.TextXAlignment.Left else Enum.TextXAlignment.Right
 		local afford = have >= entry.cost
 		local buy = Theme.button({
 			Text = if soldOut then t("event.sold_out") else t(def.currencyKey, { n = entry.cost }),
 			TextSize = 13,
-			AnchorPoint = Vector2.new(1, 0.5),
-			Position = UDim2.new(1, -4, 0.5, 0),
+			AnchorPoint = Vector2.new(if rtl then 0 else 1, 0.5),
+			Position = UDim2.new(if rtl then 0 else 1, if rtl then 4 else -4, 0.5, 0),
 			Size = UDim2.fromOffset(128, Theme.TOUCH),
 			BackgroundColor3 = if soldOut or not afford then Theme.colors.buttonDisabled else Theme.colors.confirm,
 			ZIndex = 13,
@@ -148,18 +165,43 @@ local function render()
 end
 
 local function build()
-	modal = Modal.create("Event", 620, 250, { fill = true })
+	modal = Modal.create("Event", 620, 300, { fill = true })
 	local body = modal.body
-	nameLabel = Theme.display({ TextSize = 20, Size = UDim2.new(0.6, 0, 0, 24), ZIndex = 12, Parent = body })
-	timeLabel = Theme.display({ TextSize = 14, TextColor3 = Color3.fromHex("#FFD970"), AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(0.4, 0, 0, 24), ZIndex = 12, Parent = body })
-	descLabel = Theme.label({ TextSize = 13, TextColor3 = Theme.colors.textMuted, Position = UDim2.fromOffset(0, 26), Size = UDim2.new(1, 0, 0, 32), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 12, Parent = body })
-	currencyLabel = Theme.display({ TextSize = 16, TextColor3 = Color3.fromHex("#C8E07A"), Position = UDim2.fromOffset(0, 60), Size = UDim2.new(0.6, 0, 0, 22), ZIndex = 12, Parent = body })
-	playButton = Theme.button({ TextSize = 15, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, 0, 0, 56), Size = UDim2.fromOffset(170, Theme.TOUCH), BackgroundColor3 = Color3.fromHex("#2F7D6B"), ZIndex = 12, Parent = body })
+	-- Banner: the event's art, darkened towards the bottom so the outlined name reads on it.
+	banner = Create("ImageLabel", {
+		Name = "Banner",
+		BackgroundColor3 = Theme.v2.woodDark,
+		Size = UDim2.new(1, 0, 0, BANNER_H),
+		ScaleType = Enum.ScaleType.Crop,
+		ImageColor3 = Color3.fromRGB(200, 195, 190),
+		ZIndex = 11,
+		Parent = body,
+	}, { Create("UICorner", { CornerRadius = UDim.new(0, 10) }) })
+	Theme.border(banner, 2.5)
+	Create("Frame", {
+		Name = "Shade",
+		BackgroundColor3 = Color3.new(0, 0, 0),
+		BorderSizePixel = 0,
+		Size = UDim2.fromScale(1, 1),
+		ZIndex = 11,
+		Parent = banner,
+	}, {
+		Create("UICorner", { CornerRadius = UDim.new(0, 10) }),
+		Create("UIGradient", { Rotation = 90, Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.45, 0.75), NumberSequenceKeypoint.new(1, 0.25) }) }),
+	})
+	Create("UIPadding", { PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12), PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6), Parent = banner })
+	nameLabel = Theme.display({ TextSize = 24, AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(0.7, 0, 0, 30), ZIndex = 12, Parent = banner })
+	timeLabel = Theme.display({ TextSize = 15, TextColor3 = Color3.fromHex("#FFD970"), AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(1, 0, 0, 22), ZIndex = 12, Parent = banner })
+	descLabel = Theme.label({ TextSize = 13, TextColor3 = Theme.colors.textMuted, TextWrapped = true, Position = UDim2.fromOffset(0, BANNER_H + 6), Size = UDim2.new(1, 0, 0, 34), TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 12, Parent = body })
+	local top = BANNER_H + 44
+	currencyLabel = Theme.display({ TextSize = 20, TextColor3 = Color3.fromHex("#C8E07A"), Position = UDim2.fromOffset(0, top + 12), Size = UDim2.new(0.6, 0, 0, 24), ZIndex = 12, Parent = body })
+	playButton = Theme.button({ TextSize = 15, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, 0, 0, top), Size = UDim2.fromOffset(170, Theme.TOUCH), BackgroundColor3 = Color3.fromHex("#2F7D6B"), ZIndex = 12, Parent = body })
 	playButton.Activated:Connect(function()
 		PlayController.open("event")
 	end)
 	-- The shop scrolls once its 52 px rows outgrow the body (MOBILE_HUD_PLAN B7).
-	local shopHolder = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, 110), Size = UDim2.new(1, 0, 1, -110), ZIndex = 12, Parent = body })
+	local shopTop = top + Theme.TOUCH + 8
+	local shopHolder = Create("Frame", { BackgroundTransparency = 1, Position = UDim2.fromOffset(0, shopTop), Size = UDim2.new(1, 0, 1, -shopTop), ZIndex = 12, Parent = body })
 	shopList = Modal.scroller(shopHolder)
 	shopList.ZIndex = 12
 	Create("UIListLayout", { Padding = UDim.new(0, 4), SortOrder = Enum.SortOrder.LayoutOrder, Parent = shopList })

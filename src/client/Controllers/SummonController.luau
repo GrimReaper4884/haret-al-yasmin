@@ -114,6 +114,7 @@ local function build()
 
 	-- Reveal overlay (full screen)
 	reveal = Create("Frame", { Name = "SummonReveal", Size = UDim2.fromScale(1, 1), BackgroundColor3 = Theme.colors.text, BackgroundTransparency = 0.25, ZIndex = 20, Visible = false, Parent = Root.get() })
+	Root.bleed(reveal)
 	Modal.registerOverlay(reveal)
 	revealGrid = Create("Frame", { BackgroundTransparency = 1, AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.45), Size = UDim2.fromOffset(5 * 110, 2 * 150), ZIndex = 21, Parent = reveal })
 	Create("UIGridLayout", { CellSize = UDim2.fromOffset(100, 140), CellPadding = UDim2.fromOffset(10, 10), HorizontalAlignment = Enum.HorizontalAlignment.Center, SortOrder = Enum.SortOrder.LayoutOrder, Parent = revealGrid })
@@ -123,6 +124,7 @@ local function build()
 		reveal.Visible = false
 	end)
 	flash = Create("Frame", { Name = "Flash", Size = UDim2.fromScale(1, 1), BackgroundColor3 = Theme.lira, BackgroundTransparency = 1, ZIndex = 30, Visible = false, Parent = Root.get() })
+	Root.bleed(flash)
 	local flashText = Theme.label({ Name = "Text", TextSize = 48, FontFace = Theme.fontBold, TextColor3 = Theme.colors.buttonText, TextStrokeTransparency = 0.2, AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.new(1, 0, 0, 60), ZIndex = 31, Parent = flash })
 	flashText.TextXAlignment = Enum.TextXAlignment.Center
 end
@@ -353,8 +355,8 @@ render = function()
 		table.insert(balance, { text = "·  " .. t("summon.restricted") })
 	end
 	Amount.fill(liraLabel, balance, { iconSize = 24, textSize = 15, color = Theme.lira, rtl = rtl })
-	Amount.button(oneButton, { { text = t("summon.x1") .. " ·" }, { icon = "lira", text = tostring(c1) } }, { rtl = rtl, iconSize = 24 })
-	Amount.button(tenButton, { { text = t("summon.x10") .. " ·" }, { icon = "lira", text = tostring(c10) } }, { rtl = rtl, iconSize = 24 })
+	Amount.button(oneButton, { { text = t("summon.x1") }, { icon = "lira", text = tostring(c1) } }, { rtl = rtl, iconSize = 24 })
+	Amount.button(tenButton, { { text = t("summon.x10") }, { icon = "lira", text = tostring(c10) } }, { rtl = rtl, iconSize = 24 })
 	-- Greyed when short of lira; still clickable so the tap explains why and offers the store
 	oneButton.BackgroundColor3 = if snapshot.lira >= c1
 		then Theme.colors.button

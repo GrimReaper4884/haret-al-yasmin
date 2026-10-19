@@ -804,6 +804,42 @@
       "type": "Image",
       "id": 100692359669778,
       "uploaded": "2026-10-19"
+    },
+    "assets/marketing/banners/mode_ep4.png": {
+      "name": "Haret banner ep4",
+      "type": "Image",
+      "id": 101304423896292,
+      "uploaded": "2026-10-19"
+    },
+    "assets/marketing/banners/mode_ep5.png": {
+      "name": "Haret banner ep5",
+      "type": "Image",
+      "id": 81073002617459,
+      "uploaded": "2026-10-19"
+    },
+    "assets/marketing/banners/mode_ep6.png": {
+      "name": "Haret banner ep6",
+      "type": "Image",
+      "id": 86844710945459,
+      "uploaded": "2026-10-19"
+    },
+    "assets/marketing/banners/mode_ep7.png": {
+      "name": "Haret banner ep7",
+      "type": "Image",
+      "id": 113299739814834,
+      "uploaded": "2026-10-19"
+    },
+    "assets/marketing/banners/mode_ep8.png": {
+      "name": "Haret banner ep8",
+      "type": "Image",
+      "id": 81385103214367,
+      "uploaded": "2026-10-19"
+    },
+    "assets/marketing/banners/mode_ep9.png": {
+      "name": "Haret banner ep9",
+      "type": "Image",
+      "id": 77205432615484,
+      "uploaded": "2026-10-19"
     }
   }
 }

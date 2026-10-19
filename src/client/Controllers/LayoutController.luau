@@ -79,6 +79,7 @@ local function build()
 		Size = UDim2.new(1, -130, 0, Theme.TOUCH),
 		BackgroundColor3 = Color3.fromHex("#FBF8F1"),
 		TextColor3 = Theme.colors.text,
+		PlaceholderColor3 = Theme.colors.textMuted,
 		TextSize = 14,
 		TextTruncate = Enum.TextTruncate.AtEnd,
 		FontFace = Theme.fontBold,
@@ -86,7 +87,11 @@ local function build()
 		Text = "",
 		ZIndex = 11,
 		Parent = body,
-	}, { Create("UICorner", { CornerRadius = UDim.new(0, 10) }), Create("UIStroke", { Color = Theme.colors.panelStroke, Thickness = 2 }) })
+	}, {
+		Create("UICorner", { CornerRadius = UDim.new(0, 10) }),
+		Create("UIStroke", { Color = Theme.colors.panelStroke, Thickness = 2, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }),
+		Create("UIPadding", { PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10) }),
+	})
 	import = Theme.button({ Name = "Import", TextSize = 15, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, 0, 0, 44), Size = UDim2.fromOffset(120, Theme.TOUCH), BackgroundColor3 = Theme.colors.quest, ZIndex = 11, Parent = body })
 	import.Activated:Connect(function()
 		local code = string.gsub(box.Text, "%s", "")
