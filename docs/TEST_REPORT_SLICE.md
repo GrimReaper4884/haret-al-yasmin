@@ -1482,3 +1482,24 @@ capture (the frames scale with SliceScale; the device route is LP-F01).
 
 Note from the run: `policy clear` re-reads PolicyService, which yields; when it ran asynchronously it overwrote a
 `restricted` set right after it (the first store capture is therefore the open policy). `clear` now waits for the read.
+
+### P3-06 Auto Play and layout codes
+
+*`tools/check.ps1` green (462 specs; `tests/autoplay.spec.luau` 9 cases). `lune run tests/balance` on HEAD (exported
+with `git archive`) and on the working tree: identical apart from the timing line. Studio Play Solo, `HaretDebug
+noAutoAfk` and `"match","ep1,normal"` (the owner's loadout: Al-Adashari 900, 'Arada 1,200, Great Za'im 1,500, Umm
+Hara 700, Za'im 800, the tailor 260); stopped in wave 4 of 20, never finished.*
+
+| Check | Result | Capture |
+|---|---|---|
+| Auto Play on (slot order, before D-127's change) | saved for the 900-cash first slot with 600 in hand: nothing placed | — |
+| Auto Play on (cheapest first) | the 260 tailor placed at once (slot 6 1/5, cash 600 → 340), then saves for the 700 | `docs/captures/lp/p306_auto_first_tower.jpg` |
+| Menu row | "Auto Play: on" (green) beside "Layout code"; MatchState carries `auto = true` | `p306_menu_auto_on.jpg` |
+| On three times in a row (after `AutoPlay.remaining`) | still one tower (slot 6 1/5); before the fix each call placed another (3/5) | — |
+| `ImportLayout("not a code")` | toast `layout.err.bad_code` | — |
+| A `rival_lane` code in an orchard match | toast `layout.err.other_arena` | — |
+| A valid orchard code (slots 6, 4, 5 at three road spots) | toast "Auto Play will build 3 towers from the code."; the slot-6 tower placed at its spot (4/5), the others wait for cash | `p306_layout_import.jpg` |
+| Console | `server ready`, no errors from our code | — |
+
+Not driven: the Layout sheet itself (GUI clicks through MCP don't open it; the export path is `LayoutCode.encode`,
+specced) and a phone-size capture of the four-row menu.

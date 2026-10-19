@@ -201,7 +201,7 @@ models, red-teaming, onboarding measurement, and live ops.
 - [ ] **P3-05 Trials or Bounty mode** · deps: P2-18
   - **Goal:** One scarce-currency mode (modifiers on an existing episode, or a daily boss with a 5-minute limit) paying trait stones; caps per day; UTC rotation.
   - **Accept:** specs per modifier and cap; a playtest of two modifiers.
-- [ ] **P3-06 Auto Play and layout codes** · deps: P1-12
+- [~] **P3-06 Auto Play and layout codes** · deps: P1-12 · built 2026-10-19 (D-127); the owner reviews free + full rewards
   - **Goal:** Promote the auto-battler planner to a player feature: pick an anchor, it places and upgrades the loadout, never fires abilities; export/import layouts as compact base64 validated server-side like any placement.
   - **Accept:** specs: malformed code rejected; Auto Play clears Episode 1 Normal with re6up.
 - [ ] **P3-07 Analytics review** · deps: P2-16

@@ -2,7 +2,8 @@
 -- The match menu (docs/MOBILE_HUD_PLAN.md B2, MH-04): one `≡` button at the top of the rail's edge
 -- opens this sheet with everything the thumbs rarely need mid-match: Leave (two steps, since a
 -- mid-match leave forfeits the run), Codes (match-cash codes work only here), Settings, Music and the
--- language. Skip, Speed and View stay on the rail. The same sheet on every profile.
+-- language, and Auto Play with its layout codes (P3-06, LayoutController, which hooks in through
+-- setAutoPlay). Skip, Speed and View stay on the rail. The same sheet on every profile.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -30,7 +31,13 @@ local codesButton: TextButton
 local settingsButton: TextButton
 local musicButton: TextButton
 local languageButton: TextButton
+local autoButton: TextButton
+local layoutButton: TextButton
 local leaving = false
+
+-- Auto Play's hooks, installed by LayoutController (it needs PlacementController, which needs us).
+export type AutoPlayHooks = { isOn: () -> boolean, toggle: () -> (), openLayout: () -> () }
+local autoHooks: AutoPlayHooks? = nil
 
 -- A half-width 48 px button with an icon at its leading edge, in a two-button row.
 local function halfButton(row: Frame, order: number, color: Color3, iconName: string?): TextButton
@@ -80,11 +87,15 @@ local function render()
 		end
 	end
 	languageButton.Text = t("hud.language")
+	local autoOn = autoHooks ~= nil and autoHooks.isOn()
+	autoButton.Text = t(if autoOn then "match.auto_play_on" else "match.auto_play_off")
+	autoButton.BackgroundColor3 = if autoOn then Theme.colors.confirm else Theme.colors.button
+	layoutButton.Text = t("layout.title")
 end
 
 local function build()
-	-- Three 48 px rows (Leave; Codes · Settings; Music · Language) fit a 282 px phone canvas.
-	modal = Modal.create("MatchMenu", 380, 3 * Theme.TOUCH + 2 * 6)
+	-- Four 48 px rows (Leave; Codes · Settings; Music · Language; Auto Play · Layout) fit a 282 px phone canvas.
+	modal = Modal.create("MatchMenu", 380, 4 * Theme.TOUCH + 3 * 6)
 	Create("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = modal.body })
 
 	-- Leave, then "Leave the match?" with Leave / Stay in its place.
@@ -100,11 +111,25 @@ local function build()
 		Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = row })
 		return row
 	end
-	local second, third = pairRow(2), pairRow(3)
+	local second, third, fourth = pairRow(2), pairRow(3), pairRow(4)
 	codesButton = halfButton(second, 1, Color3.fromHex("#5E6F7D"), "ui_codes")
 	settingsButton = halfButton(second, 2, Color3.fromHex("#6E5E50"), "ui_settings")
 	musicButton = halfButton(third, 1, Color3.fromHex("#6E5E50"), "ui_music")
 	languageButton = halfButton(third, 2, Theme.colors.button, nil)
+	autoButton = halfButton(fourth, 1, Theme.colors.button, nil)
+	autoButton.Name = "AutoPlay"
+	layoutButton = halfButton(fourth, 2, Color3.fromHex("#5E6F7D"), nil)
+	layoutButton.Name = "Layout"
+	autoButton.Activated:Connect(function()
+		if autoHooks then
+			autoHooks.toggle()
+		end
+	end)
+	layoutButton.Activated:Connect(function()
+		if autoHooks then
+			autoHooks.openLayout()
+		end
+	end)
 
 	leaveButton.Activated:Connect(function()
 		-- The shared confirmation (LP-C03); a mid-match leave forfeits the run.
@@ -159,6 +184,17 @@ end
 
 function MatchMenuController.close()
 	modal.setVisible(false)
+end
+
+function MatchMenuController.setAutoPlay(hooks: AutoPlayHooks)
+	autoHooks = hooks
+end
+
+-- Re-reads the labels (Auto Play's state changed on the server).
+function MatchMenuController.refresh()
+	if modal and modal.isOpen() then
+		render()
+	end
 end
 
 function MatchMenuController.start()

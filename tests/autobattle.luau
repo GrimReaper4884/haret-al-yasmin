@@ -3,12 +3,9 @@
 -- config and the real simulation (TdSim/TdTowers/WaveLogic at TD.TICK). Used by the balance report
 -- (tests/balance.luau) and by the balance assertions in tests/td.spec.luau.
 --
--- The bot is a plausible, not optimal, player: it places its `plan` in order (saving for the next
--- defender), each tower at the free spot that covers the most road for its range (supports go where
--- they buff the most defenders), then — if the policy allows upgrades — keeps buying the upgrade with
--- the most damage per cash
--- (after a wave that leaked it settles for the best upgrade it can afford instead of saving).
--- It never sells, never retargets and skips every countdown (no skip bonus: the sim has none).
+-- The bot is a plausible, not optimal, player: the planner is Logic/AutoPlay (P3-06), the same one a
+-- player's Auto Play uses; see it for the rules. Here the bot also skips every countdown (no skip bonus:
+-- the sim has none) and places with its policy's stars, traits and beads.
 -- Parties (opts.party = N) are N such bots in one match, each with its own cash and plan, scaled
 -- exactly as MatchService.create scales a real party (TD.PARTY_HP / PARTY_BOSS_HP / PARTY_CASH).
 --
@@ -21,7 +18,7 @@ local Traits = require("../src/shared/Config/Traits")
 local Beads = require("../src/shared/Config/Beads")
 local UnitLogic = L("UnitLogic")
 local WaveLogic = L("WaveLogic")
-local Path = L("Path")
+local AutoPlay = L("AutoPlay")
 
 local TD = require("../src/shared/Config/TD")
 local Units = require("../src/shared/Config/Units")
@@ -124,99 +121,15 @@ AutoBattle.POLICIES.whale2 = {
 }
 AutoBattle.POLICY_ORDER = { "re6", "re4up", "re6up", "re10up", "re10up+farm", "leg6", "leg10up", "leg10up+sig", "myth12up", "myth12up+beads", "whale", "whale2" }
 
-local SAMPLE_STEP = 1 -- studs between road samples for coverage
-local MAX_SPOT_DIST = 9 -- spots farther than this from the road are never considered
 local THINK_EVERY = 0.5 -- seconds of game time between bot decisions
 
 local spotCache = {}
-local levelValue
 
 local function spotsFor(arenaId: string, rules)
-	if spotCache[arenaId] then
-		return spotCache[arenaId]
+	if not spotCache[arenaId] then
+		spotCache[arenaId] = AutoPlay.spots(Arenas[arenaId], rules.pathHalfWidth)
 	end
-	local arena = Arenas[arenaId]
-	-- Twin-gate arenas: sample every road (a shared stretch counts twice, as both halves of the
-	-- wave walk it), so the bot defends the side road too.
-	local roads = Path.buildAll(arena)
-	local samples = {}
-	for _, road in roads do
-		local d = 0
-		while d <= road.length do
-			local x, z = Path.position(road, d)
-			table.insert(samples, { x, z })
-			d += SAMPLE_STEP
-		end
-	end
-	local cands = {}
-	local b = arena.bounds
-	for x = b[1], b[3] do
-		for z = b[2], b[4] do
-			local dp = Path.distanceToAll(roads, x, z)
-			if dp >= rules.pathHalfWidth + 0.2 and dp <= MAX_SPOT_DIST then
-				table.insert(cands, { x = x, z = z, dp = dp, cov = {} })
-			end
-		end
-	end
-	local res = { samples = samples, cands = cands }
-	spotCache[arenaId] = res
-	return res
-end
-
-local function coverage(spots, c, range: number): number
-	local key = math.floor(range * 10 + 0.5)
-	local v = c.cov[key]
-	if v then
-		return v
-	end
-	local r2 = range * range
-	local n = 0
-	for _, s in spots.samples do
-		local dx, dz = s[1] - c.x, s[2] - c.z
-		if dx * dx + dz * dz <= r2 then
-			n += 1
-		end
-	end
-	c.cov[key] = n
-	return n
-end
-
-local function spacingOk(state, x: number, z: number, spacing: number): boolean
-	for _, t in state.towers do
-		if (t.x - x) ^ 2 + (t.z - z) ^ 2 < spacing * spacing then
-			return false
-		end
-	end
-	return true
-end
-
--- Best free spot for a unit: most road in range; supports/healers: most damage towers in range.
-local function bestSpot(state, spots, def, rules)
-	local lv = def.levels[1]
-	local support = lv.buff ~= nil
-	local best, bestScore = nil, -math.huge
-	for _, c in spots.cands do
-		if spacingOk(state, c.x, c.z, rules.spacing) then
-			local score
-			if support then
-				local n = 0
-				for _, t in state.towers do
-					if t.stats.damage > 0 and (t.x - c.x) ^ 2 + (t.z - c.z) ^ 2 <= lv.range * lv.range then
-						n += 1
-					end
-				end
-				score = n * 1000 + coverage(spots, c, lv.range)
-			elseif lv.range > 0 then
-				score = coverage(spots, c, lv.range) - c.dp * 0.01
-			else
-				score = -c.dp -- farms: anywhere off the road
-			end
-			if score > bestScore then
-				best, bestScore = c, score
-			end
-		end
-	end
-	return best
+	return spotCache[arenaId]
 end
 
 local function rulesFor(arenaId: string)
@@ -231,51 +144,13 @@ local function rulesFor(arenaId: string)
 	}
 end
 
--- Rough damage per second a tower adds at `level` (what a player reads off the upgrade card):
--- splash counts double, shabriyeh/sweep add their average, supports are worth their buff on the
--- damage towers they cover.
-local function dps(def, level: number): number
-	local lv = def.levels[math.min(level, #def.levels)] -- a level-7 signature counts as its last level here
-	if lv.damage <= 0 then
-		return 0
-	end
-	local v = lv.damage / lv.cooldown
-	if lv.splash then
-		v *= 2
-	end
-	local ab = def.ability
-	if ab then
-		v += lv.damage * (ab.multiplier - 1) / ab.cooldown * (if ab.kind == "sweep" then 2 else 1)
-	end
-	return v
-end
-
-levelValue = function(state, t, def, level: number): number
-	local lv = def.levels[math.min(level, #def.levels)]
-	if lv.buff then
-		local covered = 0
-		for _, o in state.towers do
-			if o ~= t and (o.x - t.x) ^ 2 + (o.z - t.z) ^ 2 <= lv.range * lv.range then
-				covered += dps(Units[o.unitId], o.level)
-			end
-		end
-		return (lv.buff - 1) * covered
-	end
-	return dps(def, level)
-end
-
+-- One decision round: AutoPlay decides, the bot applies it straight into the sim with its policy's
+-- stars, trait(s) and beads.
 local function think(bot, state, spots, rules)
-	local p = state.players[bot.key]
 	local policy = bot.policy
-	-- 1) Place the plan in order, waiting for cash.
-	while bot.planIndex <= #policy.plan do
-		local unitId = policy.plan[bot.planIndex]
-		local def = Units[unitId]
-		if p.cash < def.levels[1].cost then
-			return
-		end
-		local spot = bestSpot(state, spots, def, rules)
-		if spot then
+	AutoPlay.think(bot, state, spots, Units, rules.spacing, {
+		place = function(unitId, x, z)
+			local def = Units[unitId]
 			-- Beads: the policy's kinds where this unit takes them, else its first allowed kind.
 			local bead = nil
 			if policy.beads then
@@ -290,60 +165,13 @@ local function think(bot, state, spots, rules)
 			if policy.trait2 then
 				trait = UnitLogic.combineTraits(trait, Traits.traits[policy.trait2])
 			end
-			local ok, err = TdTowers.place(state, bot.key, unitId, def, spot.x, spot.z, policy.stars or 0, trait, rules, bead)
-			if not ok and err == "cannot_afford" then
-				return
-			end
-		end
-		bot.planIndex += 1
-	end
-	if not policy.upgrades then
-		return
-	end
-	-- 2) The upgrade with the most damage per cash: saves for it while the gate holds, settles for
-	-- the best affordable one after a wave that leaked.
-	-- A level-7 signature (policy.signature = its path) is one more candidate, valued as a 15 % gain
-	-- on the last level (its paths add up to +35 % damage or one effect, D-047).
-	local function nextStep(t, def): (number?, number, string?)
-		local nextLv = def.levels[t.level + 1]
-		if nextLv and (policy.maxLevel == nil or t.level < policy.maxLevel) then
-			return nextLv.cost, (levelValue(state, t, def, t.level + 1) - levelValue(state, t, def, t.level)) / nextLv.cost, nil
-		end
-		local sig = policy.signature and def.signature
-		if sig and t.level == #def.levels then
-			local cost = sig[policy.signature].cost
-			return cost, 0.15 * levelValue(state, t, def, t.level) / cost, policy.signature
-		end
-		return nil, 0, nil
-	end
-	while true do
-		local best, bestValue, bestCost, bestPath = nil, -1, 0, nil
-		local afford, affordValue, affordPath = nil, -1, nil
-		for _, t in state.towers do
-			if t.owner == bot.key then
-				local def = Units[t.unitId]
-				local cost, value, path = nextStep(t, def)
-				if cost then
-					if value > bestValue then
-						best, bestValue, bestCost, bestPath = t, value, cost, path
-					end
-					if cost <= p.cash and value > affordValue then
-						afford, affordValue, affordPath = t, value, path
-					end
-				end
-			end
-		end
-		local pick, path = nil, nil
-		if best and bestCost <= p.cash then
-			pick, path = best, bestPath
-		elseif bot.leaking then
-			pick, path = afford, affordPath
-		end
-		if not pick then
-			return
-		end
-		TdTowers.upgrade(state, bot.key, pick.id, Units[pick.unitId], rules, path)
-	end
+			local ok, err = TdTowers.place(state, bot.key, unitId, def, x, z, policy.stars or 0, trait, rules, bead)
+			return ok, err
+		end,
+		upgrade = function(tower, path)
+			return (TdTowers.upgrade(state, bot.key, tower.id, Units[tower.unitId], rules, path))
+		end,
+	})
 end
 
 -- { hp, boss, cash } scaling for a party of `party` players (as MatchService.create applies it).
@@ -435,6 +263,7 @@ end
 -- Plays one match. modeId: "ep1" | "ep2" | "ep3" | "infinite". Returns { won, wavesCleared, waves = { per-wave rows } }.
 -- policyId: a POLICIES key or a policy table, or a list of them (one per player).
 -- opts.maxWaves caps endless runs (default 150); opts.gate overrides the gate HP (debug);
+-- opts.anchor / opts.anchorRadius: every bot builds only near that point, as a player's Auto Play does;
 -- opts.party = number of players (default: the length of a policy list, else 1); every player
 -- without its own entry plays the first policy. Rows sum cash / spent over the party.
 function AutoBattle.play(modeId: string, difficulty: string, policyId: any, opts: any?)
@@ -450,7 +279,7 @@ function AutoBattle.play(modeId: string, difficulty: string, policyId: any, opts
 	for i = 1, party do
 		local key = if party == 1 then "bot" else "bot" .. i
 		table.insert(keys, key)
-		table.insert(bots, { key = key, policy = resolvePolicy(list[i] or list[1]), planIndex = 1 })
+		table.insert(bots, { key = key, policy = resolvePolicy(list[i] or list[1]), planIndex = 1, anchor = opts.anchor, anchorRadius = opts.anchorRadius })
 	end
 	local scale = WaveLogic.partyScale(TD, party)
 	-- Story episodes and events play their wave script (as MatchService does); opts.arena tries the

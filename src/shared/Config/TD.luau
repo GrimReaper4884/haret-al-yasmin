@@ -51,6 +51,10 @@ return {
 	-- SetAutoAbility token bucket (LP-B01): the Defenders panel's "all on / all off" sends one per
 	-- tower, spaced by the client; 10 a second, 10 in a burst.
 	AUTO_ABILITY_LIMIT = { capacity = 10, perSecond = 10 },
+	-- Auto Play (P3-06, Logic/AutoPlay): decisions every `thinkEvery` s of game time, towers only within
+	-- `anchorRadius` studs of where the player stood when they switched it on; SetAutoPlay and ImportLayout
+	-- each have this token bucket.
+	AUTO_PLAY = { thinkEvery = 0.5, anchorRadius = 32, limit = { capacity = 4, perSecond = 1 } },
 	TOWER_SPACING = 2.6, -- studs between towers
 	PATH_HALF_WIDTH = 3.2, -- towers must stay this far from the path centreline
 	SELL_REFUND = 0.6, -- fraction of cash invested returned on sell

@@ -148,6 +148,7 @@ local specs = {
 	require("./upgradeview.spec"),
 	require("./hud.spec"),
 	require("./placeflow.spec"),
+	require("./autoplay.spec"),
 }
 for _, spec in specs do
 	spec(t)

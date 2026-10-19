@@ -24,6 +24,8 @@ local Hud = require(Shared.Config.Hud)
 local DeviceTelemetry = require(Shared.Logic.DeviceTelemetry)
 local TdSim = require(Shared.Logic.TdSim)
 local TdTowers = require(Shared.Logic.TdTowers)
+local AutoPlay = require(Shared.Logic.AutoPlay)
+local LayoutCode = require(Shared.Logic.LayoutCode)
 local WaveLogic = require(Shared.Logic.WaveLogic)
 local UnitLogic = require(Shared.Logic.UnitLogic)
 local MatchRewards = require(Shared.Logic.MatchRewards)
@@ -71,6 +73,8 @@ export type Match = {
 	sabotaged: { [number]: number }, -- tower id → game time its sabotage ends (towerDisabled; D-038)
 	script: any?, -- the episode's scripted beats (Config/Waves episodes[id].script): the ally's turn
 	placeCounts: { [Player]: DeviceTelemetry.Counts }, -- placed / invalid / cancelled this match (MH-17)
+	auto: { [Player]: { bot: AutoPlay.Bot, nextThink: number } }, -- Auto Play bots (P3-06)
+	waveLeaked: boolean, -- an attacker reached the gate this wave (Auto Play settles for affordable upgrades)
 }
 
 local matches: { [number]: Match } = {}
@@ -126,6 +130,7 @@ local function stateSnapshot(match: Match, player: Player): { [string]: any }
 		players = #match.order,
 		host = if match.host then match.host.Name else nil,
 		cashByPlayer = others,
+		auto = match.auto[player] ~= nil, -- this player's Auto Play is on (P3-06)
 	}
 end
 
@@ -361,6 +366,7 @@ local function removePlayer(match: Match, player: Player, goHome: boolean)
 	match.players[player] = nil
 	match.byKey[key] = nil
 	match.votes[player] = nil
+	match.auto[player] = nil
 	byPlayer[player] = nil
 	for i, p in match.order do
 		if p == player then
@@ -464,6 +470,8 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 		cashTotals = {},
 		revealShown = {},
 		placeCounts = {},
+		auto = {},
+		waveLeaked = false,
 		sabotaged = {},
 	}
 	nextMatchId += 1
@@ -632,19 +640,20 @@ local function refreshBuffs(match: Match)
 	end
 end
 
-local function placeTower(player: Player, unitId: any, x: any, z: any): { [string]: any }
+-- Places a loadout unit at arena-local coordinates: the one path for a player's own placement (through
+-- placeTower), Auto Play and an imported layout (P3-06), so all three obey the same rules.
+local function placeLocal(player: Player, unitId: any, lx: number, lz: number): { [string]: any }
 	local match, profile, err = towerContext(player)
 	if not match or not profile then
 		return { ok = false, err = err }
 	end
-	if not Validate.isIdentifier(unitId) or not Validate.isFiniteNumber(x) or not Validate.isFiniteNumber(z) then
+	if not Validate.isIdentifier(unitId) then
 		return { ok = false, err = "bad_request" }
 	end
 	local def = (Units :: any)[unitId]
 	if not def or not profile.units[unitId] or not table.find(profile.loadout, unitId) then
 		return { ok = false, err = "not_in_loadout" }
 	end
-	local lx, lz = ArenaService.toLocal(match.slot, Vector3.new(x, 0, z))
 	local owned = profile.units[unitId]
 	local stars = UnitLogic.stars(owned.copies, TD.STAR_COPIES)
 	local trait = UnitLogic.ownedTrait(owned, Traits.traits, TD.STAR_COPIES, TD.TRAIT2_STARS)
@@ -660,6 +669,18 @@ local function placeTower(player: Player, unitId: any, x: any, z: any): { [strin
 	flushEvents(match)
 	pushState(match)
 	return { ok = true, towerId = tower.id }
+end
+
+local function placeTower(player: Player, unitId: any, x: any, z: any): { [string]: any }
+	local match = byPlayer[player]
+	if not match or match.ended then
+		return { ok = false, err = "not_in_match" }
+	end
+	if not Validate.isFiniteNumber(x) or not Validate.isFiniteNumber(z) then
+		return { ok = false, err = "bad_request" }
+	end
+	local lx, lz = ArenaService.toLocal(match.slot, Vector3.new(x, 0, z))
+	return placeLocal(player, unitId, lx, lz)
 end
 
 -- Studio test hook: places a loadout unit at arena-local coordinates, bypassing the client raycast
@@ -754,6 +775,76 @@ local function sellTower(player: Player, towerId: any): { [string]: any }
 end
 
 ------------------------------------------------------------------------------------------
+-- Auto Play (P3-06): Logic/AutoPlay decides, the player's own validated place/upgrade paths apply.
+
+local spotCache: { [string]: AutoPlay.Spots } = {}
+
+local function spotsOf(arenaId: string): AutoPlay.Spots
+	local s = spotCache[arenaId]
+	if not s then
+		s = AutoPlay.spots(Arenas[arenaId], TD.PATH_HALF_WIDTH)
+		spotCache[arenaId] = s
+	end
+	return s
+end
+
+local function runAutoPlay(match: Match)
+	for player, a in match.auto do
+		if match.ended then
+			return
+		end
+		if match.state.time >= a.nextThink then
+			a.nextThink = match.state.time + TD.AUTO_PLAY.thinkEvery
+			AutoPlay.think(a.bot, match.state, spotsOf(match.slot.arenaId), Units, TD.TOWER_SPACING, {
+				place = function(unitId: string, x: number, z: number): (boolean, string?)
+					local r = placeLocal(player, unitId, x, z)
+					return r.ok == true, r.err
+				end,
+				upgrade = function(tower: any, path: string?): boolean
+					return upgradeTower(player, tower.id, path).ok == true
+				end,
+			})
+		end
+	end
+end
+
+-- Switches a player's Auto Play on with their loadout's plan (or `layout`'s fixed spots), building near
+-- where they stand, or off.
+local function setAutoPlay(match: Match, player: Player, on: boolean, plan: { string }?, layout: { { x: number, z: number } }?)
+	if not on then
+		match.auto[player] = nil
+		pushState(match)
+		return
+	end
+	local profile = DataService.getProfile(player)
+	if not profile then
+		return
+	end
+	local anchor = nil
+	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if root and not layout then
+		local lx, lz = ArenaService.toLocal(match.slot, root.Position)
+		anchor = { x = lx, z = lz }
+	end
+	match.auto[player] = {
+		bot = {
+			key = match.players[player],
+			policy = {
+				plan = plan or AutoPlay.remaining(AutoPlay.planFor(profile.loadout, Units, TD.TOWER_CAP), match.state.towers, match.players[player]),
+				upgrades = true,
+				layout = layout,
+			},
+			planIndex = 1,
+			leaking = false,
+			anchor = anchor,
+			anchorRadius = TD.AUTO_PLAY.anchorRadius,
+		},
+		nextThink = 0,
+	}
+	pushState(match)
+end
+
+------------------------------------------------------------------------------------------
 -- Loop
 
 local MAX_STEPS_PER_FRAME = 6
@@ -774,6 +865,7 @@ local function stepMatch(match: Match, dt: number)
 			local t = e.type
 			if t == "waveStart" then
 				match.votes = {}
+				match.waveLeaked = false
 				changed = true
 				queueEvent(match, e)
 				-- Story beats: Al-Adashari turns at the gate (Episode 8) or guards it from wave 1 (Episode 9).
@@ -793,8 +885,14 @@ local function stepMatch(match: Match, dt: number)
 			elseif t == "waveEnd" or t == "reached" or t == "gateBurn" then
 				changed = true
 				queueEvent(match, e)
+				if t == "reached" then
+					match.waveLeaked = true
+				end
 				if t == "waveEnd" then
 					autoSkip = true
+					for _, a in match.auto do
+						a.bot.leaking = match.waveLeaked
+					end
 					-- Each player's running total for the result screen's curve (LP-C06).
 					for key, ps in match.state.players do
 						local list = match.cashTotals[key] or {}
@@ -830,6 +928,9 @@ local function stepMatch(match: Match, dt: number)
 				queueEvent(match, e)
 			end
 		end
+	end
+	if next(match.auto) ~= nil then
+		runAutoPlay(match)
 	end
 	-- Sabotage wearing off mid-wave: the tower is back (and a lantern lights up again)
 	local back = false
@@ -935,6 +1036,43 @@ function MatchService.start()
 				pushState(match)
 			end
 		end
+	end)
+
+	-- Auto Play on/off (P3-06): boolean only; it builds from the player's own loadout near where they stand.
+	RemoteGuard.event(Net.Events.SetAutoPlay, TD.AUTO_PLAY.limit, function(player: Player, on: any)
+		if type(on) ~= "boolean" then
+			return
+		end
+		local match = byPlayer[player]
+		if not match or match.ended then
+			return
+		end
+		setAutoPlay(match, player, on)
+	end)
+
+	-- A layout code (P3-06, Logic/LayoutCode): decoded and checked here, then played by Auto Play with its
+	-- fixed spots, every tower through the normal placement rules. Codes for another arena are refused.
+	RemoteGuard.event(Net.Events.ImportLayout, TD.AUTO_PLAY.limit, function(player: Player, code: any)
+		local match = byPlayer[player]
+		local profile = DataService.getProfile(player)
+		if not match or match.ended or not profile then
+			return
+		end
+		local layout, why = LayoutCode.decode(code, { arenas = Arenas, maxSlots = TD.LOADOUT_SLOTS + 1, towerCap = TD.TOWER_CAP })
+		if layout and layout.arena ~= match.slot.arenaId then
+			layout, why = nil, "other_arena"
+		end
+		if not layout then
+			PlayerStateService.notify(player, "layout.err." .. tostring(why))
+			return
+		end
+		local plan, spots = LayoutCode.toPlan(layout, profile.loadout)
+		if #plan == 0 then
+			PlayerStateService.notify(player, "layout.err.bad_slot")
+			return
+		end
+		setAutoPlay(match, player, true, plan, spots)
+		PlayerStateService.notify(player, "layout.imported", { n = #plan })
 	end)
 
 	RemoteGuard.event(Net.Events.VoteSkip, RemoteGuard.STRICT, function(player: Player)

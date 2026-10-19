@@ -41,6 +41,8 @@ Net.Events = {
 	SetTargeting = "SetTargeting", -- C→S towerId, mode
 	UseAbility = "UseAbility", -- C→S towerId (the defender's ultimate)
 	SetAutoAbility = "SetAutoAbility", -- C→S towerId, on: that defender's own auto ultimate (LP-B01)
+	SetAutoPlay = "SetAutoPlay", -- C→S on: Auto Play builds and upgrades for this player (P3-06)
+	ImportLayout = "ImportLayout", -- C→S code: a layout code (Logic/LayoutCode) played by Auto Play (P3-06)
 	-- AFK chamber (the Hakawati's room)
 	AfkState = "AfkState", -- S→C { inside, carry, mult, session = { seconds, lira, qirsh, xp, traitStones } } | { inside = false, summary }
 	AfkPayout = "AfkPayout", -- S→C { kind, granted, capped, tale }
