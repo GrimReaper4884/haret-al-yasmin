@@ -185,4 +185,43 @@ function LobbyLife.lightBlend(t: number, c: Clock): (string, string, number)
 	return prev, id, k * k * (3 - 2 * k) -- smoothstep
 end
 
+-- A recurring beat (LP-D10): `b` = { phases, every, offset, length } in seconds. Returns how many
+-- seconds into the beat `t` is, or nil when it is not playing. A beat plays only when both its start
+-- and `t` fall in one of its phases, so a window never spills into the next part of the day.
+function LobbyLife.beatAt(t: number, c: Clock, b: { phases: { string }, every: number, offset: number, length: number }): number?
+	local into = (t - b.offset) % b.every
+	if into >= b.length then
+		return nil
+	end
+	local now = LobbyLife.clock(t, c)
+	local start = LobbyLife.clock(t - into, c)
+	if table.find(b.phases, now) and table.find(b.phases, start) then
+		return into
+	end
+	return nil
+end
+
+-- Seconds into `phase` when `t` lies between `from` and `to` seconds of it, else nil (the evening tale's
+-- lines, the night watch's calls).
+function LobbyLife.inPhase(t: number, c: Clock, phase: string, from: number, to: number): number?
+	local id, into = LobbyLife.clock(t, c)
+	if id == phase and into >= from and into < to then
+		return into - from
+	end
+	return nil
+end
+
+-- The lane gate's leaves (degrees open; 100 = against the walls): they swing to `nightAngle` over the
+-- first `swing` s of the night and back open over the first `swing` s of dawn.
+function LobbyLife.gateAngle(t: number, c: Clock, g: { swing: number, nightAngle: number }): number
+	local id, into = LobbyLife.clock(t, c)
+	local k = math.clamp(into / g.swing, 0, 1)
+	if id == "night" then
+		return 100 + (g.nightAngle - 100) * k
+	elseif id == "dawn" then
+		return g.nightAngle + (100 - g.nightAngle) * k
+	end
+	return 100
+end
+
 return LobbyLife

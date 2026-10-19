@@ -67,6 +67,12 @@ we are hiring a player rather than using a sample library.
 | `ui_ready` | ~0.4 s | A single finger-cymbal (sagat) chime, quiet. 3 takes. |
 | `wave_clear`, `summon_reveal` | — | Already listed above; still silent. |
 
+### Batch 4: lane life (LP-D10; silent, id 0, until supplied)
+
+| Cue | Length | Brief |
+|---|---|---|
+| `rooster` | ~1.5 s | A rooster at dawn, distant (a rooftop away), one crow, light room tone. 2 takes. |
+
 ### Delivery
 
 - **Masters:** 44.1 kHz or 48 kHz, 24-bit WAV, peaks ≤ −1 dBTP, one file per cue or take, named

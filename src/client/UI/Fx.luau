@@ -7,6 +7,7 @@
 -- it. Pools hand out anchored, non-colliding Neon parts and return them instead of destroying
 -- them, so a busy wave does not churn Instance.new / Destroy every hit.
 
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
@@ -39,6 +40,14 @@ local lane = "full"
 Fx.LaneChanged = Signal.new()
 
 function Fx.laneLife(): string
+	-- Studio harness (LP-D10): "HarnessLaneLife" on the LocalPlayer overrides the saved setting, so a
+	-- test run can show the still lane without writing the owner's live settings.
+	if RunService:IsStudio() then
+		local h = Players.LocalPlayer and Players.LocalPlayer:GetAttribute("HarnessLaneLife")
+		if type(h) == "string" then
+			return h
+		end
+	end
 	return lane
 end
 

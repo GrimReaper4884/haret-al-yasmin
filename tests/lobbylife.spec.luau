@@ -197,6 +197,55 @@ return function(t)
 			t.truthy(Light.lane.night.brightness < Light.lane.evening.brightness and Light.lane.evening.brightness < Light.lane.day.brightness, "the light falls through the evening into night")
 		end)
 
+		t.it("the beats keep to their parts of the day (LP-D10)", function()
+			local C, B = Cfg.CLOCK, Cfg.beats
+			-- the patrol at 90 s and 330 s of every cycle (day); its 570 s slot falls in the evening: skipped
+			t.eq(LobbyLife.beatAt(90, C, B.patrol), 0)
+			t.eq(LobbyLife.beatAt(90 + 30, C, B.patrol), 30)
+			t.eq(LobbyLife.beatAt(90 + B.patrol.length + 1, C, B.patrol), nil, "over")
+			t.eq(LobbyLife.beatAt(330 + 5, C, B.patrol), 5)
+			t.eq(LobbyLife.beatAt(570 + 5, C, B.patrol), nil, "not in the evening")
+			t.eq(LobbyLife.beatAt(720 * 9 + 90 + 1, C, B.patrol), 1, "the same every cycle")
+			t.truthy(330 + B.patrol.length <= 480, "the last patrol ends before the evening")
+			-- the patrol route takes no longer than its window
+			t.truthy(LobbyLife.routeCycle(B.patrol.route, B.patrol.speed, 0) + 2 * B.patrol.gap <= B.patrol.length)
+			-- a dispute window that would start in the day and run into the evening is dropped once it crosses
+			local d = { phases = { "day" }, every = 300, offset = 470, length = 26 }
+			t.eq(LobbyLife.beatAt(475, C, d), 5, "still day")
+			t.eq(LobbyLife.beatAt(485, C, d), nil, "the evening has begun")
+			-- the gate: open by day, half shut by night, open again at dawn
+			local g = B.gate
+			t.eq(LobbyLife.gateAngle(300, C, g), 100)
+			t.eq(LobbyLife.gateAngle(600, C, g), 100, "the night's first instant")
+			t.eq(LobbyLife.gateAngle(600 + g.swing, C, g), g.nightAngle)
+			t.eq(LobbyLife.gateAngle(700, C, g), g.nightAngle)
+			t.eq(LobbyLife.gateAngle(720, C, g), g.nightAngle, "dawn starts shut")
+			t.eq(LobbyLife.gateAngle(720 + g.swing, C, g), 100)
+			t.truthy(12 - 2 * 6 * math.cos(math.rad(g.nightAngle)) >= 4, "a 4-stud gap stays between the leaves")
+			-- evening tale lines and night calls
+			t.eq(LobbyLife.inPhase(480 + 41, C, "evening", 40, 54), 1)
+			t.eq(LobbyLife.inPhase(480 + 55, C, "evening", 40, 54), nil)
+			t.eq(LobbyLife.inPhase(300, C, "evening", 0, 999), nil, "only in its phase")
+			t.truthy(#B.coffee.seats == 6 and #B.coffee.tales == 5 and B.coffee.lineAt[3] + B.coffee.lineSeconds <= 120)
+			local Strings = t.config("Strings")
+			local keys = {}
+			for _, k in B.dispute.lines do
+				table.insert(keys, k)
+			end
+			for _, c in B.watch.calls do
+				table.insert(keys, c.key)
+			end
+			for _, tale in B.coffee.tales do
+				for i = 1, 3 do
+					table.insert(keys, "afk.line." .. tale .. "." .. i)
+				end
+			end
+			table.insert(keys, "beat.fund")
+			for _, k in keys do
+				t.truthy(Strings.en[k] and Strings.ar[k], k .. " in en and ar")
+			end
+		end)
+
 		t.it("config stays inside the plan's budgets", function()
 			t.eq(Cfg.fountain.rate, 6)
 			t.eq(Cfg.steam.rate, 4)

@@ -22,6 +22,52 @@ return {
 		},
 	},
 
+	-- The lane's beats (LP-D10, LOOK_AND_PLAY_PLAN §4.3), on the lane clock. Seconds throughout.
+	beats = {
+		-- Abu Hares swings the gate leaves half shut at night (a gap stays: the road outside is still
+		-- open to players) and open again at dawn, when a rooster calls.
+		gate = { swing = 6, nightAngle = 50 },
+		-- Corporal Houri and two gendarmes march from the gate round the fountain and back.
+		patrol = {
+			phases = { "day" },
+			every = 240,
+			offset = 90,
+			length = 56,
+			speed = 4.2,
+			gap = 2.2, -- seconds between marchers
+			route = { { 0, 84 }, { 1, 30 }, { -9, 14 }, { -10, -4 }, { 0, -16 }, { 10, -4 }, { 9, 14 }, { 1, 30 } },
+		},
+		-- Two neighbours quarrel before the liwan; the za'im raises his hand; they shake on it.
+		dispute = {
+			phases = { "day" },
+			every = 300,
+			offset = 200,
+			length = 26,
+			at = { 42.5, -15 }, -- between the pool and the liwan
+			lines = { "beat.dispute.1", "beat.dispute.2", "beat.dispute.3", "beat.dispute.4" },
+			lineSeconds = 6,
+			fundRange = 20, -- studs: the cosmetic "lane fund" toast for players this close
+		},
+		-- The coffee house in the evening: six neighbours on the benches, the Hakawati on his stool
+		-- telling one of his tales (three lines over 90 s; a different tale each evening).
+		coffee = {
+			phase = "evening",
+			tales = { "antar", "baybars", "hilali", "zir", "sayf" },
+			lineAt = { 10, 40, 70 },
+			lineSeconds = 14,
+			hakawati = { -29.4, -13, 90 }, -- x, z, yaw: on a stool facing the west bench
+			seats = { { -36.3, -14.5, -90 }, { -36.3, -10.5, -90 }, { -36.3, -6.5, -90 }, { -33, -24.4, 180 }, { -29.5, -24.4, 180 }, { -26.5, -24.4, 180 } },
+		},
+		-- The night watch: Abu Hares calls twice; Al-Adashari slips up the souq to Abu Brahim's
+		-- shutter and is gone.
+		watch = {
+			phase = "night",
+			calls = { { at = 4, key = "beat.watch.1" }, { at = 64, key = "beat.watch.2" } },
+			callSeconds = 8,
+			cameo = { from = 30, length = 20, route = { { 56, 43.6 }, { 57.4, 48.2 } }, speed = 1.6 },
+		},
+	},
+
 	-- The lane's cast (LP-D02, Config/Npcs): walkers stroll their route at `walkSpeed` and stand
 	-- `pause` s at each point; the server moves them `serverHz` times a second (prompt range) and each
 	-- client draws them smoothly on the same clock. A seated figure bends `thigh` / `knee` degrees at

@@ -1289,3 +1289,22 @@ with the lobby at night, `HaretDebug match ep1,normal`: in the arena ClockTime 1
 (92, 80, 70) and outdoor (150, 135, 118) = day, LaneGrade white / 0, steady over 3 s: the match looks as before. Play was stopped
 without finishing the match. Not exercised live: Lane life "off" (changing it writes the owner's live settings); its rule is
 one line (`target()` returns the day look). Specs: 430 green (clock, fade, preset sanity). **Owner STOP:** evening/night FPS on a phone.
+
+### LP-D10 the lane's beats
+
+*Play Solo, desktop Studio, `noAutoAfk` set; each beat reached with `HarnessClockOffset`.* `[World] built 2125 parts`, no
+errors or warnings from our code.
+
+| Beat | What the probe and the capture show | Capture |
+|---|---|---|
+| Coffee-house evening (41 s in) | six patrons seated on the dikkeh benches, the Hakawati on his stool, his line "He put on a beggar's cloak and walked among his enemies unseen." (Baybars, line 2) | `docs/captures/lp/d10_coffee_evening.jpg` |
+| Night watch (night + 8 s) | gate leaves at 50° (LeafW at x 4.07 from 6.52 open), a gap between them; Abu Hares: "The gate is barred for the night! Give your name at the wicket." | `d10_night_watch.jpg` |
+| Cameo (night + 39 s) | Al-Adashari at Abu Brahim's shutter (57.4, 48.2) in the souq | `d10_cameo.jpg` |
+| Dispute (13 s in) | two neighbours face to face before the liwan, the za'im's line "Enough. The vine stays…"; at 18 s both say "As the za'im says." and the toast "The lane fund grows by 15" showed (player 9 studs away) | `d10_dispute_zaim.jpg` |
+| Patrol (14 s in) | Corporal Houri and two gendarmes marching up the lane in their models; the post's corporal hidden (LocalTransparencyModifier 1) | `d10_patrol.jpg` |
+| Lane life off (at night) | `HarnessLaneLife = off`: gate back to fully open (LeafW 6.52), ClockTime 15.6 (day), 0 beat figures, the washing still | `d10_lane_life_off.jpg` |
+
+Budget: 8 s RenderStepped with the patrol out: 481 frames, 60.1 FPS, 16.6 ms median / 18.4 ms p95; beats update at 30 Hz
+and animate within 120 studs (Config/LobbyLife `hz`, `radius`). Specs: 431 green (beat windows by phase, the evening slot of
+the patrol skipped, a window crossing into the evening cut, gate angles at night/dawn and the 4-stud gap, tale and call
+strings in en + ar). **Owner STOP:** the rooster file (cue `rooster`, id 0).
