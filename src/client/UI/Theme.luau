@@ -265,6 +265,7 @@ function Theme.chrome(gui: GuiObject, kind: string): ImageLabel?
 		Image = "rbxassetid://" .. c.id,
 		ScaleType = Enum.ScaleType.Slice,
 		SliceCenter = Rect.new(c.slice[1], c.slice[2], c.slice[3], c.slice[4]),
+		SliceScale = c.scale,
 		BackgroundTransparency = 1,
 		Size = UDim2.fromScale(1, 1),
 		ZIndex = gui.ZIndex,

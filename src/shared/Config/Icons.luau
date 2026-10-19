@@ -227,12 +227,14 @@ Icons.reward = {
 -- Theme v2 chrome (LP-C01, LOOK_AND_PLAY_PLAN §5.2): 9-slice images for panels, header bands and
 -- buttons. `slice` is the SliceCenter rect {x0, y0, x1, y1} in image pixels, `size` the image size.
 -- id 0 = not uploaded yet: Theme.chrome leaves the drawn style (stroke, gradient) in place.
+-- The images are frames with a transparent centre (tools/icons/chrome.py, LP-F03): the button's own colour and
+-- text show through. `scale` is the SliceScale, so corners stay small enough for 22 px chips.
 Icons.chrome = {
-	panel = { id = 0, size = { 128, 128 }, slice = { 40, 40, 88, 88 } }, -- paper on wood, corner ornaments
-	header = { id = 0, size = { 256, 48 }, slice = { 24, 8, 232, 40 } }, -- ablaq band (basalt / cream)
-	button = { id = 0, size = { 96, 64 }, slice = { 24, 20, 72, 44 } }, -- carved wood, brass bevel
-	primary = { id = 0, size = { 96, 64 }, slice = { 24, 20, 72, 44 } }, -- gold leaf
-} :: { [string]: { id: number, size: { number }, slice: { number } } }
+	panel = { id = 113777751992340, size = { 128, 128 }, slice = { 40, 40, 88, 88 }, scale = 0.5 }, -- walnut, brass line, rosette corners
+	header = { id = 109727922474931, size = { 256, 48 }, slice = { 24, 8, 232, 40 }, scale = 0.5 }, -- ablaq courses top and bottom
+	button = { id = 87600816873639, size = { 96, 64 }, slice = { 24, 20, 72, 44 }, scale = 0.5 }, -- brass bevel, walnut line
+	primary = { id = 100692359669778, size = { 96, 64 }, slice = { 24, 20, 72, 44 }, scale = 0.5 }, -- gold leaf
+} :: { [string]: { id: number, size: { number }, slice: { number }, scale: number } }
 
 -- Developer product kind (Config/Products) → store card icon.
 Icons.product = {

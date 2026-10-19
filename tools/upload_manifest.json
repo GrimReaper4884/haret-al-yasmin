@@ -780,6 +780,30 @@
       "type": "Audio",
       "id": 100885293697028,
       "uploaded": "2026-10-19"
+    },
+    "assets/marketing/icons/chrome_panel.png": {
+      "name": "Haret chrome panel",
+      "type": "Image",
+      "id": 113777751992340,
+      "uploaded": "2026-10-19"
+    },
+    "assets/marketing/icons/chrome_header.png": {
+      "name": "Haret chrome header",
+      "type": "Image",
+      "id": 109727922474931,
+      "uploaded": "2026-10-19"
+    },
+    "assets/marketing/icons/chrome_button.png": {
+      "name": "Haret chrome button",
+      "type": "Image",
+      "id": 87600816873639,
+      "uploaded": "2026-10-19"
+    },
+    "assets/marketing/icons/chrome_primary.png": {
+      "name": "Haret chrome primary",
+      "type": "Image",
+      "id": 100692359669778,
+      "uploaded": "2026-10-19"
     }
   }
 }

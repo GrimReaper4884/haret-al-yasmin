@@ -96,6 +96,8 @@ return function(t)
 				local x0, y0, x1, y1 = c.slice[1], c.slice[2], c.slice[3], c.slice[4]
 				t.truthy(0 < x0 and x0 < x1 and x1 < w, kind .. " slice x inside the image")
 				t.truthy(0 < y0 and y0 < y1 and y1 < h, kind .. " slice y inside the image")
+				t.truthy(c.scale > 0 and c.scale <= 1, kind .. " slice scale in (0, 1]")
+				t.truthy(c.id > 0, kind .. " uploaded (LP-F03)")
 			end
 		end)
 

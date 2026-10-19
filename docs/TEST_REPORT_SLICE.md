@@ -1447,3 +1447,19 @@ Spectrograms of all ten masters (bell partials, the two knocks, six coin clinks,
 rooster syllables, the arada's steady pulse dimming as it moves off): `docs/captures/lp/f02_cues_spectrogram.jpg`.
 Not checked: listening on a phone speaker (the agent cannot hear), and the AUDIO_COMMISSION similarity check (nothing
 is sampled, so there is nothing to match).
+
+### LP-F03 the chrome frames
+
+*Play Solo, `HaretDebug noAutoAfk`; `tools/check.ps1` green (452 specs). Before: ids 0 (drawn style only). After:
+the four ids synced (`script_grep` "SliceScale = c.scale").*
+
+| Check | Result | Capture |
+|---|---|---|
+| The frames on wood, red, green and gold | brass bevel and walnut line around each colour, centre untouched; panel with rosette corners; ablaq header | `docs/captures/lp/f03_chrome_sheet.jpg` |
+| Lobby rail panel | rosette corners and the walnut edge around the rail; tiles and text unchanged | `f03_before_lobby.jpg`, `f03_after_lobby.jpg`, `f03_rail_before_after.jpg` |
+| Match rail (Episode 1 via `M`, stopped in wave 1, never finished) | Tower, Defenders, 1×, skip wear the brass frame; icons and labels readable | `f03_after_match_rail.jpg` |
+| Loading | all four ids `AssetFetchStatus.Success` from the Client; the five Chrome labels on screen loaded | — |
+| Console | `server ready`, no errors from our code | — |
+
+Not captured: a `Modal` confirm with the frame (Sell/Leave/Redeem need an action the run avoided), and a phone-size
+capture (the frames scale with SliceScale; the device route is LP-F01).
