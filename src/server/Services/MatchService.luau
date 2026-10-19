@@ -269,7 +269,8 @@ local function rewardPlayer(match: Match, player: Player, outcome: any): any
 		})
 		return true
 	end, { src = "match:" .. match.modeId })
-	Analytics.custom(player, (if outcome.won then "MatchWon_" else "MatchLost_") .. match.modeId .. "_" .. match.difficulty, outcome.wavesCleared)
+	Analytics.log(player, Analytics.Events.matchEnd(match.modeId, match.difficulty, outcome.won == true, outcome.wavesCleared))
+	Analytics.progression(player, Analytics.Events.progression(if outcome.won then "Complete" else "Fail", match.mode, match.modeId, match.difficulty))
 	PlayerStateService.notify(player, "notify.match_rewards", { lira = reward.lira, qirsh = reward.qirsh, xp = reward.xp })
 	local secret = (reward :: any).secretUnit
 	if secret and (Units :: any)[secret] then
@@ -320,7 +321,7 @@ local function flushPlacements(match: Match, player: Player)
 	end
 	match.placeCounts[player] = nil
 	for _, e in DeviceTelemetry.events(counts, PlayerStateService.device(player)) do
-		Analytics.custom(player, e.name, e.value, e.profile)
+		Analytics.custom(player, e.name, e.value, if e.profile then { e.profile } else nil)
 	end
 end
 
@@ -506,7 +507,7 @@ function MatchService.create(modeId: string, difficulty: string, party: { Player
 	}
 	for p in match.players do
 		evStart:FireClient(p, payload)
-		Analytics.custom(p, "MatchStart_" .. modeId .. "_" .. difficulty)
+		Analytics.progression(p, Analytics.Events.progression("Start", mode, modeId, difficulty))
 		FunnelService.reach(p, "portal")
 	end
 	pushState(match)

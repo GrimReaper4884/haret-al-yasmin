@@ -1503,3 +1503,15 @@ Hara 700, Za'im 800, the tailor 260); stopped in wave 4 of 20, never finished.*
 
 Not driven: the Layout sheet itself (GUI clicks through MCP don't open it; the export path is `LayoutCode.encode`,
 specced) and a phone-size capture of the four-row menu.
+
+### P3-07 analytics review
+
+*`tools/check.ps1` green (467 specs; `tests/analytics.spec.luau` 5 cases, one of them scanning every
+`Analytics.custom` call in `src/server`). Play Solo, `HaretDebug noAutoAfk`, `"match","ep4,hard"`, stopped at once.*
+
+| Check | Result |
+|---|---|
+| Join | `[Analytics] ui_device = 0 (desktop)` then `AnalyticsService: LogCustomEvent event fired.` |
+| Match start | `[Analytics] progression Start Story 4 ep4 (hard)` then `AnalyticsService: LogProgressionStartEvent event fired.` |
+| Complete / Fail | not fired in Studio (a match end pays the owner's live profile); the mapping is specced for every mode |
+| Console | `server ready`, no errors from our code |

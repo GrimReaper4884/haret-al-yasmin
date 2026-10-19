@@ -35,7 +35,7 @@ function ShopService.open(player: Player, shopId: string, npcId: string): boolea
 	end
 	sessions[player] = { shopId = shopId, npcId = npcId }
 	Net.event(Net.Events.ShopShow):FireClient(player, shopId)
-	Analytics.custom(player, "ShopOpened")
+	Analytics.log(player, Analytics.Events.shopOpened())
 	return true
 end
 

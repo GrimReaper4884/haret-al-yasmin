@@ -143,7 +143,7 @@ function PlayerStateService.start()
 			print(string.format("[Telemetry] ClientProfile from %s dropped: %s", player.Name, tostring(why)))
 			return
 		end
-		Analytics.custom(player, "ui_device", DeviceTelemetry.index(Hud, profile), profile)
+		Analytics.custom(player, "ui_device", DeviceTelemetry.index(Hud, profile), { profile })
 	end)
 	Players.PlayerRemoving:Connect(function(player: Player)
 		devices[player] = nil
@@ -160,7 +160,7 @@ function PlayerStateService.start()
 			profile.settings.language = lang
 			return true
 		end)
-		Analytics.custom(player, "LanguageSet_" .. lang)
+		Analytics.log(player, Analytics.Events.languageSet(lang))
 	end)
 
 	RemoteGuard.event(Net.Events.SetSetting, RemoteGuard.DEFAULT, function(player: Player, key: any, value: any)

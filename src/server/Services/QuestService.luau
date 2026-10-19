@@ -49,7 +49,7 @@ function QuestService.collectClue(player: Player, clueId: string): (boolean, str
 			n = found,
 			total = #def.clues,
 		})
-		Analytics.custom(player, "ClueFound_" .. clueId)
+		Analytics.log(player, Analytics.Events.clueFound(clueId))
 	end
 	return ok, err
 end

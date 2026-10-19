@@ -204,7 +204,7 @@ models, red-teaming, onboarding measurement, and live ops.
 - [~] **P3-06 Auto Play and layout codes** · deps: P1-12 · built 2026-10-19 (D-127); the owner reviews free + full rewards
   - **Goal:** Promote the auto-battler planner to a player feature: pick an anchor, it places and upgrades the loadout, never fires abilities; export/import layouts as compact base64 validated server-side like any placement.
   - **Accept:** specs: malformed code rejected; Auto Play clears Episode 1 Normal with re6up.
-- [ ] **P3-07 Analytics review** · deps: P2-16
+- [~] **P3-07 Analytics review** · deps: P2-16 · built 2026-10-19 (D-128); the owner confirms the dashboard after a live test (STOP)
   - **Goal:** Economy source/sink events per currency, progression, mode starts and clears; verify method names with `http_get` docs.
   - **Accept:** events visible in Studio output; the owner confirms the dashboard after a live test (STOP).
 - [x] **P3-08 Mobile UI pass** · deps: P2-17 · expanded 2026-10-18 into [`MOBILE_HUD_PLAN.md`](MOBILE_HUD_PLAN.md) (tasks MH-00 … MH-18; work from that file, tick this line when MH-18 is done) · MH-00 9a97e45 · MH-01 e549d16 · MH-02 b40dd2e · MH-03 28a4aaf · MH-04 eda4136 · MH-05 62812f9 · MH-06 e1ce4af · MH-07 fa95fa3 · MH-08 99efd39 · MH-09 7074899 · MH-10 0018bfd · MH-11 59a3374 · MH-12 0f94ca0 · MH-13 290dfec · MH-14 be76bdd · MH-15 5a4a474 · MH-16 0bc7aae · MH-17 b357075 · MH-18 Studio matrix and docs done; the owner's real-device run is the open STOP item (MH-18 stays `[~]` until it is reported)

@@ -252,7 +252,7 @@ function AfkService.enter(player: Player, reason: string): (boolean, string?)
 		earned = { lira = 0, qirsh = 0, xp = 0, traitStones = 0, cups = 0, tales = 0 },
 	}
 	sessions[player] = s
-	Analytics.custom(player, "AfkEnter_" .. reason)
+	Analytics.log(player, Analytics.Events.afkEnter(reason))
 	sendState(player, s)
 	task.spawn(place, player, s)
 	return true, nil
@@ -268,7 +268,7 @@ function AfkService.leave(player: Player, reason: string, goHome: boolean)
 	flush(player, s)
 	sessions[player] = nil
 	local summary = sessionView(s)
-	Analytics.custom(player, "AfkMinutes", math.floor(summary.seconds / 60))
+	Analytics.log(player, Analytics.Events.afkMinutes(math.floor(summary.seconds / 60)))
 	if player.Parent then
 		evState:FireClient(player, { inside = false, reason = reason, summary = summary })
 	end
@@ -298,7 +298,7 @@ local function hop(player: Player)
 		TeleportService:TeleportAsync(game.PlaceId, { player }, options)
 	end)
 	if ok then
-		Analytics.custom(player, "AfkHop")
+		Analytics.log(player, Analytics.Events.afkHop())
 	else
 		warn("[AfkService] hop failed for " .. player.Name .. ": " .. tostring(err))
 		PlayerStateService.notify(player, "afk.hop_failed")

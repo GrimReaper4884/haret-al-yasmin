@@ -132,7 +132,14 @@ Roblox `AnalyticsService`:
   and a `[Funnel] … s after join` line per step; live medians come from the Creator Dashboard.
 - Economy events: every lira, qirsh and trait-stone move, emitted from the audit ledger (`DATA_SCHEMA.md` §9)
   with the mutation source as the SKU.
-- Custom events: language toggled, shop opened, summons, matches, pass claims, codes, AFK visits.
+- Progression events (P3-07): every match is an attempt on a path per mode kind (`Story` with the episode number
+  as the level, `Event`, `Infinite`), `levelName` = the mode id, CustomField01 = difficulty: Start when it
+  begins, Complete or Fail when it ends (`Logic/AnalyticsEvents.progression`).
+- Custom events (P3-07): one name per kind from the closed list `AnalyticsEvents.NAMES` (SummonPull, SummonResult,
+  TraitReroll, CodeRedeem, ClueFound, PassClaim, EventBuy, DailyClaim, ShopOpened, LanguageSet, AfkEnter, AfkHop,
+  AfkMinutes, MatchEnd, ui_device, place_outcome_*), with the varying ids (unit, rarity, mode, difficulty, code,
+  clue, event item, device) in CustomField01..03, as Roblox advises (event names have a far tighter cardinality
+  cap than field values). A spec keeps every server call on the list.
 
 ## 11. Localization
 

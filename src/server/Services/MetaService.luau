@@ -106,11 +106,11 @@ local function summon(player: Player, n: any): { [string]: any }
 		return { ok = false, err = err }
 	end
 	FunnelService.reach(player, "summon")
-	Analytics.custom(player, "Summon_x" .. n)
+	Analytics.log(player, Analytics.Events.summonPull(n))
 	local announce = {}
 	for _, r in results :: { any } do
 		if r.rarity == "mythic" or r.rarity == "legendary" then
-			Analytics.custom(player, "Summon_" .. r.rarity .. "_" .. r.unitId)
+			Analytics.log(player, Analytics.Events.summonResult(r.rarity, r.unitId))
 		end
 		if (r.rarity == "mythic" or r.rarity == "secret") and #announce < 2 then
 			table.insert(announce, r)
@@ -169,7 +169,7 @@ local function rerollTrait(player: Player, unitId: any, slot: any): { [string]: 
 	if not ok then
 		return { ok = false, err = err }
 	end
-	Analytics.custom(player, "TraitReroll")
+	Analytics.log(player, Analytics.Events.traitReroll())
 	PlayerStateService.notify(player, "notify.trait_rolled", { traitKey = Traits.traits[trait :: string].nameKey })
 	return { ok = true, trait = trait, slot = which }
 end
@@ -202,7 +202,7 @@ local function claimPass(player: Player, tier: any, track: any): { [string]: any
 	if not ok then
 		return { ok = false, err = err }
 	end
-	Analytics.custom(player, "PassClaim_" .. track, tier)
+	Analytics.log(player, Analytics.Events.passClaim(track, tier))
 	return { ok = true, granted = granted }
 end
 
@@ -216,7 +216,7 @@ local function redeemCode(player: Player, code: any): { [string]: any }
 		if not ok or not amount or not MatchService.addCash(player, amount) then
 			return { ok = false, err = err or "match_only" }
 		end
-		Analytics.custom(player, "Code_" .. (CodesLogic.normalize(code) or "?"))
+		Analytics.log(player, Analytics.Events.codeRedeem(CodesLogic.normalize(code) or "?"))
 		return { ok = true, granted = { cash = amount } }
 	end
 	local clean = CodesLogic.normalize(code) or "?"
@@ -228,7 +228,7 @@ local function redeemCode(player: Player, code: any): { [string]: any }
 	if not ok then
 		return { ok = false, err = err }
 	end
-	Analytics.custom(player, "Code_" .. (CodesLogic.normalize(code) or "?"))
+	Analytics.log(player, Analytics.Events.codeRedeem(CodesLogic.normalize(code) or "?"))
 	return { ok = true, granted = granted }
 end
 
@@ -239,7 +239,7 @@ local function claimDaily(player: Player): { [string]: any }
 	if not ok then
 		return { ok = false, err = err }
 	end
-	Analytics.custom(player, "DailyClaim", day)
+	Analytics.log(player, Analytics.Events.dailyClaim(day))
 	PlayerStateService.notify(player, "notify.daily_claimed")
 	return { ok = true, granted = granted, day = day }
 end
@@ -255,7 +255,7 @@ local function eventBuy(player: Player, eventId: any, key: any): { [string]: any
 	if not ok then
 		return { ok = false, err = err }
 	end
-	Analytics.custom(player, "EventBuy_" .. eventId .. "_" .. key)
+	Analytics.log(player, Analytics.Events.eventBuy(eventId, key))
 	return { ok = true, granted = granted }
 end
 

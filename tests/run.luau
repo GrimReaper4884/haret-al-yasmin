@@ -149,6 +149,7 @@ local specs = {
 	require("./hud.spec"),
 	require("./placeflow.spec"),
 	require("./autoplay.spec"),
+	require("./analytics.spec"),
 }
 for _, spec in specs do
 	spec(t)
