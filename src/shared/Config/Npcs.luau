@@ -225,6 +225,19 @@ local Npcs: { [string]: NpcDef } = {
 		robe = "#5E7D3A",
 		accent = "#FBF8F1",
 	},
+	-- Abu Brahim's son by the cloth shop in the souq (LP-D03): a crowd look, ambient.
+	ibrahim_son = {
+		zone = "souq",
+		talk = false,
+		nameKey = "npc.ibrahim_son.name",
+		roleKey = "npc.ibrahim_son.role",
+		position = { 58.8, 0, 53.6 },
+		yaw = 90, -- faces across the corridor (-X)
+		skin = "#C68E64",
+		robe = "#EADFC8",
+		accent = "#2F3E6B",
+		headwear = "tarboosh",
+	},
 	-- The storyteller of the AFK chamber, on his dais in the Hakawati's room (Config/Afk.ORIGIN
 	-- -3000, 0, 0; the dais is at local z 8..13, 1.2 high).
 	hakawati = {

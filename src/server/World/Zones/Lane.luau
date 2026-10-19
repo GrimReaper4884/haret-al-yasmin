@@ -7,6 +7,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Palette = require(ReplicatedStorage:WaitForChild("Shared").Config.Palette)
+local LaneZones = require(ReplicatedStorage:WaitForChild("Shared").Config.LaneZones)
 local World = script.Parent.Parent
 local Kit = require(World.Kit)
 local Props = require(World.Props)
@@ -87,11 +88,25 @@ local function sabat(m: Instance, z0: number, z1: number)
 	Props.lantern(s, Kit.faceFrame(Vector3.new(0, 11.6, z0), Vector3.new(0, 0, -1)), 16)
 end
 
+local function souqBuilt(): boolean
+	for _, z in LaneZones.zones do
+		if z.id == "souq" then
+			return z.built
+		end
+	end
+	return false
+end
+
 local function lane(map: Instance)
 	local m = Kit.model(map, "Lane")
 	Facade.build(m, "WestA", -24, 70, -8, 88, 22, "X", 1, { jetty = true, doorAt = 82, lantern = 76 })
 	Facade.build(m, "WestB", -24, 24, -8, 50, 21, "X", 1, { jetty = true, doorAt = 42, lantern = 46 })
-	Facade.build(m, "EastA", 8, 64, 24, 88, 21, "X", -1, { jetty = true, doorAt = 72, lantern = 67 })
+	if souqBuilt() then
+		-- The souq's passage (Zones/Souq, LP-D03) runs under the south end of this block (z 64..72).
+		Facade.build(m, "EastA", 8, 72, 24, 88, 21, "X", -1, { jetty = true, doorAt = 82, lantern = 76 })
+	else
+		Facade.build(m, "EastA", 8, 64, 24, 88, 21, "X", -1, { jetty = true, doorAt = 72, lantern = 67 })
+	end
 	-- EastB (x 8..24, z 24..48) is the barber shop, built in Zones/Extras.
 	sabat(m, 28, 34)
 

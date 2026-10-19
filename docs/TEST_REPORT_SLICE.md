@@ -1191,3 +1191,21 @@ Specs: `LobbyLife.route` (stand, walk, stand; position and yaw on each leg; the 
 route stands), every look names a production `.rbxm`, every pose has its clips (own or borrowed), walkers start
 on their route, zone ids exist, ambient NPCs have no dialogue, every `screen` action is listed. Twice during the
 run the idle timer took the character into the Hakawati's room (3 s and 37 s); left at once, AFK lira today 0.
+
+### LP-D03 the souq
+
+*Play Solo, desktop Studio, `HaretDebug "noAutoAfk"` set first.* Console: `[World] built 1660 parts (budget 9000) · souq 254`,
+`server ready`, no warnings from our code. Server: `Zone_souq` 254 parts, 2 lights; Brahim spawned (zone built). Client in
+corridor A, 8 s RenderStepped: 481 frames, 60.1 FPS, 16.7 ms median / 18.0 ms p95; all 254 souq parts streamed in.
+
+| View | What the capture shows | Capture |
+|---|---|---|
+| From the lane | the vaulted passage under EastA with ablaq voussoirs and the "سوق الحارة / Souq al-Hara" board, Khalil's shop untouched beside it | `docs/captures/lp/d03_arch_from_lane.jpg` |
+| Corridor A (west → east) | the potter's shelves of jugs, the cat on the big jar, red awning, lamps on chains under the slatted roof, the grocer's cart and garlic strings beyond | `d03_corridor_a.jpg` |
+| Corridor B (north → south) | rugs on the block, the khan door at the end, the coppersmith's pots, Abu Brahim's sign, Brahim by the cloth shop | `d03_corridor_b.jpg` |
+| Cloth shop | bolts on three shelves, the counter (the chest behind it) | `d03_cloth_shop.jpg` |
+
+Specs: `LaneZoneLogic.clipX` (a skyline cell west/east of a zone is trimmed, a cell inside or left too narrow goes,
+no overlap leaves it) and the existing zone checks (no overlap, budgets). **Incident:** before the harness flag existed
+the idle timer took the character into the Hakawati's room; one cup paid the owner's live profile (+5 lira, +10 qirsh,
++15 XP). Left at once; D-108. **Owner STOP:** phone FPS with the souq in (real device).

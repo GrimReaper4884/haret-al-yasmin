@@ -609,7 +609,13 @@ local function onIdled(idleSeconds: number)
 			end
 			Net.event(Net.Events.AfkHop):FireServer()
 		end
-	elseif idleSeconds >= Afk.AUTO_ENTER_IDLE_SECONDS and SettingsController.get("autoAfk") == true then
+	elseif
+		idleSeconds >= Afk.AUTO_ENTER_IDLE_SECONDS
+		and SettingsController.get("autoAfk") == true
+		-- A Studio test run driven without input sets this on the player (DebugService "noAutoAfk"),
+		-- so the idle walk never pays the owner's live profile in a Play Solo (LP-D03).
+		and not Players.LocalPlayer:GetAttribute("HarnessNoAutoAfk")
+	then
 		if inLobby() and not inParty and not dialogueOpen() then
 			requestEnter("idle")
 			ToastController.show("afk.idle_moved")

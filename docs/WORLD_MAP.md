@@ -64,7 +64,7 @@ median, 17.8 ms p95).
 
 | Zone ID | Bounds (x0, z0, x1, z1) | What | Budget | Task | Status |
 |---------|------|------|--------|------|--------|
-| `souq` | 24, 40, 60, 72 | covered souq off the lane's east side: grocer, pottery, clogs, Abu Brahim's cloth shop | 1,000 | LP-D03 | planned |
+| `souq` | 24, 40, 64, 76 (+ passage 8..24, 64..72) | covered souq off the lane's east side, entered through a vaulted passage under EastA's south end (EastA now z 72..88): corridor A east (z 64..72) to the corner, corridor B south (x 52..60) to the khan door; niches for the potter (cat on a jar), the clog-maker, Abu Marzouk's greens and cart, Abu Brahim's cloth shop (bolts on the awning, the chest), a coppersmith; slatted roof at 13..14, 2 lights + 5 glowing lamps; Brahim (crowd look) by the cloth shop | 1,000 (254 built) | LP-D03 | built |
 | `hammam` | −62, 0, −40, 26 | domed hammam façade west of the square | 700 | LP-D04 | planned |
 | `diwan` | 24, −30, 52, −4 | the za'im's house and liwan | 900 | LP-D05 | planned |
 | `mosque_court` | 24, −4, 48, 24 | the courtyard wall, ablution fountain, fig tree, minaret (exterior only) | 500 | LP-D05 | planned |

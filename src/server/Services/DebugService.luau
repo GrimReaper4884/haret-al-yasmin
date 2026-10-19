@@ -202,6 +202,10 @@ function DebugService.start()
 				return "bad arg"
 			end
 			return MonetizationService.debugPerk(player, perk, off ~= "-")
+		elseif cmd == "noAutoAfk" then
+			-- Studio runs driven through MCP send no input: keep the idle walk to the AFK room off
+			player:SetAttribute("HarnessNoAutoAfk", arg ~= "off")
+			return true
 		elseif cmd == "npcs" then
 			-- LP-D02: show the NPCs still waiting for their zone at their provisional spots
 			return NpcService.spawnWaiting()

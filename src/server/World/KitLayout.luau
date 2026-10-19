@@ -47,6 +47,43 @@ local function layoutOf(kit: string): { any }?
 	return require(mod) :: any
 end
 
+-- One kit module, scaled to its true size × `scale` (Config/KitModules) and set where its Blender
+-- origin goes (`ground`: on the ground, facing -Z at yaw 0). nil when the model is not imported.
+-- Used by the arena layouts and the lobby zones (LP-D03).
+function KitLayout.place(parent: Instance, module: string, ground: CFrame, scale: number?): Model?
+	local t = template(module)
+	local info = (KitModules :: any)[module]
+	if not t or not info then
+		return nil
+	end
+	local k = scale or 1
+	local m = t:Clone()
+	-- With a PrimaryPart the bottom-centre WorldPivot below doesn't take and the piece is
+	-- placed by its mesh centre, half under the ground (owner report 2026-10-18, D-068).
+	m.PrimaryPart = nil
+	local _, size = m:GetBoundingBox()
+	local want = info.size[2] * k
+	if size.Y > 0 and want > 0 then
+		m:ScaleTo(m:GetScale() * want / size.Y)
+	end
+	local cf, box = m:GetBoundingBox()
+	m.WorldPivot = CFrame.new(cf.Position - Vector3.new(0, box.Y / 2, 0))
+	local solid = SOLID[module] == true
+	for _, d in m:GetDescendants() do
+		if d:IsA("BasePart") then
+			d.Anchored = true
+			d.CanCollide = solid
+			d.CanQuery = solid
+			d.CanTouch = false
+		end
+	end
+	local o = info.offset
+	m:PivotTo(ground * CFrame.new(o[1] * k, o[2] * k, o[3] * k))
+	m:SetAttribute("Kit", module)
+	m.Parent = parent
+	return m
+end
+
 -- Builds the arena's kit under `parent` (the arena model). Returns how many modules were placed.
 function KitLayout.dress(parent: Instance, arenaId: string, origin: CFrame): number
 	local def = (Arenas :: any)[arenaId]
@@ -58,34 +95,8 @@ function KitLayout.dress(parent: Instance, arenaId: string, origin: CFrame): num
 	folder.Name = "Kit"
 	local placed = 0
 	for _, p in layout do
-		local t = template(p.module)
-		local info = (KitModules :: any)[p.module]
-		if t and info then
-			local m = t:Clone()
-			-- With a PrimaryPart the bottom-centre WorldPivot below doesn't take and the piece is
-			-- placed by its mesh centre, half under the ground (owner report 2026-10-18, D-068).
-			m.PrimaryPart = nil
-			local _, size = m:GetBoundingBox()
-			local want = info.size[2] * p.scale
-			if size.Y > 0 and want > 0 then
-				m:ScaleTo(m:GetScale() * want / size.Y)
-			end
-			local cf, box = m:GetBoundingBox()
-			m.WorldPivot = CFrame.new(cf.Position - Vector3.new(0, box.Y / 2, 0))
-			local solid = SOLID[p.module] == true
-			for _, d in m:GetDescendants() do
-				if d:IsA("BasePart") then
-					d.Anchored = true
-					d.CanCollide = solid
-					d.CanQuery = solid
-					d.CanTouch = false
-				end
-			end
-			local o = info.offset
-			local ground = origin * CFrame.new(p.x, 0, p.z) * CFrame.Angles(0, math.rad(p.yaw), 0)
-			m:PivotTo(ground * CFrame.new(o[1] * p.scale, o[2] * p.scale, o[3] * p.scale))
-			m:SetAttribute("Kit", p.module)
-			m.Parent = folder
+		local ground = origin * CFrame.new(p.x, 0, p.z) * CFrame.Angles(0, math.rad(p.yaw), 0)
+		if KitLayout.place(folder, p.module, ground, p.scale) then
 			placed += 1
 		end
 	end

@@ -39,6 +39,7 @@ local function buildZones(map: Model): { [string]: number }
 			zone:SetAttribute("Bounds", table.concat(z.bounds, ","))
 			local dynamicRequire: any = require
 			dynamicRequire(module).build(zone)
+			PropDressing.swap(zone) -- the zone's crates, lanterns and jasmine pots get their Meshy props too
 			zone.Parent = map
 			local n = 0
 			for _, d in zone:GetDescendants() do

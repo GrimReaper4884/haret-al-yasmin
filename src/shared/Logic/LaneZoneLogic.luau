@@ -38,4 +38,27 @@ function LaneZoneLogic.conflicts(zones: { any }, existing: { any }, overhead: { 
 	return out
 end
 
+-- A backdrop cell { x0, z0, x1, z1 } trimmed along X so it no longer covers any `zones` rectangle
+-- (Skyline roofs give way to a built zone, LP-D03): a zone on the cell's west side pushes its west
+-- edge out past the zone (+ `gap`), one on its east side pulls its east edge in; nil when the cell
+-- is left narrower than `minWidth` or the zone spans it.
+function LaneZoneLogic.clipX(cell: { number }, zones: { { number } }, gap: number, minWidth: number): { number }?
+	local x0, z0, x1, z1 = cell[1], cell[2], cell[3], cell[4]
+	for _, b in zones do
+		if LaneZoneLogic.overlaps({ x0, z0, x1, z1 }, b) then
+			if b[3] < x1 and b[1] <= x0 then
+				x0 = b[3] + gap
+			elseif b[1] > x0 and b[3] >= x1 then
+				x1 = b[1] - gap
+			else
+				return nil
+			end
+		end
+	end
+	if x1 - x0 < minWidth then
+		return nil
+	end
+	return { x0, z0, x1, z1 }
+end
+
 return LaneZoneLogic

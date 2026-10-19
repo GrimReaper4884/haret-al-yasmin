@@ -5,7 +5,10 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Palette = require(ReplicatedStorage:WaitForChild("Shared").Config.Palette)
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Palette = require(Shared.Config.Palette)
+local LaneZones = require(Shared.Config.LaneZones)
+local LaneZoneLogic = require(Shared.Logic.LaneZoneLogic)
 local World = script.Parent.Parent
 local Kit = require(World.Kit)
 
@@ -23,6 +26,14 @@ end
 function Skyline.build(map: Instance)
 	local m = Kit.model(map, "Skyline")
 	local rng = Kit.rng("skyline")
+	-- Roofs give way to the bigger lane's built zones (LP-D03); the rng still runs for every cell
+	-- so the cells that stay keep their heights and tints.
+	local built = {}
+	for _, z in LaneZones.zones do
+		if z.built and not LaneZones.overhead[z.id] then
+			table.insert(built, z.bounds)
+		end
+	end
 	-- A ring of rooftops beyond the walls
 	local blocks = {
 		{ -80, -60, -50, 100 },
@@ -39,7 +50,11 @@ function Skyline.build(map: Instance)
 				local h = rng:NextNumber(16, 30)
 				local bx0 = x0 + i * (x1 - x0) / nx
 				local bz0 = z0 + j * (z1 - z0) / nz
-				ghost(Kit.box(m, "Roofs", bx0, -1, bz0, bx0 + (x1 - x0) / nx - 1, h, bz0 + (z1 - z0) / nz - 1, Kit.tint(Palette.plaster, rng, 0.08), M.Plaster))
+				local tint = Kit.tint(Palette.plaster, rng, 0.08)
+				local cell = LaneZoneLogic.clipX({ bx0, bz0, bx0 + (x1 - x0) / nx - 1, bz0 + (z1 - z0) / nz - 1 }, built, 1, 6)
+				if cell then
+					ghost(Kit.box(m, "Roofs", cell[1], -1, cell[2], cell[3], h, cell[4], tint, M.Plaster))
+				end
 			end
 		end
 	end

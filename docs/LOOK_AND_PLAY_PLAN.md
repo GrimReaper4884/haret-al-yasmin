@@ -602,11 +602,11 @@ DECISIONS; every name goes through §4.2's STOP first.
   - Accept: `[World] built N parts (budget 9000)`; D-014-style numbers logged; phone capture ≥ 30 FPS.
 - [x] 0a9cf7f **LP-D01 Names and roles table approved; strings and register rows** · deps: none · STOP (owner approves §4.2)
   - Accept: `Strings` en/ar for every NPC; COPYRIGHT_REGISTER rows (C-2xx) per name; DECISIONS row.
-- [x] **LP-D02 NPC looks from existing models (13 NPCs), seated/patrol poses** · deps: LP-D01
+- [x] e4c3eae **LP-D02 NPC looks from existing models (13 NPCs), seated/patrol poses** · deps: LP-D01
   - Create: `Npcs.luau` gains `look: string?` (a `CharacterLooks` id) and `pose`; `NpcService` spawns the
     model with its idle clip; walkers use `CrowdService` paths.
   - Accept: capture of each NPC in place; no block figure left where a model exists.
-- [ ] **LP-D03 The souq alley** · deps: LP-D00, LP-D02 · **LP-D04 The hammam** · **LP-D05 The diwan and the mosque court** · **LP-D06 The post and the orchard road** · **LP-D07 Rooftop women**
+- [ ] **LP-D03 The souq alley** (done: §9) · deps: LP-D00, LP-D02 · **LP-D04 The hammam** · **LP-D05 The diwan and the mosque court** · **LP-D06 The post and the orchard road** · **LP-D07 Rooftop women**
   - Each: zone built from the kit; ≤ its part budget; props from `PropModels` or kit; NPCs placed; WORLD_MAP
     row; captures from two angles; phone FPS check.
 - [ ] **LP-D08 Four new NPC looks through Meshy (Hakawati, Feryal, grocer, sheikh)** · deps: LP-D01 · STOP (≈ 240 credits)
@@ -648,7 +648,7 @@ Meshy budget: ≈ 330 credits (240 for four NPC looks + 90 for the merchant and 
 - [x] ff75c8d LP-A01 · [x] 19425ee LP-A02 · [x] fb9bdaa LP-A03
 - [x] 01545af LP-B01 · [x] 17c73f4 LP-B02 · [x] 5cc73de LP-B03 · [x] 82f876c LP-B04 · [x] d315bda LP-B05
 - [x] 373902b LP-C00 · [x] 2ff7102 LP-C01 · [x] 3a9b3b8 LP-C02 · [x] 1b33855 LP-C03 · [x] 236d068 LP-C04 · [x] 1df1bfd LP-C05 · [x] 169ff6e LP-C06 · [x] f4c8c30 LP-C07
-- [x] 98e27c4 LP-D00 · [x] 0a9cf7f LP-D01 · [x] LP-D02 · [ ] LP-D03 · [ ] LP-D04 · [ ] LP-D05 · [ ] LP-D06 · [ ] LP-D07 · [ ] LP-D08 · [ ] LP-D09 · [ ] LP-D10 · [ ] LP-D11
+- [x] 98e27c4 LP-D00 · [x] 0a9cf7f LP-D01 · [x] e4c3eae LP-D02 · [x] LP-D03 · [ ] LP-D04 · [ ] LP-D05 · [ ] LP-D06 · [ ] LP-D07 · [ ] LP-D08 · [ ] LP-D09 · [ ] LP-D10 · [ ] LP-D11
 - [ ] LP-E01 · [ ] LP-E02 · [ ] LP-E03 · [ ] LP-E04
 
 ## 10. STOP list for the owner (batch these)

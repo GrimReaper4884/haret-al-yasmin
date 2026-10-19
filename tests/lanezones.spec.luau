@@ -34,6 +34,15 @@ return function(t)
 			end
 		end)
 
+		t.it("a skyline cell gives way to a built zone along X (LP-D03)", function()
+			local souq = { 24, 40, 64, 76 }
+			t.deepEq(LaneZoneLogic.clipX({ 45, 50, 79, 74 }, { souq }, 1, 6), { 65, 50, 79, 74 }, "zone on the west: the cell starts past it")
+			t.deepEq(LaneZoneLogic.clipX({ 10, 50, 40, 74 }, { souq }, 1, 6), { 10, 50, 23, 74 }, "zone on the east: the cell ends before it")
+			t.eq(LaneZoneLogic.clipX({ 45, 50, 68, 74 }, { souq }, 1, 6), nil, "too narrow left")
+			t.eq(LaneZoneLogic.clipX({ 30, 50, 40, 74 }, { souq }, 1, 6), nil, "inside the zone")
+			t.deepEq(LaneZoneLogic.clipX({ 45, 0, 79, 25 }, { souq }, 1, 6), { 45, 0, 79, 25 }, "no overlap: unchanged")
+		end)
+
 		t.it("the slice plus every planned zone fits the lobby budget", function()
 			local planned = LaneZoneLogic.plannedParts(SLICE_PARTS, LaneZones.zones)
 			t.truthy(planned <= LaneZones.PART_BUDGET, "planned " .. planned .. " of " .. LaneZones.PART_BUDGET)
