@@ -558,7 +558,7 @@ local function farmPaid(towerId: number, amount: number)
 	if not ti or ti.owner ~= Players.LocalPlayer.Name then
 		return
 	end
-	AudioController.sting("coin")
+	AudioController.sting(Vfx.FARM.unitSting[ti.unitId] or Vfx.FARM.sting)
 	local pill = MatchController.cashPill()
 	if not pill or not Fx.any() then
 		return

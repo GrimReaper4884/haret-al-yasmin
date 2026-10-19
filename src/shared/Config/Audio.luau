@@ -19,23 +19,24 @@ local Audio: { [string]: Cue } = {
 	-- Stings
 	gate_close = { id = 9114129501, kind = "sting", volume = 0.8 }, -- wooden bar dropping into its hooks, iron rattle; licensed, approved by owner 2026-10-16 (C-104)
 	wave_start = { id = 1841116360, kind = "sting", volume = 0.6 }, -- darbuka roll + zaghareet-like rise; licensed, approved by owner 2026-10-16 (C-105)
-	wave_clear = { id = 0, kind = "sting", volume = 0.6 }, -- short darbuka flourish; silent until commissioned (PV-B06)
+	wave_clear = { id = 125614866791240, kind = "sting", volume = 0.6 }, -- short darbuka flourish; synthesised (tools/audio/synth_cues.py, C-280)
 	shabriyeh = { id = 9119742466, kind = "sting", volume = 0.9 }, -- blade drawn: metal shing + single qanun hit; licensed, approved by owner 2026-10-16 (C-106)
 	gate_hit = { id = 9114129572, kind = "sting", volume = 0.7 }, -- thud on wood; licensed, approved by owner 2026-10-16 (C-107)
 	victory = { id = 9040297291, kind = "sting", volume = 0.8 }, -- 'arada-style sword-and-shield rhythm, 6 s; licensed, approved by owner 2026-10-16 (C-108)
 	defeat = { id = 1843261009, kind = "sting", volume = 0.8 }, -- the sad oud phrase, 5 s; licensed, approved by owner 2026-10-16 (C-109)
-	summon_reveal = { id = 0, kind = "sting", volume = 0.6 }, -- short oud strum; silent until commissioned (C-110)
+	summon_reveal = { id = 104871389478468, kind = "sting", volume = 0.6 }, -- short oud strum; synthesised (tools/audio/synth_cues.py, C-280)
 	summon_legendary = { id = 1841822723, kind = "sting", volume = 0.9 }, -- shabriyeh sting + choir hit; licensed, approved by owner 2026-10-16 (C-111)
 	ui_click = { id = 9119975775, kind = "sting", volume = 0.4 }, -- licensed, approved by owner 2026-10-16 (C-112)
 	coin = { id = 9113848780, kind = "sting", volume = 0.5 }, -- licensed, approved by owner 2026-10-16 (C-113)
-	-- Theme v2 UI sounds (LP-C07, Config/UiSounds): silent until the files are supplied (AUDIO_COMMISSION §UI)
-	ui_open = { id = 0, kind = "sting", volume = 0.35 }, -- a soft cloth swish, a screen opening
-	ui_close = { id = 0, kind = "sting", volume = 0.3 }, -- the swish reversed, shorter
-	ui_confirm = { id = 0, kind = "sting", volume = 0.45 }, -- a brass bell tap
-	ui_deny = { id = 0, kind = "sting", volume = 0.4 }, -- a dull wooden knock, two beats
-	ui_ready = { id = 0, kind = "sting", volume = 0.35 }, -- a small finger-cymbal (sagat) chime
-	rooster = { id = 0, kind = "sting", volume = 0.4 }, -- a rooster at dawn, distant (LP-D10); silent until supplied
-	arada_drums = { id = 0, kind = "sting", volume = 0.5 }, -- the 'arada's drums and chant, ~75 s (LP-D11); silent until supplied
+	coin_jingle = { id = 100885293697028, kind = "sting", volume = 0.45 }, -- Abu Brahim's coins clinking into a heap (Vfx.FARM.unitSting); synthesised (C-280)
+	-- Theme v2 UI sounds (LP-C07, Config/UiSounds), synthesised for LP-F02 (AUDIO_COMMISSION Batches 3-4)
+	ui_open = { id = 138106125164918, kind = "sting", volume = 0.35 }, -- a soft cloth swish, a screen opening; synthesised (tools/audio/synth_cues.py, C-280)
+	ui_close = { id = 109587391430040, kind = "sting", volume = 0.3 }, -- the swish reversed, shorter; synthesised (tools/audio/synth_cues.py, C-280)
+	ui_confirm = { id = 73988615945448, kind = "sting", volume = 0.45 }, -- a brass bell tap; synthesised (tools/audio/synth_cues.py, C-280)
+	ui_deny = { id = 77730571662941, kind = "sting", volume = 0.4 }, -- a dull wooden knock, two beats; synthesised (tools/audio/synth_cues.py, C-280)
+	ui_ready = { id = 119912670684164, kind = "sting", volume = 0.35 }, -- a small finger-cymbal (sagat) chime; synthesised (tools/audio/synth_cues.py, C-280)
+	rooster = { id = 114975753420688, kind = "sting", volume = 0.4 }, -- a rooster at dawn, distant (LP-D10); synthesised (tools/audio/synth_cues.py, C-280)
+	arada_drums = { id = 72375252792165, kind = "sting", volume = 0.5 }, -- the 'arada passing by: tabl, daff, swords on shields, ~75 s, no voices (LP-D11); synthesised (tools/audio/synth_cues.py, C-280)
 }
 
 return Audio

@@ -73,6 +73,20 @@ return function(t)
 			t.eq(n, 7)
 		end)
 
+		t.it("the LP sound cues are supplied and every farm payout cue exists (LP-F02)", function()
+			local Audio = t.config("Audio")
+			local Vfx = t.config("Vfx")
+			for _, id in { "ui_open", "ui_close", "ui_confirm", "ui_deny", "ui_ready", "wave_clear", "summon_reveal", "rooster", "arada_drums", "coin_jingle" } do
+				local cue = Audio[id]
+				t.truthy(cue and cue.id > 0 and cue.id == math.floor(cue.id), id .. " has an uploaded id")
+			end
+			t.truthy(Audio[Vfx.FARM.sting], "the default payout cue exists")
+			for unitId, cue in Vfx.FARM.unitSting do
+				t.truthy(t.config("Units")[unitId], unitId .. " is a unit")
+				t.eq(Audio[cue].kind, "sting", cue .. " is a one-shot")
+			end
+		end)
+
 		t.it("Theme v2 chrome entries are well-formed 9-slice images (LP-C01)", function()
 			for _, kind in { "panel", "header", "button", "primary" } do
 				local c = Icons.chrome[kind]

@@ -720,6 +720,66 @@
       "type": "Image",
       "id": 90786801080402,
       "uploaded": "2026-10-19"
+    },
+    "assets/production/audio/ui_open.ogg": {
+      "name": "Haret sfx ui_open",
+      "type": "Audio",
+      "id": 138106125164918,
+      "uploaded": "2026-10-19"
+    },
+    "assets/production/audio/ui_close.ogg": {
+      "name": "Haret sfx ui_close",
+      "type": "Audio",
+      "id": 109587391430040,
+      "uploaded": "2026-10-19"
+    },
+    "assets/production/audio/ui_confirm.ogg": {
+      "name": "Haret sfx ui_confirm",
+      "type": "Audio",
+      "id": 73988615945448,
+      "uploaded": "2026-10-19"
+    },
+    "assets/production/audio/ui_deny.ogg": {
+      "name": "Haret sfx ui_deny",
+      "type": "Audio",
+      "id": 77730571662941,
+      "uploaded": "2026-10-19"
+    },
+    "assets/production/audio/ui_ready.ogg": {
+      "name": "Haret sfx ui_ready",
+      "type": "Audio",
+      "id": 119912670684164,
+      "uploaded": "2026-10-19"
+    },
+    "assets/production/audio/wave_clear.ogg": {
+      "name": "Haret sfx wave_clear",
+      "type": "Audio",
+      "id": 125614866791240,
+      "uploaded": "2026-10-19"
+    },
+    "assets/production/audio/summon_reveal.ogg": {
+      "name": "Haret sfx summon_reveal",
+      "type": "Audio",
+      "id": 104871389478468,
+      "uploaded": "2026-10-19"
+    },
+    "assets/production/audio/rooster.ogg": {
+      "name": "Haret sfx rooster",
+      "type": "Audio",
+      "id": 114975753420688,
+      "uploaded": "2026-10-19"
+    },
+    "assets/production/audio/arada_drums.ogg": {
+      "name": "Haret sfx arada_drums",
+      "type": "Audio",
+      "id": 72375252792165,
+      "uploaded": "2026-10-19"
+    },
+    "assets/production/audio/coin_jingle.ogg": {
+      "name": "Haret sfx coin_jingle",
+      "type": "Audio",
+      "id": 100885293697028,
+      "uploaded": "2026-10-19"
     }
   }
 }

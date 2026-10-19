@@ -58,6 +58,8 @@ we are hiring a player rather than using a sample library.
 
 ### Batch 3: UI sounds (LP-C07; silent, id 0, until supplied)
 
+*2026-10-19 (LP-F02, D-124): Batches 3–4 and a coin jingle now play synthesised stand-ins (`tools/audio/synth_cues.py`, register C-280). A commissioned take still replaces any of them; the 'arada's voices are not in the stand-in.*
+
 | Cue | Length | Brief |
 |---|---|---|
 | `ui_open` | ~0.25 s | Foley: a soft cloth swish, a curtain drawn aside. 3 takes. |

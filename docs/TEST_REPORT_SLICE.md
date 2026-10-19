@@ -1423,3 +1423,27 @@ double.", both $3,400, Sell $3,720 — `docs/captures/lp/e02_chooser_solo.jpg`. 
 toward the cash pill (17,440) — `e02_count_gold.jpg`. Console: no errors from our code. Play stopped in wave 2, match not
 finished. Specs: 446 green (the Lane Fund refused alone and allowed with a teammate; `Vfx.FARM` within the coin pool).
 **Owner STOP:** Test → Clients and Servers with two players to watch the Fund pay the teammate live.
+
+### LP-F02 the silent cues (synthesised)
+
+*Edit (load and play each once through `SoundService:PlayLocalSound` from `execute_luau`), then Play Solo with
+`HaretDebug noAutoAfk`: `server ready`, no errors from our code; opening the Units and Summon screens created the
+`ui_open` Sound (138106125164918). `tools/check.ps1`: 452 specs green.*
+
+| Cue | rbxassetid | Length | Studio |
+|---|---|---|---|
+| `ui_open` | 138106125164918 | 0.26 s | loaded, played |
+| `ui_close` | 109587391430040 | 0.20 s | loaded, played |
+| `ui_confirm` | 73988615945448 | 0.32 s | loaded, played |
+| `ui_deny` | 77730571662941 | 0.26 s | loaded, played |
+| `ui_ready` | 119912670684164 | 0.45 s | loaded, played |
+| `wave_clear` | 125614866791240 | 1.30 s | loaded, played |
+| `summon_reveal` | 104871389478468 | 1.40 s | loaded, played |
+| `rooster` | 114975753420688 | 2.00 s | loaded, played |
+| `arada_drums` | 72375252792165 | 75.00 s | loaded, played |
+| `coin_jingle` | 100885293697028 | 0.70 s | loaded, played |
+
+Spectrograms of all ten masters (bell partials, the two knocks, six coin clinks, the darbuka run onto a doum, the four
+rooster syllables, the arada's steady pulse dimming as it moves off): `docs/captures/lp/f02_cues_spectrogram.jpg`.
+Not checked: listening on a phone speaker (the agent cannot hear), and the AUDIO_COMMISSION similarity check (nothing
+is sampled, so there is nothing to match).
