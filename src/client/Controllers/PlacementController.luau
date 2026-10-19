@@ -38,6 +38,7 @@ local Root = require(UI.Root)
 local UnitCard = require(UI.UnitCard)
 local TowerPanelView = require(UI.TowerPanelView)
 local Juice = require(UI.Juice)
+local Modal = require(UI.Modal)
 local Haptics = require(UI.Haptics)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
@@ -1461,9 +1462,20 @@ function PlacementController.start()
 			end)
 		end
 		v.sell.Activated:Connect(function()
-			if selected then
-				call(Net.Functions.SellTower, selected)
+			local id = selected
+			local rec = if id then towers[id] else nil
+			if not id or not rec then
+				return
 			end
+			-- Selling is final: ask once (LP-C03, Modal.confirm).
+			local def = (Units :: any)[rec.unitId]
+			local t = LocaleController.t
+			local refund = math.floor(UpgradeView.invested(def, rec.level, rec.path, myTrait(rec.unitId), UnitLogic.costFor) * TD.SELL_REFUND)
+			Modal.confirm("sell", t("confirm.sell", { name = t(def.nameKey), n = refund }), t("defenders.sell"), t("confirm.no"), LocaleController.isRtl(), function()
+				if towers[id] then
+					call(Net.Functions.SellTower, id)
+				end
+			end)
 		end)
 		v.ult.Activated:Connect(function()
 			local rec = selected and towers[selected]

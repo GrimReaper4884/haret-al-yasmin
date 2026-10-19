@@ -565,10 +565,14 @@ local function build()
 		local b = Theme.button({ LayoutOrder = i, TextSize = 15, Size = UDim2.new(1, 0, 0, 52), ZIndex = 12, Parent = tabs })
 		tabButtons[key] = b
 		b.Activated:Connect(function()
+			local changed = tab ~= key
 			tab = key
 			selected = nil
 			step = "list"
 			render()
+			if changed then
+				Juice.veil(list, Theme.colors.panel) -- the tab's cards cross-fade in (LP-C03)
+			end
 		end)
 	end
 

@@ -41,13 +41,26 @@ local ERRORS = {
 	match_only = "codes.match_only",
 }
 
--- Sends the code (Redeem, or Return in the box); the server validates everything.
+local sendCode: (code: string) -> ()
+
+-- Asks, then sends the code (Redeem, or Return in the box); the server validates everything.
 local function redeemCode()
 	if busy or os.clock() - lastRedeem < Hud.KEYBOARD.redeemDebounceS then
 		return
 	end
 	local code = box.Text
 	if #code == 0 then
+		return
+	end
+	-- Ask once before the code is spent (LP-C03, Modal.confirm).
+	local t0 = LocaleController.t
+	Modal.confirm("redeem", t0("confirm.redeem", { code = code }), t0("codes.redeem"), t0("confirm.no"), LocaleController.isRtl(), function()
+		sendCode(code)
+	end)
+end
+
+sendCode = function(code: string)
+	if busy then
 		return
 	end
 	busy = true

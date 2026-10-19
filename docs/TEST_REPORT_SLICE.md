@@ -1089,3 +1089,17 @@ count without touching the profile.*
 | Claim flight | 5 coins from the Daily tile: sampled at 0.1 s steps, 5 in flight until 0.5 s, 1 at 0.6 s, none at 0.7 s; the lira pill counted 45,138 → 45,168 and glowed | — |
 | Dots clear on open | Daily's dot (claimable) and Event's: tapping Daily and closing it → Daily `false`, Event still `true` | — |
 | Console | no errors or warnings from our code | — |
+
+### LP-C03 screens, confirm, tabs and toasts
+
+*Play Solo in the lobby, desktop. Toasts sent from the Server VM through the real `Notify` remote; the code
+was not redeemed (the dialog was answered "Back").*
+
+| Check | Result | Capture |
+|---|---|---|
+| One screen at a time + backdrop | `2` (Summon) then `6` (Store): Summon closed, the Store open, `ModalBackdrop` visible at 0.55 | `docs/captures/lp/c03_store_as_screen_backdrop.jpg` |
+| C00 findings | the Store is titled "The lane store" / «دكّانة الحارة»; the close-all key `X` now closes it; it closes with the other screens at a match start (`Modal.closeAll`) | same |
+| Confirm | Codes → "LPTEST" → Redeem: the dialog (scroll icon, "Redeem the code LPTEST?", Back left, gold Redeem right); Back closed it and nothing was sent | `c03_confirm_redeem.jpg` |
+| Toast stack | a refusal (red "!"), a gain (lira coin) and news (plain) stacked; each dismisses on a tap or a sideways swipe | `c03_toast_stack.jpg` |
+| Tab cross-fade | Play's Story / Endless / Event tabs and the Units role chips lay a panel-coloured veil that fades out in 0.15 s (none under Reduced Motion) | — |
+| Console | no errors or warnings from our code | — |

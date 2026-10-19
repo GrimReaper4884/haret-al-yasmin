@@ -107,7 +107,16 @@ local function build()
 	languageButton = halfButton(third, 2, Theme.colors.button, nil)
 
 	leaveButton.Activated:Connect(function()
-		showConfirm(true)
+		-- The shared confirmation (LP-C03); a mid-match leave forfeits the run.
+		local t = LocaleController.t
+		Modal.confirm("leave", t("match.leave_confirm"), t("match.leave"), t("match.leave_back"), LocaleController.isRtl(), function()
+			if leaving then
+				return
+			end
+			leaving = true
+			Net.event(Net.Events.LeaveMatch):FireServer()
+			modal.setVisible(false)
+		end)
 	end)
 	backButton.Activated:Connect(function()
 		showConfirm(false)

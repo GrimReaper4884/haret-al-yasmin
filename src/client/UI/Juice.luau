@@ -251,6 +251,26 @@ function Juice.dot(parent: GuiObject, on: boolean, color: Color3?): Frame?
 	return f
 end
 
+-- A tab's content cross-fade (Theme v2, LP-C03): a veil in the panel's colour over `frame` fades out in
+-- 0.15 s, so the new content appears instead of snapping in. Nothing under Reduced Motion.
+function Juice.veil(frame: GuiObject, color: Color3)
+	if reduced() then
+		return
+	end
+	local v = Instance.new("Frame")
+	v.Name = "Veil"
+	v.BackgroundColor3 = color
+	v.BorderSizePixel = 0
+	v.Size = UDim2.fromScale(1, 1)
+	v.ZIndex = frame.ZIndex + 20
+	v.Parent = frame
+	local tw = TweenService:Create(v, TweenInfo.new(0.15, Enum.EasingStyle.Quad), { BackgroundTransparency = 1 })
+	tw:Play()
+	tw.Completed:Connect(function()
+		v:Destroy()
+	end)
+end
+
 -- A currency pill's glow when it gains (Theme v2, LP-C02): its edge flashes gold and fades back.
 function Juice.glow(gui: GuiObject)
 	local stroke = gui:FindFirstChild("Border")

@@ -84,6 +84,7 @@ local function build()
 		b.Activated:Connect(function()
 			roleFilter = if key == "all" then nil else key
 			UnitsController.render()
+			Juice.veil(grid, Theme.colors.panel) -- the filtered grid cross-fades in (LP-C03)
 		end)
 		filterChips[key] = b
 		return b
@@ -478,8 +479,11 @@ local function renderDetail(snapshot: any)
 		})
 		reroll.Activated:Connect(function()
 			if snapshot.traitStones > 0 then
-				request(function()
-					return Net.func(Net.Functions.RerollTrait):InvokeServer(unitId, slot)
+				-- A trait stone is spent: ask once (LP-C03, Modal.confirm).
+				Modal.confirm("reroll", t("confirm.reroll", { name = t(def.nameKey) }), t("confirm.reroll_yes"), t("confirm.no"), LocaleController.isRtl(), function()
+					request(function()
+						return Net.func(Net.Functions.RerollTrait):InvokeServer(unitId, slot)
+					end)
 				end)
 			end
 		end)

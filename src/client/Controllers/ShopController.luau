@@ -90,6 +90,15 @@ local function build()
 	close.Activated:Connect(function()
 		ShopController.close(true)
 	end)
+	-- The Store and the NPC shops are screens like the others (LP-C03): another screen opening, the
+	-- close-all key and a match start close them too.
+	Modal.adopt(panel, "Shop", function()
+		if mode == "shop" then
+			Net.event(Net.Events.ShopClose):FireServer()
+		end
+		mode = nil
+		shopId = nil
+	end)
 
 	list = Create("ScrollingFrame", {
 		LayoutOrder = 2,
@@ -361,7 +370,10 @@ render = function()
 		storeRows(snapshot)
 	end
 	Theme.align(title, LocaleController.isRtl())
-	panel.Visible = true
+	if not panel.Visible then
+		panel.Visible = true
+		Modal.opening(panel) -- one screen at a time, the backdrop and the pop (LP-C03)
+	end
 end
 
 function ShopController.close(tellServer: boolean)
