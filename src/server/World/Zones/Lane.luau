@@ -8,6 +8,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Palette = require(ReplicatedStorage:WaitForChild("Shared").Config.Palette)
 local LaneZones = require(ReplicatedStorage:WaitForChild("Shared").Config.LaneZones)
+local LaneZoneLogic = require(ReplicatedStorage:WaitForChild("Shared").Logic.LaneZoneLogic)
 local World = script.Parent.Parent
 local Kit = require(World.Kit)
 local Props = require(World.Props)
@@ -88,20 +89,19 @@ local function sabat(m: Instance, z0: number, z1: number)
 	Props.lantern(s, Kit.faceFrame(Vector3.new(0, 11.6, z0), Vector3.new(0, 0, -1)), 16)
 end
 
-local function souqBuilt(): boolean
-	for _, z in LaneZones.zones do
-		if z.id == "souq" then
-			return z.built
-		end
-	end
-	return false
-end
 
 local function lane(map: Instance)
 	local m = Kit.model(map, "Lane")
 	Facade.build(m, "WestA", -24, 70, -8, 88, 22, "X", 1, { jetty = true, doorAt = 82, lantern = 76 })
-	Facade.build(m, "WestB", -24, 24, -8, 50, 21, "X", 1, { jetty = true, doorAt = 42, lantern = 46 })
-	if souqBuilt() then
+	if LaneZoneLogic.built(LaneZones.zones, "hammam") then
+		-- The hammam's passage (Zones/Hammam, LP-D04) runs under WestB's south end (z 27..32).
+		Facade.build(m, "WestB", -24, 32, -8, 50, 21, "X", 1, { jetty = true, doorAt = 42, lantern = 46 })
+		Kit.box(m, "WestBPier", -24, 0, 24, -8, 21, 27, Palette.stoneLight, M.Limestone)
+		Kit.box(m, "WestBPierParapet", -24, 21, 24, -8, 22.2, 27, Palette.stoneWarm, M.Limestone)
+	else
+		Facade.build(m, "WestB", -24, 24, -8, 50, 21, "X", 1, { jetty = true, doorAt = 42, lantern = 46 })
+	end
+	if LaneZoneLogic.built(LaneZones.zones, "souq") then
 		-- The souq's passage (Zones/Souq, LP-D03) runs under the south end of this block (z 64..72).
 		Facade.build(m, "EastA", 8, 72, 24, 88, 21, "X", -1, { jetty = true, doorAt = 82, lantern = 76 })
 	else

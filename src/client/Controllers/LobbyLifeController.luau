@@ -16,6 +16,8 @@ local Workspace = game:GetService("Workspace")
 
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local Cfg = require(Shared.Config.LobbyLife)
+local LaneZones = require(Shared.Config.LaneZones)
+local LaneZoneLogic = require(Shared.Logic.LaneZoneLogic)
 local LobbyLife = require(Shared.Logic.LobbyLife)
 local Vfx = require(Shared.Config.Vfx)
 local Fx = require(script.Parent.Parent.UI.Fx)
@@ -34,7 +36,7 @@ local birds: { BasePart } = {}
 local ripples: { BasePart } = {}
 local vines: { { model: Model, at: Vector3 } } = {}
 local spray: ParticleEmitter? = nil
-local steam: ParticleEmitter? = nil
+local steams: { { e: ParticleEmitter, at: { number } } } = {} -- the samovar, and the hammam vent once built (LP-D04)
 local lastPuff = -math.huge
 local flaring = false
 
@@ -152,8 +154,7 @@ local function buildFountain()
 	end
 end
 
-local function buildSteam()
-	local s = Cfg.steam
+local function buildSteam(s: { at: { number }, rate: number })
 	local e = emitter("steam", v3(s.at), s.rate)
 	if e then
 		e.Speed = NumberRange.new(0.8, 1.4)
@@ -169,8 +170,8 @@ local function buildSteam()
 		})
 		e.Rotation = NumberRange.new(0, 360)
 		e.RotSpeed = NumberRange.new(-20, 20)
+		table.insert(steams, { e = e, at = s.at })
 	end
-	steam = e
 end
 
 local function buildBirds()
@@ -356,9 +357,9 @@ local function update(dt: number)
 	if spray then
 		spray.Enabled = tier.particles and fountainNear
 	end
-	if steam then
-		local s = Cfg.steam.at
-		steam.Enabled = tier.particles and LobbyLife.near(s[1] - cam.X, s[2] - cam.Y, s[3] - cam.Z, R)
+	for _, st in steams do
+		local s = st.at
+		st.e.Enabled = tier.particles and LobbyLife.near(s[1] - cam.X, s[2] - cam.Y, s[3] - cam.Z, R)
 	end
 
 	-- The oven: the local player walking past
@@ -432,7 +433,10 @@ function LobbyLifeController.start()
 	folder.Name = "LobbyLife"
 	folder.Parent = Workspace
 	buildFountain()
-	buildSteam()
+	buildSteam(Cfg.steam)
+	if LaneZoneLogic.built(LaneZones.zones, "hammam") then
+		buildSteam(Cfg.hammamSteam)
+	end
 	buildBirds()
 	for _, d in Workspace:GetDescendants() do
 		track(d)

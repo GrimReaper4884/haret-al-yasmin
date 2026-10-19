@@ -61,4 +61,16 @@ function LaneZoneLogic.clipX(cell: { number }, zones: { { number } }, gap: numbe
 	return { x0, z0, x1, z1 }
 end
 
+-- Whether zone `id` is built (an unknown id is not). The slice's modules ask this before opening a
+-- passage into a zone (LP-D03 souq, LP-D04 hammam).
+-- (`zones` is Config/LaneZones.zones; `any` because Luau tables are invariant and Zone has more fields)
+function LaneZoneLogic.built(zones: { any }, id: string): boolean
+	for _, z in zones do
+		if z.id == id then
+			return z.built
+		end
+	end
+	return false
+end
+
 return LaneZoneLogic

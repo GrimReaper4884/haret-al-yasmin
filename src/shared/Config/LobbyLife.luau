@@ -62,6 +62,8 @@ return {
 
 	-- Abu Hatem's corner: steam from the samovar in the coffee house (World/Zones/Extras).
 	steam = { at = { -35.5, 4.25, -3 }, rate = 4 },
+	-- The hammam's roof vent (World/Zones/Hammam, LP-D04), once that zone is built.
+	hammamSteam = { at = { -58, 19.6, 6 }, rate = 6 },
 
 	-- Abu Nadim's oven (World/Zones/Shops): passing by it makes the fire flare and puffs flour.
 	oven = {

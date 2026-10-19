@@ -43,6 +43,13 @@ return function(t)
 			t.deepEq(LaneZoneLogic.clipX({ 45, 0, 79, 25 }, { souq }, 1, 6), { 45, 0, 79, 25 }, "no overlap: unchanged")
 		end)
 
+		t.it("built() answers per zone id, false for an unknown id", function()
+			local zones = { { id = "a", built = true }, { id = "b", built = false } }
+			t.eq(LaneZoneLogic.built(zones, "a"), true)
+			t.eq(LaneZoneLogic.built(zones, "b"), false)
+			t.eq(LaneZoneLogic.built(zones, "nope"), false)
+		end)
+
 		t.it("the slice plus every planned zone fits the lobby budget", function()
 			local planned = LaneZoneLogic.plannedParts(SLICE_PARTS, LaneZones.zones)
 			t.truthy(planned <= LaneZones.PART_BUDGET, "planned " .. planned .. " of " .. LaneZones.PART_BUDGET)

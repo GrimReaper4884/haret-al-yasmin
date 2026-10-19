@@ -1209,3 +1209,19 @@ Specs: `LaneZoneLogic.clipX` (a skyline cell west/east of a zone is trimmed, a c
 no overlap leaves it) and the existing zone checks (no overlap, budgets). **Incident:** before the harness flag existed
 the idle timer took the character into the Hakawati's room; one cup paid the owner's live profile (+5 lira, +10 qirsh,
 +15 XP). Left at once; D-108. **Owner STOP:** phone FPS with the souq in (real device).
+
+### LP-D04 the hammam
+
+*Play Solo, desktop Studio, `noAutoAfk` set.* Console: `[World] built 1738 parts (budget 9000) · souq 254 · hammam 91`,
+`server ready`, no warnings from our code. `Zone_hammam` 91 parts, 2 lights; on the client both steam emitters run
+(the samovar's and the vent's at −58, 19.6, 6). In the court, 8 s RenderStepped: 481 frames, 60.1 FPS, 16.6 ms median / 18.1 ms p95.
+
+| View | What the capture shows | Capture |
+|---|---|---|
+| From the lane | the passage mouth in WestB's south end under the sabat, Hajj Rashid's stall and the Play arch untouched | `docs/captures/lp/d04_from_lane.jpg` |
+| Court | the bath-house front with the sign, curtained arch and lantern, Abu Basim at the door, the towel line | `d04_court.jpg` |
+| Front | the stepped ablaq pointed arch over the red-and-cream curtain, banded stone | `d04_front.jpg` |
+| Dome | the dome with its eight bottle-glass oculi and finial, the vent cap beside it | `d04_dome.jpg` |
+
+First layout (passage at the plan's (−24, 12)) was dropped after the capture from the square showed it opening behind the
+Play hall's arch and pad: D-109. **Owner STOP:** phone FPS with both zones in (real device).

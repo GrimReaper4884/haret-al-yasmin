@@ -33,7 +33,7 @@ LaneZones.existing = {
 
 LaneZones.zones = {
 	{ id = "souq", module = "Souq", bounds = { 24, 40, 64, 76 }, budget = 1000, built = true, task = "LP-D03" }, -- + its passage under EastA
-	{ id = "hammam", module = "Hammam", bounds = { -62, 0, -40, 26 }, budget = 700, built = false, task = "LP-D04" },
+	{ id = "hammam", module = "Hammam", bounds = { -62, 0, -24, 40 }, budget = 700, built = true, task = "LP-D04" }, -- + its passage under WestB
 	{ id = "diwan", module = "Diwan", bounds = { 24, -30, 52, -4 }, budget = 900, built = false, task = "LP-D05" },
 	{ id = "mosque_court", module = "MosqueCourt", bounds = { 24, -4, 48, 24 }, budget = 500, built = false, task = "LP-D05" },
 	{ id = "post", module = "Post", bounds = { -40, 96, -16, 120 }, budget = 600, built = false, task = "LP-D06" },
