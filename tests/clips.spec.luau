@@ -117,7 +117,7 @@ return function(t)
 					t.truthy(clipsOf(from) ~= nil, id .. " borrows from a baked figure")
 				end
 			end
-			t.truthy(n >= 13, "the 13 model NPCs of §4.2 (" .. n .. ")")
+			t.truthy(n >= 17, "the 13 model NPCs of §4.2 and the four Meshy looks of LP-D08 (" .. n .. ")")
 		end)
 	end)
 end

@@ -174,6 +174,10 @@ local function build()
 	wardrobeButton.Activated:Connect(WardrobeController.toggle)
 	-- On a phone the Wardrobe lives in the lobby's More sheet (MOBILE_HUD_PLAN B6).
 	LobbyMenuController.register("wardrobe", WardrobeController.toggle)
+	-- The lane store as a dialogue screen: Abu Marzouk's and Abu Brahim's prompts open it (LP-D08, LP-E03).
+	LobbyMenuController.register("store", function()
+		ShopController.openStore()
+	end)
 
 	-- One-tap music mute beside the pills (the match HUD has its own next to the gear).
 	SettingsController.muteButton({

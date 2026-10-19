@@ -226,6 +226,43 @@ local Npcs: { [string]: NpcDef } = {
 		robe = "#5E7D3A",
 		accent = "#FBF8F1",
 	},
+	-- LP-D08: the four Meshy looks of their own (Config/CharacterLooks "lane NPCs").
+	feryal_roof = {
+		look = "feryal",
+		pose = "seated",
+		zone = "rooftop_view",
+		talk = false,
+		nameKey = "npc.feryal_roof.name",
+		roleKey = "npc.feryal_roof.role",
+		position = { 10.6, 23.6, 80 }, -- on the stool on EastA's roof (World/Zones/Rooftops; seat top = roof + 1.4)
+		yaw = 90, -- looks down into the lane (-X)
+		skin = "#B97F5A",
+		robe = "#2E6B6B",
+		accent = "#C9A13B",
+	},
+	grocer = {
+		look = "grocer",
+		zone = "souq",
+		nameKey = "npc.grocer.name",
+		roleKey = "npc.grocer.role",
+		position = { 49, 0, 74.4 }, -- behind his crates in the niche (World/Zones/Souq `grocer`)
+		yaw = 0, -- faces the corridor (-Z)
+		skin = "#C68E64",
+		robe = "#5E7D3A",
+		accent = "#FBF8F1",
+	},
+	sheikh = {
+		look = "sheikh",
+		pose = "seated",
+		zone = "mosque_court",
+		nameKey = "npc.sheikh.name",
+		roleKey = "npc.sheikh.role",
+		position = { 47.1, 1.4, 14.4 }, -- on the stone bench beside the mosque door (World/Zones/MosqueCourt)
+		yaw = 90, -- faces the court (-X)
+		skin = "#C08A62",
+		robe = "#EADFC8",
+		accent = "#4A3426",
+	},
 	-- Abu Brahim's son by the cloth shop in the souq (LP-D03): a crowd look, ambient.
 	ibrahim_son = {
 		zone = "souq",
@@ -242,6 +279,7 @@ local Npcs: { [string]: NpcDef } = {
 	-- The storyteller of the AFK chamber, on his dais in the Hakawati's room (Config/Afk.ORIGIN
 	-- -3000, 0, 0; the dais is at local z 8..13, 1.2 high).
 	hakawati = {
+		look = "hakawati", -- his Meshy figure (LP-D08); the coffee-house evening seats the same figure
 		nameKey = "npc.hakawati.name",
 		roleKey = "npc.hakawati.role",
 		position = { -3000, 1.2, 10.4 },

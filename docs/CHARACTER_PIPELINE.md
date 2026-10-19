@@ -134,6 +134,9 @@ prompt, and never feed a photo of an actor (docs/COPYRIGHT_REGISTER.md).
 - 2026-10-18: **Season Story 1 batch 1, ten attackers** (S1-A02, DECISIONS D-060): pickpocket, drummer,
   torchbearer, porter, disguised, beggar (decimated to ~5.6k), bosses Corporal, Abu Jawdan, Abu Shatour, Lateef
   (~8.3k); 37 characters in all. Sheet `docs/art/story_enemies_batch1_2026-10-18.png`.
+- 2026-10-19: **four lane NPC looks** (LP-D08, DECISIONS D-119): the Hakawati, Feryal Khanum, Abu Marzouk, Sheikh
+  Abd al-Halim, CharacterLooks ids with no unit behind them (`Config/Npcs` `look`). The Import dialog takes one GLB at a
+  time (several quoted names queue only the last).
 - Prop facing checked in Studio: the arena barber shop faces the road. `lantern_post` is a
   free-standing stone pillar (arm along the mesh's X axis per its vertices), so it is only used in
   the open arenas; Jasmine Lane uses wall lanterns instead (players reported posts in the market).

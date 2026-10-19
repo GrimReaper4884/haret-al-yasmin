@@ -51,7 +51,12 @@
     "walkfight": 21,
     "injuredwalk": 111,
     "redcarpet": 117,
-    "stagewalk": 55
+    "stagewalk": 55,
+    "talkopen": 313,
+    "talkpassion": 308,
+    "talkhip": 309,
+    "handrub": 318,
+    "idle4": 244
   },
   "characters": {
     "qahwaji": {
@@ -453,6 +458,19 @@
           0.0
         ]
       }
+    },
+    "hakawati": {
+      "idle": "talkopen",
+      "attack": "talkpassion"
+    },
+    "feryal": {
+      "idle": "talkhip"
+    },
+    "grocer": {
+      "idle": "idle4"
+    },
+    "sheikh": {
+      "idle": "idle1"
     }
   }
 }

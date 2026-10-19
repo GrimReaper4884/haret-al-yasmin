@@ -1290,6 +1290,24 @@ with the lobby at night, `HaretDebug match ep1,normal`: in the arena ClockTime 1
 without finishing the match. Not exercised live: Lane life "off" (changing it writes the owner's live settings); its rule is
 one line (`target()` returns the day look). Specs: 430 green (clock, fade, preset sanity). **Owner STOP:** evening/night FPS on a phone.
 
+### LP-D08 four NPC looks through Meshy
+
+*Play Solo on the TEST place, desktop Studio, lobby; `HaretDebug noAutoAfk` first. `[World] built 2127 parts (budget 9000)`,
+`server ready`, no errors or warnings from our code (only the engine's `203785492` lines). Nothing bought, no reward paid.*
+
+| Check | Result | Capture |
+|---|---|---|
+| Meshes | the four front views keep the concepts' looks (fez and cream wrap, teal dress and headscarf, skullcap and apron, turban and cloak) | `docs/captures/lp/d08_npc_meshes.png` |
+| Spawn | `Workspace.Npcs` hakawati, feryal_roof, grocer, sheikh each carry their MeshPart, `LookId` set, 5.6 studs tall | — |
+| Abu Marzouk | stands behind his crates in the souq niche, facing the corridor | `d08_grocer.jpg` |
+| His prompt | E → portrait dialogue (a live view of his own figure) "Fresh from the orchard this mornin…" → "Show me the lane store" → The lane store opens | `d08_grocer_dialogue.jpg`, `d08_grocer_opens_store.jpg` |
+| Sheikh Abd al-Halim | seated on the cushioned stone bench beside the mosque door | `d08_sheikh.jpg` |
+| His prompt | "Good evening, my son. Sit a while in the shade; the lane is calmer here." and one reply, "Thank you, Sheikh."; nothing else | `d08_sheikh_greeting.jpg` |
+| Feryal Khanum | seated on her stool on EastA's roof, looking down into the lane; no prompt | `d08_feryal.jpg` |
+| The Hakawati, coffee house | `HarnessClockOffset` to evening + 9.5 s: on his stool among the six patrons, his figure gesturing with both hands as the first line starts | `d08_hakawati_coffee_gesture.jpg`, `d08_hakawati_coffee_seated.jpg` |
+| The Hakawati, AFK room | his figure on the dais at (−3000, 1.2, 10.4), open-hands idle (the room itself streams in only for a player inside) | `d08_hakawati_afk_room.jpg` |
+| Harness note | a staged `screen_capture` camera left the follow camera behind the grocer, so his prompt never showed; arrow keys turned the camera and E then worked | — |
+
 ### LP-D10 the lane's beats
 
 *Play Solo, desktop Studio, `noAutoAfk` set; each beat reached with `HarnessClockOffset`.* `[World] built 2125 parts`, no

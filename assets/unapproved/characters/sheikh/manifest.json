@@ -1,0 +1,18 @@
+{
+  "id": "sheikh",
+  "tasks": {
+    "concept": "01a15284-1be4-7511-8784-d207af5e7904",
+    "mesh": "01a15284-987b-7317-8639-e499f4870398",
+    "rig": "01a15285-c0e3-7567-8a2c-8c0ce8552d58",
+    "clip_idle1": "01a15286-d50a-726b-bb71-0c8cce5613d3"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_idle1": 3
+  },
+  "clips": {
+    "idle1": 11
+  }
+}

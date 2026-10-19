@@ -9,7 +9,8 @@
 --   * the dispute: by day two neighbours quarrel before the liwan, the za'im raises his hand, they
 --     shake on it; players close by see the (cosmetic) lane fund grow;
 --   * the coffee-house evening: six neighbours on the benches and the Hakawati on his stool telling a
---     tale in three lines (a different tale each evening);
+--     tale in three lines (a different tale each evening), in his own figure (LP-D08) with a gesture
+--     on each line;
 --   * the cameo: one night in each, Al-Adashari slips up the souq to Abu Brahim's shutter and is gone;
 --   * the 'arada (LP-D11): every third evening six sword-and-shield dancers process from the diwan to
 --     the gate, rice falling from the roofs;
@@ -110,7 +111,7 @@ local CROWD = {
 	{ skin = "#B97F5A", robe = "#1F1B18", accent = "#C9A13B", hat = "tarboosh", hatColor = "#7A1E1A" },
 	{ skin = "#C68E64", robe = "#A4302A", accent = "#1F1B18", hat = "cap", hatColor = "#EADFC8" },
 }
-local HAKAWATI = { skin = "#B5835E", robe = "#2F3E6B", accent = "#C9A13B", hat = "tarboosh", hatColor = "#A4302A" }
+local HAKAWATI = { skin = "#B5835E", robe = "#2F3E6B", accent = "#C9A13B", hat = "tarboosh", hatColor = "#A4302A", weapon = "none" }
 
 -- A neighbour (the stylized primitive figure: these extras have no character of their own).
 local function neighbour(name: string, look: { [string]: string }): Model
@@ -135,6 +136,29 @@ local function sit(m: Model, x: number, seatY: number, z: number, yaw: number)
 		end
 	end
 	m:PivotTo(CFrame.new(x, seatY - hip + 0.05, z) * CFrame.Angles(0, math.rad(yaw), 0))
+end
+
+-- Seats an imported figure (bones): its hip bone `sit.lift` over the seat top, thighs and knees bent
+-- every frame after its clip (the rule of NpcService.placeFigure and RigAnimController's seated NPCs).
+local SIT = Cfg.npcs.sit
+local BEND = {
+	LeftUpLeg = CFrame.Angles(math.rad(SIT.thigh), 0, 0),
+	RightUpLeg = CFrame.Angles(math.rad(SIT.thigh), 0, 0),
+	LeftLeg = CFrame.Angles(math.rad(SIT.knee), 0, 0),
+	RightLeg = CFrame.Angles(math.rad(SIT.knee), 0, 0),
+}
+local function seatBones(m: Model, x: number, seatY: number, z: number, yaw: number): { { bone: Bone, cf: CFrame } }
+	local hips = m:FindFirstChild("Hips", true)
+	local hipH = if hips and hips:IsA("Bone") then hips.WorldPosition.Y - m:GetPivot().Position.Y else 2
+	m:PivotTo(CFrame.new(x, seatY - (hipH - SIT.lift), z) * CFrame.Angles(0, math.rad(yaw), 0))
+	local list = {}
+	for _, d in m:GetDescendants() do
+		local cf = if d:IsA("Bone") then (BEND :: any)[d.Name] else nil
+		if cf then
+			table.insert(list, { bone = d :: Bone, cf = cf })
+		end
+	end
+	return list
 end
 
 local function place(m: Model, x: number, z: number, yaw: number)
@@ -360,8 +384,8 @@ local function runDispute(t: number)
 end
 
 -- Coffee-house evening
-local coffee: { sitters: { Model }, hakawati: Model, stool: Model, bubble: Bubble }? = nil
-local function runCoffee(t: number)
+local coffee: { sitters: { Model }, hakawati: Model, teller: Walker, bend: { { bone: Bone, cf: CFrame } }, stool: Model, bubble: Bubble }? = nil
+local function runCoffee(t: number, cam: Vector3, dt: number)
 	local c = B.coffee
 	local id, into = LobbyLife.clock(t, C)
 	if id ~= c.phase then
@@ -396,9 +420,17 @@ local function runCoffee(t: number)
 		seat.Material = Enum.Material.WoodPlanks
 		seat.Parent = stool
 		stool.Parent = folder
-		local hk = neighbour("Hakawati", HAKAWATI)
-		sit(hk, h[1], 1.7, h[2], h[3])
-		coffee = { sitters = sitters, hakawati = hk, stool = stool, bubble = bubble(hk.PrimaryPart :: BasePart, 3.8) }
+		-- His own figure (LP-D08); the primitive build stands in when the model is missing
+		local teller = walker("Hakawati", "hakawati", HAKAWATI)
+		local hk = teller.model
+		local bend = {}
+		if teller.bone then
+			bend = seatBones(hk, h[1], 1.7, h[2], h[3])
+			BoneAnim.loop(teller.bone, "idle")
+		else
+			sit(hk, h[1], 1.7, h[2], h[3])
+		end
+		coffee = { sitters = sitters, hakawati = hk, teller = teller, bend = bend, stool = stool, bubble = bubble(hk.PrimaryPart :: BasePart, 3.8) }
 	end
 	local cc = coffee :: any
 	local tale = c.tales[math.floor(t / C.cycle) % #c.tales + 1]
@@ -408,7 +440,17 @@ local function runCoffee(t: number)
 			key = "afk.line." .. tale .. "." .. i
 		end
 	end
+	local bone = cc.teller.bone
+	if bone and key and key ~= cc.bubble.key and Fx.any() then
+		BoneAnim.play(bone, "attack") -- a gesture as each line begins
+	end
 	say(cc.bubble, key)
+	if bone and near(cc.hakawati:GetPivot().Position, cam) then
+		BoneAnim.step(bone, dt, true)
+		for _, b in cc.bend do
+			b.bone.Transform *= b.cf
+		end
+	end
 end
 
 -- Night watch: Abu Hares calls; the cameo
@@ -607,7 +649,7 @@ local function step(dt: number)
 	setGate(LobbyLife.gateAngle(t, C, B.gate))
 	runPatrol(t, cam, span)
 	runDispute(t)
-	runCoffee(t)
+	runCoffee(t, cam, span)
 	runWatch(t, cam, span)
 	runArada(t, cam, span)
 	runMusaharati(t, cam, span)

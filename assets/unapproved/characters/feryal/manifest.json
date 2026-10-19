@@ -1,0 +1,21 @@
+{
+  "id": "feryal",
+  "tasks": {
+    "concept": "01a15284-1be9-7522-9aa1-6996c0f4c642",
+    "mesh": "01a15284-9851-7753-a32d-3cd98f875e36",
+    "rig": "01a15285-d9d1-748f-bc9b-5d0142c773b8",
+    "clip_handrub": "01a15286-d514-764f-9d30-7c33b9777d33",
+    "clip_talkhip": "01a15286-f5ad-76e9-a186-3b7cb7b43252"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_handrub": 3,
+    "clip_talkhip": 3
+  },
+  "clips": {
+    "handrub": 318,
+    "talkhip": 309
+  }
+}

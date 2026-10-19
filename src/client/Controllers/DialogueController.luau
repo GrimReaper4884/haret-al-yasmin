@@ -10,6 +10,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared.Net)
 local Npcs = require(Shared.Config.Npcs)
+local Units = require(Shared.Config.Units)
+local Enemies = require(Shared.Config.Enemies)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
@@ -155,7 +157,8 @@ local function setPortrait(npcId: string)
 	end
 	local npc = (Npcs :: any)[npcId]
 	local look = npc and npc.look
-	if look then
+	-- A unit's or enemy's look has its portrait; an NPC's own look (LP-D08) uses the live figure below.
+	if look and ((Units :: any)[look] or (Enemies :: any)[look]) then
 		local face = UnitCard.portrait(look, { Size = UDim2.new(1, -6, 1, -6), Position = UDim2.fromOffset(3, 3) })
 		face.Parent = portraitHolder
 		return

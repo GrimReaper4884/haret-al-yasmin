@@ -202,6 +202,14 @@ local Looks: { [string]: Look } = {
 	hammam = { build = "stout", outfit = "vest", beard = "short", moustache = "thick", hair = DARK, model = "AbuBasim" },
 	matriarch = { build = "normal", outfit = "abaya", beard = "none", moustache = "none", cloak = "#5A2340", model = "SudaKhanum" },
 
+	------------------------------------------------------------------ lane NPCs with no unit (LP-D08)
+	-- Config/Npcs `look` ids of their own: the Hakawati Abu Tawfiq, Feryal Khanum on her roof, Abu Marzouk
+	-- the grocer and Sheikh Abd al-Halim. Meshy figures with baked idles (tools/anim/clips.json).
+	hakawati = { build = "slim", outfit = "bisht", beard = "long", moustache = "thick", hair = WHITE, cloak = "#6B4423", model = "AbuTawfiq" },
+	feryal = { build = "slim", outfit = "abaya", beard = "none", moustache = "none", cloak = "#2E6B6B", model = "FeryalKhanum" },
+	grocer = { build = "stout", outfit = "apron", beard = "none", moustache = "thick", hair = DARK, apron = "#8A6A45", model = "AbuMarzouk" },
+	sheikh = { build = "normal", outfit = "bisht", beard = "short", moustache = "thin", hair = WHITE, cloak = "#4A3426", model = "SheikhAbdAlHalim" },
+
 	------------------------------------------------------------------ attackers
 	gendarme = {
 		build = "slim",

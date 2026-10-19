@@ -304,6 +304,30 @@
       "prompt": "Formidable 1930s Damascus matriarch around fifty years old, tall and straight-backed, strong mature face with fine lines and a few grey hairs at the temples, embroidered dark indoor dress, gold-edged headscarf, heavy necklace, fierce dignified expression, both hands open and empty, arms straight out to the sides, modest clothing.",
       "texture": "Deep plum embroidered dress, black headscarf with a gold edge, gold necklace, warm tan skin.",
       "_note": "S1-A07: empty hands; the held item is an Anim/HandProps prop. Her pointing hand is a pose in the clips, not a prop."
+    },
+    "hakawati": {
+      "height": 1.75,
+      "prompt": "Elderly 1930s Damascus coffee-house storyteller, lean old man with a long white beard and bushy white eyebrows, red fez wrapped with a cream cloth, long dark indigo qumbaz robe under a brown wool cloak draped over the shoulders, twinkling eyes and a lively storytelling expression, both hands open and empty, arms straight out to the sides.",
+      "texture": "Dark indigo robe, brown wool cloak with a thin gold trim, red fez with a cream wrap, white beard, warm tan skin.",
+      "_note": "LP-D08 NPC (the Hakawati Abu Tawfiq): the AFK room and the coffee-house evening. Empty hands."
+    },
+    "feryal": {
+      "height": 1.65,
+      "prompt": "Elegant 1930s Damascus housewife around forty, slim, sharp knowing eyes and a sly half-smile, dark hair pinned up under a loose patterned headscarf, long fitted dress with a lace collar, gold bangles on both wrists, both hands open and empty, arms straight out to the sides, modest clothing.",
+      "texture": "Deep teal dress, cream lace collar, wine-red patterned headscarf, gold bangles, warm tan skin.",
+      "_note": "LP-D08 NPC (Feryal Khanum on EastA's roof, seated, ambient). Empty hands."
+    },
+    "grocer": {
+      "height": 1.65,
+      "prompt": "Cheerful round-faced 1930s Damascus greengrocer, short and plump, thick black moustache, white knitted skullcap, rolled-up shirt sleeves, olive-green vest, long brown work apron, sandals, big friendly grin, both hands open and empty, arms straight out to the sides.",
+      "texture": "Cream shirt, olive-green vest, brown canvas apron, white skullcap, brown sandals, warm tan skin.",
+      "_note": "LP-D08 NPC (Abu Marzouk in the souq, opens the Shop). Empty hands."
+    },
+    "sheikh": {
+      "height": 1.75,
+      "prompt": "Dignified elderly 1930s Damascus neighbourhood elder, calm gentle smiling face, neat short white beard, white turban wound around a small red cap, long cream robe under a dark brown open cloak, soft leather slippers, both hands open and empty, arms straight out to the sides, modest clothing.",
+      "texture": "Cream robe, dark brown wool cloak, white turban over a red cap, tan slippers, warm tan skin.",
+      "_note": "LP-D08 NPC (Sheikh Abd al-Halim in the mosque court, seated, greeting only). Period costume only, no symbols or books."
     }
   },
   "prop_style": "Stylized chunky cartoon game prop for a mobile tower-defense game set in a 1930s Damascus old-city lane, toy-like proportions, clean simple shapes, bold readable silhouette, hand-painted flat colors with soft shading, warm limestone and wood palette, single object centered, three-quarter view, no characters, no text, no background.",

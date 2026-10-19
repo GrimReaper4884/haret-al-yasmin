@@ -659,6 +659,11 @@ local en: { [string]: string } = {
 	["dlg.balila.third"] = "As for you… I'll find out. I always find out.",
 	["dlg.balila.more"] = "And?",
 	["dlg.balila.enough"] = "Enough, Abu Ghadeb!",
+	-- LP-D08: the grocer opens the lane store; the sheikh only greets (no religious lines)
+	["dlg.grocer.greet"] = "Fresh from the orchard this morning! Whatever the lane needs, Abu Marzouk has it.",
+	["dlg.grocer.greet.go"] = "Show me the lane store",
+	["dlg.sheikh.greet"] = "Good evening, my son. Sit a while in the shade; the lane is calmer here.",
+	["dlg.sheikh.greet.ok"] = "Thank you, Sheikh.",
 
 	-- Settings
 	["hud.settings"] = "Settings",
@@ -1681,6 +1686,10 @@ local ar: { [string]: string } = {
 	["dlg.balila.third"] = "أما إنت… رح أعرف. أنا دايماً بعرف.",
 	["dlg.balila.more"] = "وبعدين؟",
 	["dlg.balila.enough"] = "بس يا أبو غاضب!",
+	["dlg.grocer.greet"] = "طازة من البستان الصبح! كل شي بتحتاجه الحارة، عند أبو مرزوك.",
+	["dlg.grocer.greet.go"] = "فرجيني دكّانة الحارة",
+	["dlg.sheikh.greet"] = "مسا الخير يا ابني. اقعد شوي بالفي، الحارة هون أهدى.",
+	["dlg.sheikh.greet.ok"] = "تسلم يا شيخ.",
 
 	-- Settings
 	["hud.settings"] = "إعدادات",

@@ -1,0 +1,21 @@
+{
+  "id": "hakawati",
+  "tasks": {
+    "concept": "01a15284-1be5-75a2-b32b-bb1e0befae24",
+    "mesh": "01a15284-9885-7478-9b6a-2546b702d04f",
+    "rig": "01a15285-c1b5-756b-98c3-e457b23ad84e",
+    "clip_talkopen": "01a15286-d51c-717c-975c-a9db89974921",
+    "clip_talkpassion": "01a15286-f759-7680-8fcd-d75f2f59308b"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_talkopen": 3,
+    "clip_talkpassion": 3
+  },
+  "clips": {
+    "talkopen": 313,
+    "talkpassion": 308
+  }
+}

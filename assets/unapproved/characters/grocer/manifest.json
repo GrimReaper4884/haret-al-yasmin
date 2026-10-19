@@ -1,0 +1,18 @@
+{
+  "id": "grocer",
+  "tasks": {
+    "concept": "01a15284-1be4-7670-9123-938e94b3241d",
+    "mesh": "01a15284-98c9-72f8-ab49-f7943cf45a95",
+    "rig": "01a15285-c01b-72aa-988e-da083364d313",
+    "clip_idle4": "01a15286-d51d-74fb-9f2f-84aab294d6e8"
+  },
+  "credits": {
+    "concept": 6,
+    "mesh": 30,
+    "rig": 5,
+    "clip_idle4": 3
+  },
+  "clips": {
+    "idle4": 244
+  }
+}

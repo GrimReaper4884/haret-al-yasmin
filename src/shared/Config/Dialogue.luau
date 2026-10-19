@@ -303,6 +303,28 @@ local Dialogue: { [string]: Tree } = {
 			},
 		},
 	},
+	-- LP-D08: Abu Marzouk opens the lane store; the sheikh greets and that is all (nothing to buy or do).
+	grocer = {
+		entries = { { node = "greet" } },
+		nodes = {
+			greet = {
+				textKey = "dlg.grocer.greet",
+				choices = {
+					{ textKey = "dlg.grocer.greet.go", action = { type = "screen", screen = "store" } },
+					{ textKey = "dlg.common.maybe_later", action = { type = "close" } },
+				},
+			},
+		},
+	},
+	sheikh = {
+		entries = { { node = "greet" } },
+		nodes = {
+			greet = {
+				textKey = "dlg.sheikh.greet",
+				choices = { { textKey = "dlg.sheikh.greet.ok" } },
+			},
+		},
+	},
 }
 
 return Dialogue

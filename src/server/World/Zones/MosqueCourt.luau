@@ -93,6 +93,9 @@ local function mosqueFront(m: Model)
 		deco(Kit.box(m, "Band", EAST - 0.1, y, 17, EAST, y + 0.6, 18, Palette.basalt, M.Basalt))
 	end
 	Props.lantern(m, Kit.faceFrame(Vector3.new(EAST - 1.6, 9.4, 9), Vector3.new(-1, 0, 0)), 16)
+	-- The sheikh's stone bench against the wall beside the door (LP-D08: he sits at 47.1, 1.4, 14.4)
+	Kit.box(m, "SheikhBench", EAST - 1.6, 0, 12.4, EAST, 1.2, 16.4, Palette.stoneWarm, M.Limestone)
+	deco(Kit.box(m, "SheikhCushion", EAST - 1.5, 1.2, 12.6, EAST - 0.1, 1.4, 16.2, Palette.fabricRed, M.Fabric))
 end
 
 -- The minaret in the north-east corner (it used to stand in the skyline at -48, -92)
