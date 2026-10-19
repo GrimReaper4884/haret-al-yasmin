@@ -23,7 +23,7 @@ end
 
 -- The place file ships Studio's default Atmosphere, Bloom and SunRays. Two hazes or two blooms
 -- stack (the night read grey), so at runtime only ours stay (PV-E01; the place file is untouched).
-local OURS = { LaneHaze = true, WarmGrade = true, SoftBloom = true, SunRays = true, HaretMoments = true, NightGrade = true }
+local OURS = { LaneHaze = true, WarmGrade = true, SoftBloom = true, SunRays = true, HaretMoments = true, NightGrade = true, LaneGrade = true }
 local function dropStrays()
 	for _, c in Lighting:GetChildren() do
 		local effect = c:IsA("Atmosphere") or c:IsA("BloomEffect") or c:IsA("SunRaysEffect") or c:IsA("ColorCorrectionEffect")

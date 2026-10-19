@@ -11,6 +11,9 @@ Settings.defs = {
 	-- How much visual effect a client draws: full, reduced (no particles / camera moves / shine),
 	-- or off (plain beams only). Client-side only; never changes the simulation.
 	effects = { kind = "enum", values = { "full", "reduced", "off" }, default = "full" },
+	-- The lobby's life (LP-D09): full = the lane clock, moving washing, birds, steam and the beats;
+	-- lite = the same without particles; off = a still lane in the day light. Client-side only.
+	laneLife = { kind = "enum", values = { "full", "lite", "off" }, default = "full" },
 	-- Show summon results straight away (no lantern build-up).
 	skipSummon = { kind = "bool", default = false },
 	-- Defenders fire their ultimate as soon as it is ready (otherwise the player taps it).

@@ -1271,3 +1271,21 @@ Three call periods watched on the client: the bubble showed "The washing will be
 Note for future captures: `screen_capture` takes several seconds to land, so a 7 s window was missed twice; the call
 capture was taken with the bubble switched on from the client probe in the same period. Studio's capture did not draw
 the bubble while it was AlwaysOnTop; it is not AlwaysOnTop now (D-112).
+
+### LP-D09 the lane clock
+
+*Play Solo, desktop Studio, `noAutoAfk` set; each phase reached with `HarnessClockOffset`, same camera down the lane.*
+
+| Phase | Lighting read back | Capture |
+|---|---|---|
+| Dawn (0:30) | ClockTime 6.41, Brightness 1.70: low warm-pink light | `docs/captures/lp/d09_dawn.jpg` |
+| Day (3:20) | 15.60, 2.40: the slice's afternoon, unchanged | `d09_day.jpg` |
+| Evening (9:20) | 18.30, 1.90: deep orange | `d09_evening.jpg` |
+| Night (11:30) | 21.20, 0.70, ambient (50, 52, 76): blue walls, warm pools under the lanterns | `d09_night.jpg`, `d09_night_square.jpg` |
+
+Tuning on the way (D-113): the first night (20.6 / 1.2, lanterns ×1.8) read as day; with the lights switched off for a
+probe the lane went properly blue, so the lanterns were the wash: ×1.15 still washed, ×0.6 gives pools. **Match hand-off:**
+with the lobby at night, `HaretDebug match ep1,normal`: in the arena ClockTime 19.4, Brightness 1.4 (MatchFx's night), ambient
+(92, 80, 70) and outdoor (150, 135, 118) = day, LaneGrade white / 0, steady over 3 s: the match looks as before. Play was stopped
+without finishing the match. Not exercised live: Lane life "off" (changing it writes the owner's live settings); its rule is
+one line (`target()` returns the day look). Specs: 430 green (clock, fade, preset sanity). **Owner STOP:** evening/night FPS on a phone.

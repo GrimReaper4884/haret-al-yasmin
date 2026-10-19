@@ -150,6 +150,53 @@ return function(t)
 			end
 		end)
 
+		t.it("the lane clock: phase boundaries, determinism, fades (LP-D09)", function()
+			local C = Cfg.CLOCK
+			local function phase(sec)
+				return (LobbyLife.clock(sec, C))
+			end
+			t.eq(C.cycle, 720, "a 12-minute day")
+			t.eq(phase(0), "dawn")
+			t.eq(phase(59.9), "dawn")
+			t.eq(phase(60), "day")
+			t.eq(phase(479.9), "day")
+			t.eq(phase(480), "evening")
+			t.eq(phase(599.9), "evening")
+			t.eq(phase(600), "night")
+			t.eq(phase(719.9), "night")
+			t.eq(phase(720), "dawn", "the cycle wraps")
+			t.eq(phase(1.8e9 + 600), phase(600), "the same at any epoch (server time)")
+			t.eq(phase(-120), "night", "times before the epoch wrap too")
+			local _, into = LobbyLife.clock(60 + 12, C)
+			t.eq(into, 12)
+			-- every minute of the cycle belongs to exactly one phase, in order
+			local last = 0
+			for _, p in C.phases do
+				t.eq(p.from, last, p.id .. " starts where the last ended")
+				last = p.to
+			end
+			t.eq(last * 60, C.cycle)
+			-- the fade: night into dawn at the top of the cycle, done after `fade` s
+			local from, to, k = LobbyLife.lightBlend(0, C)
+			t.eq(from, "night")
+			t.eq(to, "dawn")
+			t.eq(k, 0)
+			from, to, k = LobbyLife.lightBlend(480 + C.fade / 2, C)
+			t.eq(from, "day")
+			t.eq(to, "evening")
+			t.truthy(k > 0.4 and k < 0.6, "half way through the fade")
+			from, to, k = LobbyLife.lightBlend(480 + C.fade + 1, C)
+			t.eq(from, "evening")
+			t.eq(k, 1)
+			local Light = t.config("Lighting")
+			for _, p in C.phases do
+				local look = Light.lane[p.id]
+				t.truthy(look, p.id .. " has a look")
+				t.truthy(look.brightness > 0 and look.lanterns > 0 and look.lanterns <= 1.5 and look.clockTime >= 0 and look.clockTime < 24)
+			end
+			t.truthy(Light.lane.night.brightness < Light.lane.evening.brightness and Light.lane.evening.brightness < Light.lane.day.brightness, "the light falls through the evening into night")
+		end)
+
 		t.it("config stays inside the plan's budgets", function()
 			t.eq(Cfg.fountain.rate, 6)
 			t.eq(Cfg.steam.rate, 4)

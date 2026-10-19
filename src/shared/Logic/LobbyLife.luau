@@ -7,12 +7,12 @@ local LobbyLife = {}
 
 export type Tier = { static: boolean, motion: boolean, particles: boolean }
 
--- Effects "full": everything; "reduced": no particles (Fx rule) but the world still moves;
--- "off": nothing extra at all (the vines too).
+-- Lane life "full": everything; "lite" (or the Effects tier's "reduced"): no particles but the world
+-- still moves; "off": nothing extra at all (the vines too).
 function LobbyLife.tier(level: string): Tier
 	if level == "full" then
 		return { static = true, motion = true, particles = true }
-	elseif level == "reduced" then
+	elseif level == "reduced" or level == "lite" then
 		return { static = true, motion = true, particles = false }
 	end
 	return { static = false, motion = false, particles = false }
@@ -149,6 +149,40 @@ function LobbyLife.callAt(t: number, every: number, show: number, count: number,
 	end
 	local period = math.floor(s / every)
 	return period % count + 1, into < waveFor
+end
+
+export type Clock = { cycle: number, fade: number, phases: { { id: string, from: number, to: number } } }
+
+-- The lane clock (LP-D09): which phase of the `cycle`-second day the shared time `t` falls in, how
+-- many seconds into that phase, and the minute of the cycle. Phases are { id, from, to } in minutes.
+function LobbyLife.clock(t: number, c: Clock): (string, number, number)
+	local s = t % c.cycle
+	local minute = s / 60
+	for _, p in c.phases do
+		if minute >= p.from and minute < p.to then
+			return p.id, s - p.from * 60, minute
+		end
+	end
+	local first = c.phases[1]
+	return first.id, s - first.from * 60, minute
+end
+
+-- The light to draw at `t`: the previous phase's preset fading into this phase's over the first
+-- `fade` seconds of each phase. Returns (from id, to id, k) with k in 0..1 (1 = fully this phase).
+function LobbyLife.lightBlend(t: number, c: Clock): (string, string, number)
+	local id, into = LobbyLife.clock(t, c)
+	local prev = c.phases[#c.phases].id
+	for i, p in c.phases do
+		if p.id == id then
+			prev = c.phases[(i - 2) % #c.phases + 1].id
+			break
+		end
+	end
+	if c.fade <= 0 or into >= c.fade then
+		return id, id, 1
+	end
+	local k = into / c.fade
+	return prev, id, k * k * (3 - 2 * k) -- smoothstep
 end
 
 return LobbyLife

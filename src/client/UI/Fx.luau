@@ -33,6 +33,22 @@ function Fx.set(v: string)
 	end
 end
 
+-- The lobby's Lane life setting (LP-D09): "full", "lite" or "off" (Logic/LobbyLife.tier reads it).
+-- SettingsController sets it; LobbyLifeController, LaneClockController and the rooftop calls follow it.
+local lane = "full"
+Fx.LaneChanged = Signal.new()
+
+function Fx.laneLife(): string
+	return lane
+end
+
+function Fx.setLaneLife(v: string)
+	if v ~= lane then
+		lane = v
+		Fx.LaneChanged:Fire(v)
+	end
+end
+
 -- Convenience checks.
 function Fx.full(): boolean
 	return level == "full"

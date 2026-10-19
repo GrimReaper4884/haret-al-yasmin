@@ -42,6 +42,8 @@ local function apply(key: string, value: any)
 	values[key] = value
 	if key == "effects" then
 		Fx.set(value)
+	elseif key == "laneLife" then
+		Fx.setLaneLife(value)
 	elseif key == "uiScale" then
 		Device.setPreset(value)
 	elseif key == "sfx" then
@@ -85,7 +87,7 @@ type Row = { key: string, labelKey: string, options: { { value: any, textKey: st
 
 -- Theme v2 (LP-C05): the rows in four groups, each under an icon and a title.
 local GROUPS: { { titleKey: string, icon: string, keys: { string } } } = {
-	{ titleKey = "settings.group.look", icon = "ui_music", keys = { "effects", "cutscenes", "music", "sfx", "skipSummon" } },
+	{ titleKey = "settings.group.look", icon = "ui_music", keys = { "effects", "laneLife", "cutscenes", "music", "sfx", "skipSummon" } },
 	{ titleKey = "settings.group.match", icon = "act_speed", keys = { "camera", "autoUlt", "autoSkip", "autoAfk" } },
 	{ titleKey = "settings.group.controls", icon = "ui_settings", keys = { "uiScale", "panelSide", "quickPlace", "railSide" } },
 	{ titleKey = "settings.group.language", icon = "ui_codes", keys = { "language" } },
@@ -100,6 +102,15 @@ local ROWS: { Row } = {
 			{ value = "full", textKey = "settings.effects.full" },
 			{ value = "reduced", textKey = "settings.effects.reduced" },
 			{ value = "off", textKey = "settings.effects.off" },
+		},
+	},
+	{
+		key = "laneLife",
+		labelKey = "settings.laneLife",
+		options = {
+			{ value = "full", textKey = "settings.laneLife.full" },
+			{ value = "lite", textKey = "settings.laneLife.lite" },
+			{ value = "off", textKey = "settings.laneLife.off" },
 		},
 	},
 	{

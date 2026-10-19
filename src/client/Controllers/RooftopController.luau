@@ -94,7 +94,7 @@ local function step(dt: number)
 		g.Enabled = idx ~= nil
 	end
 	local period = math.floor((now - r.offset) / r.every)
-	if wave and period ~= wavedPeriod and LobbyLife.tier(Fx.level()).motion then
+	if wave and period ~= wavedPeriod and LobbyLife.tier(Fx.laneLife()).motion then
 		if RigAnimController.npcPlay(r.npc, "attack") then
 			wavedPeriod = period
 		end

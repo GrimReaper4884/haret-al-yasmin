@@ -8,6 +8,20 @@
 return {
 	radius = 120, -- studs from the camera; farther pieces hold still / switch off
 
+	-- The lane clock (LP-D09, LOOK_AND_PLAY_PLAN §4.3): a 12-minute day on the server's clock, so every
+	-- player sees the same light; phases in minutes, each fading in from the last over `fade` s.
+	-- The looks are Config/Lighting `lane[phase]`.
+	CLOCK = {
+		cycle = 720,
+		fade = 25,
+		phases = {
+			{ id = "dawn", from = 0, to = 1 },
+			{ id = "day", from = 1, to = 8 },
+			{ id = "evening", from = 8, to = 10 },
+			{ id = "night", from = 10, to = 12 },
+		},
+	},
+
 	-- The lane's cast (LP-D02, Config/Npcs): walkers stroll their route at `walkSpeed` and stand
 	-- `pause` s at each point; the server moves them `serverHz` times a second (prompt range) and each
 	-- client draws them smoothly on the same clock. A seated figure bends `thigh` / `knee` degrees at

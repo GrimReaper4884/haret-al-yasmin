@@ -3,7 +3,7 @@
 -- climbing six walls, a flock of birds over the square, spray and ripples in the fountain, steam
 -- from Abu Hatem's samovar, Abu Nadim's oven flaring and puffing flour when you walk past, and
 -- cats that turn to look at the nearest player. Numbers in Config/LobbyLife, math in
--- Logic/LobbyLife. Gated by the Effects setting (off: nothing, reduced: no particles) and by
+-- Logic/LobbyLife. Gated by the Lane life setting (off: nothing, lite: no particles; LP-D09) and by
 -- distance: farther than `radius` from the camera, a piece holds still or switches off. The
 -- server builds and simulates nothing for it.
 --
@@ -296,7 +296,7 @@ end
 local function update(dt: number)
 	local camera = Workspace.CurrentCamera
 	local cam = if camera then camera.CFrame.Position else Vector3.zero
-	local tier = LobbyLife.tier(Fx.level())
+	local tier = LobbyLife.tier(Fx.laneLife())
 	local now = os.clock()
 	local R = Cfg.radius
 	local parts: { BasePart } = {}
@@ -399,7 +399,7 @@ local function updateStatic(dt: number)
 	staticAcc = 0
 	local camera = Workspace.CurrentCamera
 	local cam = if camera then camera.CFrame.Position else Vector3.zero
-	local show = LobbyLife.tier(Fx.level()).static
+	local show = LobbyLife.tier(Fx.laneLife()).static
 	for _, v in vines do
 		local near = show and LobbyLife.near(v.at.X - cam.X, v.at.Y - cam.Y, v.at.Z - cam.Z, Cfg.radius)
 		local want = if near then folder else nil
