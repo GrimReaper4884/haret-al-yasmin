@@ -159,6 +159,30 @@ return function(t)
 				end
 			end
 		end)
+		-- D-134: the watchman points to the community server from his first line.
+		t.it("Abu Hares suggests the community server from his greeting", function()
+			local greet = Dialogue.natour.nodes[Dialogue.natour.entries[1].node]
+			local found = false
+			for _, c in greet.choices do
+				if c.next == "community" then
+					found = true
+				end
+			end
+			t.truthy(found, "natour greet leads to the community node")
+			t.truthy(Dialogue.natour.nodes.community, "natour community node")
+		end)
+		-- Roblox Community Standards: social links live on the game's page only, never inside the game
+		-- (create.roblox.com/docs/production/promotion/social-media-links).
+		t.it("no string carries an off-platform link", function()
+			for _, lang in Strings.languages do
+				for key, text in Strings[lang] do
+					local s = string.lower(text)
+					for _, bad in { "http", "www.", "discord.gg", "discord.com", ".gg/", "@gmail" } do
+						t.truthy(not string.find(s, bad, 1, true), lang .. "/" .. key .. " contains '" .. bad .. "'")
+					end
+				end
+			end
+		end)
 	end)
 
 	-- Defender abilities: a known kind; the mark (S1-S06) is capped at ×1.4 (STORY_PLAN §7.6, D-045).

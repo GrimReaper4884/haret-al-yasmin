@@ -101,7 +101,15 @@ local Dialogue: { [string]: Tree } = {
 		nodes = {
 			greet = {
 				textKey = "dlg.natour.greet",
-				choices = { { textKey = "dlg.natour.greet.ok" } },
+				choices = {
+					{ textKey = "dlg.natour.greet.community", next = "community" },
+					{ textKey = "dlg.natour.greet.ok" },
+				},
+			},
+			-- D-134: Abu Hares points players to the community server (link on the game's page only).
+			community = {
+				textKey = "dlg.natour.community",
+				choices = { { textKey = "dlg.natour.community.ok" } },
 			},
 		},
 	},

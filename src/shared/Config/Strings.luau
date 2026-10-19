@@ -618,8 +618,13 @@ local en: { [string]: string } = {
 	["dlg.barber.greet.ok"] = "Then I'd better go defend it.",
 	["dlg.qahwaji.greet"] = "Tea or coffee? Sit by the fountain. The men gather here before the gate closes.",
 	["dlg.qahwaji.greet.ok"] = "Later, Abu Hazem.",
-	["dlg.natour.greet"] = "After the evening prayer I bar this gate, and nobody enters without a name. Want to help hold it? The Play arch is in the square.",
+	["dlg.natour.greet"] = "After the evening prayer I bar this gate, and nobody enters without a name. Want to help hold it? The Play arch is in the square. And if you want the lane's news first, ask me.",
 	["dlg.natour.greet.ok"] = "I'll be there.",
+	-- D-134: the community-server nudge. Roblox allows only "links on our game's page" wording in-game,
+	-- never the link itself (docs: production/promotion/social-media-links), so no URL in any string.
+	["dlg.natour.greet.community"] = "Where does the lane hear its news?",
+	["dlg.natour.community"] = "News passes this gate before anyone else hears it. Join us in our community server: the link is on the game's page, under Social Links. Codes, updates and the lane's talk land there first.",
+	["dlg.natour.community.ok"] = "I'll look for it.",
 	-- The bigger lane's cast: dialogue (LP-D02)
 	["dlg.umm_hissam.greet"] = "So you are the one defending our gate. Show me your men, I want to see who stands at the wall.",
 	["dlg.umm_hissam.greet.go"] = "Here are my defenders",
@@ -1647,8 +1652,11 @@ local ar: { [string]: string } = {
 	["dlg.barber.greet.ok"] = "لكان أحسن روح دافع عنه.",
 	["dlg.qahwaji.greet"] = "شاي ولا قهوة؟ اقعد جنب البحرة. الرجال بيتجمّعوا هون قبل ما يتسكّر الباب.",
 	["dlg.qahwaji.greet.ok"] = "بعدين يا أبو حازم.",
-	["dlg.natour.greet"] = "بعد صلاة العشا بسكّر هالباب وما حدا بيفوت بلا اسم. بدك تساعد تصمّده؟ قوس اللعب بالساحة.",
+	["dlg.natour.greet"] = "بعد صلاة العشا بسكّر هالباب وما حدا بيفوت بلا اسم. بدك تساعد تصمّده؟ قوس اللعب بالساحة. وإذا بدك أخبار الحارة قبل الكل، اسألني.",
 	["dlg.natour.greet.ok"] = "جاي.",
+	["dlg.natour.greet.community"] = "وين بتسمع الحارة أخبارها؟",
+	["dlg.natour.community"] = "الأخبار بتمرق من هالباب قبل ما حدا يسمعها. انضم لسيرفر مجتمعنا: الرابط بصفحة اللعبة، تحت روابط التواصل. الأكواد والتحديثات وحكي الحارة بيوصلوا لهونيك أول.",
+	["dlg.natour.community.ok"] = "رح دوّر عليه.",
 	-- The bigger lane's cast: dialogue (LP-D02)
 	["dlg.umm_hissam.greet"] = "إنت اللي عم تحمي بابنا؟ فرجيني رجالك، بدي شوف مين واقف عالسور.",
 	["dlg.umm_hissam.greet.go"] = "هدول المدافعين",

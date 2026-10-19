@@ -107,7 +107,7 @@ python tools/discord/build_server.py
   bug-reports, suggestions; a question "Which language?" (English / العربية → shows عربي) and "Ping me for
   updates?" (→ Update Pings).
 - **Server guide / welcome screen**: point to #rules, #codes, #bug-reports.
-- Invite link: **https://discord.gg/VeT9cvbuMq** (never expires, lands in #welcome; created by the bot 2026-10-16). It goes in the experience's **Social Links** only, never inside the game: `PolicyService.AllowedExternalLinkReferences` is a legacy field that always returns an empty array, so no player is cleared to see a Discord reference in-experience.
+- Invite link: **https://discord.gg/VeT9cvbuMq** (never expires, lands in #welcome; created by the bot 2026-10-16). It goes in the experience's **Social Links** only, never inside the game: `PolicyService.AllowedExternalLinkReferences` is a legacy field that always returns an empty array, so no player is cleared to see a Discord reference in-experience. In-game, Abu Hares at the gate only says the link is on the game's page under Social Links (DECISIONS D-134, the wording Roblox's social-media-links guide allows).
 - Pin a message in #codes with the current codes from `src/shared/Config/Codes.luau` (only codes meant for
   Discord; `QITT` is the "announced on community channels" one).
 

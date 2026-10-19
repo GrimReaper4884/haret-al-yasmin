@@ -53,10 +53,20 @@ return {
 	-- The NPC dialogue (Theme v2, LP-C04): portrait size, typewriter speed (characters a second) and the
 	-- gap between the choices sliding in.
 	-- `screens`: the lobby screens a dialogue choice may open (Config/Dialogue action "screen", LP-D02).
+	-- D-134: the panel rises `rise` px and grows from `from` over `enter` s, sinks back over `exit` s;
+	-- each new line pops the portrait from `portraitFrom`, and it bobs `talk` px every `nod` s while
+	-- the line types (the speaker talking).
 	DIALOGUE = {
 		portrait = 72,
 		cps = 18,
 		choiceGap = 0.06,
+		rise = 44,
+		from = 0.9,
+		enter = 0.32,
+		exit = 0.2,
+		portraitFrom = 0.7,
+		talk = 3,
+		nod = 0.16,
 		screens = { "units", "daily", "pass", "play", "event", "summon", "store" },
 	},
 	-- The match HUD skin (Theme v2, LP-C06): the gate cracks below `crackAt` of its HP; the result's

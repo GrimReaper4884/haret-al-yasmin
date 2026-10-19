@@ -1547,3 +1547,17 @@ Episodes 1–2 cleared, not 9.*
 | Probe | two `SetAsync` 2 s apart leave 1 listed version; `GetVersionAsync` on the first id returns nil (one version per window) |
 | `drillBegin` | version A written (a daily: 130 lira) at 1792411901787 ms |
 | `drillFinish`, 62 min later | B written (a match, a 10x summon, a paid 300-lira receipt); 2 versions listed; rolled back to A: `applied = true`, `lost = 2`, `replayed = 1`, `net` lira -420 / qirsh +120; the key holds A's profile plus the receipt (430 lira, the receipt's ledger entry and PurchaseId), lock cleared: **`exact = true`** |
+
+### D-134 Abu Hares's community-server dialogue
+
+*`tools/check.ps1`: 479 specs green (2 new in `config.spec`), luau-lsp strict clean, rojo build OK; selene could not run
+(Windows Application Control now blocks `selene.exe`, as it already blocked StyLua). Play Solo, `HaretDebug noAutoAfk`,
+English; the dialogue writes nothing to the profile.*
+
+| Check | Result |
+|---|---|
+| Sync | `script_grep "dlg.natour.community"` finds Dialogue and Strings (en + ar); `DialogueController` has `leave()` |
+| Open (E at `Workspace.Npcs.natour.Root.TalkPrompt`) | panel offset Y +32 → −12 (Back overshoot to −14), scale 0.90 → 1.00 in about 0.15 s; the greeting types out with the new "ask me" line; choices "Where does the lane hear its news?" and "I'll be there." |
+| Choice 1 (real mouse click) | community line "Join us in our community server: the link is on the game's page, under Social Links…"; portrait scale 0.70 → 1.03 → 1.00, portrait bobs 0 → −3 px while typing; one choice "I'll look for it." |
+| Choice "I'll look for it." | panel sinks −12 → +24 px and shrinks to 0.92, then hides and resets to −12 / 1.00 |
+| Console | `server ready`; only the engine's `203785492` and UIBlox lines, nothing from our code |

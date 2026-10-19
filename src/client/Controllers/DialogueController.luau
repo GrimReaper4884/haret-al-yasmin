@@ -3,9 +3,11 @@
 -- Theme v2 (LP-C04): the speaker's portrait in a brass frame beside the line (its unit portrait when the
 -- NPC wears a unit's look, else a live view of the NPC's figure), the line typed out at
 -- Hud.DIALOGUE.cps (a tap on it completes it; Arabic types in its own reading order), then the
--- choices slide in one after another. Reduced Motion shows everything at once.
+-- choices slide in one after another. D-134: the panel rises in and sinks out, the portrait pops on
+-- every new line and bobs while the line types. Reduced Motion shows everything at once.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared.Net)
@@ -42,6 +44,7 @@ local portraitHolder: Frame
 local portraitFor: string? = nil
 local typing = 0 -- bumps on every new line; a running typewriter stops when it changes
 local typedDone = true
+local showing = 0 -- bumps on every open and close; a running close only hides the panel if it is still its own
 
 local function build()
 	panel = Theme.panel({
@@ -185,6 +188,74 @@ local function setPortrait(npcId: string)
 	end
 end
 
+-- The portrait's resting place: the reading side's start (left in English, right in Arabic).
+local function portraitHome(): UDim2
+	return if LocaleController.isRtl() then UDim2.fromScale(1, 0) else UDim2.fromScale(0, 0)
+end
+
+-- The panel rises from below its place and grows in (Back Out).
+local function enter()
+	showing += 1
+	local D = Hud.DIALOGUE
+	local scale = Juice.scaleOf(panel)
+	panel.Visible = true
+	if not Juice.allowed("slide") then
+		scale.Scale = 1
+		return
+	end
+	local final = panel.Position
+	panel.Position = final + UDim2.fromOffset(0, D.rise)
+	scale.Scale = D.from
+	local info = TweenInfo.new(D.enter, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+	TweenService:Create(panel, info, { Position = final }):Play()
+	TweenService:Create(scale, info, { Scale = 1 }):Play()
+end
+
+-- The panel sinks and shrinks away, then hides (unless it was opened again meanwhile).
+local function leave()
+	showing += 1
+	local token = showing
+	local D = Hud.DIALOGUE
+	local scale = Juice.scaleOf(panel)
+	if not panel.Visible or not Juice.allowed("slide") then
+		panel.Visible = false
+		scale.Scale = 1
+		return
+	end
+	local base = panel.Position
+	local info = TweenInfo.new(D.exit, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+	TweenService:Create(panel, info, { Position = base + UDim2.fromOffset(0, D.rise) }):Play()
+	local shrink = TweenService:Create(scale, info, { Scale = D.from })
+	shrink.Completed:Once(function()
+		if token == showing then
+			panel.Visible = false
+			panel.Position = base
+			scale.Scale = 1
+		end
+	end)
+	shrink:Play()
+end
+
+-- The speaker bobs while the line types (stops when the line is done, skipped or replaced).
+local function talk(token: number)
+	if not Juice.allowed("breathe") then
+		return
+	end
+	local D = Hud.DIALOGUE
+	task.spawn(function()
+		local up = true
+		while token == typing and not typedDone and portraitHolder.Parent do
+			local home = portraitHome()
+			local to = if up then home - UDim2.fromOffset(0, D.talk) else home
+			local tw = TweenService:Create(portraitHolder, TweenInfo.new(D.nod, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Position = to })
+			tw:Play()
+			tw.Completed:Wait()
+			up = not up
+		end
+		portraitHolder.Position = portraitHome()
+	end)
+end
+
 -- The choices slide in once the line is typed.
 function DialogueController.showChoices()
 	local items: { GuiObject } = {}
@@ -212,6 +283,7 @@ local function typeLine()
 		return
 	end
 	typedDone = false
+	talk(token)
 	-- Arabic grows the text itself (a right-aligned label then starts at the right); Roblox's
 	-- grapheme reveal would lay a partial RTL line out from the left edge.
 	local full = body.Text
@@ -260,7 +332,7 @@ local function render()
 	-- The portrait on the reading side's start: left in English, right in Arabic.
 	local D = Hud.DIALOGUE
 	portraitHolder.AnchorPoint = if rtl then Vector2.new(1, 0) else Vector2.new(0, 0)
-	portraitHolder.Position = if rtl then UDim2.fromScale(1, 0) else UDim2.fromScale(0, 0)
+	portraitHolder.Position = portraitHome()
 	body.Position = if rtl then UDim2.fromOffset(0, 0) else UDim2.fromOffset(D.portrait + 12, 0)
 	body.Size = UDim2.new(1, -(D.portrait + 12), 0, 0)
 	body.TextXAlignment = if rtl then Enum.TextXAlignment.Right else Enum.TextXAlignment.Left
@@ -305,7 +377,8 @@ function DialogueController.hide(tellServer: boolean)
 	end
 	current = nil
 	awaiting = false
-	panel.Visible = false
+	typing += 1 -- stops the typewriter and the speaker's bob
+	leave()
 end
 
 function DialogueController.isOpen(): boolean
@@ -315,10 +388,15 @@ end
 function DialogueController.start()
 	build()
 	Net.event(Net.Events.DialogueShow).OnClientEvent:Connect(function(payload: Payload)
+		local opening = current == nil
 		current = payload
 		awaiting = false
 		typedDone = false
 		render()
+		if opening then
+			enter()
+		end
+		Juice.pop(portraitHolder, Hud.DIALOGUE.portraitFrom)
 		typeLine()
 	end)
 	Net.event(Net.Events.DialogueHide).OnClientEvent:Connect(function(screen: any)
