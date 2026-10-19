@@ -251,6 +251,27 @@ function Juice.dot(parent: GuiObject, on: boolean, color: Color3?): Frame?
 	return f
 end
 
+-- A currency pill's glow when it gains (Theme v2, LP-C02): its edge flashes gold and fades back.
+function Juice.glow(gui: GuiObject)
+	local stroke = gui:FindFirstChild("Border")
+	if not (stroke and stroke:IsA("UIStroke")) then
+		return
+	end
+	local color = stroke:GetAttribute("BaseColor")
+	if typeof(color) ~= "Color3" then
+		color = stroke.Color
+		stroke:SetAttribute("BaseColor", color)
+	end
+	stroke.Color = Color3.fromHex("#F2C14E")
+	if reduced() then
+		task.delay(0.4, function()
+			stroke.Color = color :: Color3
+		end)
+		return
+	end
+	TweenService:Create(stroke, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Color = color :: Color3 }):Play()
+end
+
 -- PV-B07 ------------------------------------------------------------------------------------
 
 -- Desktop hover tilt for a card: a slight turn and lift while the mouse is over `hit`.

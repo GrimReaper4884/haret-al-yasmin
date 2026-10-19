@@ -3,9 +3,11 @@
 -- On a phone (MOBILE_HUD_PLAN B6) the menu is a bottom bar between Roblox's thumbstick and jump
 -- (Play, Units, Summon, Diary, More); More opens a sheet with Daily, Codes, the Hakawati, Wardrobe,
 -- the Event while one runs, Language, Music and Settings, and the top row keeps only the lira and
--- coin pills. Tablets and desktop keep the left 3 × 3 grid (Play, Event, Units, Summon, Diary, Daily,
--- Codes, AFK, Settings) with its bottom edge above the thumbstick zone. Hides the whole lobby HUD
--- while a match is on or a dialogue is open, so the phone screen stays clear.
+-- coin pills. Tablets and desktop get the Theme v2 rail (LP-C02): a wood panel with a large gold Play
+-- that breathes, Units / Summon / Diary beside it and the smaller tiles (Event, Daily, Codes, AFK,
+-- Settings) under them, its bottom edge above the thumbstick zone. Dots (the "!" badges) mark a
+-- claimable Daily, a Diary tier and a running Event, and clear once that screen is opened until
+-- something new waits. Hides the whole lobby HUD while a match is on or a dialogue is open.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -22,6 +24,8 @@ local Icons = require(UI.Icons)
 local Juice = require(UI.Juice)
 local Modal = require(UI.Modal)
 local Device = require(UI.Device)
+local CoinFlight = require(UI.CoinFlight)
+local Vfx = require(Shared.Config.Vfx)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
 
@@ -31,11 +35,12 @@ local LOBBY_WIDGETS = { "Coins", "Errand", "Language", "Wardrobe", "Music", "Lir
 -- Top-row buttons that live in the More sheet on a phone (B6).
 local PHONE_HIDDEN = { Language = true, Wardrobe = true, Music = true }
 
-local GRID = { "play", "event", "units", "summon", "pass", "daily", "codes", "afk", "settings" }
+local RAIL_TOP = { "units", "summon", "pass" }
+local RAIL_SMALL = { "event", "daily", "codes", "afk", "settings" }
 local BAR = { "play", "units", "summon", "pass", "more" }
 local MORE = { "daily", "codes", "afk", "wardrobe", "event", "language", "music", "settings" }
 local COLORS: { [string]: Color3 } = {
-	play = Theme.colors.danger,
+	play = Theme.v2.goldLeaf,
 	event = Color3.fromHex("#2F7D6B"),
 	units = Color3.fromHex("#4C7FC0"),
 	summon = Color3.fromHex("#9B4FD1"),
@@ -64,6 +69,12 @@ local phone = false
 local openers: { [string]: () -> () } = {}
 local labels: { [string]: () -> string } = {}
 local lastLira: number? = nil
+local railPlay: TextButton? = nil
+local railTop: { TextButton } = {}
+local railSmall: { [string]: TextButton } = {}
+-- Dots clear when their screen is opened, until the reason changes (a new day, a new tier, …).
+local dotReason: { [string]: string } = {}
+local dotSeen: { [string]: string } = {}
 
 -- Other controllers register what their button opens (avoids require cycles).
 function LobbyMenuController.register(key: string, open: () -> ())
@@ -86,11 +97,30 @@ end
 
 -- Shows or hides one entry (the Event button exists only while an event runs).
 local hidden: { [string]: boolean } = { event = true }
+-- A claim's coins fly from its button to the currency pills (Theme v2, LP-C02); the pills then count
+-- and glow from the state update.
+function LobbyMenuController.rewardFlight(from: GuiObject)
+	local root = Root.get()
+	local lira = root:FindFirstChild("Lira")
+	local coins = root:FindFirstChild("Coins")
+	local n = Vfx.COIN_FLIGHT.lobbyCoins
+	if lira and lira:IsA("GuiObject") then
+		CoinFlight.flyFrom(from, lira, math.ceil(n / 2))
+	end
+	if coins and coins:IsA("GuiObject") then
+		CoinFlight.flyFrom(from, coins, math.floor(n / 2))
+	end
+end
+
+local relayout: (() -> ())? = nil
 function LobbyMenuController.setVisibleEntry(key: string, visible: boolean)
 	hidden[key] = not visible
 	local list: { Entry } = entries[key] or {}
 	for _, e in list do
 		e.button.Visible = visible
+	end
+	if relayout then
+		relayout()
 	end
 end
 
@@ -143,6 +173,10 @@ local function activate(key: string)
 		if more.isOpen() then
 			more.setVisible(false)
 		end
+		if dotReason[key] then
+			dotSeen[key] = dotReason[key]
+			render()
+		end
 		open()
 	end
 end
@@ -185,21 +219,27 @@ local function build()
 	}, Color3.fromHex("#7B3FA0"), "lira")
 	liraLabel.TextColor3 = Color3.fromHex("#FFE08A")
 
-	-- Tablets and desktop: a 3 × 3 grid of square buttons (the genre's left grid), placed by layout()
-	-- below the PC chat window (top-left) and above the thumbstick zone.
-	local cell, gap = Hud.LOBBY_BAR.button, 6
-	local rows = math.ceil(#GRID / 3)
-	grid = Create("Frame", {
-		Name = "Menu",
-		Position = UDim2.new(0, 10, 0.45, 0),
-		Size = UDim2.fromOffset(3 * cell + 2 * gap, rows * cell + (rows - 1) * gap),
-		BackgroundTransparency = 1,
-		Parent = root,
-	})
-	Create("UIGridLayout", { CellSize = UDim2.fromOffset(cell, cell), CellPadding = UDim2.fromOffset(gap, gap), SortOrder = Enum.SortOrder.LayoutOrder, Parent = grid })
-	for i, key in GRID do
-		local e = iconButton(key, i, cell, grid)
+	-- Tablets and desktop: the Theme v2 rail (LP-C02), placed by layout() above the thumbstick zone.
+	local R = Hud.LOBBY_RAIL
+	grid = Theme.panel({ Name = "Menu", Position = UDim2.new(0, 10, 0.45, 0), Size = UDim2.fromOffset(100, 100), BackgroundColor3 = Theme.v2.woodDark, Parent = root })
+	grid.BackgroundTransparency = 0.15
+	Theme.chrome(grid, "panel")
+	local play = iconButton("play", 1, R.tile, grid)
+	railPlay = play.button
+	play.caption.TextSize = 18
+	local playIcon = play.button:FindFirstChild("Icon") :: Frame?
+	if playIcon then
+		playIcon.Size = UDim2.fromOffset(48, 48)
+		playIcon.Position = UDim2.new(0.5, 0, 0, 10)
+	end
+	Juice.breathe(play.button, R.breathe, R.breatheS)
+	for i, key in RAIL_TOP do
+		table.insert(railTop, iconButton(key, 1 + i, R.tile, grid).button)
+	end
+	for i, key in RAIL_SMALL do
+		local e = iconButton(key, 10 + i, R.small, grid)
 		e.button.Visible = not hidden[key]
+		railSmall[key] = e.button
 	end
 
 	-- Phones: the bottom bar between Roblox's corners (HudLayout.lobbyBar).
@@ -280,9 +320,49 @@ local function layout()
 	local d = Device.designSize()
 	local scale = Device.scale()
 	local reserved = Device.reserved()
-	-- Grid: below the screen's middle, its bottom edge above the thumbstick zone.
+	-- Rail: Play on the left as tall as both rows, the big row then the visible small tiles.
+	local R = Hud.LOBBY_RAIL
+	local x0 = R.pad + math.floor(R.tile * R.play + 0.5) + R.gap
+	local n = 0
+	for _, key in RAIL_SMALL do
+		local b = railSmall[key]
+		if b and b.Visible then
+			b.Position = UDim2.fromOffset(x0 + n * (R.small + R.gap), R.pad + R.tile + R.gap)
+			b.Size = UDim2.fromOffset(R.small, R.small)
+			n += 1
+		end
+	end
+	local rowW = math.max(#railTop * (R.tile + R.gap) - R.gap, n * (R.small + R.gap) - R.gap)
+	-- The big tiles share the row's width (the small row sets it).
+	local topW = math.floor((rowW - (#railTop - 1) * R.gap) / #railTop)
+	for i, b in railTop do
+		b.Position = UDim2.fromOffset(x0 + (i - 1) * (topW + R.gap), R.pad)
+		b.Size = UDim2.fromOffset(topW, R.tile)
+	end
+	local height = R.tile + R.gap + R.small
+	local p = railPlay
+	if p then
+		p.Position = UDim2.fromOffset(R.pad, R.pad)
+		p.Size = UDim2.fromOffset(math.floor(R.tile * R.play + 0.5), height)
+	end
+	grid.Size = UDim2.fromOffset(x0 + rowW + R.pad, height + 2 * R.pad)
+	-- Its bottom edge above the thumbstick zone, below the screen's middle when there is room.
 	local bottomKeep = if reserved.left then (reserved.left.y1 - reserved.left.y0) / scale + 8 else 8
-	grid.Position = UDim2.fromOffset(10, math.max(0, math.min(d.y * 0.45, d.y - bottomKeep - grid.Size.Y.Offset)))
+	local gridY = math.max(0, math.min(d.y * 0.45, d.y - bottomKeep - grid.Size.Y.Offset))
+	grid.Position = UDim2.fromOffset(10, gridY)
+	-- On a narrow tablet the rail reaches the errand card (right edge, centred at 45 % height): the
+	-- card then rises to end above the rail.
+	local errand = root:FindFirstChild("Errand")
+	if errand and errand:IsA("GuiObject") and not phone then
+		local h = errand.AbsoluteSize.Y / scale
+		local left = d.x - 12 - errand.Size.X.Offset
+		local cy = d.y * 0.45
+		local overlaps = 10 + grid.Size.X.Offset + R.gap > left and cy + h / 2 > gridY - R.gap
+		if overlaps then
+			cy = math.max(Hud.TOP_CLEAR + 52 + h / 2, gridY - R.gap - h / 2)
+		end
+		errand.Position = UDim2.new(1, -12, 0, cy)
+	end
 	-- Phone bar: centred in the band between the corners.
 	local bar = HudLayout.lobbyBar(Hud, Device.profile(), scale, Device.safeSize(), #BAR, reserved)
 	lobbyBar.Position = UDim2.fromOffset(bar.x, bar.y)
@@ -338,6 +418,9 @@ render = function()
 		end
 		if lastLira and lastLira ~= snapshot.lira then
 			Juice.count(liraLabel, lastLira, snapshot.lira, fmt)
+			if snapshot.lira > lastLira and liraLabel.Parent then
+				Juice.glow(liraLabel.Parent :: GuiObject)
+			end
 		else
 			liraLabel.Text = fmt(snapshot.lira)
 		end
@@ -356,10 +439,26 @@ render = function()
 			end
 		end
 	end
-	setBadge("daily", dailyReady)
-	setBadge("pass", passPending)
-	-- More carries the badges of what it holds (only Daily has one today).
-	setBadge("more", dailyReady)
+	-- The reason each dot shows (it clears once its screen is opened, until the reason changes).
+	table.clear(dotReason)
+	if dailyReady and snapshot then
+		dotReason.daily = "day" .. tostring(snapshot.daily and snapshot.daily.lastDay or 0)
+	end
+	if passPending and snapshot then
+		dotReason.pass = "xp" .. tostring(snapshot.pass.xp)
+	end
+	if not hidden.event then
+		dotReason.event = "running"
+	end
+	local function dot(key: string): boolean
+		local reason = dotReason[key]
+		return reason ~= nil and dotSeen[key] ~= reason
+	end
+	setBadge("daily", dot("daily"))
+	setBadge("pass", dot("pass"))
+	setBadge("event", dot("event"))
+	-- More carries the badges of what it holds.
+	setBadge("more", dot("daily") or dot("event"))
 	for key, list in entries do
 		for _, e in list do
 			if key == "language" then
@@ -380,15 +479,46 @@ end
 
 function LobbyMenuController.start()
 	build()
+	relayout = layout
 	layout()
 	render()
 	StateController.Changed:Connect(render)
 	LocaleController.Changed:Connect(render)
 	Device.Changed:Connect(layout)
+	if game:GetService("RunService"):IsStudio() then
+		-- Studio test hook (LP-C02 evidence, no profile change): LocalPlayer.HaretUiDemo:Invoke("claim")
+		-- flies a claim's coins from the Daily button and counts the lira pill up by 30 as a real
+		-- claim would; the next state update puts the true number back.
+		local hook = Instance.new("BindableFunction")
+		hook.Name = "HaretUiDemo"
+		hook.OnInvoke = function(cmd: string): any
+			if cmd == "claim" then
+				local list = entries.daily or {}
+				local from = list[1] and list[1].button
+				if from and lastLira then
+					LobbyMenuController.rewardFlight(from)
+					task.delay(Vfx.COIN_FLIGHT.life, function()
+						Juice.count(liraLabel, lastLira :: number, (lastLira :: number) + 30, tostring)
+						if liraLabel.Parent then
+							Juice.glow(liraLabel.Parent :: GuiObject)
+						end
+					end)
+					return true
+				end
+			end
+			return false
+		end
+		hook.Parent = game:GetService("Players").LocalPlayer
+	end
 	task.defer(function()
 		local dialogue = Root.get():WaitForChild("Dialogue", 10)
 		if dialogue and dialogue:IsA("GuiObject") then
 			dialogue:GetPropertyChangedSignal("Visible"):Connect(applyVisibility)
+		end
+		local errand = Root.get():WaitForChild("Errand", 10)
+		if errand and errand:IsA("GuiObject") then
+			errand:GetPropertyChangedSignal("AbsoluteSize"):Connect(layout)
+			layout()
 		end
 		local queue = Root.get():WaitForChild("Queue", 10)
 		if queue and queue:IsA("GuiObject") then

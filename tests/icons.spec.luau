@@ -23,10 +23,10 @@ return function(t)
 	for name in string.gmatch(fs.readFile("src/client/UI/Icons.luau"), "\n\t([%w_]+) = function%(") do
 		drawers[name] = true
 	end
-	-- Lobby menu keys in LobbyMenuController (the GRID and BAR lists), drawn as "ui_" .. key.
+	-- Lobby menu keys in LobbyMenuController (the rail's lists and the phone BAR), drawn as "ui_" .. key.
 	local railKeys = {}
 	local menuSource = fs.readFile("src/client/Controllers/LobbyMenuController.luau")
-	for _, list in { "GRID", "BAR" } do
+	for _, list in { "RAIL_TOP", "RAIL_SMALL", "BAR" } do
 		local body = string.match(menuSource, "local " .. list .. " = {([^}]*)}") or ""
 		for key in string.gmatch(body, "\"([%w_]+)\"") do
 			table.insert(railKeys, key)

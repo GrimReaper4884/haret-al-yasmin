@@ -8,6 +8,7 @@ local Quests = require(Shared.Config.Quests)
 local Clues = require(Shared.Config.Clues)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
+local Icons = require(UI.Icons)
 local Theme = require(UI.Theme)
 local Button = require(UI.Button)
 local Root = require(UI.Root)
@@ -55,21 +56,22 @@ local function build()
 	}, Theme.colors.gold, "qirsh")
 	coinLabel.TextColor3 = Color3.fromHex("#F6C08A")
 	coinLabel.Size = UDim2.new(1, -66, 1, 0)
-	-- "+" opens the coin store (Robux purses and passes).
+	-- The brass coin purse opens the store (Robux purses and passes; Theme v2, LP-C02).
 	local storeButton = Theme.button({
 		Name = "Store",
-		Text = "+",
-		TextSize = 22,
+		Text = "",
 		AnchorPoint = Vector2.new(1, 0.5),
 		Position = UDim2.new(1, 8, 0.5, 0),
 		Size = UDim2.fromOffset(Theme.TOUCH, Theme.TOUCH),
-		BackgroundColor3 = Theme.colors.confirm,
+		BackgroundColor3 = Theme.v2.brass,
 		Parent = coinPill,
 	})
 	local sp = storeButton:FindFirstChildOfClass("UIPadding")
 	if sp then
 		sp:Destroy()
 	end
+	local purse = Create("Frame", { Name = "Purse", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(32, 32), BackgroundTransparency = 1, Parent = storeButton })
+	Icons.draw("qirsh_pouch", purse)
 	storeButton.Activated:Connect(function()
 		ShopController.openStore()
 	end)
@@ -258,6 +260,9 @@ render = function()
 			-- Count up and punch so earning/spending is noticed.
 			Juice.count(coinLabel, lastQirsh, snapshot.qirsh, fmt)
 			Juice.punch(coinPill, 0.1)
+			if snapshot.qirsh > lastQirsh then
+				Juice.glow(coinPill) -- Theme v2 (LP-C02)
+			end
 		else
 			coinLabel.Text = fmt(snapshot.qirsh)
 		end

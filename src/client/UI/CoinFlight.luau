@@ -75,6 +75,31 @@ function CoinFlight.fly(from: Vector3, target: GuiObject): boolean
 	return false
 end
 
+-- Flies `count` coins (a few frames apart) from a GUI object (a Claim button) to `target` (a
+-- currency pill): the lobby's reward flight (Theme v2, LP-C02). Returns how many left.
+function CoinFlight.flyFrom(from: GuiObject, target: GuiObject, count: number?): number
+	if not gui then
+		build()
+	end
+	local start = from.AbsolutePosition + from.AbsoluteSize / 2 + GuiService:GetGuiInset()
+	local sent = 0
+	for i = 1, math.max(1, count or 1) do
+		for _, c in coins do
+			if not c.busy then
+				c.busy = true
+				c.x0, c.y0 = start.X + (i - 1) * 6, start.Y
+				c.target = target
+				c.at = os.clock() + (i - 1) * cfg.lobbyGap
+				c.frame.Position = UDim2.fromOffset(c.x0, c.y0)
+				c.frame.Visible = true
+				sent += 1
+				break
+			end
+		end
+	end
+	return sent
+end
+
 function CoinFlight.inFlight(): number
 	local n = 0
 	for _, c in coins do
@@ -91,7 +116,7 @@ function CoinFlight.start()
 		for _, c in coins do
 			if c.busy then
 				local t = c.target
-				local k = (now - c.at) / cfg.life
+				local k = math.max(0, now - c.at) / cfg.life
 				if not t or not t.Parent or k >= 1 then
 					c.busy = false
 					c.frame.Visible = false

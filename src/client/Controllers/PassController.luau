@@ -42,16 +42,19 @@ local busy = false
 local PHONE = { legend = 60, head = 16, gap = 4, column = 116, strip = 128, premium = 180, skip = 140 }
 local COLUMN_W, COLUMN_GAP = 118, 6
 
-local function claim(tier: number, track: string)
+local function claim(tier: number, track: string, from: GuiObject?)
 	if busy then
 		return
 	end
 	busy = true
 	task.spawn(function()
-		pcall(function()
+		local ok, r = pcall(function()
 			return Net.func(Net.Functions.ClaimPass):InvokeServer(tier, track)
 		end)
 		busy = false
+		if from and ok and type(r) == "table" and r.ok then
+			LobbyMenuController.rewardFlight(from) -- Theme v2 (LP-C02)
+		end
 	end)
 end
 
@@ -134,7 +137,7 @@ local function tierColumn(t: any, snapshot: any, tier: number, level: number)
 			Amount.row({ Position = UDim2.fromOffset(-10, 3), Size = UDim2.new(1, 20, 0, 20), ZIndex = 13, Parent = pb }, Amount.reward(t, reward), { iconSize = 18, textSize = 11, zIndex = 13, rtl = LocaleController.isRtl() })
 			pb.Activated:Connect(function()
 				if enabled then
-					claim(tier, track)
+					claim(tier, track, pb)
 				end
 			end)
 			return

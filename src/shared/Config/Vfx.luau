@@ -39,7 +39,7 @@ return {
 	-- pill (at most `max` in flight, the rest skipped). A gate hit shudders the gate leaves by
 	-- `angle` degrees and kicks up `dust` puffs at the foot of the doors.
 	BOSS_DEATH = { ringRadius = 10, ringLife = 0.7, dustColor = "#B9A57E", shake = 0.2, amplitude = 0.6 },
-	COIN_FLIGHT = { max = 6, life = 0.55, size = 32, lift = 90 },
+	COIN_FLIGHT = { max = 6, life = 0.55, size = 32, lift = 90, lobbyCoins = 5, lobbyGap = 0.07 },
 	GATE_SHUDDER = { life = 0.25, angle = 3, dust = 4, dustSize = 1.6, dustRise = 2.5, dustLife = 0.6, dustColor = "#C9B48F" },
 
 	-- Deaths: a jasmine-petal poof for people, an ash poof for bosses. No blood anywhere.

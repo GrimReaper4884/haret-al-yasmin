@@ -575,13 +575,13 @@ DECISIONS; every name goes through §4.2's STOP first.
 - [x] 373902b **LP-C00 "Before" captures and the console audit** · deps: none
   - Accept: 12 captures under `docs/captures/lp/before_*`; the `203785492` source identified (or documented as
     engine-side) in TEST_REPORT_SLICE.
-- [x] **LP-C01 Theme tokens v2, 9-slice chrome, button states** · deps: none · STOP (chrome image upload)
+- [x] 2ff7102 **LP-C01 Theme tokens v2, 9-slice chrome, button states** · deps: none · STOP (chrome image upload)
   - Create: `Theme.v2` tokens, `Config/Icons.chrome`, `UI/Button.luau` (one factory used by every screen),
     `Juice.breathe`, `Juice.stagger`, `Juice.dot`.
   - Accept: every lobby button is built by the factory (grep: no `Instance.new("TextButton")` left in
     controllers); four states captured; Reduced Motion respected.
   - Shipped (D-098) with the chrome at id 0 (drawn style kept): the 9-slice images wait for the owner's upload.
-- [ ] **LP-C02 Lobby bar: hierarchy, dots, breathing Play; currency pills count and glow** · deps: LP-C01
+- [x] **LP-C02 Lobby bar: hierarchy, dots, breathing Play; currency pills count and glow** · deps: LP-C01
   - Accept: captures desktop/tablet/phone; a Daily claim flies coins and counts the pill; dots clear on open.
 - [ ] **LP-C03 Panels, modals, sheets, tabs, toasts, confirm** · deps: LP-C01
   - Accept: every screen opens with the same motion; tab cross-fade; `Modal.confirm` used by Sell, Reroll,
@@ -647,7 +647,7 @@ Meshy budget: ≈ 330 credits (240 for four NPC looks + 90 for the merchant and 
 
 - [x] ff75c8d LP-A01 · [x] 19425ee LP-A02 · [x] fb9bdaa LP-A03
 - [x] 01545af LP-B01 · [x] 17c73f4 LP-B02 · [x] 5cc73de LP-B03 · [x] 82f876c LP-B04 · [x] d315bda LP-B05
-- [x] 373902b LP-C00 · [x] LP-C01 · [ ] LP-C02 · [ ] LP-C03 · [ ] LP-C04 · [ ] LP-C05 · [ ] LP-C06 · [ ] LP-C07
+- [x] 373902b LP-C00 · [x] 2ff7102 LP-C01 · [x] LP-C02 · [ ] LP-C03 · [ ] LP-C04 · [ ] LP-C05 · [ ] LP-C06 · [ ] LP-C07
 - [ ] LP-D00 · [ ] LP-D01 · [ ] LP-D02 · [ ] LP-D03 · [ ] LP-D04 · [ ] LP-D05 · [ ] LP-D06 · [ ] LP-D07 · [ ] LP-D08 · [ ] LP-D09 · [ ] LP-D10 · [ ] LP-D11
 - [ ] LP-E01 · [ ] LP-E02 · [ ] LP-E03 · [ ] LP-E04
 

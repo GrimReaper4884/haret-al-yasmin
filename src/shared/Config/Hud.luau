@@ -97,6 +97,10 @@ return {
 
 	-- Lobby bottom bar on phones (B6): button size and gap; it narrows like the hotbar.
 	LOBBY_BAR = { button = 64, gap = 8, bottom = 6 },
+	-- The lobby rail on tablets and desktop (Theme v2, LP-C02): a wood panel with the gold Play
+	-- (`play` × `tile`, as tall as both rows) at its left, Units / Summon / Diary in the top row and
+	-- the smaller tiles under them; Play breathes (scale +`breathe` every `breatheS`).
+	LOBBY_RAIL = { tile = 64, small = 56, play = 1.6, gap = 6, pad = 6, breathe = 0.03, breatheS = 2.4 },
 
 	-- Sheet modals on phones (B7): margin to the safe area's edges.
 	SHEET_MARGIN = 8,

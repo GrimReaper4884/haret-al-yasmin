@@ -39,10 +39,13 @@ local function build()
 		end
 		busy = true
 		task.spawn(function()
-			pcall(function()
+			local ok, r = pcall(function()
 				return Net.func(Net.Functions.ClaimDaily):InvokeServer()
 			end)
 			busy = false
+			if ok and type(r) == "table" and r.ok then
+				LobbyMenuController.rewardFlight(claimButton) -- Theme v2 (LP-C02)
+			end
 		end)
 	end)
 end

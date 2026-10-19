@@ -1073,3 +1073,19 @@ and `UI/Theme`: the eight invisible hit areas (cards, rows, backdrops, the summo
 | Pressed | mouse held on Summon: the squash and the lip | `c01_state_pressed_summon.jpg` |
 | Disabled | Store "Coming soon" through `Button.setEnabled(false)`: desaturated fill, pale text, no bevel shade | `c01_state_disabled_store.jpg` |
 | Reduced Motion | `Logic/Motion` spec: `breathe` and `ready` are decorative (off under Reduced Motion and below full Effects), `stagger` follows `pop` | — |
+
+### LP-C02 the lobby rail, dots and pills
+
+*Play Solo in the lobby; desktop 1636×584, iPad 6th gen 1024×768, a custom 844×390 phone (simulator reset
+afterwards). The Daily was **not** claimed: the claim's coin flight was driven by the Studio-only hook
+`LocalPlayer.HaretUiDemo:Invoke("claim")`, which plays the same `LobbyMenuController.rewardFlight` and pill
+count without touching the profile.*
+
+| Check | Result | Capture |
+|---|---|---|
+| Desktop rail | wood panel: gold Play (as tall as both rows, breathing), Units / Summon / Diary sharing the top row, Event / Daily / Codes / AFK / Settings below; dots on Event and Daily; the `+` is now a brass coin purse | `docs/captures/lp/c02_desktop_rail.jpg` |
+| Tablet | the same rail above the thumbstick; the errand card rises to end above it (it overlapped before the fix) | `c02_ipad_rail.jpg` |
+| Phone | the five-button bar unchanged in layout, gold Play, the dot on More | `c02_phone_bar.jpg` |
+| Claim flight | 5 coins from the Daily tile: sampled at 0.1 s steps, 5 in flight until 0.5 s, 1 at 0.6 s, none at 0.7 s; the lira pill counted 45,138 → 45,168 and glowed | — |
+| Dots clear on open | Daily's dot (claimable) and Event's: tapping Daily and closing it → Daily `false`, Event still `true` | — |
+| Console | no errors or warnings from our code | — |
