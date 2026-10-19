@@ -639,7 +639,11 @@ DECISIONS; every name goes through §4.2's STOP first.
 
 ### Workstream F: the owner's §10 items, tried by the agent (approved 2026-10-19: "i approve everything to try")
 
-- [~] **LP-F01 Real-phone run of the bigger lane** · deps: LP-D00 · the phone is a Galaxy S23 (SM-S911B, Android 16) on adb
+- [!] **LP-F01 Real-phone run of the bigger lane** · deps: LP-D00 · the phone is a Galaxy S23 (SM-S911B, Android 16) on adb ·
+  blocked: the phone's device playtest runs the published v1.0.2 (no LP lane); getting the current build onto it needs
+  Studio's UI (device test or a TEST-place publish) and computer use on Studio was declined on 2026-10-19. Baseline on
+  v1.0.2's lobby: ≈ 60 FPS (SurfaceFlinger, 900 frames in 15 s, display at 120 Hz). The FPS route is ready: adb +
+  `dumpsys SurfaceFlinger --timestats`
   - Accept: FPS per lane-clock phase (day, evening, night) and in a short Episode 1 match, read from SurfaceFlinger or
     the developer console, streaming judged, phone screenshots; any phase under 30 FPS gets a fix proposal.
 - [x] 18a0927 **LP-F02 UI and lane sound files** · deps: LP-C07, LP-D10, LP-D11, LP-E02
@@ -651,7 +655,8 @@ DECISIONS; every name goes through §4.2's STOP first.
   - Accept: `Config/Icons.chrome` ids non-zero, role icons live, register rows, before/after captures.
   - Shipped (D-125): the role icons were already live (PV-C04); the four chrome frames composed from generated
     materials by `tools/icons/chrome.py`, transparent centres, `SliceScale` 0.5.
-- [ ] **LP-F04 Test → Clients and Servers** · deps: LP-A03, LP-E02
+- [!] **LP-F04 Test → Clients and Servers** · deps: LP-A03, LP-E02 · blocked: needs Studio's Test tab (computer use on
+  Studio declined 2026-10-19); no MCP tool starts a multi-client test
   - Accept: the non-host speed chip and the Lane Fund paying a teammate, captured with two clients.
 - [!] **LP-F05 Player Emulator policy check** · deps: LP-A03 · the emulator run needs Studio's UI (computer use on
   Studio was declined on 2026-10-19); the game side is verified and fixed (D-126)
@@ -679,7 +684,7 @@ Meshy budget: ≈ 330 credits (240 for four NPC looks + 90 for the merchant and 
 - [x] 373902b LP-C00 · [x] 2ff7102 LP-C01 · [x] 3a9b3b8 LP-C02 · [x] 1b33855 LP-C03 · [x] 236d068 LP-C04 · [x] 1df1bfd LP-C05 · [x] 169ff6e LP-C06 · [x] f4c8c30 LP-C07
 - [x] 98e27c4 LP-D00 · [x] 0a9cf7f LP-D01 · [x] e4c3eae LP-D02 · [x] 540e3ec LP-D03 · [x] 58e5fdd LP-D04 · [x] 4436acb LP-D05 · [x] 2c97ee7 LP-D06 · [x] 2834681 LP-D07 · [x] cbc50e1 LP-D08 · [x] fd683c9 LP-D09 · [x] fca4d73 LP-D10 · [x] 3abe9cb LP-D11 · [x] 536a3e8 LP-D12 · [x] fc99937 LP-D13
 - [x] 2cce4ec LP-E01 · [x] d131127 LP-E02 · [x] aec6653 LP-E03 · [x] fc26273 LP-E04
-- [~] LP-F01 · [x] 18a0927 LP-F02 · [x] 27384bb LP-F03 · [ ] LP-F04 · [!] LP-F05
+- [!] LP-F01 · [x] 18a0927 LP-F02 · [x] 27384bb LP-F03 · [!] LP-F04 · [!] LP-F05 (game side ef2b5f0)
 
 ## 10. STOP list for the owner (batch these)
 

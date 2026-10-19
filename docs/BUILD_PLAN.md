@@ -186,10 +186,10 @@ models, red-teaming, onboarding measurement, and live ops.
 
 ## Phase 3: Content alpha
 
-- [ ] **P3-01 Remaining attacker models** · deps: P0-08
+- [x] ee436d4 **P3-01 Remaining attacker models** · deps: P0-08 · done as POLISH_PLAN PV-A02/PV-A03 (all 11 attackers; ticked 2026-10-19)
   - **Goal:** Meshy models for bandit, thug, rider, sapper, the Sergeant and the Commandant (budget ≈ 47 credits each; STOP for the total before spending), with walk and hit clips baked.
   - **Accept:** tri budgets pass; all 11 attackers imported; `TEST_REPORT_SLICE.md` screenshot of the lineup in a match.
-- [ ] **P3-02 Open Cloud upload tool (optional)** · deps: P0-07
+- [x] 9e38537 **P3-02 Open Cloud upload tool (optional)** · deps: P0-07 · done as POLISH_PLAN PV-C01 (`tools/upload_asset.py`; in use for icons, banners, chrome and the LP-F02 audio; ticked 2026-10-19)
   - **Create:** `tools/upload_asset.py` (`uv run`, standard library, multipart POST to `https://apis.roblox.com/assets/v1/assets` with `x-api-key` from the env, `creationContext.creator.userId` from `ROBLOX_CREATOR_ID`, polls the operation, prints `rbxassetid://`, `--dry-run`, never prints the key).
   - **Accept:** dry-run output; one image or audio asset uploaded and its id used from Config. Skip if the importer route stays sufficient (note in DECISIONS).
 - [ ] **P3-03 Audio** · deps: P2-17 · STOP
