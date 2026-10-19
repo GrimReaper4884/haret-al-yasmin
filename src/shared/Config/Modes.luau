@@ -134,6 +134,20 @@ local Modes: { [string]: ModeDef } = {
 		portal = { 19, 8 },
 		portalYaw = 90,
 	},
+	-- Lantern Nights (LP-D12): the rival lane at night, Abu al-Nahr at wave 8 and Abu Shatour at 15.
+	ev_ramadan = {
+		kind = "event",
+		event = "ramadan",
+		arena = "rival_lane", -- Abu al-Nahr's own lane by night (ep2's map; the twin-road square was too hard for an event)
+		nameKey = "mode.ev_ramadan.name",
+		descKey = "mode.ev_ramadan.desc",
+		order = 13,
+		waves = 15,
+		rewards = { lira = 60, qirsh = 120, xp = 100 },
+		rewardKey = "event.ramadan.rewards",
+		portal = { 19, 8 }, -- the event arch (only one event runs at a time)
+		portalYaw = 90,
+	},
 	infinite = {
 		kind = "infinite",
 		arena = "siege",

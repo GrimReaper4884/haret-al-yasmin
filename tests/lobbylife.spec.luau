@@ -150,6 +150,19 @@ return function(t)
 			end
 		end)
 
+		t.it("Lantern Nights strings hang inside the lane, over head height (LP-D12)", function()
+			local L = Cfg.beats.ramadanLights
+			t.eq(L.event, Cfg.beats.musaharati.event, "the same event as the musaharati")
+			t.truthy(#L.strings >= 3 and L.per >= 1)
+			for i, sdef in L.strings do
+				for _, p in sdef do
+					t.truthy(math.abs(p[1]) <= 8, "string " .. i .. " ends at the lane's walls")
+					t.truthy(p[2] - L.drop - L.size >= 10 and p[2] <= 18, "string " .. i .. " over head height, under the roofs")
+					t.truthy(p[3] >= 16 and p[3] <= 82, "string " .. i .. " between the square and the gate")
+				end
+			end
+		end)
+
 		t.it("the lane clock: phase boundaries, determinism, fades (LP-D09)", function()
 			local C = Cfg.CLOCK
 			local function phase(sec)
@@ -266,7 +279,7 @@ return function(t)
 			t.eq(EventLogic.isActive(running[M.event], now), true, "while it runs")
 			t.eq(EventLogic.isActive(running[M.event], now + 11), false, "and not after")
 			local Events = t.config("Events")
-			t.eq(Events[M.event], nil, "no Ramadan event is configured yet (the owner adds it)")
+			t.truthy(Events[M.event] and Events[M.event].modeId == "ev_ramadan", "Lantern Nights configures it (LP-D12)")
 			local Strings = t.config("Strings")
 			for _, k in M.calls do
 				t.truthy(Strings.en[k] and Strings.ar[k], k .. " in en and ar")

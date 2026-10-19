@@ -14,6 +14,7 @@ export type ItemDef = {
 	stackMax: number,
 	price: number?, -- qirsh
 	product: string?, -- Robux developer product key (Config/Products)
+	eventOnly: boolean?, -- cosmetics only: no price at all, earned from an event shop (Config/Events)
 	slot: Slot?, -- cosmetics only
 	icon: string, -- UI/Icons drawer name
 	iconColor: string?, -- hex
@@ -144,6 +145,18 @@ local Items: { [string]: ItemDef } = {
 		slot = "waist",
 		icon = "sash",
 		iconColor = "#A4302A",
+	},
+
+	-- The Lantern Nights event's brass fanous, hung at the hip (LP-D12): from the event shop only.
+	fanous_brass = {
+		kind = "cosmetic",
+		nameKey = "item.fanous_brass.name",
+		descKey = "item.fanous_brass.desc",
+		stackMax = 1,
+		eventOnly = true,
+		slot = "waist",
+		icon = "fanous",
+		iconColor = "#C9A13B",
 	},
 
 	-- Back

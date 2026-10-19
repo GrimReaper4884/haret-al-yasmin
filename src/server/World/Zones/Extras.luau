@@ -5,6 +5,8 @@
 
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Palette = require(Shared.Config.Palette)
@@ -59,19 +61,53 @@ local function playHall(map: Instance)
 	CollectionService:AddTag(pad, "PlayGate")
 end
 
+-- A string of paper lanterns from `a` to `b`: a cord and `n` glowing lanterns hanging off it.
+local LANTERN_COLORS = { Color3.fromHex("#E8A33A"), Color3.fromHex("#C0392B"), Color3.fromHex("#2E8B87"), Color3.fromHex("#F2D16B") }
+local function lanternString(m: Model, a: Vector3, b: Vector3, n: number)
+	local mid = (a + b) / 2
+	Kit.part(m, { name = "Cord", size = Vector3.new(0.06, 0.06, (b - a).Magnitude), cf = CFrame.lookAt(mid, b), color = Palette.ink, material = M.Fabric, collide = false, shadow = false })
+	for i = 1, n do
+		local pos = a:Lerp(b, i / (n + 1)) - Vector3.new(0, 0.55, 0)
+		Kit.part(m, { name = "Hook", size = Vector3.new(0.05, 0.5, 0.05), cf = CFrame.new(pos + Vector3.new(0, 0.3, 0)), color = Palette.ink, material = M.Fabric, collide = false, shadow = false })
+		Kit.ball(m, "PaperLantern", pos, 0.7, LANTERN_COLORS[(i - 1) % #LANTERN_COLORS + 1], M.Neon, false)
+	end
+end
+
+-- The running event, or in Studio the one the Workspace attribute `HarnessEvent` names (set it in Edit
+-- before Play: the corner is built when the world is).
+local function runningEvent(): string?
+	if RunService:IsStudio() then
+		local h = Workspace:GetAttribute("HarnessEvent")
+		if type(h) == "string" and (Events :: any)[h] then
+			return h
+		end
+	end
+	return EventLogic.active(Events :: any, os.time())[1]
+end
+
 -- The event corner on the square's east side, mirroring the Play hall: built only while an event
--- runs (Config/Events). Walking in opens Play → Event. Dressed for the olive harvest: young olive
--- trees, crates of olives and oil jars.
+-- runs (Config/Events). Walking in opens Play → Event. Dressed for its event: the olive harvest has
+-- young olive trees, crates of olives and oil jars; Lantern Nights (LP-D12) strings of paper lanterns,
+-- a brass lantern on each pier and a low table with a tray of sweets.
 local function eventCorner(map: Instance)
-	local running = EventLogic.active(Events :: any, os.time())
-	if #running == 0 then
+	local id = runningEvent()
+	if not id then
 		return
 	end
-	local def = (Events :: any)[running[1]]
+	local def = (Events :: any)[id]
 	local m = Kit.model(map, "EventCorner")
-	local pad = archway(m, 19, 8, 12, ar(def.nameKey), Color3.fromHex("#2F7D6B"))
+	local pad = archway(m, 19, 8, 12, ar(def.nameKey), Color3.fromHex(if id == "ramadan" then "#6B3A7A" else "#2F7D6B"))
 	pad:SetAttribute("Tab", "event")
 	CollectionService:AddTag(pad, "PlayGate")
+	if id == "ramadan" then
+		lanternString(m, Vector3.new(19, 10.5, 1.4), Vector3.new(19, 10.5, 14.6), 6)
+		lanternString(m, Vector3.new(14.5, 12.2, 1), Vector3.new(16.5, 12.8, 15), 5) -- above the arch's sign
+		Props.lantern(m, Kit.faceFrame(Vector3.new(20.4, 7.2, 1.6), Vector3.new(-1, 0, 0)), 14)
+		Props.lantern(m, Kit.faceFrame(Vector3.new(20.4, 7.2, 14.4), Vector3.new(-1, 0, 0)), 14)
+		Props2.coffeeTable(m, CFrame.new(14.6, 0, 2.2), false)
+		Props.copperPot(m, Vector3.new(12.7, 0, 2.5), 0.8)
+		return
+	end
 	local OLIVE = Color3.fromHex("#55602F")
 	Props.tree(m, Vector3.new(14.5, 0, 15.5), OLIVE, 0.75)
 	Props.crate(m, CFrame.new(16, 0, 1.2) * CFrame.Angles(0, math.rad(12), 0), OLIVE)

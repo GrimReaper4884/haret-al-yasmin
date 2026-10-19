@@ -182,6 +182,14 @@ local drawers: { [string]: (Frame, Color3) -> () } = {
 		rect(h, c, 0.64, 0.55, 0.3, 0.7, 0.35)
 		rect(h, c, 0.5, 0.26, 0.6, 0.14, 0.1)
 	end,
+	fanous = function(h, c)
+		-- A little brass lantern with amber glass (the Lantern Nights cosmetic, LP-D12).
+		rect(h, Palette.ink, 0.5, 0.1, 0.05, 0.14, 0)
+		rectO(h, c, 0.5, 0.24, 0.42, 0.12, 0.3)
+		rectO(h, c, 0.5, 0.56, 0.5, 0.54, 0.2)
+		rect(h, Color3.fromHex("#F2B84B"), 0.5, 0.56, 0.34, 0.42, 0.15)
+		rectO(h, c, 0.5, 0.88, 0.56, 0.1, 0.3)
+	end,
 	sash = function(h, c)
 		rect(h, c, 0.5, 0.45, 0.78, 0.2, 0.2)
 		rect(h, darker(c), 0.66, 0.65, 0.12, 0.38, 0.3, 10)

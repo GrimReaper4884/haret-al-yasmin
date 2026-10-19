@@ -204,7 +204,8 @@ return function(t)
 			for id, def in Items do
 				if def.kind == "cosmetic" then
 					t.truthy(def.slot, id .. " slot")
-					t.truthy((def.price ~= nil) ~= (def.product ~= nil), id .. " has price XOR product")
+					local kinds = (if def.price ~= nil then 1 else 0) + (if def.product ~= nil then 1 else 0) + (if def.eventOnly then 1 else 0)
+					t.eq(kinds, 1, id .. " has exactly one of price, product or eventOnly")
 					t.truthy(string.find(visualsSource, "\n\t" .. id .. " = ", 1, true), id .. " has visuals")
 					if def.product then
 						local prod = Products.devProducts[def.product]

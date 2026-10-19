@@ -1337,6 +1337,22 @@ Nothing claimed (the owner's premium is off; every tier past 8 reads Locked). `s
 | Episode 9 outro | `season1.spec` "Episode 9 story card": the cleared tale's lines name Abu Brahim in en and ar | — |
 | Specs | 449 green (tier 20 premium grants `tajir`, not on the free track, still in the Epic pool) | — |
 
+### LP-D12 Lantern Nights (the Ramadan event)
+
+*Play Solo; Workspace `HarnessEvent = "ramadan"` set in Edit (the server builds the event arch) and the LocalPlayer's `HarnessEvent`
+(the client's beats); `HaretDebug noAutoAfk`. A debug `ev_ramadan` Normal match with both villains spawned at full story HP was
+stopped at gate 96: no match ended, nothing paid. The fanous was attached with CosmeticBuilder on the server (visual only, not owned).*
+
+| Check | Result | Capture |
+|---|---|---|
+| Event arch | purple arch «ليالي الفوانيس», two strings of paper lanterns (11), brass lanterns on the piers, a low table | `docs/captures/lp/d12_event_corner.jpg`, `d12_event_corner_night.jpg` (string raised over the sign) |
+| Lane strings | 30 paper lanterns on five strings from the square to the gate | `d12_lane_lanterns_day.jpg` |
+| Night | the musaharati drumming by the fountain, "Up, lane of jasmine, the night is short!", the strings glowing | `d12_night_musaharati.jpg` |
+| Match | "Wave 1/15 · The Musaharati's Round · Normal", Abu Shatour's boss bar, dusk light (clock 18.2) | `d12_match_dusk_boss.jpg` |
+| Brass fanous | hangs on its chain at the right hip | `d12_fanous_worn.jpg` |
+| Balance | `lune run tests/balance ev_ramadan`: see D-122 | — |
+| Specs | 451 green (window, villains, no-Robux shop, event-only item; strings inside the lane) | — |
+
 ### LP-D10 the lane's beats
 
 *Play Solo, desktop Studio, `noAutoAfk` set; each beat reached with `HarnessClockOffset`.* `[World] built 2125 parts`, no

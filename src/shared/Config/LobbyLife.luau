@@ -85,6 +85,22 @@ return {
 			callEvery = 12,
 			callSeconds = 6,
 		},
+		-- Lantern Nights (LP-D12): while the event runs, strings of paper lanterns hang across the lane
+		-- between the roofs' edges, day and night. Each string: { x, y, z } to { x, y, z }, `per` lanterns.
+		ramadanLights = {
+			event = "ramadan",
+			per = 6,
+			drop = 0.6, -- studs each lantern hangs under the cord
+			size = 0.75,
+			colors = { "#E8A33A", "#C0392B", "#2E8B87", "#F2D16B" },
+			strings = {
+				{ { -7.5, 13, 22 }, { 7.5, 13.6, 23 } },
+				{ { -7.5, 13.6, 36 }, { 7.5, 13, 35 } },
+				{ { -7.5, 13, 50 }, { 7.5, 13.6, 51 } },
+				{ { -7.5, 13.6, 64 }, { 7.5, 13, 63 } },
+				{ { -7.5, 13, 76 }, { 7.5, 13.6, 77 } },
+			},
+		},
 		-- The night watch: Abu Hares calls twice; Al-Adashari slips up the souq to Abu Brahim's
 		-- shutter and is gone.
 		watch = {

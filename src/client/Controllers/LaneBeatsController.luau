@@ -14,7 +14,8 @@
 --   * the cameo: one night in each, Al-Adashari slips up the souq to Abu Brahim's shutter and is gone;
 --   * the 'arada (LP-D11): every third evening six sword-and-shield dancers process from the diwan to
 --     the gate, rice falling from the roofs;
---   * the musaharati (LP-D11): in the nights of a running Ramadan event a drummer calls the lane.
+--   * the musaharati (LP-D11): in the nights of a running Ramadan event a drummer calls the lane;
+--   * Lantern Nights (LP-D12): while that event runs, strings of paper lanterns hang across the lane.
 -- Lane life "off" stops all of it (the gate stays open). Figures exist only while their beat plays and
 -- animate only within LobbyLife `radius` of the camera, at most `hz` times a second.
 
@@ -613,13 +614,60 @@ local function runMusaharati(t: number, cam: Vector3, dt: number)
 	say(mm.bubble, if s % m.callEvery < m.callSeconds then m.calls[k % #m.calls + 1] else nil)
 end
 
+-- Lantern Nights: the paper-lantern strings, built once while the event runs
+local lights: Model? = nil
+local function runLights()
+	local L = B.ramadanLights
+	if not eventOn(L.event) then
+		if lights then
+			lights:Destroy()
+			lights = nil
+		end
+		return
+	end
+	if lights then
+		return
+	end
+	local m = Instance.new("Model")
+	m.Name = "LanternNights"
+	local function part(name: string, size: Vector3, cf: CFrame, color: Color3, material: Enum.Material, shape: Enum.PartType?)
+		local x = Instance.new("Part")
+		x.Name = name
+		x.Anchored = true
+		x.CanCollide = false
+		x.CanQuery = false
+		x.CanTouch = false
+		x.CastShadow = false
+		x.Size = size
+		x.CFrame = cf
+		x.Color = color
+		x.Material = material
+		if shape then
+			x.Shape = shape
+		end
+		x.Parent = m
+	end
+	for _, sdef in L.strings do
+		local a = Vector3.new(sdef[1][1], sdef[1][2], sdef[1][3])
+		local b = Vector3.new(sdef[2][1], sdef[2][2], sdef[2][3])
+		part("Cord", Vector3.new(0.06, 0.06, (b - a).Magnitude), CFrame.lookAt((a + b) / 2, b), Color3.fromHex("#2A2420"), Enum.Material.Fabric)
+		for i = 1, L.per do
+			local pos = a:Lerp(b, i / (L.per + 1)) - Vector3.new(0, L.drop, 0)
+			local color = Color3.fromHex(L.colors[(i - 1) % #L.colors + 1])
+			part("PaperLantern", Vector3.one * L.size, CFrame.new(pos), color, Enum.Material.Neon, Enum.PartType.Ball)
+		end
+	end
+	m.Parent = folder
+	lights = m
+end
+
 local function clearAll()
 	setGate(100)
 	if patrol then
 		hidePostCorporal(false)
 	end
 	folder:ClearAllChildren() -- every beat figure and bubble lives here
-	dispute, coffee, cameo, patrol, arada, musaharati = nil, nil, nil, nil, nil, nil
+	dispute, coffee, cameo, patrol, arada, musaharati, lights = nil, nil, nil, nil, nil, nil, nil
 	watchBubble, zaimBubble = nil, nil
 end
 
@@ -653,6 +701,7 @@ local function step(dt: number)
 	runWatch(t, cam, span)
 	runArada(t, cam, span)
 	runMusaharati(t, cam, span)
+	runLights()
 end
 
 function LaneBeatsController.start()

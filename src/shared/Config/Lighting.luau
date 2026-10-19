@@ -26,7 +26,7 @@ return {
 	-- each wave start moves it toward `night`, reaching it at `nightByWave` (S1-C05,
 	-- MatchMoments.nightFraction, MatchFxController). `modes` are the modes that open at dusk.
 	dusk = {
-		modes = { ep9 = true },
+		modes = { ep9 = true, ev_ramadan = true },
 		brightness = 2,
 		density = 0.38,
 		hazeColor = "#C98A5A", -- low sun through dust
@@ -35,6 +35,7 @@ return {
 		contrast = 0.03,
 		clockTime = 18.2,
 		nightByWave = 30,
+		nightByWaveFor = { ev_ramadan = 8 }, -- Lantern Nights: full night by Abu al-Nahr's wave (LP-D12)
 	},
 	-- The lobby's day (LP-D09): one look per lane-clock phase (Config/LobbyLife.CLOCK). LaneClockController
 	-- eases Lighting toward the current one in the lobby; matches keep their own light. `ambient` /

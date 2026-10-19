@@ -222,6 +222,24 @@ local Events = {
 		},
 		bosses = { [8] = "sergeant", [15] = "chief_thief" },
 	} :: Episode,
+	-- Lantern Nights (LP-D12): the thieves think the lane sleeps between the musaharati's rounds. Abu
+	-- al-Nahr's men come at wave 8 behind him; Abu Shatour and his torch end the month at wave 15.
+	-- TUNE (D-122): both carry 80 gate damage, so they walk in at a small share of their story HP
+	-- (0.12 and 0.15: about the Sergeant's and the Chief's HP in the Olive Harvest); tests/balance
+	-- then matches Olive Harvest Nights loadout for loadout on Normal and Hard.
+	ramadan = {
+		waves = 15,
+		hpPerWave = 0.07,
+		pool = {
+			{ enemy = "thief", from = 1, base = 4, perWave = 0.8, gap = 1.1 },
+			{ enemy = "pickpocket", from = 2, base = 2, perWave = 0.5, gap = 1.2, delay = 2 },
+			{ enemy = "thug", from = 4, base = 1, perWave = 0.5, gap = 1.8, delay = 5 },
+			{ enemy = "disguised", from = 6, base = 1, perWave = 0.4, gap = 2.4, delay = 7 },
+			{ enemy = "torchbearer", from = 10, base = 1, perWave = 0.4, gap = 2.6, delay = 9 },
+		},
+		bosses = { [8] = "rival_zaim", [15] = "abu_shatour" },
+		bossHp = { [8] = { 0.12, 0.12, 0.12 }, [15] = { 0.15, 0.15, 0.15 } },
+	} :: Episode,
 }
 
 return { episodes = Waves, infinite = Infinite, events = Events }

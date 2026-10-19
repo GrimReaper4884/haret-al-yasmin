@@ -618,6 +618,12 @@ DECISIONS; every name goes through §4.2's STOP first.
 - [x] 3abe9cb **LP-D11 The 'arada procession and the Ramadan musaharati (event-gated)** · deps: LP-D10 · STOP (music loop)
   - Accept: capture of the procession; the musaharati appears only with the Ramadan event active.
 
+- [~] **LP-D12 Lantern Nights: the Ramadan event, its villains Abu al-Nahr and Abu Shatour, the brass fanous** · deps: LP-D11 · approved (D-122)
+  - Accept: event, mode, waves, shop and item in Config with specs; `tests/balance` comparable to the Olive Harvest (TUNE row); the arch,
+    the lane strings, the musaharati and the match captured with the Studio harness; banner and icon registered.
+- [ ] **LP-D13 Eido the bath attendant and the diwan's two elders** · deps: LP-D04, LP-D05 · approved (D-122)
+  - Accept: strings en/ar; Eido by the hammam's towel bench; Abu Baseer and Abu Shater seated either side of the za'im; captures.
+
 ### Workstream E: Abu Brahim the Cloth Merchant
 
 - [x] 2cce4ec **LP-E01 Name, lore, numbers approved; config, sim rules, specs** · deps: LP-A02 · STOP (name + numbers)
@@ -648,7 +654,7 @@ Meshy budget: ≈ 330 credits (240 for four NPC looks + 90 for the merchant and 
 - [x] ff75c8d LP-A01 · [x] 19425ee LP-A02 · [x] fb9bdaa LP-A03
 - [x] 01545af LP-B01 · [x] 17c73f4 LP-B02 · [x] 5cc73de LP-B03 · [x] 82f876c LP-B04 · [x] d315bda LP-B05
 - [x] 373902b LP-C00 · [x] 2ff7102 LP-C01 · [x] 3a9b3b8 LP-C02 · [x] 1b33855 LP-C03 · [x] 236d068 LP-C04 · [x] 1df1bfd LP-C05 · [x] 169ff6e LP-C06 · [x] f4c8c30 LP-C07
-- [x] 98e27c4 LP-D00 · [x] 0a9cf7f LP-D01 · [x] e4c3eae LP-D02 · [x] 540e3ec LP-D03 · [x] 58e5fdd LP-D04 · [x] 4436acb LP-D05 · [x] 2c97ee7 LP-D06 · [x] 2834681 LP-D07 · [x] cbc50e1 LP-D08 · [x] fd683c9 LP-D09 · [x] fca4d73 LP-D10 · [x] 3abe9cb LP-D11
+- [x] 98e27c4 LP-D00 · [x] 0a9cf7f LP-D01 · [x] e4c3eae LP-D02 · [x] 540e3ec LP-D03 · [x] 58e5fdd LP-D04 · [x] 4436acb LP-D05 · [x] 2c97ee7 LP-D06 · [x] 2834681 LP-D07 · [x] cbc50e1 LP-D08 · [x] fd683c9 LP-D09 · [x] fca4d73 LP-D10 · [x] 3abe9cb LP-D11 · [~] LP-D12 · [ ] LP-D13
 - [x] 2cce4ec LP-E01 · [x] d131127 LP-E02 · [x] aec6653 LP-E03 · [x] fc26273 LP-E04
 
 ## 10. STOP list for the owner (batch these)
@@ -684,7 +690,10 @@ lane, Test → Clients and Servers (the non-host speed chip, the Lane Fund payin
 - Never finish a Studio test match (it pays the live profile); stop Play.
 - Shared checkout: stage only your hunks; no stash, checkout, reset or whole-file reformat.
 
-## 12. Drafts for one owner review (2026-10-19, not shipped)
+## 12. Drafts for one owner review (2026-10-19)
+
+**Approved by the owner the same day (D-122), with Abu al-Nar (Abu al-Nahr, `rival_zaim`) and Abu Shatour as the villains; built as
+LP-D12 and LP-D13.** What changed on the way is in D-122.
 
 Nothing below is in `Config` or `Strings` yet. Each item ships only after the owner says yes (or edits it), then gets
 its register row, strings (en + ar), specs and a DECISIONS row.

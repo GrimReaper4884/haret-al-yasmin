@@ -56,7 +56,7 @@ return function(t)
 					if def.price ~= nil then
 						t.truthy(type(def.price) == "number" and def.price >= 0 and def.price % 1 == 0, id .. " price")
 					else
-						t.truthy(type(def.product) == "string", id .. " has a qirsh price or a Robux product")
+						t.truthy(type(def.product) == "string" or def.eventOnly == true, id .. " has a qirsh price, a Robux product or an event shop")
 					end
 					t.truthy(type(def.slot) == "string", id .. " slot")
 					t.eq(def.stackMax, 1, id .. " cosmetics are unique")

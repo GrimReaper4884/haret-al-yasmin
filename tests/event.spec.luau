@@ -111,5 +111,30 @@ return function(t)
 			t.eq(clean.junk, nil)
 			t.deepEq(EventLogic.sanitize(nil), {})
 		end)
+
+		-- Lantern Nights (LP-D12, owner D-122): the Ramadan event that turns the musaharati on.
+		t.it("Lantern Nights: its window, its villains, a shop with no Robux, an event-only lantern", function()
+			local r = Events.ramadan
+			t.truthy(r, "the event id the musaharati checks")
+			t.eq(r.startsAt, 1801958400, "2027-02-07 00:00 UTC")
+			t.eq(r.endsAt, 1804723200, "2027-03-11 00:00 UTC")
+			t.truthy(r.startsAt >= Events.olive_harvest.endsAt, "one event at a time (the event arch shows the first)")
+			t.eq(EventLogic.forMode(Events, "ev_ramadan", r.startsAt + 3600), "ramadan")
+			t.eq(EventLogic.forMode(Events, "ev_ramadan", r.endsAt), nil)
+			local w = Waves.events.ramadan
+			t.eq(w.bosses[8], "rival_zaim", "Abu al-Nahr at wave 8")
+			t.eq(w.bosses[15], "abu_shatour", "Abu Shatour at wave 15")
+			for _, e in r.shop do
+				for k in e.reward do
+					t.truthy(k == "lira" or k == "qirsh" or k == "traitStones" or k == "item", e.key .. " pays only game rewards")
+				end
+				t.eq(e.product, nil, e.key .. " is never a Robux product")
+			end
+			local fanous = Items.fanous_brass
+			t.eq(fanous.kind, "cosmetic")
+			t.eq(fanous.slot, "waist")
+			t.eq(fanous.price, nil, "not sold for qirsh")
+			t.eq(fanous.product, nil, "not sold for Robux")
+		end)
 	end)
 end

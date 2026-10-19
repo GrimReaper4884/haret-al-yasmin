@@ -47,6 +47,27 @@ local Events: { [string]: EventDef } = {
 			{ key = "shawl", cost = 160, stock = 1, reward = { item = "shawl_embroidered" }, nameKey = "event.shop.shawl" },
 		},
 	},
+	-- Lantern Nights, the month of Ramadan in the lane (LP-D12, owner approved 2026-10-19, D-122): the
+	-- musaharati walks the lane at night (LP-D11) while it runs. Ramadan 1448 is expected from about 8 Feb
+	-- 2027; the window covers the month and the first day of the Eid (2027-02-07 → 2027-03-11 UTC). No
+	-- religious lines anywhere: lanterns, late nights, the musaharati's drum.
+	ramadan = {
+		nameKey = "event.ramadan.name",
+		descKey = "event.ramadan.desc",
+		currencyKey = "event.ramadan.currency",
+		startsAt = 1801958400,
+		endsAt = 1804723200,
+		modeId = "ev_ramadan",
+		perWave = 3,
+		winBonus = 25,
+		maxCurrency = 100000,
+		shop = {
+			{ key = "qirsh_400", cost = 15, stock = 10, reward = { qirsh = 400 }, nameKey = "event.shop.qirsh_400" },
+			{ key = "lira_120", cost = 30, stock = 10, reward = { lira = 120 }, nameKey = "event.shop.lira_120" },
+			{ key = "stone_1", cost = 45, stock = 5, reward = { traitStones = 1 }, nameKey = "event.shop.stone_1" },
+			{ key = "fanous", cost = 160, stock = 1, reward = { item = "fanous_brass" }, nameKey = "event.shop.fanous" },
+		},
+	},
 }
 
 return Events

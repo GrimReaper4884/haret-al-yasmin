@@ -886,7 +886,10 @@ local function onEvents(events: { any })
 				AudioController.music("match")
 			end
 			if e.type == "waveStart" and duskMode and type(e.wave) == "number" then
-				setDuskMix(MatchMoments.nightFraction(e.wave, LightLook.dusk.nightByWave))
+				local info = MatchController.info()
+				local modeId = if info then info.modeId else ""
+				local by = (LightLook.dusk.nightByWaveFor :: any)[modeId] or LightLook.dusk.nightByWave
+				setDuskMix(MatchMoments.nightFraction(e.wave, by))
 			end
 			local info = MatchController.info()
 			local ep = if info then (Story.episodes :: any)[info.modeId] else nil

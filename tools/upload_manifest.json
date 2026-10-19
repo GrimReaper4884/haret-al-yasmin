@@ -708,6 +708,18 @@
       "type": "Image",
       "id": 126484283642738,
       "uploaded": "2026-10-19"
+    },
+    "assets/marketing/banners/mode_ev_ramadan.png": {
+      "name": "Haret banner mode_ev_ramadan",
+      "type": "Image",
+      "id": 77282830122368,
+      "uploaded": "2026-10-19"
+    },
+    "assets/marketing/icons/fanous.png": {
+      "name": "Haret icon fanous",
+      "type": "Image",
+      "id": 90786801080402,
+      "uploaded": "2026-10-19"
     }
   }
 }

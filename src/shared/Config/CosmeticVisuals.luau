@@ -254,6 +254,61 @@ local visuals: { [string]: { VisualPart } } = {
 		},
 	},
 
+	-- The Lantern Nights brass fanous on a short chain at the right hip (LP-D12). LowerTorso fractions:
+	-- x 0.68 is just past the hip, each 0.25 of y is about 0.1 studs on an R15 LowerTorso.
+	fanous_brass = {
+		{
+			name = "Chain",
+			attach = "LowerTorso",
+			shape = P.Block,
+			fit = Vector3.zero,
+			pad = Vector3.new(0.07, 0.45, 0.07),
+			at = Vector3.new(0.68, -0.75, 0),
+			color = GOLD,
+			material = M.Metal,
+		},
+		{
+			name = "Finial",
+			attach = "LowerTorso",
+			shape = P.Ball,
+			fit = Vector3.zero,
+			pad = Vector3.new(0.18, 0.18, 0.18),
+			at = Vector3.new(0.68, -1.3, 0),
+			color = GOLD,
+			material = M.Metal,
+		},
+		{
+			name = "Cap",
+			attach = "LowerTorso",
+			shape = P.Block,
+			fit = Vector3.zero,
+			pad = Vector3.new(0.5, 0.12, 0.5),
+			at = Vector3.new(0.68, -1.6, 0),
+			color = GOLD,
+			material = M.Metal,
+		},
+		{
+			name = "Glass",
+			attach = "LowerTorso",
+			shape = P.Block,
+			fit = Vector3.zero,
+			pad = Vector3.new(0.42, 0.62, 0.42),
+			at = Vector3.new(0.68, -2.5, 0),
+			color = Color3.fromHex("#E8A33A"),
+			material = M.Glass,
+		},
+		{
+			name = "Base",
+			attach = "LowerTorso",
+			shape = P.Block,
+			fit = Vector3.zero,
+			pad = Vector3.new(0.52, 0.1, 0.52),
+			at = Vector3.new(0.68, -3.4, 0),
+			color = GOLD,
+			material = M.Metal,
+		},
+	},
+
 	-- Back ------------------------------------------------------------------------------------
 	abaya_brown = {
 		{

@@ -102,6 +102,7 @@ Icons.images = {
 	robe = { id = 139723744408376, recolor = true },
 	trousers = { id = 133519985927952, recolor = true },
 	sash = { id = 134035941908098, recolor = true },
+	fanous = { id = 90786801080402 }, -- LP-D12: the Lantern Nights brass fanous (full colour, not tinted)
 	cloak = { id = 70826930774461, recolor = true },
 } :: { [string]: Icon }
 
@@ -111,6 +112,7 @@ Icons.modes = {
 	ep2 = { id = 70959689012811 },
 	ep3 = { id = 93089947848285 },
 	ev_olive = { id = 119222103493381 },
+	ev_ramadan = { id = 77282830122368 }, -- LP-D12 Lantern Nights
 	infinite = { id = 108697701587533 },
 } :: { [string]: Icon }
 
