@@ -25,6 +25,7 @@ local Juice = require(UI.Juice)
 local Modal = require(UI.Modal)
 local Device = require(UI.Device)
 local CoinFlight = require(UI.CoinFlight)
+local UiSound = require(UI.UiSound)
 local Vfx = require(Shared.Config.Vfx)
 local StateController = require(script.Parent.StateController)
 local LocaleController = require(script.Parent.LocaleController)
@@ -104,6 +105,7 @@ function LobbyMenuController.rewardFlight(from: GuiObject)
 	local lira = root:FindFirstChild("Lira")
 	local coins = root:FindFirstChild("Coins")
 	local n = Vfx.COIN_FLIGHT.lobbyCoins
+	UiSound.play("claim") -- LP-C07
 	if lira and lira:IsA("GuiObject") then
 		CoinFlight.flyFrom(from, lira, math.ceil(n / 2))
 	end

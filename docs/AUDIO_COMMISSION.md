@@ -56,6 +56,17 @@ we are hiring a player rather than using a sample library.
 | `ui_click` | ~0.1 s | Foley: a soft wooden tick, like a backgammon piece set down on a wooden board. 3 takes. |
 | `coin` | ~0.3 s | Foley: two small coins dropped on a copper tray. 3 takes. |
 
+### Batch 3: UI sounds (LP-C07; silent, id 0, until supplied)
+
+| Cue | Length | Brief |
+|---|---|---|
+| `ui_open` | ~0.25 s | Foley: a soft cloth swish, a curtain drawn aside. 3 takes. |
+| `ui_close` | ~0.2 s | The same swish reversed, shorter. 3 takes. |
+| `ui_confirm` | ~0.3 s | A small brass bell tap, warm, no long tail. 3 takes. |
+| `ui_deny` | ~0.25 s | Two dull knocks on wood, low. 3 takes. |
+| `ui_ready` | ~0.4 s | A single finger-cymbal (sagat) chime, quiet. 3 takes. |
+| `wave_clear`, `summon_reveal` | — | Already listed above; still silent. |
+
 ### Delivery
 
 - **Masters:** 44.1 kHz or 48 kHz, 24-bit WAV, peaks ≤ −1 dBTP, one file per cue or take, named

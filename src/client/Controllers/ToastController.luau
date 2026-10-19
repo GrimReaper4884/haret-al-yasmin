@@ -15,6 +15,7 @@ local Root = require(UI.Root)
 local Device = require(UI.Device)
 local Icons = require(UI.Icons)
 local Button = require(UI.Button)
+local UiSound = require(UI.UiSound)
 local Hud = require(Shared.Config.Hud)
 local LocaleController = require(script.Parent.LocaleController)
 
@@ -87,6 +88,9 @@ function ToastController.show(key: string, args: { [string]: any }?)
 	Create("UIPadding", { PaddingLeft = UDim.new(0, 14), PaddingRight = UDim.new(0, 14), Parent = toast })
 	Create("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, VerticalAlignment = Enum.VerticalAlignment.Center, Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = toast })
 	local kind = kindOf(key)
+	if kind == "deny" then
+		UiSound.play("deny") -- LP-C07
+	end
 	if kind ~= "info" then
 		local mark = Create("Frame", { Name = "Kind", LayoutOrder = 0, Size = UDim2.fromOffset(24, 24), BackgroundTransparency = 1, Parent = toast })
 		if kind == "gain" then

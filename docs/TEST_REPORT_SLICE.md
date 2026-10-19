@@ -1144,3 +1144,13 @@ VM with a made-up 20-wave curve, so the server match never ended and nothing was
 | 25 % gate | the bar turns red and cracks at both ends (under the "The Gate 25 / 100" text), shaking once as it cracks | `c06_gate_25_cracked.jpg` |
 | Result | "Cash by wave · 7730 in all" beside a gold line over the 20 waves (`MatchRewards.sparkline`), Replay / Next / Back still inside the 584 px window | `c06_result_cash_curve.jpg` |
 | Specs | `MatchRewards.cashCurve` (per-wave gains, never negative) and `MatchRewards.sparkline` (points inside the box, top value at y 0, one value draws a flat line) | — |
+
+### LP-C07 UI sound hooks
+
+*Play Solo, lobby. `Config/UiSounds` maps the seven kinds to `Config/Audio` cues (spec: each resolves to a
+sting with a sane volume).* A click on the Summon tile created `SoundService.ui_click` and a second click
+played it to its end (0.83 s); `open`, `close`, `confirm`, `deny` and `ready` are wired (Modal open/close,
+the confirmation's primary, refusal toasts, `Button.setReady` turning on) and silent at id 0; `claim` plays
+`coin` with the lobby coin flight. Everything goes through the `sfx` setting. **Missing files for the owner:**
+`ui_open`, `ui_close`, `ui_confirm`, `ui_deny`, `ui_ready` (briefs in AUDIO_COMMISSION Batch 3), plus the
+older `wave_clear` and `summon_reveal`.

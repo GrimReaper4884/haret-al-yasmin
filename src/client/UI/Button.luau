@@ -11,6 +11,7 @@
 local Create = require(script.Parent.Create)
 local Theme = require(script.Parent.Theme)
 local Juice = require(script.Parent.Juice)
+local UiSound = require(script.Parent.UiSound)
 
 local Button = {}
 
@@ -86,6 +87,10 @@ end
 -- Ready (a claimable Daily, a Diary tier, an affordable summon): a shimmer every 4 s while motion is
 -- allowed, and the notification dot always.
 function Button.setReady(b: GuiObject, on: boolean)
+	if on and not b:FindFirstChild("Dot") and b:GetAttribute("ReadyOnce") then
+		UiSound.play("ready") -- only when it becomes ready, not when a screen first draws it
+	end
+	b:SetAttribute("ReadyOnce", true)
 	Juice.dot(b, on)
 	local shine = b:FindFirstChild("Shine")
 	if on and not shine and Juice.allowed("ready") then

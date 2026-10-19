@@ -28,6 +28,12 @@ local Audio: { [string]: Cue } = {
 	summon_legendary = { id = 1841822723, kind = "sting", volume = 0.9 }, -- shabriyeh sting + choir hit; licensed, approved by owner 2026-10-16 (C-111)
 	ui_click = { id = 9119975775, kind = "sting", volume = 0.4 }, -- licensed, approved by owner 2026-10-16 (C-112)
 	coin = { id = 9113848780, kind = "sting", volume = 0.5 }, -- licensed, approved by owner 2026-10-16 (C-113)
+	-- Theme v2 UI sounds (LP-C07, Config/UiSounds): silent until the files are supplied (AUDIO_COMMISSION §UI)
+	ui_open = { id = 0, kind = "sting", volume = 0.35 }, -- a soft cloth swish, a screen opening
+	ui_close = { id = 0, kind = "sting", volume = 0.3 }, -- the swish reversed, shorter
+	ui_confirm = { id = 0, kind = "sting", volume = 0.45 }, -- a brass bell tap
+	ui_deny = { id = 0, kind = "sting", volume = 0.4 }, -- a dull wooden knock, two beats
+	ui_ready = { id = 0, kind = "sting", volume = 0.35 }, -- a small finger-cymbal (sagat) chime
 }
 
 return Audio

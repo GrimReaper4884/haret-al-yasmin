@@ -59,6 +59,20 @@ return function(t)
 			t.truthy(n >= 30, "registry looks complete")
 		end)
 
+		t.it("every UI sound kind resolves to a sting cue (LP-C07)", function()
+			local UiSounds = t.config("UiSounds")
+			local Audio = t.config("Audio")
+			local n = 0
+			for _, kind in { "tap", "open", "close", "confirm", "deny", "claim", "ready" } do
+				local cue = Audio[UiSounds[kind]]
+				t.truthy(cue, kind .. " has a cue in Config/Audio")
+				t.eq(cue.kind, "sting", kind .. " is a one-shot")
+				t.truthy(cue.volume > 0 and cue.volume <= 1)
+				n += 1
+			end
+			t.eq(n, 7)
+		end)
+
 		t.it("Theme v2 chrome entries are well-formed 9-slice images (LP-C01)", function()
 			for _, kind in { "panel", "header", "button", "primary" } do
 				local c = Icons.chrome[kind]

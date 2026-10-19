@@ -10,6 +10,8 @@ local SoundService = game:GetService("SoundService")
 local TweenService = game:GetService("TweenService")
 
 local Audio = require(ReplicatedStorage:WaitForChild("Shared").Config.Audio)
+local UiSounds = require(ReplicatedStorage:WaitForChild("Shared").Config.UiSounds)
+local UiSound = require(script.Parent.Parent.UI.UiSound)
 local StateController = require(script.Parent.StateController)
 local SettingsController = require(script.Parent.SettingsController)
 
@@ -64,6 +66,24 @@ function AudioController.sting(cueId: string)
 	s:Play()
 end
 
+-- A UI sound kind (Config/UiSounds: tap, open, close, confirm, deny, claim, ready), through the
+-- sfx setting like every sting. Taps are throttled so a held button does not machine-gun.
+local lastTap = 0
+function AudioController.ui(kind: string)
+	local cue = UiSounds[kind]
+	if not cue then
+		return
+	end
+	if kind == "tap" then
+		local now = os.clock()
+		if now - lastTap < 0.06 then
+			return
+		end
+		lastTap = now
+	end
+	AudioController.sting(cue)
+end
+
 -- Brings the playing loop in line with the wanted cue and the music setting.
 local function refresh(outSeconds: number)
 	local target = if ready and SettingsController.get("music") ~= false then wantedCue else nil
@@ -102,6 +122,7 @@ local function markReady()
 end
 
 function AudioController.start()
+	UiSound.set(AudioController.ui) -- the UI layer's sounds (LP-C07)
 	group = Instance.new("SoundGroup")
 	group.Name = "HaretAudio"
 	group.Volume = 1

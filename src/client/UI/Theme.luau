@@ -14,6 +14,7 @@ local Create = require(script.Parent.Create)
 local Juice = require(script.Parent.Juice)
 local Icons = require(script.Parent.Icons)
 local Haptics = require(script.Parent.Haptics)
+local UiSound = require(script.Parent.UiSound)
 
 local Theme = {}
 
@@ -223,6 +224,9 @@ function Theme.button(props: { [string]: any }): TextButton
 		Theme.touchPad(b)
 	end
 	Haptics.bind(b) -- the UIClick buzz on press, while sfx is on
+	b.Activated:Connect(function()
+		UiSound.play("tap") -- LP-C07
+	end)
 	return b
 end
 

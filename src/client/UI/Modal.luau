@@ -21,6 +21,7 @@ local Juice = require(script.Parent.Juice)
 local Device = require(script.Parent.Device)
 local Icons = require(script.Parent.Icons)
 local Button = require(script.Parent.Button)
+local UiSound = require(script.Parent.UiSound)
 local TweenService = game:GetService("TweenService")
 
 local Modal = {}
@@ -242,8 +243,13 @@ function Modal.create(name: string, maxWidth: number, bodyHeight: number?, opts:
 			self.onClose()
 		end
 		local opening = v and not panel.Visible
+		local closing = not v and panel.Visible
 		panel.Visible = v
+		if closing then
+			UiSound.play("close")
+		end
 		if opening then
+			UiSound.play("open")
 			content.CanvasPosition = Vector2.zero
 			Juice.pop(panel)
 		end
@@ -383,6 +389,7 @@ function Modal.adopt(panel: Frame, name: string, onClose: () -> ())
 end
 
 function Modal.opening(panel: Frame)
+	UiSound.play("open")
 	closeOthers(panel)
 	for _, o in overlays do
 		o.Visible = false
@@ -433,6 +440,7 @@ local function buildConfirm(): ConfirmUi
 		closeConfirm(false)
 	end)
 	yes.Activated:Connect(function()
+		UiSound.play("confirm")
 		closeConfirm(true)
 	end)
 	return { frame = frame, shield = shield, icon = icon, text = text, yes = yes, no = no }
