@@ -1059,3 +1059,17 @@ cursor, scroll-bar images…) found the id nowhere, and a grep of the repo finds
 with DECISIONS D-020 (a public 2015 *audio* asset, "Pop Close Sound", requested by Studio or a plugin): engine-
 side, not ours. Nothing of ours logs at join beyond `[World] built 1423 parts (budget 6000)` and
 `[HaretAlYasmin] server ready`.
+
+### LP-C01 Theme v2 tokens, the button factory and its states
+
+*Play Solo, lobby. `grep` finds no `Create("TextButton")` / `Instance.new("TextButton")` outside `UI/Button`
+and `UI/Theme`: the eight invisible hit areas (cards, rows, backdrops, the summon skip) now come from
+`Button.hit`.*
+
+| State | Evidence | Capture |
+|---|---|---|
+| Idle | lobby tiles with the dark 2.5 px edge | `docs/captures/lp/c01_state_idle.jpg` |
+| Hover / focus | `GuiService.SelectedObject = Units`: `SelectionGained` fired and the edge became brass `#F2C14E` at 3.5 px (`Theme.hover`; mouse hover uses the same handler, but Studio's virtual mouse raises no `MouseEnter`, and computer-use control of Studio was declined, so a mouse-hover capture is left for the owner) | `c01_state_focus_units.jpg` |
+| Pressed | mouse held on Summon: the squash and the lip | `c01_state_pressed_summon.jpg` |
+| Disabled | Store "Coming soon" through `Button.setEnabled(false)`: desaturated fill, pale text, no bevel shade | `c01_state_disabled_store.jpg` |
+| Reduced Motion | `Logic/Motion` spec: `breathe` and `ready` are decorative (off under Reduced Motion and below full Effects), `stagger` follows `pop` | — |

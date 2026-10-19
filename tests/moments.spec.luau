@@ -96,6 +96,12 @@ return function(t)
 			t.eq(Motion.allowed("tilt", "full", false, false), false, "no hover tilt on touch")
 			t.eq(Motion.allowed("tilt", "full", false, true), true)
 			t.eq(Motion.allowed("wobble", "full", false, false), true)
+			-- Theme v2 (LP-C01): the breathing Play button and the ready shimmer are decorative extras;
+			-- staggered lists follow the pop.
+			t.eq(Motion.allowed("breathe", "reduced", false, true), false)
+			t.eq(Motion.allowed("ready", "reduced", false, true), false)
+			t.eq(Motion.allowed("breathe", "full", false, false), true)
+			t.eq(Motion.allowed("stagger", "reduced", false, false), true)
 		end)
 
 		t.it("lantern flicker stays in range and moves smoothly (PV-E01)", function()

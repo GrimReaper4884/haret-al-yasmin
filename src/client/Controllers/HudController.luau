@@ -9,6 +9,7 @@ local Clues = require(Shared.Config.Clues)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
+local Button = require(UI.Button)
 local Root = require(UI.Root)
 local Juice = require(UI.Juice)
 local StateController = require(script.Parent.StateController)
@@ -125,7 +126,7 @@ local function build()
 	})
 	-- The whole tracker is one tap target (chip mode on a phone): a transparent button laid over it
 	-- (a sibling, since the tracker's list layout would place a child).
-	trackerTap = Create("TextButton", { Name = "ErrandTap", Text = "", BackgroundTransparency = 1, AnchorPoint = tracker.AnchorPoint, Position = tracker.Position, ZIndex = 5, Visible = false, Parent = root })
+	trackerTap = Button.hit({ Name = "ErrandTap", Text = "", BackgroundTransparency = 1, AnchorPoint = tracker.AnchorPoint, Position = tracker.Position, ZIndex = 5, Visible = false, Parent = root })
 	local function follow()
 		local scale = Device.scale()
 		trackerTap.Size = UDim2.fromOffset(tracker.AbsoluteSize.X / scale, tracker.AbsoluteSize.Y / scale)

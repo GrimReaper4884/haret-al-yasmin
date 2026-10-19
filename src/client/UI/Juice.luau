@@ -172,6 +172,85 @@ function Juice.shine(frame: GuiObject, period: number?)
 	end)
 end
 
+-- Theme v2 (LP-C01) ----------------------------------------------------------------------------
+
+-- A primary button's slow breath (scale 1 → 1 + amount → 1 every `period` s) until `stop()` or the
+-- object leaves the game. Decorative: off under Reduced Motion and with Effects below full.
+function Juice.breathe(gui: GuiObject, amount: number?, period: number?): () -> ()
+	local running = true
+	if not Juice.allowed("breathe") then
+		return function() end
+	end
+	local scale = Juice.scaleOf(gui)
+	local half = (period or 2.4) / 2
+	task.spawn(function()
+		while running and gui.Parent do
+			local up = TweenService:Create(scale, TweenInfo.new(half, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Scale = 1 + (amount or 0.03) })
+			up:Play()
+			up.Completed:Wait()
+			if not running then
+				break
+			end
+			local down = TweenService:Create(scale, TweenInfo.new(half, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Scale = 1 })
+			down:Play()
+			down.Completed:Wait()
+		end
+		scale.Scale = 1
+	end)
+	return function()
+		running = false
+	end
+end
+
+-- Lists arrive one after another: each item pops `gap` s after the previous, at most `cap` items
+-- animated (the rest appear at once). Follows `pop` (none under Reduced Motion).
+function Juice.stagger(items: { GuiObject }, gap: number?, cap: number?)
+	local animate = Juice.allowed("stagger")
+	for i, item in items do
+		local scale = Juice.scaleOf(item)
+		if not animate or i > (cap or 12) then
+			scale.Scale = 1
+		else
+			scale.Scale = 0.6
+			task.delay((i - 1) * (gap or 0.03), function()
+				TweenService:Create(scale, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+			end)
+		end
+	end
+end
+
+-- The notification dot on a control's top-right corner (a claimable Daily, a ready Diary tier):
+-- shown while `on`, removed otherwise. Static (it is information, not motion).
+function Juice.dot(parent: GuiObject, on: boolean, color: Color3?): Frame?
+	local dot = parent:FindFirstChild("Dot")
+	if not on then
+		if dot then
+			dot:Destroy()
+		end
+		return nil
+	end
+	if dot and dot:IsA("Frame") then
+		return dot
+	end
+	local f = Instance.new("Frame")
+	f.Name = "Dot"
+	f.AnchorPoint = Vector2.new(0.5, 0.5)
+	f.Position = UDim2.new(1, -4, 0, 4)
+	f.Size = UDim2.fromOffset(14, 14)
+	f.BackgroundColor3 = color or Color3.fromHex("#D9483B")
+	f.BorderSizePixel = 0
+	f.ZIndex = parent.ZIndex + 3
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(1, 0)
+	corner.Parent = f
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.new(1, 1, 1)
+	stroke.Thickness = 2
+	stroke.Parent = f
+	f.Parent = parent
+	return f
+end
+
 -- PV-B07 ------------------------------------------------------------------------------------
 
 -- Desktop hover tilt for a card: a slight turn and lift while the mouse is over `hit`.

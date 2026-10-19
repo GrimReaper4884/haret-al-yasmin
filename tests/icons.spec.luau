@@ -59,6 +59,18 @@ return function(t)
 			t.truthy(n >= 30, "registry looks complete")
 		end)
 
+		t.it("Theme v2 chrome entries are well-formed 9-slice images (LP-C01)", function()
+			for _, kind in { "panel", "header", "button", "primary" } do
+				local c = Icons.chrome[kind]
+				t.truthy(c, kind .. " chrome entry")
+				t.truthy(type(c.id) == "number" and c.id >= 0 and c.id == math.floor(c.id), kind .. " id")
+				local w, h = c.size[1], c.size[2]
+				local x0, y0, x1, y1 = c.slice[1], c.slice[2], c.slice[3], c.slice[4]
+				t.truthy(0 < x0 and x0 < x1 and x1 < w, kind .. " slice x inside the image")
+				t.truthy(0 < y0 and y0 < y1 and y1 < h, kind .. " slice y inside the image")
+			end
+		end)
+
 		t.it("names without an uploaded image have a primitive drawer (no text fallback)", function()
 			t.truthy(drawers.ui_settings and drawers.tarboosh, "drawer scan found the client module")
 			for name, def in Icons.images do

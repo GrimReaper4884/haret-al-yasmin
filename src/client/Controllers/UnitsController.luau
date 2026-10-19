@@ -18,6 +18,7 @@ local UpgradeView = require(Shared.Logic.UpgradeView)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
+local Button = require(UI.Button)
 local Juice = require(UI.Juice)
 local Modal = require(UI.Modal)
 local UnitCard = require(UI.UnitCard)
@@ -525,7 +526,7 @@ function UnitsController.render()
 		if unitId and (Units :: any)[unitId] then
 			local card = UnitCard.create(unitId, { LayoutOrder = i, Size = UDim2.fromOffset(52, 60) }, { zindex = 11 })
 			card.Parent = loadoutRow
-			local hit = Create("TextButton", { Text = "", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 13, Parent = card })
+			local hit = Button.hit({ Text = "", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 13, Parent = card })
 			Juice.press(hit)
 			hit.Activated:Connect(function()
 				selected = unitId
@@ -575,7 +576,7 @@ function UnitsController.render()
 		local kind = UnitLogic.kind(def)
 		local card = UnitCard.create(id, { LayoutOrder = i }, { name = t(def.nameKey), stars = UnitLogic.stars(owned.copies, TD.STAR_COPIES), selected = inLoadout, sub = kindLine(t, def), role = def.role, reach = kind.reach })
 		card.Parent = grid
-		local hit = Create("TextButton", { Text = "", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 13, Parent = card })
+		local hit = Button.hit({ Text = "", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 13, Parent = card })
 		Juice.press(hit)
 		Juice.tilt(card, hit)
 		hit.Activated:Connect(function()

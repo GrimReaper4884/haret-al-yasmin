@@ -22,6 +22,7 @@ local MonetizationLogic = require(Shared.Logic.MonetizationLogic)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
+local Button = require(UI.Button)
 local Device = require(UI.Device)
 local Modal = require(UI.Modal)
 local Root = require(UI.Root)
@@ -211,10 +212,10 @@ local function row(spec: RowSpec)
 		AnchorPoint = Vector2.new(if rtl then 0 else 1, 1),
 		Position = UDim2.new(if rtl then 0 else 1, if rtl then 8 else -8, 1, -8),
 		Size = UDim2.fromOffset(116, Theme.TOUCH),
-		BackgroundColor3 = if spec.enabled then Theme.colors.button else Theme.colors.buttonDisabled,
-		AutoButtonColor = spec.enabled,
+		BackgroundColor3 = Theme.colors.button,
 		Parent = r,
 	})
+	Button.setEnabled(action, spec.enabled) -- Theme v2 disabled state (LP-C01)
 	action.Activated:Connect(function()
 		if spec.enabled then
 			spec.onClick()

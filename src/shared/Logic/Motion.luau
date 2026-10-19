@@ -4,15 +4,17 @@
 --
 -- Reduced Motion (Roblox accessibility setting) stops all of it. Effects "off" keeps only the
 -- press squash (feedback that a tap registered). Effects "reduced" drops the decorative extras:
--- shine sweeps and petal bursts. Hover tilt needs a mouse.
+-- shine sweeps and petal bursts. Hover tilt needs a mouse. Theme v2 (LP-C01): `breathe` (a primary
+-- button's slow pulse) and `ready` (a claimable control's shimmer) are decorative; `stagger` (lists
+-- arriving one after another) follows `pop`.
 
-export type Kind = "press" | "pop" | "tilt" | "flip" | "petals" | "shine" | "wobble" | "slide"
+export type Kind = "press" | "pop" | "tilt" | "flip" | "petals" | "shine" | "wobble" | "slide" | "breathe" | "ready" | "stagger"
 
 local Motion = {}
 
-Motion.kinds = { "press", "pop", "tilt", "flip", "petals", "shine", "wobble", "slide" } :: { Kind }
+Motion.kinds = { "press", "pop", "tilt", "flip", "petals", "shine", "wobble", "slide", "breathe", "ready", "stagger" } :: { Kind }
 
-local DECORATIVE = { shine = true, petals = true }
+local DECORATIVE = { shine = true, petals = true, breathe = true, ready = true }
 
 function Motion.allowed(kind: Kind, effects: string, reducedMotion: boolean, hasMouse: boolean): boolean
 	if reducedMotion then

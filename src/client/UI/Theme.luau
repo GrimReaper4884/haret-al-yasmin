@@ -8,6 +8,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Palette = require(ReplicatedStorage:WaitForChild("Shared").Config.Palette)
+local IconIds = require(ReplicatedStorage:WaitForChild("Shared").Config.Icons)
 local Hud = require(ReplicatedStorage:WaitForChild("Shared").Config.Hud)
 local Create = require(script.Parent.Create)
 local Juice = require(script.Parent.Juice)
@@ -43,6 +44,25 @@ Theme.rarity = {
 	secret = Color3.fromHex("#2A2A2A"),
 }
 Theme.lira = Color3.fromHex("#E0A82E")
+
+-- Theme v2 (LP-C01, LOOK_AND_PLAY_PLAN §5.1): one material language. Panels are paper on wood with an
+-- ablaq (basalt / cream) header band; buttons carved wood with a brass edge; primary actions gold leaf;
+-- danger the red of the diwan cushions. Controllers take colours from here, never literals.
+Theme.v2 = {
+	paper = Palette.plaster,
+	wood = Palette.wood,
+	woodDark = Palette.woodDark,
+	brass = Color3.fromHex("#C9A13B"),
+	brassBright = Color3.fromHex("#F2C14E"),
+	goldLeaf = Color3.fromHex("#E0A82E"),
+	diwanRed = Color3.fromHex("#9E2B25"),
+	ablaqBasalt = Color3.fromHex("#3D3A38"),
+	ablaqCream = Color3.fromHex("#F1E9DA"),
+	dot = Color3.fromHex("#D9483B"), -- notification dot
+	hoverStroke = 3.5, -- the brass edge thickens on hover / focus …
+	idleStroke = 2.5, -- … from this
+	disabledText = Color3.fromHex("#E8E0D4"),
+}
 
 function Theme.rarityColor(rarity: string): Color3
 	return Theme.rarity[rarity] or Theme.colors.textMuted
@@ -198,11 +218,55 @@ function Theme.button(props: { [string]: any }): TextButton
 	Theme.outline(b, 1.6)
 	Juice.press(b)
 	Theme.lip(b)
+	Theme.hover(b)
 	if not legacy then
 		Theme.touchPad(b)
 	end
 	Haptics.bind(b) -- the UIClick buzz on press, while sfx is on
 	return b
+end
+
+-- Hover and focus state (Theme v2, LP-C01): the edge turns brass and thickens while the mouse is over
+-- the button or a gamepad selects it; it never touches BackgroundColor3, which callers own.
+function Theme.hover(button: GuiButton)
+	local stroke = button:FindFirstChild("Border")
+	if not (stroke and stroke:IsA("UIStroke")) then
+		return
+	end
+	local color, thickness = stroke.Color, stroke.Thickness
+	local function on()
+		color, thickness = stroke.Color, stroke.Thickness
+		stroke.Color = Theme.v2.brassBright
+		stroke.Thickness = math.max(thickness, Theme.v2.hoverStroke)
+	end
+	local function off()
+		stroke.Color = color
+		stroke.Thickness = thickness
+	end
+	button.MouseEnter:Connect(on)
+	button.MouseLeave:Connect(off)
+	button.SelectionGained:Connect(on)
+	button.SelectionLost:Connect(off)
+end
+
+-- Lays a Theme v2 9-slice image (Config/Icons.chrome[kind]) over a panel or button once it is
+-- uploaded; until then (id 0) the drawn style stays. Returns the image, or nil.
+function Theme.chrome(gui: GuiObject, kind: string): ImageLabel?
+	local c = IconIds.chrome[kind]
+	if not c or c.id == 0 then
+		return nil
+	end
+	local img = Create("ImageLabel", {
+		Name = "Chrome",
+		Image = "rbxassetid://" .. c.id,
+		ScaleType = Enum.ScaleType.Slice,
+		SliceCenter = Rect.new(c.slice[1], c.slice[2], c.slice[3], c.slice[4]),
+		BackgroundTransparency = 1,
+		Size = UDim2.fromScale(1, 1),
+		ZIndex = gui.ZIndex,
+		Parent = gui,
+	})
+	return img
 end
 
 -- A currency / counter pill: coloured disc icon on the left edge, outlined number.

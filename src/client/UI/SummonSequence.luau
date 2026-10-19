@@ -9,6 +9,7 @@ local TweenService = game:GetService("TweenService")
 
 local Create = require(script.Parent.Create)
 local Theme = require(script.Parent.Theme)
+local Button = require(script.Parent.Button)
 local Fx = require(script.Parent.Fx)
 local Juice = require(script.Parent.Juice)
 
@@ -185,7 +186,7 @@ function SummonSequence.play(parent: GuiObject, best: string, onBurst: () -> (),
 	local color = Theme.rarityColor(best)
 	local high = SummonSequence.rank(best) >= 3
 	local stage = Create("Frame", { Name = "Sequence", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ZIndex = z, Parent = parent })
-	local skip = Create("TextButton", { Name = "Skip", Text = "", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ZIndex = z + 20, Parent = stage })
+	local skip = Button.hit({ Name = "Skip", Text = "", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ZIndex = z + 20, Parent = stage })
 	local light = glow(stage, z)
 	local body, panes = lantern(stage, z + 2)
 	local done = false

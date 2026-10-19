@@ -18,6 +18,7 @@ local SummonLogic = require(Shared.Logic.SummonLogic)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
+local Button = require(UI.Button)
 local Amount = require(UI.Amount)
 local Root = require(UI.Root)
 local Modal = require(UI.Modal)
@@ -204,7 +205,7 @@ local function showCards(results: { any })
 		cards[i] = c
 	end
 	local skipped = false
-	local skip = Create("TextButton", { Text = "", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 26, Parent = reveal })
+	local skip = Button.hit({ Text = "", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 26, Parent = reveal })
 	skip.Activated:Connect(function()
 		skipped = true
 	end)

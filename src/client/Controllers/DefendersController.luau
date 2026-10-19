@@ -22,6 +22,7 @@ local Hud = require(Shared.Config.Hud)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
+local Button = require(UI.Button)
 local Root = require(UI.Root)
 local Juice = require(UI.Juice)
 local Device = require(UI.Device)
@@ -179,7 +180,7 @@ local function buildRow(info: PlacementController.TowerInfo): Row
 		Parent = list,
 	}, { Create("UICorner", { CornerRadius = UDim.new(0, 10) }) })
 	-- The portrait: a tap focuses the watchtower on this defender and opens its own panel.
-	local face = Create("TextButton", { Name = "Focus", Text = "", BackgroundTransparency = 1, Position = UDim2.fromOffset(4, 4), Size = UDim2.fromOffset(ph, ph), ZIndex = 8, Parent = frame })
+	local face = Button.hit({ Name = "Focus", Text = "", BackgroundTransparency = 1, Position = UDim2.fromOffset(4, 4), Size = UDim2.fromOffset(ph, ph), ZIndex = 8, Parent = frame })
 	local portrait = UnitCard.portrait(info.unitId, { Size = UDim2.fromScale(1, 1), ZIndex = 8 })
 	portrait.Parent = face
 	local id = info.id

@@ -33,6 +33,7 @@ local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Icons = require(UI.Icons)
 local Theme = require(UI.Theme)
+local Button = require(UI.Button)
 local Root = require(UI.Root)
 local UnitCard = require(UI.UnitCard)
 local TowerPanelView = require(UI.TowerPanelView)
@@ -1033,7 +1034,7 @@ local function slotFor(i: number, unitId: string): Slot
 		local key = Theme.display({ Text = tostring(i), TextSize = 13, AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0, 5, 1, -22), Size = UDim2.fromOffset(14, 14), ZIndex = 7, Parent = frame })
 		key.TextXAlignment = Enum.TextXAlignment.Left
 	end
-	local hit = Create("TextButton", { Text = "", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 8, Parent = frame })
+	local hit = Button.hit({ Text = "", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 8, Parent = frame })
 	Juice.press(hit)
 	hit.Activated:Connect(function()
 		pickSlot(unitId, price, frame)

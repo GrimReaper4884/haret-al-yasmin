@@ -24,6 +24,7 @@ local HudLayout = require(Shared.Logic.HudLayout)
 local UI = script.Parent.Parent.UI
 local Create = require(UI.Create)
 local Theme = require(UI.Theme)
+local Button = require(UI.Button)
 local Root = require(UI.Root)
 local Modal = require(UI.Modal)
 local Juice = require(UI.Juice)
@@ -234,7 +235,7 @@ local function openSpeedSheet()
 	local right = (SettingsController.get("railSide") or "right") == "right"
 	local x = if right then bp.X.Offset - cfg.gap - w else bp.X.Offset + speedButton.Size.X.Offset + cfg.gap
 	local y = math.clamp(bp.Y.Offset + speedButton.Size.Y.Offset / 2 - h / 2, 4, math.max(4, design.y - h - 4))
-	local catcher = Create("TextButton", { Name = "SpeedCatcher", Text = "", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 9, Parent = hud })
+	local catcher = Button.hit({ Name = "SpeedCatcher", Text = "", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 9, Parent = hud })
 	catcher.Activated:Connect(closeSpeedSheet)
 	speedCatcher = catcher
 	local sheet = Create("Frame", {
