@@ -23,7 +23,6 @@ local WALL_H = 16
 local EARTH = Color3.fromHex("#CDB892")
 local GRASS = Color3.fromHex("#8A9A4E")
 local APRICOT = Color3.fromHex("#F2A33A")
-local PICKLE = Color3.fromHex("#7BAF3A")
 
 local function deco(p: BasePart): BasePart
 	p.CanCollide = false
@@ -76,20 +75,8 @@ local function orchards(m: Model)
 end
 
 local function westStrip(m: Model)
-	-- The donkey cart of pickles by the wall: a bed on two wheels, jars and a crate of green pickles
-	local x, z = -11, 134
-	Kit.box(m, "CartBed", x - 1.4, 1.5, z - 2.4, x + 1.4, 2, z + 2.4, Palette.wood, M.WoodPlanks)
-	for _, dx in { -1.6, 1.6 } do
-		Kit.part(m, { name = "Wheel", size = Vector3.new(0.3, 2.4, 2.4), cf = CFrame.new(x + dx, 1.2, z), color = Palette.woodDark, material = M.Wood, shape = Enum.PartType.Cylinder, collide = false, shadow = false })
-	end
-	for _, dx in { -0.9, 0.9 } do
-		deco(Kit.part(m, { name = "Shaft", size = Vector3.new(0.2, 0.2, 3.4), cf = CFrame.new(x + dx, 1.6, z - 3.9) * CFrame.Angles(math.rad(-8), 0, 0), color = Palette.woodDark, material = M.Wood }))
-	end
-	for i = 0, 3 do
-		Kit.column(m, "PickleJar", Vector3.new(x - 0.6 + (i % 2) * 1.2, 2, z - 1.4 + math.floor(i / 2) * 1.4), 1.2, 0.9, Color3.fromHex("#B9D4C2"), M.Glass, false)
-		Kit.ball(m, "Pickles", Vector3.new(x - 0.6 + (i % 2) * 1.2, 2.5, z - 1.4 + math.floor(i / 2) * 1.4), 0.6, PICKLE, M.SmoothPlastic, false)
-	end
-	Props.crate(m, CFrame.new(x, 2, z + 1.4) * CFrame.Angles(0, math.rad(90), 0), PICKLE)
+	-- The donkey cart of pickles by the wall (Props.pickleCart; the one by the lane gate tells the story)
+	Props.pickleCart(m, CFrame.new(-11, 0, 134))
 	KitLayout.place(m, "oil_jar_cluster", CFrame.new(-12.4, 0, 129.5) * CFrame.Angles(0, math.rad(90), 0))
 
 	-- The old olive by the vista wall, with a rifle leaning in its hollow

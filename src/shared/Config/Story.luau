@@ -69,6 +69,7 @@ local cart = {
 	promptKey = "story.cart.prompt",
 	lineSeconds = 4,
 	reach = 10,
+	at = { -5.4, 78.5 }, -- lobby x, z: inside the gate against the west wall, shafts toward the lane (S1-A08)
 }
 
 return {

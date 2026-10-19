@@ -270,4 +270,38 @@ return function(t)
 			end
 		end)
 	end)
+
+	t.describe("The lane after Episode 9 (S1-A08)", function()
+		t.it("the pickle cart stands inside the gate, in the lane", function()
+			local LaneZones = t.config("LaneZones")
+			local at = Story.cart.at
+			t.truthy(type(at) == "table" and #at == 2)
+			t.truthy(at[1] > -8 and at[1] < 8, "inside the lane's 16 studs")
+			local gate
+			for _, r in LaneZones.existing do
+				if r.id == "gate" then
+					gate = r
+				end
+			end
+			t.truthy(gate, "the gate rectangle")
+			t.truthy(at[2] < gate.bounds[2] and at[2] > gate.bounds[2] - 10, "on the lane side, within 10 studs of the gate")
+		end)
+		t.it("every story-gated NPC names a real mode and has strings", function()
+			local Npcs = t.config("Npcs")
+			local Strings = t.config("Strings")
+			local n = 0
+			for id, def in Npcs do
+				if def.requiresClear then
+					n += 1
+					t.truthy(Modes[def.requiresClear], id .. " gate is a mode")
+					t.eq(def.talk, false, id .. " is ambient")
+					for _, lang in { "en", "ar" } do
+						t.truthy(Strings[lang][def.nameKey] and Strings[lang][def.roleKey], id .. " strings in " .. lang)
+					end
+				end
+			end
+			t.truthy(Npcs.adashari_guard and Npcs.adashari_guard.requiresClear == "ep9", "Al-Adashari waits for Episode 9")
+			t.truthy(n >= 1)
+		end)
+	end)
 end

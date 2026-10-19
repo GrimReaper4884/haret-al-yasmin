@@ -215,6 +215,10 @@ function DebugService.start()
 				return "bad arg"
 			end
 			return MonetizationService.isRestricted(player)
+		elseif cmd == "storyClear" then
+			-- S1-A08 checks: show the figures gated on a story clear for this session ("off" hides them); no profile change
+			player:SetAttribute("HarnessStoryClear", arg ~= "off")
+			return true
 		elseif cmd == "noAutoAfk" then
 			-- Studio runs driven through MCP send no input: keep the idle walk to the AFK room off
 			player:SetAttribute("HarnessNoAutoAfk", arg ~= "off")

@@ -1524,3 +1524,16 @@ Al-Adashari by the orchard road; `UseAbility` fired from the Client until a `mar
 | Check | Result | Capture |
 |---|---|---|
 | The ultimate | `mark` event; the banner "The Oath · Al-Adashari, the Night Guard"; the gendarmes walking into his lane by the lamp post | `docs/art/s1a05_adashari_ability_2026-10-19.jpg` |
+
+### S1-A08 the pickle cart and the Night Guard
+
+*`tools/check.ps1` green (469 specs; 2 new in `storycards.spec`). Play Solo, `HaretDebug noAutoAfk`; the owner's profile has
+Episodes 1–2 cleared, not 9.*
+
+| Check | Result | Capture |
+|---|---|---|
+| Server | one `PickleCart`-tagged model at (−5.4, 77.2) pivot; `Workspace.Npcs.adashari_guard` with `RequiresClear = ep9` | — |
+| Before the clear | the cart by the west wall inside the gate; no figure, label or lantern glow by it (the first run still showed the lantern's PointLight: now switched off too) | `docs/art/s1a08_gate_cart_before_ep9_2026-10-19.jpg` |
+| `HaretDebug "storyClear"` | "Al-Adashari · The Night Guard" by the cart's shafts | `docs/art/s1a08_gate_cart_after_ep9_2026-10-19.jpg` |
+| `"storyClear","off"` | 8 parts, the label and the light hidden again | — |
+| Console | `server ready`, no errors from our code | — |

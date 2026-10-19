@@ -205,6 +205,29 @@ function Props.crate(parent: Instance, cf: CFrame, produce: Color3): Model
 	return m
 end
 
+-- The pickle cart (S1-A08, Story.cart): a bed on two wheels with its shafts down, four jars of pickles and a crate of
+-- green ones. `cf` at ground, the shafts point along local -Z. One Model, so it can carry a tag.
+function Props.pickleCart(parent: Instance, cf: CFrame): Model
+	local m = model(parent, "PickleCart")
+	m.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
+	local pickle = Color3.fromHex("#7BAF3A")
+	part(m, { name = "CartBed", size = Vector3.new(2.8, 0.5, 4.8), cf = cf * CFrame.new(0, 1.75, 0), color = Palette.wood, material = M.WoodPlanks })
+	for _, dx in { -1.6, 1.6 } do
+		part(m, { name = "Wheel", size = Vector3.new(0.3, 2.4, 2.4), cf = cf * CFrame.new(dx, 1.2, 0), color = Palette.woodDark, material = M.Wood, shape = Enum.PartType.Cylinder, collide = false, shadow = false })
+	end
+	for _, dx in { -0.9, 0.9 } do
+		local s = part(m, { name = "Shaft", size = Vector3.new(0.2, 0.2, 3.4), cf = cf * CFrame.new(dx, 1.6, -3.9) * CFrame.Angles(math.rad(-8), 0, 0), color = Palette.woodDark, material = M.Wood })
+		s.CanCollide, s.CanQuery, s.CanTouch, s.CastShadow = false, false, false, false
+	end
+	for i = 0, 3 do
+		local at = cf * CFrame.new(-0.6 + (i % 2) * 1.2, 2, -1.4 + math.floor(i / 2) * 1.4)
+		Kit.column(m, "PickleJar", at.Position, 1.2, 0.9, Color3.fromHex("#B9D4C2"), M.Glass, false)
+		Kit.ball(m, "Pickles", (at * CFrame.new(0, 0.5, 0)).Position, 0.6, pickle, M.SmoothPlastic, false)
+	end
+	Props.crate(m, cf * CFrame.new(0, 2, 1.4) * CFrame.Angles(0, math.rad(90), 0), pickle)
+	return m
+end
+
 -- Copper water jug / cooking pot.
 function Props.copperPot(parent: Instance, pos: Vector3, size: number): Model
 	local m = model(parent, "CopperPot")

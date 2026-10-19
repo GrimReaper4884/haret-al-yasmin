@@ -13,6 +13,7 @@ local Palette = require(Shared.Config.Palette)
 local Strings = require(Shared.Config.Strings)
 local Events = require(Shared.Config.Events)
 local EventLogic = require(Shared.Logic.EventLogic)
+local Story = require(Shared.Config.Story)
 local World = script.Parent.Parent
 local Kit = require(World.Kit)
 local Props = require(World.Props)
@@ -223,7 +224,8 @@ local function signs(map: Instance)
 	label.Parent = gui
 end
 
--- Nameplates on both faces of the gate, the watchman's stool and lantern by the wicket.
+-- Nameplates on both faces of the gate, the watchman's stool and lantern by the wicket, and the pickle cart
+-- against the west wall (S1-A08; its "Look" lines are Story.cart).
 local function gateDressing(map: Instance)
 	local m = Kit.model(map, "GateDressing")
 	Props2.nameplate(m, Kit.faceFrame(Vector3.new(0, 17.4, 87.9), Vector3.new(0, 0, -1)), 9, ar("sign.lane"))
@@ -231,6 +233,8 @@ local function gateDressing(map: Instance)
 	Props2.stool(m, Vector3.new(6.6, 0, 82))
 	Props.copperPot(m, Vector3.new(7.3, 0, 83.6), 0.7)
 	Props.pot(m, Vector3.new(-6.8, 0.35, 86), "jasmine", 0.9)
+	local cart = Props.pickleCart(m, CFrame.new(Story.cart.at[1], 0, Story.cart.at[2]))
+	CollectionService:AddTag(cart, Story.cart.tag)
 end
 
 function Extras.build(map: Instance)

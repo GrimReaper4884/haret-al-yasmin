@@ -116,6 +116,9 @@ local function spawnFigure(parent: Instance, npcId: string, def: any)
 	m.ModelStreamingMode = Enum.ModelStreamingMode.Persistent
 	m:SetAttribute("NpcId", npcId)
 	m:SetAttribute("NpcPose", def.pose or "stand")
+	if def.requiresClear then
+		m:SetAttribute("RequiresClear", def.requiresClear) -- LobbyStoryController shows it per player (S1-A08)
+	end
 	CollectionService:AddTag(m, NpcService.TAG)
 	if def.talk ~= false then
 		addPrompt(npcId, root)

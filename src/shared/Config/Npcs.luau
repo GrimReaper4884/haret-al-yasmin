@@ -18,6 +18,7 @@ export type NpcDef = {
 	clipsFrom: { [string]: string }?, -- clip slot -> another look id whose clip this figure borrows (same skeleton)
 	zone: string?, -- Config/LaneZones id: stands in the lane only once that zone is built
 	talk: boolean?, -- false = ambient (no prompt, no dialogue)
+	requiresClear: string?, -- a mode id: each client shows the figure only once its player has cleared it (S1-A08)
 }
 
 export type Pose = "stand" | "seated" | "walk"
@@ -342,6 +343,19 @@ local Npcs: { [string]: NpcDef } = {
 		robe = "#2F3E6B",
 		accent = "#C9A13B",
 		headwear = "tarboosh",
+	},
+	-- S1-A08: after Episode 9 the Night Guard keeps the lane gate by his old pickle cart (STORY_PLAN §7.6).
+	adashari_guard = {
+		nameKey = "npc.adashari_guard.name",
+		roleKey = "npc.adashari_guard.role",
+		position = { -3.6, 0, 82.4 },
+		yaw = 200, -- by the cart's shafts, looking down the lane
+		skin = "#B98A62",
+		robe = "#2E2A26",
+		accent = "#8C6A3E",
+		look = "adashari",
+		talk = false,
+		requiresClear = "ep9",
 	},
 }
 
